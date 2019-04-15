@@ -1,37 +1,109 @@
 <!DOCTYPE html>
 <html>
-  
+  <head>
+    <style>
+      button {
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+      }
+      </style>
+  </head>
+
   <body>
     <div id="message">
       <h2>Welcome</h2>
-      <h2> Hiiiii </h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+      <h1 id = "testtext"></h1>
+      <p> there should be something above </p>
+
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = ['auth', 'database', 'messaging', 'storage'].filter(feature => typeof app[feature] === 'function');
-          document.getElementById('load').innerHTML = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          document.getElementById('load').innerHTML = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
+  <div id = "inputdiv">
+    <textarea id = "inputKeyField" placeholder = "Enter key ..."></textarea>
+    <textarea id = "inputValField" placeholder = "Enter val ..."></textarea>
+    <button id = "submit">submit!</button>
+  </div>
+  <div id = "firestoreDiv">
+    <h1>Yves' interest:</h1>
+    <h2 id = "testFire"></h2>
+  </div>
   </body>
+
+  <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+  <script>
+    //window.alert("ok");
+  </script>
+  <script>
+      // Initialize Firebase
+      var config = {
+          apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
+          authDomain: "bikeshoptesting-9e034.firebaseapp.com",
+          databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
+          projectId: "bikeshoptesting-9e034",
+          storageBucket: "bikeshoptesting-9e034.appspot.com",
+          messagingSenderId: "50618401035"
+      };
+      firebase.initializeApp(config);
+  </script>
+
+  <script>
+    var testtext = document.getElementById("testtext");
+    var firebaseRef = firebase.database().ref();
+    firebaseRef.child("test1").set("val1");
+    var dbreftest = firebaseRef.child("yee");
+    dbreftest.on('value', (retrieved) => {
+        testtext.innerText = retrieved.val();
+    });
+  </script>
+  <script>
+      document.getElementById("submit").addEventListener("click", () => {
+          var inputKeyField = document.getElementById("inputKeyField");
+          var inputValField = document.getElementById("inputValField");
+          var firebaseRef = firebase.database().ref();
+          firebaseRef.child(inputKeyField.value).set(inputValField.value);
+      });
+  </script>
+
+  <script>
+
+      var db = firebase.firestore();
+      db.collection("People").doc("Yves").set({
+          age: 18,
+          interest: "Computer Science"
+      }, {merge: false}).then(function() {
+          console.log("Sucess");  
+      }).catch(function(error) {
+          console.error(error);
+      });
+
+
+  </script>
+
+  <script>
+
+      var db = firebase.firestore();
+      docRef = db.collection("People").doc("Yves");
+
+      docRef.get().then(function(doc) {
+      if (doc.exists) {
+          console.log("Document data:", doc.data());
+          testFire.innerText = doc.data().major;
+      } else {
+          // doc.data() will be undefined in this case
+          console.log("No such document!");
+      }
+      }).catch(function(error) {
+          console.log("Error getting document:", error);
+      });
+
+
+  </script>
+
 </html>
