@@ -1,3 +1,3 @@
 #UChicago TechTeam bikeshop webapp project 
-Spencer
-Yves 
+Spencer\n
+Yves\n
