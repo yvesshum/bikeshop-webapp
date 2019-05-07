@@ -2,19 +2,21 @@
 <html>
   <head> 
     <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
-        <script>
-            // Initialize Firebase, this is always necessary
-            var config = {
-                apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
-                authDomain: "bikeshoptesting-9e034.firebaseapp.com",
-                databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
-                projectId: "bikeshoptesting-9e034",
-                storageBucket: "bikeshoptesting-9e034.appspot.com",
-                messagingSenderId: "50618401035"
-            };
-            firebase.initializeApp(config);
-        </script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase, this is always necessary
+        var config = {
+            apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
+            authDomain: "bikeshoptesting-9e034.firebaseapp.com",
+            databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
+            projectId: "bikeshoptesting-9e034",
+            storageBucket: "bikeshoptesting-9e034.appspot.com",
+            messagingSenderId: "50618401035"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <!-- development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   </head>
 
   <body>
@@ -39,6 +41,42 @@
 
     console.log("This will be out of order because things are happening asynchronously");
   </script> 
+
+  <!-- component template -->
+  <script type="text/x-template" id="grid-template">
+    <table> 
+      <thead>
+        <tr>
+          <th v-for="key in columns"
+            @click="sortBy(key)"
+            :class="{ active: sortKey == key }">
+            {{ key | capitalize }}
+            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="entry in filteredHeroes">
+          <td v-for="key in columns">
+            {{entry[key]}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </script>
+
+  <!-- demo root element -->
+  <div id="demo">
+    <form id="search">
+      Search <input name="query" v-model="searchQuery">
+    </form>
+    <demo-grid
+      :heroes="gridData"
+      :columns="gridColumns"
+      :filter-key="searchQuery">
+    </demo-grid>
+  </div>
 
   <!-- <script>
     var db = firebase.firestore();
