@@ -25,9 +25,9 @@
       <input type="button" id="submit_button" value="Search">
      </form>
 
-     <p>Name:</p>
-     <p id="Name_field">placeholder</p>
-     <p id="DOB_field">placeholder</p>
+     <p id="Name_field" style="background-color: papayawhip;"></p>
+     <p id="DOB_field" style="background-color: papayawhip;"></p>
+     <div id="variable_fields"></div>
 
      <!-- <form>
 	     Input key mmm<br>
@@ -81,8 +81,17 @@
             .onSnapshot({
             includeMetadataChanges: true
         }, function(doc) {
+            var variable_fields = document.getElementById("variable_fields");
+            variable_fields.innerHTML = "";
             for (var key in doc.data()) {
-              document.getElementById(key + "_field").innerHTML = doc.data()[key];
+              var field_p = document.getElementById(key + "_field");
+              console.log(field_p);
+              if (field_p == null) {
+                field_p = document.createElement("P");
+                field_p.id = key + "_field";
+                variable_fields.appendChild(field_p);
+              }
+              field_p.innerHTML = key + ": " + doc.data()[key];
             };
         });
       }
