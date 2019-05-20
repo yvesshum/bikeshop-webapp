@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head> 
+    <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase, this is always necessary
+        var config = {
+            apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
+            authDomain: "bikeshoptesting-9e034.firebaseapp.com",
+            databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
+            projectId: "bikeshoptesting-9e034",
+            storageBucket: "bikeshoptesting-9e034.appspot.com",
+            messagingSenderId: "50618401035"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    .dropbtn {
+      background-color: #262626;
+      color: white;
+      padding: 16px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .dropbtn:hover, .dropbtn:focus {
+      background-color: #454745;
+    }
+
+    #myInput {
+      border-box: box-sizing;
+      background-image: url('search_icon.png');
+      background-position: 14px 12px;
+      background-repeat: no-repeat;
+      font-size: 16px;
+      padding: 14px 20px 12px 45px;
+      border: none;
+      border-bottom: 1px solid #ddd;
+    }
+
+    #myInput:focus {outline: 3px solid #ddd;}
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f6f6f6;
+      min-width: 230px;
+      overflow: auto;
+      border: 1px solid #ddd;
+      z-index: 1;
+    }
+
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    .dropdown a:hover {background-color: #ddd;}
+
+    .show {display: block;}
+    </style>
+  </head>
+
+  <body>
+    <h1 id = "h1ID">HELLOOOOOOOO people</h1>
+    <div class="dropdown">
+      <button onclick="myFunction()" class="dropbtn">Dropdown</button>
+      <div id="myDropdown" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
+        <a href="#about" onclick="">About</a>
+      </div>
+    </div>
+
+    <script>
+      var db = firebase.firestore(); 
+      collectionRef = db.collection("Spencer");
+      console.log("Hey, got the collection");
+      var recordsThing;
+      
+      async function getDocs() {
+        var snapshot =  await collectionRef.get();
+        recordsThing = snapshot.docs.map(doc => doc.data());
+        console.log(recordsThing);
+        // console.log(recordsThing[0]["Make"]);
+        recordsThing.forEach(function(element) {
+          console.log(element["Make"]);
+          var node = document.createElement('a');
+          var nodeText = document.createTextNode(element["Make"]);
+          node.appendChild(nodeText);
+          node.title = element["Make"];
+          node.href = element["Make"];
+          document.getElementById("myDropdown").appendChild(node);
+        });
+        // console.log('s: ', snapshot.docs.map(doc => doc.data()));
+      }
+
+      async function fillDropdown() {
+
+      }
+      getDocs();
+    </script> 
+
+    <script>
+    /* When the user clicks on the button,
+    toggle between hiding and showing the dropdown content */
+    function myFunction() {
+      document.getElementById("myDropdown").classList.toggle("show");
+    }
+
+    function filterFunction() {
+      var input, filter, ul, li, a, i;
+      input = document.getElementById("myInput");
+      filter = input.value.toUpperCase();
+      div = document.getElementById("myDropdown");
+      a = div.getElementsByTagName("a");
+      for (i = 0; i < a.length; i++) {
+        txtValue = a[i].textContent || a[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          a[i].style.display = "";
+        } else {
+          a[i].style.display = "none";
+        }
+      }
+    }
+    </script>
+</html>
