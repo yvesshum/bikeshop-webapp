@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head> 
+    <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase, this is always necessary
+        var config = {
+            apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
+            authDomain: "bikeshoptesting-9e034.firebaseapp.com",
+            databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
+            projectId: "bikeshoptesting-9e034",
+            storageBucket: "bikeshoptesting-9e034.appspot.com",
+            messagingSenderId: "50618401035"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    #myInput {
+      background-image: url('search_icon.png');
+      background-position: 10px 12px;
+      background-repeat: no-repeat;
+      width: 100%;
+      font-size: 16px;
+      padding: 12px 20px 12px 40px;
+      border: 1px solid #ddd;
+      margin-bottom: 12px;
+    }
+
+    #myUL {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #myUL li a {
+      border: 1px solid #ddd;
+      margin-top: -1px; /* Prevent double borders */
+      background-color: #f6f6f6;
+      padding: 12px;
+      text-decoration: none;
+      font-size: 18px;
+      color: black;
+      display: block
+    }
+
+    #myUL li a:hover:not(.header) {
+      background-color: #eee;
+    }
+    </style>
+  </head>
+
+  <body>
+    <h1 id = "h1ID">HELLOOOOOOOO people</h1>
+    <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+
+    <ul id="myUL">
+    </ul>
+
+    <script>
+      var db = firebase.firestore(); 
+      collectionRef = db.collection("Spencer");
+      console.log("Hey, got the collection");
+      var recordsThing;
+      
+      async function getDocs() {
+        var snapshot =  await collectionRef.get();
+        recordsThing = snapshot.docs.map(doc => doc.data());
+        console.log(recordsThing);
+        // console.log(recordsThing[0]["Make"]);
+        recordsThing.forEach(function(element) {
+          console.log(element["Make"]);
+          var node = document.createElement('li');
+          var a = document.createElement('a');
+          var aText = document.createTextNode(element["Make"]);
+          a.appendChild(aText);
+          a.title = element["Make"];
+          a.href = element["Make"];
+          node.appendChild(a);
+          document.getElementById("myUL").appendChild(node);
+        });
+        // console.log('s: ', snapshot.docs.map(doc => doc.data()));
+      }
+
+      async function fillDropdown() {
+
+      }
+      getDocs();
+    </script> 
+
+    <script>
+    function myFunction() {
+        var input, filter, ul, li, a, i, txtValue;
+        input = document.getElementById("myInput");
+        filter = input.value.toUpperCase();
+        ul = document.getElementById("myUL");
+        li = ul.getElementsByTagName("li");
+        for (i = 0; i < li.length; i++) {
+            a = li[i].getElementsByTagName("a")[0];
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+    }
+    </script>
+</html>
