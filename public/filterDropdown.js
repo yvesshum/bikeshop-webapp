@@ -18,7 +18,7 @@ class filterDropdown {
         // var query = await this.firebaseRef.where("ActivePeriods", "array-contains", "spring19").get();
         var query = await this.firebaseRef.where(this.queryField, this.queryOperator, this.lookupValue).get();
         var records = query.docs.map(doc => {
-            var ret = doc.data()
+            var ret = doc.data();
             ret["ID"] = doc.id;
             return ret;
         });
@@ -27,11 +27,12 @@ class filterDropdown {
     }
 
 
-    filterFunction() {
-        let input, filter, ul, li, a, i;
-        input = document.getElementById(this.targetDiv + " myInput");
+    filterFunction(target) {
+        let input, filter, a, i;
+
+        input = document.getElementById(target + " myInput");
         filter = input.value.toUpperCase();
-        let div = document.getElementById(this.targetDiv + " myDropdown");
+        let div = document.getElementById(target+ " myDropdown");
         a = div.getElementsByTagName("a");
         for (i = 0; i < a.length; i++) {
             let txtValue = a[i].textContent || a[i].innerText;
@@ -71,13 +72,19 @@ class filterDropdown {
 
             formDiv.appendChild(input);
             document.getElementById(this.targetDiv).appendChild(formDiv);
-            document.getElementById(this.targetDiv + " myInput").onkeyup = this.filterFunction;
+            var that = this;
+            document.getElementById(this.targetDiv + " myInput").onkeyup = function () {
+                that.filterFunction(that.targetDiv);
+            };
 
             var button = document.createElement('button');
             button.innerHTML = "Dropdown";
             var that = this;
             button.addEventListener("click", function () {
-                document.getElementById(that.targetDiv + " myDropdown").classList.toggle("show");
+                console.log(that.targetDiv);
+                var div = document.getElementById(that.targetDiv + " myDropdown");
+                div.style.display = div.style.display == "none" ? "none": "block"  ;
+
             });
             button.setAttribute('class', 'dropbtn');
 
