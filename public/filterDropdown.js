@@ -81,15 +81,16 @@ class filterDropdown {
             button.innerHTML = "Dropdown";
             var that = this;
             button.addEventListener("click", function () {
-                console.log(that.targetDiv);
-                var div = document.getElementById(that.targetDiv + " myDropdown");
-                div.style.display = div.style.display == "none" ? "none": "block"  ;
-
+                // console.log(that.targetDiv);
+                // var div = document.getElementById(that.targetDiv + " myDropdown");
+                // div.style.display = div.style.display === "none" ? "none": "block" ;
+                document.getElementById(that.targetDiv + " myDropdown").classList.toggle("show");
             });
             button.setAttribute('class', 'dropbtn');
 
 
-            document.getElementById(this.targetDiv).append(button);
+            $("#"+this.targetDiv).prepend(button);
+            // document.getElementById(this.targetDiv).(button);
 
 
             for (var i = 0; i < this.data.length; i++) {
@@ -98,7 +99,7 @@ class filterDropdown {
                 var nodeText = document.createTextNode(this.buildText(element, this.elementFields));
                 node.appendChild(nodeText);
                 node.title = element.ID;
-                node.href = element.ID;
+                node.setAttribute('onClick', 'console.log("' + element.ID + '");');
                 document.getElementById(this.targetDiv + " myDropdown").appendChild(node);
             }
 
