@@ -1,119 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <title>Home Page</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
-    <!-- head tag always runs first, usually used for initial setups -->
-    <head>
-        <!-- styling usually goes here, or at a separate .css file -->
-        <style>
-            button {
-                background-color: #4CAF50;
-                border: none;
-                color: white;
-                padding: 15px 32px;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 16px;
-                margin: 4px 2px;
-                cursor: pointer;
-            }
-            </style>
-        <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
-        <script>
-            // Initialize Firebase, this is always necessary
-            var config = {
-                apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
-                authDomain: "bikeshoptesting-9e034.firebaseapp.com",
-                databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
-                projectId: "bikeshoptesting-9e034",
-                storageBucket: "bikeshoptesting-9e034.appspot.com",
-                messagingSenderId: "50618401035"
-            };
-            firebase.initializeApp(config);
-        </script>
-    </head>
-    
-    <!-- body contains the body of the page --> 
-    <body>
-        <h1>Hello!</h1>
+</head>
+<body>
+    <div class = center>
 
-        <!-- div tags separate/identifies a block of code -->
-        <div id="message">
-            <!-- these h1 h2 tags are in built text components -->
-            <h2>Welcome</h2>
-            <!-- notice how we give this tag an id -->
-            <h1 id = "textID1"></h1>
-            <p> there should be something above </p>
+        <nav class="navbar navbar-expand-sm bg-light">
+            <!-- Links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="homepage.html">Youth Dashboard</a>
+                </li>
+
+            </ul>
+
+        </nav>
+        <div class="card-columns">
+
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <!--<p class="card-text">Some text inside the first card</p>-->
+                    <a href="#" class="btn btn-primary stretched-link">Check In</a>
+                </div>
+            </div>
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <!--<p class="card-text">Some text inside the second card</p>-->
+                    <a href="#" class="btn btn-primary stretched-link">Check Out</a>
+                </div>
+            </div>
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <!--<p class="card-text">Some text inside the third card</p>-->
+                    <a href="#" class="btn btn-primary stretched-link">Profile Lookup</a>
+                </div>
+            </div>
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <!--<p class="card-text">Some text inside the fourth card</p>-->
+                    <a href="#" class="btn btn-primary stretched-link">Place an Order</a>
+                </div>
+            </div>
+            <!--<div class="card bg-light">-->
+                <!--<div class="card-body text-center">-->
+                    <!--<p class="card-text">Some text inside the fifth card</p>-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="card bg-info">-->
+                <!--<div class="card-body text-center">-->
+                    <!--<p class="card-text">Some text inside the sixth card</p>-->
+                <!--</div>-->
+            <!--</div>-->
         </div>
 
-        <!-- example on how to submit data to firebase database, check the javascript below-->
-        <div id = "inputdiv">
-            <textarea id = "inputKeyField" placeholder = "Enter key ..."></textarea>
-            <textarea id = "inputValField" placeholder = "Enter val ..."></textarea>
-            <button id = "submit">submit!</button>
-        </div>
+    </div>
 
-        <!-- example on how to submit data to firebase firestore, check the javascript below-->
-        <div id = "firestoreDiv">
-            <h1>Yves' interest:</h1>
-            <h2 id = "testFire"></h2>
-        </div>
-    </body>
-
-
-    <!-- example on how to get data from database -->
-    <script>
-        var textID1 = document.getElementById("textID1");
-        var firebaseRef = firebase.database().ref();
-        var dbreftest = firebaseRef.child("yee");
-        dbreftest.on('value', (retrieved) => {
-                textID1.innerText = retrieved.val();
-        });
-    </script>
-
-    <!-- example on how to set data to database -->
-    <script>
-            document.getElementById("submit").addEventListener("click", () => {
-                    var inputKeyField = document.getElementById("inputKeyField");
-                    var inputValField = document.getElementById("inputValField");
-                    var firebaseRef = firebase.database().ref();
-                    firebaseRef.child(inputKeyField.value).set(inputValField.value);
-            });
-    </script>
-
-    <!-- example on how to add data from firestore -->
-    <script>
-            var db = firebase.firestore();
-            db.collection("People").doc("Yves").set({
-                    age: 18,
-                    interest: "Computer Science"
-            }, {merge: false}).then(function() {
-                    console.log("Sucess");
-            }).catch(function(error) {
-                    console.error(error);
-            });
-    </script>
-
-    <!-- example on how to get data from firestore -->
-    <script>
-
-            var db = firebase.firestore();
-            docRef = db.collection("People").doc("Yves");
-
-            docRef.get().then(function(doc) {
-            if (doc.exists) {
-                    console.log("Document data:", doc.data());
-                    testFire.innerText = doc.data().interest;
-            } else {
-                    // doc.data() will be undefined in this case
-                    console.log("No such document!");
-            }
-            }).catch(function(error) {
-                    console.log("Error getting document:", error);
-            });
-
-
-    </script>
-
+</body>
 </html>
