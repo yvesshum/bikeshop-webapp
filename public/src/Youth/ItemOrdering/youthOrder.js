@@ -33,6 +33,8 @@ async function createForm() {
     var optionalFields = fields["optional"];
 
     //creating text boxes for these fields w/ placeholder text
+
+
     targetID.append("<h3><b>Required:</b></h3>");
     for (var i = 0; i < requiredFields.length; i++) {
         targetID.append("<textarea id = \'" + requiredFields[i] +
@@ -49,7 +51,6 @@ async function createForm() {
     //adding a button that submits the data
     targetID.append('<button id = "addOrderButton">submit!</button>');
     targetID.append('<p id = "submitStatus"></p>');
-
 
 
     $('#addOrderButton')[0].addEventListener("click", () => {
@@ -109,5 +110,6 @@ async function createForm() {
     });
 
 }
+
 
 createForm();
