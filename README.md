@@ -1,4 +1,4 @@
-#Info on new summer reorganised branch
+# Info on new summer reorganised branch
 
 * This is simply a GitHub branch for sharing code.
 * It is structured as a firebase hosting filesystem so that we are able to test our code locally by using `firebase serve`
