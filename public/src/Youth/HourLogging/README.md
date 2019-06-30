@@ -17,5 +17,5 @@
           * These categories are retrieved from the `Global Fields Collection`
       * There should be an optional field of `notes`
       * Once everything has been filled and checked for validity, it is sent to Firestore to `Global Youth Profile` -> `Global Pending Hours`
-          * The key of the data field should be an ISO date range. See `Global Pending Hours` for an example
+          * The key of the data field should be an ISO date of when they submitted the form. See `Global Pending Hours` for an example
       
