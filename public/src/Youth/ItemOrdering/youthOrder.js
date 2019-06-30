@@ -3,7 +3,6 @@ Objective:
 Create an order form that is accessible by youth to place orders.
 This form should have field checking, and returns an error if a required field is not entered
 The form will then send the data to firestore
-
 Steps:
 1. Grab a list of fields (both required and optional ones)
 2. Create input form based on these fields
@@ -33,8 +32,6 @@ async function createForm() {
     var optionalFields = fields["optional"];
 
     //creating text boxes for these fields w/ placeholder text
-
-
     targetID.append("<h3><b>Required:</b></h3>");
     for (var i = 0; i < requiredFields.length; i++) {
         targetID.append("<textarea id = \'" + requiredFields[i] +
@@ -53,6 +50,7 @@ async function createForm() {
     targetID.append('<p id = "submitStatus"></p>');
 
 
+
     $('#addOrderButton')[0].addEventListener("click", () => {
         var elements = $(targetID)[0].getElementsByTagName('textarea'); //gets all the text boxes
         var submitRef = (dataRef).doc(new Date().toISOString());
@@ -63,7 +61,7 @@ async function createForm() {
         }
         input["Status"] = "Pending";
         //check if required fields have been entered
-        //console.log(input["Item Cost"] === "");
+        //console.log(input["Item Total Cost"] === "");
         var isValidData = true;
         for (var fieldIndex = 0; fieldIndex < requiredFields.length; fieldIndex++) {
             if (input[requiredFields[fieldIndex]] === "") {
@@ -81,19 +79,19 @@ async function createForm() {
             youthDocRef.get().then(function (doc) {
                 if (doc.exists) {
                     console.log(doc.data());
-                    if (parseFloat(input["Item Cost"]) > parseFloat(doc.data()["Current Hours"])) {
+                    if (parseFloat(input["Item Total Cost"]) > parseFloat(doc.data()["Current Hours"])) {
                         window.alert("You don't have enough funds for this item! Your current hours is: " +
-                            doc.data()["Current Hours"] + " but the item costs: " + input["Item Cost"] + ". Also, FYI your pending hours are: " + doc.data()["Pending Hours"]);
+                            doc.data()["Current Hours"] + " but the item costs: " + input["Item Total Cost"] + ". Also, FYI your pending hours are: " + doc.data()["Pending Hours"]);
                     }
                     else {
                         submitRef.set(input);
                         //update youthDocRef with new funds
                         var newInput = doc.data();
                         // console.log(parseFloat(newInput["Current Hours"]));
-                        newInput["Current Hours"] = (parseFloat(newInput["Current Hours"]) - parseFloat(input["Item Cost"])).toString(10);
-                        newInput["Pending Hours"] = (parseFloat(newInput["Pending Hours"]) - parseFloat(input["Item Cost"])).toString(10);
+                        newInput["Current Hours"] = (parseFloat(newInput["Current Hours"]) - parseFloat(input["Item Total Cost"])).toString(10);
+                        newInput["Pending Hours"] = (parseFloat(newInput["Pending Hours"]) - parseFloat(input["Item Total Cost"])).toString(10);
                         // console.log((parseFloat(newInput["Current Hours"])));
-                        // console.log(parseFloat(input["Item Cost"]));
+                        // console.log(parseFloat(input["Item Total Cost"]));
                         youthDocRef.update(newInput);
                         $('#submitStatus').text('submitted!');
                         setTimeout(function () {
@@ -110,6 +108,5 @@ async function createForm() {
     });
 
 }
-
 
 createForm();
