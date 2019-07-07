@@ -1,5 +1,7 @@
 # blackstone-webapp
-To run the project, make sure to do `npm install` and then `npm run serve`
+To test-run the project, make sure to do `npm install` and then `npm run serve`
+To try hosting it through firebase, do `npm run build` then `firebase serve`
+The `dist` folder is set up as the public directory for firebase to serve 
 
 ## Project setup
 ```
