@@ -1,6 +1,6 @@
 <template>
     <div class = "login">
-        <h3>Sign In to your youth/staff account</h3>
+        <h3>Sign in to your youth/staff account</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
         <input type = "password" v-model = "password" placeholder = "Password"><br>
         <button @click="login">Login!</button>
