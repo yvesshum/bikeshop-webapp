@@ -1,4 +1,8 @@
 # blackstone-webapp
+
+## important: 
+Don't upload node_modules 
+
 To test-run the project, make sure to do `npm install` during the first time to install the necessary `node_modules` and then `npm run serve`to localhost
 
 To try hosting it through firebase, do `npm run build` then `firebase serve`
