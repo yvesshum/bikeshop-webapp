@@ -10,12 +10,10 @@
 <script>
     import firebase_app from 'firebase/app';
     import Example from './youth/Example.vue';
-
     export default {
         name: 'home',
         components: {
             Example
-
         },
         methods: {
             logout: function() {
