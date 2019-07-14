@@ -3,7 +3,21 @@
 
 <template>
     <div class = "YouthIDSelector">
-        <multiselect id = "multiselect" :options="options" placeholder="Select your ID" @select="selected" open-direction="bottom"></multiselect>
+        <multiselect id = "multiselect" :options="options" placeholder="Select your ID" @select="selected" open-direction="bottom" label="name" :custom-label="nameWithID">
+            <template slot="singleLabel" slot-scope="props">
+                <span class="option__desc">
+                    <span class="option__name">{{ props.option.name }}</span>
+                    <small class="option__id">\;({{ props.option.id}})</small>
+                </span>
+            </template>
+            <template slot="option" slot-scope="props">
+                <div class="option__desc">
+                    <span class="option__name">{{ props.option.name }}</span>
+                    <br>
+                    <small class="option__id">ID: {{ props.option.id }}</small>
+                </div>
+            </template>
+        </multiselect>
     </div>
 </template>
 
@@ -22,18 +36,26 @@
         },
         methods: {
             selected(value) {
-                this.$emit('selected', value);
-
+                this.$emit('selected', value.name + " " + value.id);
             },
            async getData() {
                 let data = await db.collection("GlobalVariables").doc('CurrentActiveYouths').get();
                 return data.data();
+            },
+            nameWithID ({ name, id }) {
+                return `${name} ${id}`;
             }
 
         },
         async mounted() {
             let data = await this.getData();
-            this.options = data["IDs"];
+            var id_list = [];
+            data["IDs"].forEach(function(item, index) {
+                let name = item.slice(0, item.lastIndexOf(' ')  );
+                let id   = item.slice(   item.lastIndexOf(' ')+1);
+                id_list.push({name, id});
+            })
+            this.options = id_list;
         }
     }
 </script>
@@ -42,10 +64,10 @@
 
 <style scoped>
     .YouthIDSelector {
-        width: 30%;
+        width: 70%;
         position: relative;
-        left: 35%;
-        right: 35%;
+        left: 15%;
+        right: 15%;
     }
 
 
