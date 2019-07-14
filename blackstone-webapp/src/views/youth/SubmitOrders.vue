@@ -3,6 +3,8 @@
         <h3 style="margin: 20px">Submit an order here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>
+        <YouthIDSelector @selected="selectedID"/>
+
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <textarea v-model="field.value":placeholder="field.name + '*'"></textarea>
@@ -28,7 +30,7 @@
             <div class="d-block text-center">
                 <h3>Your order has been received!</h3>
             </div>
-            <b-button class="mt-3" block @click="closeModal">Thanks!</b-button>
+            <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
         <b-modal v-model = "errorModalVisible" hide-footer lazy>
@@ -39,7 +41,7 @@
                 <h3>The following fields have errors!</h3>
                 <h4 v-for="errors in errorFields">{{errors}}</h4>
             </div>
-            <b-button class="mt-3" block @click="closeErrorModal">Thanks!</b-button>
+            <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
     </div>
@@ -48,12 +50,16 @@
 
 <script>
     import {db} from '../../firebase';
+    import {firebase} from '../../firebase';
+    import YouthIDSelector from "../../components/YouthIDSelector";
+
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
     export default {
         name: 'YouthSubmitOrders',
         components: {
+            YouthIDSelector
         },
         data() {
             return {
@@ -62,7 +68,8 @@
                 hiddenFields: [],
                 modalVisible: false,
                 errorModalVisible: false,
-                errorFields: [] //list of messages to be shown as errors
+                errorFields: [], //list of messages to be shown as errors
+                YouthProfile: {}
             };
 
         },
@@ -71,41 +78,82 @@
                 let f = await YouthFieldsRef.get();
                 return f.data();
             },
+            selectedID(value) {
+                for (let i = 0; i < this.requiredFields.length; i ++) {
+                    let curName = this.requiredFields[i]["name"];
+                    if (curName === "First Name") this.requiredFields[i]["value"] = value.split(" ")[0];
+                    else if (curName === "Last Name") this.requiredFields[i]["value"] = value.split(" ")[1];
+                    else if (curName === "Youth ID") this.requiredFields[i]["value"] = value.split(" ")[2];
+                }
+            },
 
-            submit() {
+            async submit() {
                 //if an error field has been returned
-                let badFields = this.checkValid();
+                let badFields = await this.checkValid();
                 if (badFields.length) {
                     this.errorFields = badFields;
                     this.showErrorModal();
                 }
                 else {
-                    //TODO: if user does have sufficient hours, then post it
-                    console.log('showing modal..');
+                    let input = {};
+                    input["Status"] = "Pending";
+                    let data = this.parse(this.requiredFields);
+                    for (let i = 0; i < data.length; i ++) {
+                        input[data[i]["name"]] = data[i]["value"];
+                    }
+
+                    data = this.parse(this.optionalFields);
+                    for (let i = 0; i < data.length; i ++) {
+                        input[data[i]["name"]] = data[i]["value"];
+                    }
+
+                    let submitRef = db.collection("GlobalPendingOrders").doc(new Date().toISOString());
+                    submitRef.set(input);
+
+                    //update youth's balance
+                    //take away from current hours
+                    console.log('a', this.YouthProfile);
+                    //Subtract that value from pending hours
+
+
+
                     this.showModal();
                 }
             },
 
             //returns an array of fields that are not valid
-            checkValid() {
+            async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
                 for (let i = 0; i < this.requiredFields.length; i++) {
                     let currentField = this.requiredFields[i];
                     //if it is of length 0
-                    if (!currentField["value"].length) {
-                        ret.push(currentField["name"]);
-                    }
-
-                    //any other checks
-                    if (currentField["name"] === "Item Total Cost" && isNaN(currentField["name"]["value"])) {
-                        ret.push(currentField["name"] + " has to be a number!");
-                    }
-
-                    //TODO: check if the user has sufficient current hours to be deducted
-                    //TODO: check if user exists first
+                    if (!currentField["value"].length) ret.push(currentField["name"]);
                 }
+
+                let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
+                if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
+
+                let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
+                if (!(YouthID["value"] == null || YouthID["value"] === "")) {
+                    let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
+                    YouthProfile = YouthProfile.data();
+                    if (YouthProfile == null) ret.push("YouthID not found");
+                    if (parseFloat(YouthProfile["Current Hours"]) < parseFloat(ITC["value"])) ret.push("Not enough current hours, you have " + YouthProfile["Current Hours"]);
+                }
+
                 return ret;
+            },
+
+            find(key, arr) {
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i]["name"] === key) return arr[i];
+                }
+                return false;
+            },
+
+            parse(item) {
+                return JSON.parse(JSON.stringify(item));
             },
 
             showModal() {
@@ -125,7 +173,6 @@
         },
         async mounted() {
             let fields = await this.getFields();
-            console.log(fields);
             for (let i = 0; i < fields["required"].length; i ++) {
                 this.requiredFields.push({
                     name: fields["required"][i],
@@ -159,7 +206,7 @@
         text-align: center;
         border: 1px solid;
         border-radius: 4px;
-        width: 20%;
+        width: 30%;
         margin-top: 5px;
     }
     ::placeholder span{
@@ -169,4 +216,5 @@
     .field_msg{
         text-decoration: underline;
     }
+
 </style>

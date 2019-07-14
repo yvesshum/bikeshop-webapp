@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <img alt="experimental_station_logo" src = "./assets/experimental_station_logo.png" width = "30%" style="margin: 10px">
     <router-view/>
   </div>
 </template>
