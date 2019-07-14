@@ -18,6 +18,8 @@
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
+
+
         <!--//copied from https://bootstrap-vue.js.org/docs/components/modal/-->
         <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">

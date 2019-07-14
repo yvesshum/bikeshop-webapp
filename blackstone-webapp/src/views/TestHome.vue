@@ -1,19 +1,19 @@
 <template>
     <div class="home">
         <p>This is the test home page, put things in here for testing specific pages</p>
-        <Example />
-        <button @click="logout">Logout</button>
+        <YouthSubmitOrders />
+        <button @click="logout" style="margin: 30px">Logout</button>
     </div>
 
 </template>
 
 <script>
     import firebase_app from 'firebase/app';
-    import Example from './youth/Example.vue';
+    import YouthSubmitOrders from "./youth/SubmitOrders";
     export default {
         name: 'home',
         components: {
-            Example
+            YouthSubmitOrders,
         },
         methods: {
             logout: function() {

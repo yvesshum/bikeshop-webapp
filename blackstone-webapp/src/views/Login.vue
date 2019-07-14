@@ -23,6 +23,7 @@
             login: function() {
                 firebase_app.auth().signInWithEmailAndPassword(this.email, this.password).then(
                     user => {
+                        console.log(user);
                         this.$router.replace('TestHome');
                     },
                     err => {
