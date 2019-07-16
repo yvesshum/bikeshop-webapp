@@ -3,7 +3,7 @@
     <TopBar/>
     <p>This is the staff view of the youth profile lookup page</p>
     <YouthIDSelector @selected="selectedID"/>
-    <ProfileFields />
+    <ProfileFields :current-profile="currentProfile" />
     <!-- <ApronBar /> -->
     <ProfileItemLogs />
     <button @click="logout">Logout</button>
@@ -12,6 +12,8 @@
 
 <script>
 // @ is an alias to /src
+import {db} from '../../firebase';
+import {firebase} from '../../firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
@@ -29,11 +31,18 @@ export default {
     ApronBar,
     ProfileItemLogs
   },
+
+  data: function() {
+    return {
+      currentProfile: null
+    };
+  },
+
     methods: {
 
-      selectedID: function(id) {
-        // Pass the id down to the children
-        console.log("Profile selected: \"" + id + "\"");
+      selectedID: async function(id) {
+        id = id.slice(id.lastIndexOf(' ')+1);
+        this.currentProfile = await db.collection("GlobalYouthProfile").doc(id).get();
       },
 
       logout: function() {
