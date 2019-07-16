@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import firebase_app from 'firebase/app';
+    import {firebase} from '../firebase.js';
 
     export default {
         name: 'login',
@@ -21,7 +21,7 @@
         },
         methods: {
             login: function() {
-                firebase_app.auth().signInWithEmailAndPassword(this.email, this.password).then(
+                firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(
                     user => {
                         console.log(user);
                         this.$router.replace('TestHome');
