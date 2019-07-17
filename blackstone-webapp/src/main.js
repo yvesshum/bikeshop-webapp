@@ -5,6 +5,7 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import {firebase} from './firebase.js'
+import 'tabulator-tables/dist/css/tabulator_site.min.css'
 
 Vue.use(BootstrapVue);
 

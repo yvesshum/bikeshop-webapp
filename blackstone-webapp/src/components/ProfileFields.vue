@@ -31,11 +31,11 @@ export default {
       clear_data();
 
       // If a profile was passed, display it to the screen
-      if (data != null) {
+      if (doc != null) {
 
         // Init vars
         var variable_fields = document.getElementById("variable_fields");
-        var data = doc.data();
+        var data = doc.loaded.data();
       
         // Loop through each field in the data
         for (var key in data) {

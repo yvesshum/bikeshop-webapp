@@ -5,7 +5,7 @@
     <YouthIDSelector @selected="selectedID"/>
     <ProfileFields :current-profile="currentProfile" />
     <!-- <ApronBar /> -->
-    <ProfileItemLogs />
+    <ProfileItemLogs :current-profile="currentProfile" />
     <button @click="logout">Logout</button>
   </div>
 </template>
@@ -42,7 +42,10 @@ export default {
 
       selectedID: async function(id) {
         id = id.slice(id.lastIndexOf(' ')+1);
-        this.currentProfile = await db.collection("GlobalYouthProfile").doc(id).get();
+        this.currentProfile = {
+          loaded: await db.collection("GlobalYouthProfile").doc(id).get(),
+          unloaded: db.collection("GlobalYouthProfile").doc(id)
+        }
       },
 
       logout: function() {
