@@ -5,9 +5,12 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import {firebase} from './firebase.js'
-import 'tabulator-tables/dist/css/tabulator_site.min.css'
+import VueTabulator from 'vue-tabulator';
+
 
 Vue.use(BootstrapVue);
+Vue.use(VueTabulator);
+
 
 let app = '';
 firebase.auth().onAuthStateChanged(() => {

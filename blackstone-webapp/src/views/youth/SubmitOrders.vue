@@ -28,7 +28,7 @@
                 Order Submitted!
             </template>
             <div class="d-block text-center">
-                <h3>Your order has been received!</h3>
+                <h3>Your order has been received and will be reviewed by staff!</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -106,6 +106,7 @@
                 else {
                     let input = {};
                     input["Status"] = "Pending";
+                    input["Order Date"] = new Date().toLocaleDateString();
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -117,7 +118,9 @@
                     }
 
 
-                    let submitRef = db.collection("GlobalPendingOrders").doc(new Date().toISOString());
+
+
+                    let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
                     if (submitResponse) {
                         window.alert("Submit wasn't successful, please check your connection and try again");
@@ -163,6 +166,7 @@
 
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
+                if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
 
                 let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
                 if (currentHours < parseFloat(ITC["value"])) {
