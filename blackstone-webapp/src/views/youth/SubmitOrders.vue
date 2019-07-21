@@ -69,7 +69,7 @@
                 modalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
-                YouthProfile: {}
+                YouthProfile: {} //The current Youth profile trying to submit
             };
 
         },
@@ -78,6 +78,7 @@
                 let f = await YouthFieldsRef.get();
                 return f.data();
             },
+
             selectedID(value) {
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
@@ -88,8 +89,16 @@
             },
 
             async submit() {
-                //if an error field has been returned
+                //Populate this.YouthProfile with the current youth trying to submit
+                let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
+                if (!(YouthID["value"] == null || YouthID["value"] === "")) {
+                    let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
+                    this.YouthProfile = YouthProfile.data();
+                    if (YouthProfile == null) this.errorFields.push("YouthID not found");
+                }
+
                 let badFields = await this.checkValid();
+                //if an error field has been returned
                 if (badFields.length) {
                     this.errorFields = badFields;
                     this.showErrorModal();
@@ -107,17 +116,38 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
-                    let submitRef = db.collection("GlobalPendingOrders").doc(new Date().toISOString());
-                    submitRef.set(input);
 
+                    let submitRef = db.collection("GlobalPendingOrders").doc(new Date().toISOString());
+                    let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
+                    if (submitResponse) {
+                        window.alert("Submit wasn't successful, please check your connection and try again");
+                        return null;
+                    }
+
+                    //update youth hours with the appropriate value
+                    let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
+                    let newHoursSpent =  parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC["value"]);
+                    let newPendingHours = parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]);
+                    let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
+                    youthRef.update({
+                        "Hours Spent": newHoursSpent,
+                        "Pending Hours": newPendingHours.toString()
+                    }).then(() => {
+                        //reset youth profile
+                        this.YouthProfile = {};
+
+                        this.showModal();
+                    }).catch(error => {
+                        window.alert(error);
+                    });
+
+                    console.log(this.YouthProfile["Hours Earned"]);
                     //update youth's balance
                     //take away from current hours
-                    console.log('a', this.YouthProfile);
                     //Subtract that value from pending hours
 
 
 
-                    this.showModal();
                 }
             },
 
@@ -128,20 +158,16 @@
                 for (let i = 0; i < this.requiredFields.length; i++) {
                     let currentField = this.requiredFields[i];
                     //if it is of length 0
-                    if (!currentField["value"].length) ret.push(currentField["name"]);
+                    if (!currentField["value"].length || currentField["value"] == null) ret.push(currentField["name"]);
                 }
 
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
 
-                let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
-                if (!(YouthID["value"] == null || YouthID["value"] === "")) {
-                    let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
-                    YouthProfile = YouthProfile.data();
-                    if (YouthProfile == null) ret.push("YouthID not found");
-                    if (parseFloat(YouthProfile["Current Hours"]) < parseFloat(ITC["value"])) ret.push("Not enough current hours, you have " + YouthProfile["Current Hours"]);
+                let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
+                if (currentHours < parseFloat(ITC["value"])) {
+                    ret.push("Not enough hours, you have " + currentHours);
                 }
-
                 return ret;
             },
 

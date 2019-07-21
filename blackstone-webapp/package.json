@@ -16,7 +16,8 @@
     "vue": "^2.6.10",
     "vue-multiselect": "^2.1.6",
     "vue-router": "^3.0.3",
-    "vue-simple-search-dropdown": "^1.0.1"
+    "vue-simple-search-dropdown": "^1.0.1",
+    "vue-tabulator": "^1.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.9.0",
