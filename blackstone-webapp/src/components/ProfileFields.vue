@@ -148,6 +148,9 @@ export default {
           temp_containers[0].parentNode.removeChild(temp_containers[0]);
         }
 
+        document.getElementById("name_div").style.display = "none";
+        document.getElementById("fields_table").style.display = "none";
+
         document.getElementById("edit_form").innerHTML = "";
       }
     }

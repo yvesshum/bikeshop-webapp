@@ -27,8 +27,13 @@
 
         watch: {
             current_profile: async function(coll) {
-                var temp = await coll.unloaded.collection(this.collection_name).get();
-                this.tableData = this.formatCollection(temp);
+                if (coll != null) {
+                    var temp = await coll.unloaded.collection(this.collection_name).get();
+                    this.tableData = this.formatCollection(temp);
+                }
+                else {
+                    this.tableData = [];
+                }
             }
         },
 

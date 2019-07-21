@@ -7,6 +7,7 @@
     <!-- <YouthIDSelector @selected="selectedID"/> -->
     <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
     <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button>
+    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button>
 
     <ProfileFields :current-profile="currentProfile" />
     <!-- <ApronBar /> -->
@@ -56,7 +57,7 @@ export default {
         this.currentProfile = {
           loaded: await db.collection("GlobalYouthProfile").doc(id).get(),
           unloaded: db.collection("GlobalYouthProfile").doc(id)
-        }
+        };
       },
 
       logout: function() {
@@ -77,6 +78,10 @@ export default {
           loaded: await db.collection("GlobalYouthProfile").doc("10001").get(),
           unloaded: db.collection("GlobalYouthProfile").doc("10001")
         };
+      },
+
+      load_none: function() {
+        this.currentProfile = null;
       }
     }
 }
