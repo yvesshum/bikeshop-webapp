@@ -1,13 +1,39 @@
 <template>
   <div class="profile_fields" style="border-style: solid; border-width: 5px;">
-    <p>This is where the basic fields go!</p>
-    
-    <p id="Name_field"       class="data_field"></p>
-    <p id="DOB_field"        class="data_field"></p>
-    <p id="Hair_Color_field" class="data_field"></p>
-    <div id="variable_fields"></div>
 
-    <form id="edit_form" onsubmit="submit_edit_form" style="display: none;"></form>
+    <div id="name_div" style="display: none;">
+      <div class="full_name"><span id="First Name_field">Yves</span>&nbsp;<span id="Last Name_field">Shum</span></div>
+      <span class="id_parens">(ID:&nbsp;<span id="ID_field">10001</span>)</span>
+    </div>
+
+    <table id="fields_table" style="display: none;">
+      <tr id="DOB_container" class="field_container">
+        <td>Date of Birth:</td>
+        <td id="DOB_field"></td>
+      </tr>
+      <tr id="ActivePeriods_container" class="field_container">
+        <td>Periods Active:</td>
+        <td id="ActivePeriods_field"></td>
+      </tr>
+      <tr id="Last Sign In_container" class="field_container">
+        <td>Last Sign In:</td>
+        <td id="Last Sign In_field"></td>
+      </tr>
+      <tr id="Hours Earned_container" class="field_container">
+        <td>Hours Earned:</td>
+        <td id="Hours Earned_field"></td>
+      </tr>
+      <tr id="Hours Spent_container" class="field_container">
+        <td>Hours Spent:</td>
+        <td id="Hours Spent_field"></td>
+      </tr>
+      <tr id="Pending Hours_container" class="field_container">
+        <td>Pending Hours:</td>
+        <td id="Pending Hours_field"></td>
+      </tr>
+    </table>
+
+    <form id="edit_form" style="display: none;" onsubmit="submit_edit_form"></form>
 
   </div>
 </template>
@@ -33,9 +59,15 @@ export default {
       // If a profile was passed, display it to the screen
       if (doc != null) {
 
+        // Show the name and table of fields
+        document.getElementById("name_div").style.display = "";
+        document.getElementById("fields_table").style.display = "";
+
         // Init vars
-        var variable_fields = document.getElementById("variable_fields");
         var data = doc.loaded.data();
+
+        // Load the youth's ID to the page
+        document.getElementById("ID_field").innerHTML = doc.loaded.id;
       
         // Loop through each field in the data
         for (var key in data) {
@@ -43,11 +75,49 @@ export default {
           if (key == "Apron Level") continue;
 
           // Find appropriate p for field, or create it if it does not exist
-          var field_p = get_or_make_field(key);
+          var field_p = document.getElementById(key + "_field");
+
+          if (field_p == null) {
+            let new_row = document.getElementById("fields_table").insertRow(-1);
+            new_row.id = key + "_container";
+            new_row.classList.add("field_container_temp");
+
+            let title_cell = new_row.insertCell(0);
+            title_cell.innerHTML = key + ":";
+            field_p = new_row.insertCell(-1);
+
+            field_p.id = key + "_field";
+          }
+
+          // If it already exists, display its container element
+          else {
+            let field_c = document.getElementById(key + "_container");
+            if (field_c != null) {
+              field_c.style.display = "";
+            }
+          };
           
-          // Set the data
-          field_p.innerHTML = key + ": " + data[key];
-          field_p.style.display = "block";
+          // Set the data, with special formatting for the dates
+          if (key == "Last Sign In") {
+            let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
+              weekday: 'long',
+              day:     'numeric',
+              month:   'long',
+              year:    'numeric'
+            });
+            field_p.innerHTML = temp_date;
+          }
+          else if (key == "DOB") {
+            let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
+              day:     'numeric',
+              month:   'long',
+              year:    'numeric'
+            });
+            field_p.innerHTML = temp_date;
+          }
+          else {
+            field_p.innerHTML = data[key];
+          }
 
           // Create edit field
           var x = document.createElement("input");
@@ -55,6 +125,7 @@ export default {
           x.id = key + "_edit";
           x.name = key;
           x.placeholder = data[key];
+          x.value = data[key];
           document.getElementById("edit_form").appendChild(x);
         };
       }
@@ -67,19 +138,17 @@ export default {
           fields[i].style.display = "none";
         }
 
-        document.getElementById("variable_fields").innerHTML = "";
-        document.getElementById("edit_form").innerHTML = "";
-      }
-
-      // Helper function - get proper div for the field
-      function get_or_make_field(key) {
-        var field_p = document.getElementById(key + "_field");
-        if (field_p == null) {
-          field_p = document.createElement("P");
-          field_p.id = key + "_field";
-          variable_fields.appendChild(field_p);
+        let containers = document.getElementsByClassName("field_container");
+        for (var i = 0; i < containers.length; i++) {
+          containers[i].style.display = "none";
         }
-        return field_p;
+
+        let temp_containers = document.getElementsByClassName("field_container_temp");
+        while (temp_containers[0]) {
+          temp_containers[0].parentNode.removeChild(temp_containers[0]);
+        }
+
+        document.getElementById("edit_form").innerHTML = "";
       }
     }
   },
@@ -92,3 +161,21 @@ export default {
   }
 }
 </script>
+
+<style>
+  .full_name {
+    font-size: 2em;
+    margin-bottom: 0;
+  }
+
+  .id_parens {
+    color: gray;
+    font-size: 0.75em;
+  }
+
+  #fields_table {
+    /*display: none;*/
+    margin: auto;
+    text-align: left;
+  }
+</style>
