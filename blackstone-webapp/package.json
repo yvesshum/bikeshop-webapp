@@ -14,6 +14,7 @@
     "lodash": "^4.17.14",
     "tabulator-tables": "^4.2.7",
     "vue": "^2.6.10",
+    "vue-data-tabulator": "^0.2.4",
     "vue-multiselect": "^2.1.6",
     "vue-router": "^3.0.3",
     "vue-simple-search-dropdown": "^1.0.1",
