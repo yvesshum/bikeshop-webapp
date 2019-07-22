@@ -2,36 +2,39 @@
   <div class="profile_fields" style="border-style: solid; border-width: 5px;">
 
     <div id="name_div" style="display: none;">
-      <div class="full_name"><span id="First Name_field">Yves</span>&nbsp;<span id="Last Name_field">Shum</span></div>
-      <span class="id_parens">(ID:&nbsp;<span id="ID_field">10001</span>)</span>
+      <div class="full_name"><span id="First Name_field"></span>&nbsp;<span id="Last Name_field"></span></div>
+      <span class="id_parens">(ID:&nbsp;<span id="ID_field"></span>)</span>
     </div>
 
     <table id="fields_table" style="display: none;">
       <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
         <td id="DOB_field"></td>
+        <td id="DOB_edit_container"></td>
       </tr>
       <tr id="ActivePeriods_container" class="field_container">
         <td>Periods Active:</td>
         <td id="ActivePeriods_field"></td>
-      </tr>
-      <tr id="Last Sign In_container" class="field_container">
-        <td>Last Sign In:</td>
-        <td id="Last Sign In_field"></td>
+        <td id="ActivePeriods_edit_container"></td>
       </tr>
       <tr id="Hours Earned_container" class="field_container">
         <td>Hours Earned:</td>
         <td id="Hours Earned_field"></td>
+        <td id="Hours Earned_edit_container"></td>
       </tr>
       <tr id="Hours Spent_container" class="field_container">
         <td>Hours Spent:</td>
         <td id="Hours Spent_field"></td>
+        <td id="Hours Spent_edit_container"></td>
       </tr>
       <tr id="Pending Hours_container" class="field_container">
         <td>Pending Hours:</td>
         <td id="Pending Hours_field"></td>
+        <td id="Pending Hours_edit_container"></td>
       </tr>
     </table>
+
+    <button ref="edit_profile">Edit!</button>
 
     <form id="edit_form" style="display: none;" onsubmit="submit_edit_form"></form>
 
@@ -64,10 +67,10 @@ export default {
         document.getElementById("fields_table").style.display = "";
 
         // Init vars
-        var data = doc.loaded.data();
+        var data = doc.data();
 
         // Load the youth's ID to the page
-        document.getElementById("ID_field").innerHTML = doc.loaded.id;
+        document.getElementById("ID_field").innerHTML = doc.id;
       
         // Loop through each field in the data
         for (var key in data) {
@@ -126,7 +129,11 @@ export default {
           x.name = key;
           x.placeholder = data[key];
           x.value = data[key];
-          document.getElementById("edit_form").appendChild(x);
+          if (document.getElementById(key + "_edit_container") != null) {
+            document.getElementById(key + "_edit_container").appendChild(x);
+          } else {
+            document.getElementById("edit_form").appendChild(x);
+          };
         };
       }
 

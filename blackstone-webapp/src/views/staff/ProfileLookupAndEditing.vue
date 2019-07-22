@@ -13,10 +13,10 @@
     <!-- <ApronBar /> -->
 
     <p>Order Log:</p>
-    <CollectionTable ref="order_log" :heading_data="['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes']" :current_profile="this.currentProfile" collection_name="Order Log"></CollectionTable>
+    <CollectionTable ref="order_log" :heading_data="['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes']" :current_collection="order_log_collection"></CollectionTable>
 
     <p>Work Log:</p>
-    <CollectionTable ref="work_log" :heading_data="['Category 1', 'Category 2', 'Category 3', 'Category 4']" :current_profile="this.currentProfile" collection_name="Work Log"></CollectionTable>
+    <CollectionTable ref="work_log" :heading_data="['Category 1', 'Category 2', 'Category 3', 'Category 4']" :current_collection="work_log_collection"></CollectionTable>
 
     <button @click="logout">Logout</button>
   </div>
@@ -46,7 +46,9 @@ export default {
 
   data: function() {
     return {
-      currentProfile: null
+      currentProfile: null,
+      order_log_collection: null,
+      work_log_collection: null
     };
   },
 
@@ -54,10 +56,12 @@ export default {
 
       selectedID: async function(id) {
         id = id.slice(id.lastIndexOf(' ')+1);
-        this.currentProfile = {
-          loaded: await db.collection("GlobalYouthProfile").doc(id).get(),
-          unloaded: db.collection("GlobalYouthProfile").doc(id)
-        };
+
+        let snapshot = db.collection("GlobalYouthProfile").doc(id);
+
+        this.currentProfile = await snapshot.get();
+        this.order_log_collection = snapshot.collection("Order Log");
+        this.work_log_collection =  snapshot.collection("Work Log");
       },
 
       logout: function() {
@@ -67,21 +71,27 @@ export default {
       },
 
       load_adam: async function() {
-        this.currentProfile = {
-          loaded: await db.collection("GlobalYouthProfile").doc("HPLtPG2rZCfdGhATE36x").get(),
-          unloaded: db.collection("GlobalYouthProfile").doc("HPLtPG2rZCfdGhATE36x")
-        };
+
+        let snapshot = db.collection("GlobalYouthProfile").doc("HPLtPG2rZCfdGhATE36x");
+
+        this.currentProfile = await snapshot.get();
+        this.order_log_collection = snapshot.collection("Order Log");
+        this.work_log_collection =  snapshot.collection("Work Log");
       },
 
       load_yves: async function() {
-        this.currentProfile = {
-          loaded: await db.collection("GlobalYouthProfile").doc("10001").get(),
-          unloaded: db.collection("GlobalYouthProfile").doc("10001")
-        };
+
+        let snapshot = db.collection("GlobalYouthProfile").doc("10001");
+
+        this.currentProfile = await snapshot.get();
+        this.order_log_collection = snapshot.collection("Order Log");
+        this.work_log_collection =  snapshot.collection("Work Log");
       },
 
       load_none: function() {
         this.currentProfile = null;
+        this.order_log_collection = null;
+        this.work_log_collection =  null;
       }
     }
 }

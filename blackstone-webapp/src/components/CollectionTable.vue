@@ -8,6 +8,8 @@
     collection_name: collection within the profile to display
 -->
 
+<!-- TODO: Read just from collection, skipping profile? -->
+
 <template>
     <Table :headingdata="heading_data" :table_data="tableData"></Table>
 </template>
@@ -16,7 +18,7 @@
 
     export default {
         name: 'CollectionTable',
-        props: ['heading_data', 'current_profile', 'collection_name', 'args'],
+        props: ['heading_data', 'current_collection', 'args'],
         components: {Table},
 
         data: function () {
@@ -26,9 +28,9 @@
         },
 
         watch: {
-            current_profile: async function(coll) {
+            current_collection: async function(coll) {
                 if (coll != null) {
-                    var temp = await coll.unloaded.collection(this.collection_name).get();
+                    var temp = await coll.get();
                     this.tableData = this.formatCollection(temp);
                 }
                 else {
