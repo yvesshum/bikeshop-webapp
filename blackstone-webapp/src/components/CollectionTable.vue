@@ -1,5 +1,5 @@
 <!--
-    Usage:
+    Displays a Firestore collection as a Tabulator table:
 
     <CollectionTable :heading_data="['Category 1', 'Category 2', 'Category 3']" :current_profile="Profile" collection_name="Collection">
 
@@ -7,8 +7,6 @@
     current_profile: profile to track
     collection_name: collection within the profile to display
 -->
-
-<!-- TODO: Read just from collection, skipping profile? -->
 
 <template>
     <Table :headingdata="heading_data" :table_data="tableData"></Table>
