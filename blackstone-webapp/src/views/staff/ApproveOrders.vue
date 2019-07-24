@@ -109,6 +109,7 @@
                 //chceck if the row is valid to be set as pending
                 for (let i = 0; i < rows.length; i++) {
                     let curData = rows[i];
+
                     if (curData["Status"] !== "Pending") {
                         this.showModal("Error", "Unable to set already pending status to 'pending' in order " + rows[i]["Order Date"]);
                         break;
@@ -116,15 +117,16 @@
                     else {
                         //changed GlobalPendingOrders to be unique document IDs
                         //that way we should be able to access the document ID
-                        let YouthID = curData["YouthID"];
-                        let status = await db.collection("GlobalPendingOrders").doc(curData["documentID"]).update({Status: "Pending"});
-                        if (status) {
+                        let YouthID = curData["Youth ID"];
+                        let err = await db.collection("GlobalPendingOrders").doc(curData["documentID"]).update({Status: "Pending"});
+                        if (err) {
                             window.alert("Error on setting status, please check your internet connection and try again");
                             return null;
                         }
                         //move hours from pending back to hours spent
-
-
+                        let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID).get();
+                        YouthProfile = YouthProfile.data();
+                        console.log(YouthProfile);
                     }
                 }
 
