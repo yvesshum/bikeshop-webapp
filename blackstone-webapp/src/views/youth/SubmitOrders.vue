@@ -54,7 +54,6 @@
     import {firebase} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
 
-
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
     export default {

@@ -13,7 +13,7 @@
                     </b-dropdown>
                 </b-button-group>
                 <b-button-group>
-                    <b-button variant="success" @click="editNote">Add/Edit note</b-button>
+                    <b-button variant="success" @click="editNote">Edit note</b-button>
                 </b-button-group>
                 <b-button-group>
                     <b-button variant="danger" @click="reject">Reject/Cancel Order</b-button>
@@ -60,6 +60,25 @@
             <b-button class="mt-3" block @click="closeRejectModal(); confirmedDelete();" variant = "danger">proceed</b-button>
         </b-modal>
 
+        <b-modal v-model = "editModalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Editing
+            </template>
+            <!-- <div class="d-block text-center">
+                <h3>Edit the following message:</h3>
+            </div> -->
+            <b-form-textarea
+                id="textarea"
+                v-model="editMsg"
+                placeholder="Enter a new message here.."
+                rows="2"
+                max-rows="5"
+            ></b-form-textarea>
+
+            <b-button class="mt-3" block @click="saveNote(); closeEditModal()" variant = "success">Save</b-button>
+            <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
+
+        </b-modal>
     </div>
 
 
@@ -85,7 +104,9 @@
                 rejectModalHeader: "",
                 rejectModalMsg: "",
                 rejectingDocumentID: "",
-                rejectingYouthID: ""
+                rejectingYouthID: "",
+                editModalVisible: false,
+                editMsg: "",
             };
 
         },
@@ -344,7 +365,38 @@
             },
 
             editNote() {
-                //TODO:
+                if (this.selected.length > 1) this.showModal("Error", "You can only edit one note at a time!");
+                else {
+                    this.editMsg = this.selected[0]["Notes"];
+                    this.showEditModal();
+                }
+
+            },
+
+            showEditModal() { 
+                this.editModalVisible = true;
+            },
+
+            closeEditModal() {
+                this.editMsg = "";
+                this.editModalVisible = false;
+            },
+
+            saveNote() {
+                let note = this.editMsg;
+                let docID = this.selected[0]["Document ID"];
+                db.collection("GlobalPendingOrders").doc(docID).update({"Notes": this.editMsg}).catch(err => { 
+                    window.alert("Err: ", err);
+                    return null;
+                })
+                
+                for (let i = 0; i < this.items.length; i++) { 
+                    if (this.items[i]["Document ID"] === docID) { 
+                        this.items[i]["Notes"] = note;
+                        break;
+                    }
+                }
+            
 
             }
 

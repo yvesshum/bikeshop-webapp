@@ -13,42 +13,54 @@
             <b-row>
                 <b-col>
                      <b-card-group deck>
-                        <b-card
-                            title="Check In"
-                            style="max-width: 20rem;"
-                            class="mb-2"
-                        >
-                            <b-card-text>
-                                Youth's check-in page.
-                            </b-card-text>
 
-                            <b-button href="/check-in" variant="primry">Click me!</b-button>
-                        </b-card>
+                        <a href="/check-in">
+                            <b-card
+                                title="Check In"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Youth's check-in page.
+                                </b-card-text>
+                            </b-card>
+                        </a>
+                
+                         <a href="/profile-lookup">
+                            <b-card
+                                title="Profile Lookup"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Youth's profile lookup tool
+                                </b-card-text>
+                            </b-card>
+                        </a>
 
-                        <b-card
-                            title="Profile Lookup"
-                            style="max-width: 20rem;"
-                            class="mb-2"
-                        >
-                            <b-card-text>
-                                Youth's profile lookup tool
-                            </b-card-text>
+                        <a href="/submit-orders">
+                            <b-card
+                                title="Submit Orders"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Submit an item order
+                                </b-card-text>
+                            </b-card>
+                        </a>
 
-                            <b-button href="/profile-lookup" variant="primry">Click me!</b-button>
-                        </b-card>
-
-
-                        <b-card
-                            title="Submit Orders"
-                            style="max-width: 20rem;"
-                            class="mb-2"
-                        >
-                            <b-card-text>
-                                Submit an item order
-                            </b-card-text>
-
-                            <b-button href="/submit-orders" variant="primry">Click me!</b-button>
-                        </b-card>
+                        <a href="/check-orders">
+                            <b-card
+                                title="Check Orders"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Check placed orders
+                                </b-card-text>
+                            </b-card>
+                        </a>
 
                     </b-card-group>
                 </b-col>
@@ -64,17 +76,17 @@
             <b-row>
                 <b-col>
                     <b-card-group>
-                        <b-card
-                            title="Approve Orders"
-                            style="max-width: 20rem;"
-                            class="mb-2"
-                        >
-                            <b-card-text>
-                                Check status, approve, complete, orders
-                            </b-card-text>
-
-                            <b-button href="/approve-orders" variant="primry">Click me!</b-button>
-                        </b-card>
+                        <a href="/approve-orders"> 
+                            <b-card
+                                title="Approve Orders"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Check status, approve, complete, orders
+                                </b-card-text>
+                            </b-card>
+                        </a>
                     </b-card-group>
                 </b-col>
 
@@ -96,4 +108,11 @@
         }
     }
 </script>
+
+<style>
+b-card:hover{ 
+    bg-variant: "dark"
+}
+
+</style>
 

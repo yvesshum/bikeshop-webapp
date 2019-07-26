@@ -8,7 +8,7 @@ import CheckIn from './views/youth/CheckIn.vue'
 import ProfileLookup from './views/youth/ProfileLookup.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 import ApproveOrders from './views/staff/ApproveOrders.vue'
-
+import YouthCheckOrders from './views/youth/CheckOrders.vue'
 
 Vue.use(Router);
 
@@ -82,7 +82,18 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        }
+        },
+        
+        {
+            path: '/check-orders',
+            name: 'check-orders',
+            component: YouthCheckOrders,
+            meta:{
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        },
+
 
         ]
 });
