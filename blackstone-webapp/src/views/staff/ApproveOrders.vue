@@ -112,7 +112,7 @@
                     let curData = rows[i];
 
                     if (curData["Status"] !== "Pending") {
-                        this.showModal("Error", "Unable to set already pending status to 'pending' in order " + rows[i]["Order Date"]);
+                        this.showModal("Error", "Unable to set already pending status to 'pending' in the order of " + curData["First Name"] + " " + curData["Last Name"] + " on " + curData["Order Date"]);
                         break;
                     }
                     else {
@@ -127,7 +127,17 @@
                         //move hours from pending back to hours spent
                         let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID).get();
                         YouthProfile = YouthProfile.data();
-                        console.log(YouthProfile);
+
+                        console.log('itc', curData["Item Total Cost"])
+                        console.log(YouthProfile["Pending Hours"], YouthProfile["Hours Spent"]);
+                        db.collection("GlobalYouthProfile").doc(YouthID).update({
+                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"])).toString(),
+                            "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"])).toString()
+                        }).then((err) => {
+                            if (err) console.log(err)
+                        })
+
+                        //change Status text locally
                     }
                 }
 

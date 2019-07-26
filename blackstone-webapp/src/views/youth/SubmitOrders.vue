@@ -134,7 +134,7 @@
                     let newPendingHours = parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]);
                     let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
                     youthRef.update({
-                        "Hours Spent": newHoursSpent,
+                        "Hours Spent": newHoursSpent.toString(),
                         "Pending Hours": newPendingHours.toString()
                     }).then(() => {
                         //reset youth profile
@@ -144,14 +144,6 @@
                     }).catch(error => {
                         window.alert(error);
                     });
-
-                    console.log(this.YouthProfile["Hours Earned"]);
-                    //update youth's balance
-                    //take away from current hours
-                    //Subtract that value from pending hours
-
-
-
                 }
             },
 
