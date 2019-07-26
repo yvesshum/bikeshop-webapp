@@ -8,14 +8,14 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <textarea v-model="field.value":placeholder="field.name + '*'"></textarea>
+                <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea>
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                <textarea v-model="field.value":placeholder="field.name"></textarea>
+                <textarea v-model="field.value" :placeholder="field.name"></textarea>
             </div>
         </div>
 
@@ -51,7 +51,6 @@
 
 <script>
     import {db} from '../../firebase';
-    import {firebase} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");

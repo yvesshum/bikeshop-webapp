@@ -128,7 +128,6 @@
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
                 this.items = this.formatCollection(snapshot);
-                console.log(this.items);
             },
 
             formatCollection(snapshot) {
@@ -306,7 +305,7 @@
                     this.rejectingDocumentID = curRow["Document ID"];
                     this.rejectingYouthID = curRow["Youth ID"];
                     this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                        + curRow["First Name"] + " " + curRow["Last Name"] + "\'s order on " + curRow["Order Date"]);
+                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order on " + curRow["Order Date"]);
                 }
 
             },

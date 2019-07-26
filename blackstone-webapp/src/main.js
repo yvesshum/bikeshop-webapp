@@ -17,7 +17,6 @@ Vue.use(VueTabulator);
 let app = '';
 
 firebase.auth().onAuthStateChanged(() => {
-    console.log('q')
     if (!app) {
         app = new Vue({
             router,
