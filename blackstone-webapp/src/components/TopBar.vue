@@ -22,11 +22,11 @@
         },
         methods: {
             logout: function() {
-                firebase.auth().signOut().then(() => this.$router.go("/"));
+                firebase.auth().signOut().then(() => this.$router.go("/Home"));
 
             },
             getButtonText() {
-                this.buttonText = "Logout " + firebase.auth().currentUser.displayName;
+                this.buttonText = "Logout " + firebase.auth().currentUser.email;
             },
             imageUrl() {
                 window.location = "https://experimentalstation.org";

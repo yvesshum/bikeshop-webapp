@@ -1,5 +1,6 @@
 <template>
     <div class = "YouthSubmitOrders">
+        <top-bar/>
         <h3 style="margin: 20px">Submit an order here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>

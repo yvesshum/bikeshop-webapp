@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import YouthHome from './views/youth/YouthHome.vue'
-import StaffHome from './views/staff/StaffHome'
-import firebase_app from 'firebase/app'
+import Home from './views/Home.vue'
+import {firebase} from './firebase.js'
 import Login from './views/Login.vue'
 import TestHome from './views/TestHome.vue'
+import CheckIn from './views/youth/CheckIn.vue'
+import ProfileLookup from './views/youth/ProfileLookup.vue'
+import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 
 Vue.use(Router);
 
@@ -21,21 +23,12 @@ const router = new Router({
             redirect: '/login'
         },
         {
-            path: '/YouthHome',
-            name: 'YouthHome',
-            component: YouthHome,
+            path: '/Home',
+            name: 'Home',
+            component: Home,
             meta: {
                 requiresAuth: true,
                 requiresStaff: false
-            }
-        },
-        {
-            path: '/StaffHome',
-            name: 'StaffHome',
-            component: StaffHome,
-            meta: {
-                requiresAuth: true,
-                requiresStaff: true
             }
         },
         {
@@ -50,17 +43,55 @@ const router = new Router({
             meta: {
                 requiresAuth: true
             }
+        },
+        {
+            path: '/check-in',
+            name: 'check-in',
+            component: CheckIn,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        },
+        {
+            path: '/profile-lookup',
+            name: 'profile-lookup',
+            component: ProfileLookup,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        },
+        {
+            path: '/submit-orders',
+            name: 'submit-orders',
+            component: YouthSubmitOrders,
+            meta:{
+                requiresAuth: true,
+                requiresStaff: false
+            }
         }
+
         ]
 });
 
-router.beforeEach((to, from, next) => {
-    const currentUser = firebase_app.auth().currentUser;
+router.beforeEach(async (to, from, next) => {
+    const currentUser = await firebase.auth().currentUser;
+    let isStaff = false;
+    if (currentUser) {
+        if (currentUser.email === "yvesshum@uchicago.edu") {
+            isStaff = true;
+        }
+    }
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const requiresStaff = to.matched.some(record => record.meta.requiresStaff);
+    
     if (requiresAuth && !currentUser) next('login');
-    else if (!requiresAuth && currentUser) next('TestHome');
-    // else if (requiresAuth && requiresStaff && currentUser.email === "yvesshum1210@gmail.com") next('StaffHome');
+    else if (!requiresAuth && currentUser) next('Home');
+    else if (requiresAuth && requiresStaff && !isStaff) {
+        window.alert("You do not have permissions to see this page!");
+        next('Home');
+    }
     else next();
 });
 

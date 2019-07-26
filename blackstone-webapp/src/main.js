@@ -5,15 +5,19 @@ import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import {firebase} from './firebase.js'
-import VueTabulator from 'vue-tabulator';
+import VueTabulator from 'vue-tabulator'
+import TopBar from './components/TopBar'
+
+Vue.component('top-bar', TopBar);
 
 
 Vue.use(BootstrapVue);
 Vue.use(VueTabulator);
 
-
 let app = '';
+
 firebase.auth().onAuthStateChanged(() => {
+    console.log('q')
     if (!app) {
         app = new Vue({
             router,
