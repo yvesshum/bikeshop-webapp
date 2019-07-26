@@ -1,5 +1,6 @@
 <template>
     <div>
+        <top-bar/>
         <h1>Order Status Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar justify>

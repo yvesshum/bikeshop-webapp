@@ -73,7 +73,7 @@
                                 Check status, approve, complete, orders
                             </b-card-text>
 
-                            <b-button href="/submit-orders" variant="primry">Click me!</b-button>
+                            <b-button href="/approve-orders" variant="primry">Click me!</b-button>
                         </b-card>
                     </b-card-group>
                 </b-col>

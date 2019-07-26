@@ -7,6 +7,8 @@ import TestHome from './views/TestHome.vue'
 import CheckIn from './views/youth/CheckIn.vue'
 import ProfileLookup from './views/youth/ProfileLookup.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
+import ApproveOrders from './views/staff/ApproveOrders.vue'
+
 
 Vue.use(Router);
 
@@ -69,6 +71,16 @@ const router = new Router({
             meta:{
                 requiresAuth: true,
                 requiresStaff: false
+            }
+        },
+
+        {
+            path: '/approve-orders',
+            name: 'approve-orders',
+            component: ApproveOrders,
+            meta:{
+                requiresAuth: true,
+                requiresStaff: true
             }
         }
 
