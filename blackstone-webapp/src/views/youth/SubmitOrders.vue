@@ -15,7 +15,7 @@
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                <textarea v-model="field.value":placeholder="'field.name'"></textarea>
+                <textarea v-model="field.value":placeholder="field.name"></textarea>
             </div>
         </div>
 

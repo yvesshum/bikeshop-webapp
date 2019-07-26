@@ -3,7 +3,7 @@
 
 <template>
     <div class = "YouthIDSelector">
-        <multiselect id = "multiselect" :options="options" placeholder="Select your ID" @select="selected" open-direction="bottom" label="name" :custom-label="nameWithID">
+        <multiselect id = "multiselect" :options="options" placeholder="Select your ID if you are currently active" @select="selected" open-direction="bottom" label="name" :custom-label="nameWithID">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
                     <span class="option__name">{{ props.option.name }}</span>

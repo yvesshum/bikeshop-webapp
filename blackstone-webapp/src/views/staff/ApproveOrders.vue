@@ -13,7 +13,14 @@
                     </b-dropdown>
                 </b-button-group>
                 <b-button-group>
-                    <b-button>Check for new data</b-button>
+                    <b-button variant="success" @click="editNote">Add/Edit note</b-button>
+                </b-button-group>
+                <b-button-group>
+                    <b-button variant="danger" @click="reject">Reject/Cancel Order</b-button>
+                </b-button-group>
+
+                <b-button-group>
+                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
                 </b-button-group>
             </b-button-toolbar>
         </div>
@@ -28,6 +35,7 @@
             responsive="sm"
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
+            id="order_table"
         >
         </b-table>
 
@@ -39,6 +47,17 @@
                 <h3>{{modalMsg}}</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">ok</b-button>
+        </b-modal>
+
+        <b-modal v-model = "rejectModalVisible" hide-footer lazy >
+            <template slot="modal-title">
+                {{rejectModalHeader}}
+            </template>
+            <div class="d-block text-center">
+                <h3>{{rejectModalMsg}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="closeRejectModal" variant = "secondary">cancel</b-button>
+            <b-button class="mt-3" block @click="closeRejectModal(); confirmedDelete();" variant = "danger">proceed</b-button>
         </b-modal>
 
     </div>
@@ -61,7 +80,12 @@
                 selected: [],
                 modalHeader: "",
                 modalMsg: "",
-                modalVisible: false
+                modalVisible: false,
+                rejectModalVisible: false,
+                rejectModalHeader: "",
+                rejectModalMsg: "",
+                rejectingDocumentID: "",
+                rejectingYouthID: ""
             };
 
         },
@@ -83,13 +107,14 @@
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
                 this.items = this.formatCollection(snapshot);
+                console.log(this.items);
             },
 
             formatCollection(snapshot) {
                 let ret = [];
                 snapshot.forEach(doc => {
                     let data = doc.data();
-                    data["documentID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
                     ret.push(data);
                 });
                 return ret;
@@ -102,24 +127,31 @@
             showModal(header, msg) {
                 this.modalHeader = header;
                 this.modalMsg = msg;
-                this.modalVisible = true;
+                this.modalVisible = true;1
+            },
+
+            showRejectModal(header, msg) {
+                this.rejectModalHeader = header;
+                this.rejectModalMsg = msg;
+                this.rejectModalVisible = true;
             },
 
             async setPending() {
+
                 let rows = this.selected ;
                 //chceck if the row is valid to be set as pending
                 for (let i = 0; i < rows.length; i++) {
                     let curData = rows[i];
 
-                    if (curData["Status"] !== "Pending") {
+                    if (curData["Status"] === "Pending") {
                         this.showModal("Error", "Unable to set already pending status to 'pending' in the order of " + curData["First Name"] + " " + curData["Last Name"] + " on " + curData["Order Date"]);
                         break;
                     }
                     else {
-                        //changed GlobalPendingOrders to be unique document IDs
-                        //that way we should be able to access the document ID
+                        //changed GlobalPendingOrders to be unique Document IDs
+                        //that way we should be able to access the Document ID
                         let YouthID = curData["Youth ID"];
-                        let err = await db.collection("GlobalPendingOrders").doc(curData["documentID"]).update({Status: "Pending"});
+                        let err = await db.collection("GlobalPendingOrders").doc(curData["Document ID"]).update({Status: "Pending"});
                         if (err) {
                             window.alert("Error on setting status, please check your internet connection and try again");
                             return null;
@@ -128,32 +160,195 @@
                         let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID).get();
                         YouthProfile = YouthProfile.data();
 
-                        console.log('itc', curData["Item Total Cost"])
-                        console.log(YouthProfile["Pending Hours"], YouthProfile["Hours Spent"]);
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"])).toString(),
-                            "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"])).toString()
+                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"])).toString(),
+                            // "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"])).toString()
                         }).then((err) => {
-                            if (err) console.log(err)
-                        })
+                            if (err) this.showModal("Error", "Unable to update Youth Profile's hours, this may be an internet connection problem")
+                            return null;
+                        });
 
                         //change Status text locally
+                        this.changeLocalText(curData["Document ID"], "Pending");
                     }
                 }
 
             },
 
-            setApproved() {
+            async setApproved() {
+                let rows = this.selected;
+
+                for (let i = 0; i < rows.length; i ++) {
+                    let curData = rows[i];
+                    if (curData["Status"] === "Approved") {
+                        this.showModal("Error", "Unable to set already approved status to 'approved' in the order of " + curData["First Name"] + " " + curData["Last Name"] + " on " + curData["Order Date"]);
+                        break;
+                    }
+                    else {
+                        let YouthID = curData["Youth ID"];
+                        db.collection("GlobalPendingOrders").doc(curData["Document ID"]).update({
+                            Status: "Approved"}).catch(err => {
+                                window.alert("Error " + err);
+                                return null;
+                        });
+                        let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID).get();
+                        YouthProfile = YouthProfile.data();
+
+                        db.collection("GlobalYouthProfile").doc(YouthID).update({
+                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"])).toString()
+                        }).catch(err => {
+                            window.alert("Error " + err);
+                            return null;
+                        });
+
+                        //change text locally
+                        this.changeLocalText(curData["Document ID"], "Approved");
+
+                    }
+                }
+
 
             },
 
-            setCompleted() {
+            async setCompleted() {
+                let rows = this.selected;
+                for (let i = 0; i < rows.length; i++) {
+                    let curData = rows[i];
+                    if (curData["Status"] === "Pending") {
+                        this.showModal("Error", "Unable to set pending orders to complete, orders must first be set in the following order: Pending -> Approved -> Complete")
+                        break;
+                    }
+                    else {
+                        //delete remotely
+                        let YouthID = curData["Youth ID"];
+                        db.collection("GlobalPendingOrders").doc(curData["Document ID"]).delete().catch(err => {
+                            window.alert("Error " + err);
+                            return null;
+                        });
 
+                        //create entry in order log
+                        let YouthOrderLogRef = db.collection("GlobalYouthProfile").doc(YouthID).collection("Order Log");
+                        YouthOrderLogRef.doc().set({
+                            "Order Date": curData["Order Date"],
+                            "Item Name": curData["Item Name"],
+                            "Item ID": curData["Item ID"],
+                            "Item Total Cost": curData["Item Total Cost"],
+                            "Notes": curData["Notes"]
+                        }).catch(err => {
+                            window.alert("Err: "+ err);
+                            return null;
+                        });
+
+                        //delete locally
+                        for (let  j = 0; j < this.items.length; j++) {
+                            if (this.items[j]["Document ID"] === curData["Document ID"]) {
+                                this.items.splice(j, 1);
+                                this.$root.$emit('bv::refresh::table', 'order-table');
+                                this.showModal("Success", "Successfully completed order!");
+                            }
+                        }
+                    }
+                }
+
+            },
+
+            changeLocalText(id, status) {
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items[i]["Document ID"] === id) {
+                        this.items[i]["Status"] = status;
+                        this.$root.$emit('bv::refresh::table', 'order-table');
+                        this.showModal("Success", "changed status to " + status);
+                        break;
+                    }
+                }
             },
 
             closeModal() {
                 this.modalVisible = false;
             },
+
+            closeRejectModal() {
+                this.rejectModalVisible = false;
+            },
+
+            async getNewData() {
+                await this.getTData();
+                this.$root.$emit('bv::refresh::table', 'order-table');
+                this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
+
+            },
+
+            reject() {
+                let rows = this.selected;
+                for (let i = 0; i < rows.length; i++){
+                    let curRow = rows[i];
+                    this.rejectingDocumentID = curRow["Document ID"];
+                    this.rejectingYouthID = curRow["Youth ID"];
+                    this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
+                        + curRow["First Name"] + " " + curRow["Last Name"] + "\'s order on " + curRow["Order Date"]);
+                }
+
+            },
+
+            async confirmedDelete() {
+                //adjust hours
+                let YouthProfile = await db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).get();
+                YouthProfile = YouthProfile.data();
+
+                let itemIndex = 0;
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items[i]["Document ID"] === this.rejectingDocumentID) {
+                        itemIndex = i;
+                        break;
+                    }
+                }
+
+                //if rejecting document is already approved
+                if (this.items[itemIndex]["Status"] === "Approved") {
+                    //decrease hours spent by item cost
+                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
+                    db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
+                        "Hours Spent": newHoursSpent
+                    }).catch(err => {
+                        window.alert("Error: " + err);
+                        return null;
+                    })
+                }
+                else { //if rejecting document is of pending status
+                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
+                    let newPendingHours = (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
+                    db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
+                        "Hours Spent": newHoursSpent,
+                        "Pending Hours": newPendingHours
+                    }).catch(err => {
+                        window.alert("Error: " + err);
+                        return null;
+                    });
+                }
+
+                //remove order from database
+                db.collection("GlobalPendingOrders").doc(this.rejectingDocumentID).delete().catch(err => {
+                    window.alert("Error on deleting: " + err);
+                    return null;
+                });
+
+                //remove locally
+                this.items.splice(itemIndex, 1);
+                
+                this.$root.$emit('bv::refresh::table', 'order-table');
+
+                this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
+                this.rejectingDocumentID = "";
+
+
+            },
+
+            editNote() {
+                //TODO:
+
+            }
+
+
         },
 
         async mounted() {
@@ -166,12 +361,11 @@
 
 <style>
     .toolbar_wrapper{
-        width: 50%;
+        width: 60%;
         height: 40px;
         display: inline-block;
         margin: 0 auto 10px;
         border: 1px #42b983;
-
     }
 
 </style>
