@@ -11,6 +11,7 @@
     "bootstrap-vue": "^2.0.0-rc.26",
     "core-js": "^2.6.5",
     "firebase": "^6.2.4",
+    "jshint": "^2.10.2",
     "lodash": "^4.17.14",
     "tabulator-tables": "^4.2.7",
     "vue": "^2.6.10",

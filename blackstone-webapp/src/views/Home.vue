@@ -109,9 +109,5 @@
 </script>
 
 <style>
-b-card:hover{ 
-    bg-variant: "dark"
-}
-
 </style>
 
