@@ -36,7 +36,12 @@
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
             id="order_table"
+            :busy="isBusy"
         >
+            <div slot="table-busy" class="text-center text-danger my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
+      </div>
         </b-table>
 
         <b-modal v-model = "modalVisible" hide-footer lazy >
@@ -107,6 +112,7 @@
                 rejectingYouthID: "",
                 editModalVisible: false,
                 editMsg: "",
+                isBusy: true,
             };
 
         },
@@ -397,7 +403,11 @@
                 }
             
 
-            }
+            },
+
+            toggleBusy() {
+                this.isBusy = !this.isBusy;
+            },
 
 
         },
@@ -405,6 +415,7 @@
         async mounted() {
             await this.getHeaders();
             await this.getTData();
+            this.toggleBusy();
 
         },
     }
