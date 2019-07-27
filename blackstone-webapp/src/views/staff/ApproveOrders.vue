@@ -352,6 +352,7 @@
                     });
                 }
 
+                this.toggleBusy();
                 //remove order from database
                 db.collection("GlobalPendingOrders").doc(this.rejectingDocumentID).delete().catch(err => {
                     window.alert("Error on deleting: " + err);
@@ -365,6 +366,7 @@
 
                 this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
+                this.toggleBusy();
 
 
             },
@@ -393,7 +395,7 @@
                 db.collection("GlobalPendingOrders").doc(docID).update({"Notes": this.editMsg}).catch(err => { 
                     window.alert("Err: ", err);
                     return null;
-                })
+                });
                 
                 for (let i = 0; i < this.items.length; i++) { 
                     if (this.items[i]["Document ID"] === docID) { 
