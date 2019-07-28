@@ -9,27 +9,27 @@
     <table id="fields_table" style="display: none;">
       <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
-        <td id="DOB_field"></td>
+        <td id="DOB_field" class="field_entry"></td>
         <td id="DOB_edit_container" class="edit_container"></td>
       </tr>
       <tr id="ActivePeriods_container" class="field_container">
         <td>Periods Active:</td>
-        <td id="ActivePeriods_field"></td>
+        <td id="ActivePeriods_field" class="field_entry"></td>
         <td id="ActivePeriods_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Hours Earned_container" class="field_container">
         <td>Hours Earned:</td>
-        <td id="Hours Earned_field"></td>
+        <td id="Hours Earned_field" class="field_entry"></td>
         <td id="Hours Earned_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Hours Spent_container" class="field_container">
         <td>Hours Spent:</td>
-        <td id="Hours Spent_field"></td>
+        <td id="Hours Spent_field" class="field_entry"></td>
         <td id="Hours Spent_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Pending Hours_container" class="field_container">
         <td>Pending Hours:</td>
-        <td id="Pending Hours_field"></td>
+        <td id="Pending Hours_field" class="field_entry"></td>
         <td id="Pending Hours_edit_container" class="edit_container"></td>
       </tr>
     </table>
@@ -93,9 +93,16 @@ export default {
 
             let title_cell = new_row.insertCell(0);
             title_cell.innerHTML = key + ":";
-            field_p = new_row.insertCell(-1);
 
+            field_p = new_row.insertCell(-1);
             field_p.id = key + "_field";
+            field_p.classList.add("field_entry");
+
+            let field_e = new_row.insertCell(-1);
+            field_e.id = key + "_edit_container";
+            field_e.classList.add("edit_container");
+            field_e.placeholder = data[key];
+            field_e.value = data[key];
           }
 
           // If it already exists, display its container element
@@ -185,12 +192,28 @@ export default {
     switch_to_display_mode: function() {
       console.log("Switching to display mode...");
       this.$refs.edit_profile.innerHTML = "Edit!";
+
+      Object.entries(document.getElementsByClassName("field_entry")).map(([n, element]) => {
+        element.style.display = "";
+      });
+
+      Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
+        element.style.display = "none";
+      });
     },
 
     // Switches screen to edit mode
     switch_to_edit_mode: function() {
       console.log("Switching to edit mode...");
       this.$refs.edit_profile.innerHTML = "Submit Edits!";
+
+      Object.entries(document.getElementsByClassName("field_entry")).map(([n, element]) => {
+        element.style.display = "none";
+      });
+
+      Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
+        element.style.display = "";
+      });
     }
   }
 }
