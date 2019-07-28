@@ -96,14 +96,12 @@ export default {
               month:   'long',
               year:    'numeric'
             });
-            
-            edit_input.placeholder = temp_date.toLocaleDateString(undefined, {
+
+            this.set_all_input_vals(edit_input, temp_date.toLocaleDateString(undefined, {
               day:     'numeric',
               month:   'long',
               year:    'numeric'
-            });
-
-            edit_input.value = edit_input.placeholder;
+            }));
           }
           else if (key == "DOB") {
             let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
@@ -112,14 +110,12 @@ export default {
               year:    'numeric'
             });
             field_p.innerHTML = temp_date;
-            edit_input.placeholder = temp_date;
-            edit_input.value       = temp_date;
+            this.set_all_input_vals(edit_input, temp_date);
           }
           else {
             field_p.innerHTML = data[key];
             if (edit_input != null) {
-              edit_input.placeholder = data[key];
-              edit_input.value       = data[key];
+              this.set_all_input_vals(edit_input, data[key]);
             }
           }
         };
@@ -140,6 +136,7 @@ export default {
           let edit_input = element.getElementsByClassName("edit_container")[0].getElementsByClassName("edit_input")[0];
           edit_input.placeholder = "";
           edit_input.value = "";
+          edit_input.defaultValue = "";
         });
 
         // Clear the nonstandard fields
@@ -156,6 +153,12 @@ export default {
   },
 
   methods: {
+
+    set_all_input_vals: function(input, val) {
+      input.placeholder  = val;
+      input.value        = val;
+      input.defaultValue = val;
+    },
 
     create_field_container: function(key) {
       let table = this.$refs.fields_table;
