@@ -6,6 +6,7 @@ import Login from './views/Login.vue'
 import TestHome from './views/TestHome.vue'
 import CheckIn from './views/youth/CheckIn.vue'
 import ProfileLookup from './views/youth/ProfileLookup.vue'
+import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
@@ -62,6 +63,15 @@ const router = new Router({
             meta: {
                 requiresAuth: true,
                 requiresStaff: false
+            }
+        },
+        {
+            path: '/profile-lookup-staff',
+            name: 'profile-lookup-staff',
+            component: ProfileLookupStaff,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
             }
         },
         {
