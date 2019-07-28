@@ -21,7 +21,10 @@
                     this.tabulator.replaceData(newData)
                 },
                 deep: true
-            }
+            },
+            table_data: function() {
+                this.tableData = this.table_data;
+            },
         },
         mounted () {
             // instantiate Tabulator when element is mounted

@@ -24,7 +24,8 @@
                 firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(
                     user => {
                         console.log(user);
-                        this.$router.replace('TestHome');
+                        this.$router.replace('Home');
+                        this.$emit("logged-in");
                     },
                     err => {
                         alert("oops, something went wrong: " + err);
