@@ -16,6 +16,7 @@
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
     <button ref="discard_changes" v-on:click="discard_changes()" style="display: none;">Discard Changes</button>
+    <button ref="reset_changes" v-on:click="reset_changes()" style="display: none;">Reset All Changes</button>
 
   </div>
 </template>
@@ -54,6 +55,7 @@ export default {
       if (this.edit_mode) {
         this.$refs.edit_profile.innerHTML = "Submit Edits!";
         this.$refs.discard_changes.style.display = "";
+        this.$refs.reset_changes.style.display = "";
 
         Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
           element.style.display = "none";
@@ -72,7 +74,7 @@ export default {
       else {
         this.$refs.edit_profile.innerHTML = "Edit!";
         this.$refs.discard_changes.style.display = "none";
-        this.edit_mode = false;
+        this.$refs.reset_changes.style.display = "none";
 
         Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
           let fields = this.convert_to_fields(element);
@@ -362,6 +364,15 @@ export default {
 
     discard_changes: function() {
       this.edit_mode = !this.edit_mode;
+    },
+
+    reset_changes: function() {
+      Object.entries(document.getElementsByClassName("edit_input")).map(([n, element]) => {
+        element.value = element.defaultValue;
+      });
+      Object.entries(document.getElementsByClassName("field_title")).map(([n, element]) => {
+        element.style["font-weight"] = "";
+      })
     },
 
 
