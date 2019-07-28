@@ -10,11 +10,8 @@ import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
-<<<<<<< HEAD
 import ManageApronSkills from './views/staff/ManageApronSkills.vue'
-=======
 import CheckedIn from './views/staff/CheckedIn.vue'
->>>>>>> 7bf1a316c4d6b9597069a08ef29b6aa7a41946c6
 
 Vue.use(Router);
 
