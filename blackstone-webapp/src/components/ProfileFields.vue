@@ -63,29 +63,7 @@ export default {
     let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
     let table = this.$refs.fields_table;
 
-    fields_list.forEach(function(element) {
-      let new_row = table.insertRow(-1);
-      new_row.id = element + "_container";
-      new_row.classList.add("field_container");
-
-      let title_cell = new_row.insertCell(0);
-      title_cell.innerHTML = element + ":";
-
-      let field_p = new_row.insertCell(-1);
-      field_p.id = element + "_field";
-      field_p.classList.add("field_entry");
-
-      let field_e = new_row.insertCell(-1);
-      field_e.id = element + "_edit_container";
-      field_e.classList.add("edit_container");
-      
-      let edit_input = document.createElement("input");
-      edit_input.type = "text";
-      edit_input.id   = element + "_edit";
-      edit_input.name = element;
-      edit_input.classList.add("edit_input");
-      field_e.appendChild(edit_input);
-    })
+    fields_list.forEach(this.create_field_container);
   },
 
   watch: {
@@ -114,45 +92,21 @@ export default {
 
           // Find appropriate p for field, or create it if it does not exist
           var field_p = document.getElementById(key + "_field");
-          var edit_input;
 
           if (field_p == null) {
-            let new_row = document.getElementById("fields_table").insertRow(-1);
-            new_row.id = key + "_container";
-            new_row.classList.add("field_container_temp");
-
-            let title_cell = new_row.insertCell(0);
-            title_cell.innerHTML = key + ":";
-
-            field_p = new_row.insertCell(-1);
-            field_p.id = key + "_field";
-            field_p.classList.add("field_entry");
-
-            let field_e = new_row.insertCell(-1);
-            field_e.id = key + "_edit_container";
-            field_e.classList.add("edit_container");
-            field_e.placeholder = data[key];
-            field_e.value = data[key];
-
-            edit_input = document.createElement("input");
-            edit_input.type = "text";
-            edit_input.id   = key + "_edit";
-            edit_input.name = key;
-            edit_input.classList.add("edit_input");
-            edit_input.placeholder = data[key];
-            edit_input.value       = data[key];
-            field_e.appendChild(edit_input);
+            field_p = this.create_field_container(key);
           }
 
           // If it already exists, display its container element
           else {
+            field_p.style.display = "";
             let field_c = document.getElementById(key + "_container");
             if (field_c != null) {
               field_c.style.display = "";
             };
-
-            edit_input = document.getElementById(key + "_edit");
           };
+
+          var edit_input = document.getElementById(key + "_edit");
           
           // Set the data, with special formatting for the dates
           if (key == "Last Sign In") {
@@ -191,7 +145,6 @@ export default {
         var fields = document.getElementsByClassName("data_field");
         for (var i = 0; i < fields.length; i++) {
           fields[i].innerHTML = "";
-          fields[i].style.display = "none";
         }
 
         let containers = document.getElementsByClassName("field_container");
@@ -214,6 +167,35 @@ export default {
 
   methods: {
 
+    create_field_container: function(key) {
+      let table = this.$refs.fields_table;
+
+      let new_row = table.insertRow(-1);
+      new_row.id = key + "_container";
+      new_row.classList.add("field_container");
+
+      let title_cell = new_row.insertCell(0);
+      title_cell.innerHTML = key + ":";
+
+      var field_p = new_row.insertCell(-1);
+      field_p.id = key + "_field";
+      field_p.classList.add("data_field");
+
+      let field_e = new_row.insertCell(-1);
+      field_e.id = key + "_edit_container";
+      field_e.classList.add("edit_container");
+      field_e.style.display = "none";
+      
+      let edit_input = document.createElement("input");
+      edit_input.type = "text";
+      edit_input.id   = key + "_edit";
+      edit_input.name = key;
+      edit_input.classList.add("edit_input");
+      field_e.appendChild(edit_input);
+
+      return field_p;
+    },
+
     // Toggles between edit mode and display mode
     toggle_edit_mode: function() {
       if (this.edit_mode) {
@@ -229,7 +211,7 @@ export default {
       console.log("Switching to display mode...");
       this.$refs.edit_profile.innerHTML = "Edit!";
 
-      Object.entries(document.getElementsByClassName("field_entry")).map(([n, element]) => {
+      Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
         element.style.display = "";
       });
 
@@ -243,7 +225,7 @@ export default {
       console.log("Switching to edit mode...");
       this.$refs.edit_profile.innerHTML = "Submit Edits!";
 
-      Object.entries(document.getElementsByClassName("field_entry")).map(([n, element]) => {
+      Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
         element.style.display = "none";
       });
 
