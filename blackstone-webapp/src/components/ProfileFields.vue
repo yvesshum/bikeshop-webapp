@@ -97,20 +97,18 @@ export default {
               year:    'numeric'
             });
 
-            this.set_all_input_vals(edit_input, temp_date.toLocaleDateString(undefined, {
-              day:     'numeric',
-              month:   'long',
-              year:    'numeric'
-            }));
+            this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,19));
           }
           else if (key == "DOB") {
-            let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
+            let temp_date = new Date(data[key]);
+
+            field_p.innerHTML = temp_date.toLocaleDateString(undefined, {
               day:     'numeric',
               month:   'long',
               year:    'numeric'
             });
-            field_p.innerHTML = temp_date;
-            this.set_all_input_vals(edit_input, temp_date);
+
+            this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,10));
           }
           else {
             field_p.innerHTML = data[key];
@@ -180,7 +178,15 @@ export default {
       field_e.style.display = "none";
       
       let edit_input = document.createElement("input");
-      edit_input.type = "text";
+      if (key == "DOB") {
+        edit_input.type = "date";
+      }
+      else if (key == "Last Sign In") {
+        edit_input.type = "datetime-local";
+      }
+      else {
+        edit_input.type = "text";
+      }
       edit_input.id   = key + "_edit";
       edit_input.name = key;
       edit_input.classList.add("edit_input");
