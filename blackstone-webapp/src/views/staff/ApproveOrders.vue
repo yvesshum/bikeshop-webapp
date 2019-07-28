@@ -41,7 +41,7 @@
             <div slot="table-busy" class="text-center text-danger my-2">
             <b-spinner class="align-middle"></b-spinner>
             <strong>Loading...</strong>
-      </div>
+            </div>
         </b-table>
 
         <b-modal v-model = "modalVisible" hide-footer lazy >

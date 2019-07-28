@@ -75,7 +75,7 @@
 
             <b-row>
                 <b-col>
-                    <b-card-group>
+                    <b-card-group deck>
                         <a href="/approve-orders"> 
                             <b-card
                                 title="Approve Orders"
@@ -84,6 +84,18 @@
                             >
                                 <b-card-text>
                                     Check status, approve, complete, orders
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
+                        <a href="/checked-in">
+                            <b-card
+                                    title="Currently Checked In"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    See who's currently checked in
                                 </b-card-text>
                             </b-card>
                         </a>

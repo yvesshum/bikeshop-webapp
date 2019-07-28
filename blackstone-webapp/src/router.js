@@ -9,6 +9,7 @@ import ProfileLookup from './views/youth/ProfileLookup.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
+import CheckedIn from './views/staff/CheckedIn.vue'
 
 Vue.use(Router);
 
@@ -94,6 +95,15 @@ const router = new Router({
             }
         },
 
+        {
+            path: '/checked-in',
+            name: 'checked-in',
+            component: CheckedIn,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        },
 
         ]
 });
