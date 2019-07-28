@@ -7,7 +7,7 @@
 
 <template>
     <div class = "YouthIDSelector">
-        <multiselect v-model="value" id="multiselect" :options="options" placeholder="Select your ID" open-direction="bottom" label="name" :custom-label="nameWithID">
+        <multiselect v-model="value" id="multiselect" :options="options" placeholder="Select your ID if you are currently active" open-direction="bottom" label="name" :custom-label="nameWithID">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
                     <span class="option__name">{{ props.option.name }}</span>
