@@ -10,31 +10,31 @@
       <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
         <td id="DOB_field"></td>
-        <td id="DOB_edit_container"></td>
+        <td id="DOB_edit_container" class="edit_container"></td>
       </tr>
       <tr id="ActivePeriods_container" class="field_container">
         <td>Periods Active:</td>
         <td id="ActivePeriods_field"></td>
-        <td id="ActivePeriods_edit_container"></td>
+        <td id="ActivePeriods_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Hours Earned_container" class="field_container">
         <td>Hours Earned:</td>
         <td id="Hours Earned_field"></td>
-        <td id="Hours Earned_edit_container"></td>
+        <td id="Hours Earned_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Hours Spent_container" class="field_container">
         <td>Hours Spent:</td>
         <td id="Hours Spent_field"></td>
-        <td id="Hours Spent_edit_container"></td>
+        <td id="Hours Spent_edit_container" class="edit_container"></td>
       </tr>
       <tr id="Pending Hours_container" class="field_container">
         <td>Pending Hours:</td>
         <td id="Pending Hours_field"></td>
-        <td id="Pending Hours_edit_container"></td>
+        <td id="Pending Hours_edit_container" class="edit_container"></td>
       </tr>
     </table>
 
-    <button ref="edit_profile">Edit!</button>
+    <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
 
     <form id="edit_form" style="display: none;" onsubmit="submit_edit_form"></form>
 
@@ -51,6 +51,12 @@ export default {
   props: ["currentProfile"],
   components: {
     
+  },
+
+  data: function() {
+    return {
+      edit_mode: false
+    }
   },
 
   watch: {
@@ -165,8 +171,26 @@ export default {
 
   methods: {
 
-    submit_edit_form: function() {
-      // TODO: Submission stuff!
+    // Toggles between edit mode and display mode
+    toggle_edit_mode: function() {
+      if (this.edit_mode) {
+        this.switch_to_display_mode();
+      } else {
+        this.switch_to_edit_mode();
+      };
+      this.edit_mode = !this.edit_mode;
+    },
+
+    // Switches screen to display mode, submitting any edits to the database
+    switch_to_display_mode: function() {
+      console.log("Switching to display mode...");
+      this.$refs.edit_profile.innerHTML = "Edit!";
+    },
+
+    // Switches screen to edit mode
+    switch_to_edit_mode: function() {
+      console.log("Switching to edit mode...");
+      this.$refs.edit_profile.innerHTML = "Submit Edits!";
     }
   }
 }
