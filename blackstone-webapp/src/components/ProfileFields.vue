@@ -11,32 +11,10 @@
         <td>Date of Birth:</td>
         <td id="DOB_field" class="field_entry"></td>
         <td id="DOB_edit_container" class="edit_container"></td>
-      </tr>
-      <tr id="ActivePeriods_container" class="field_container">
-        <td>Periods Active:</td>
-        <td id="ActivePeriods_field" class="field_entry"></td>
-        <td id="ActivePeriods_edit_container" class="edit_container"></td>
-      </tr>
-      <tr id="Hours Earned_container" class="field_container">
-        <td>Hours Earned:</td>
-        <td id="Hours Earned_field" class="field_entry"></td>
-        <td id="Hours Earned_edit_container" class="edit_container"></td>
-      </tr>
-      <tr id="Hours Spent_container" class="field_container">
-        <td>Hours Spent:</td>
-        <td id="Hours Spent_field" class="field_entry"></td>
-        <td id="Hours Spent_edit_container" class="edit_container"></td>
-      </tr>
-      <tr id="Pending Hours_container" class="field_container">
-        <td>Pending Hours:</td>
-        <td id="Pending Hours_field" class="field_entry"></td>
-        <td id="Pending Hours_edit_container" class="edit_container"></td>
       </tr> -->
     </table>
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
-
-    <form id="edit_form" style="display: none;" onsubmit="submit_edit_form"></form>
 
   </div>
 </template>
@@ -166,8 +144,6 @@ export default {
         // Hide the containers
         document.getElementById("name_div").style.display = "none";
         document.getElementById("fields_table").style.display = "none";
-
-        document.getElementById("edit_form").innerHTML = "";
       }
     }
   },
