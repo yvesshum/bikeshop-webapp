@@ -2,7 +2,7 @@
     <div class="home">
         <TopBar/>
         <p>This is the test home page, put things in here for testing specific pages</p>
-        <YouthSubmitOrders />
+        <StaffManageSkills />
         <button @click="logout" style="margin: 30px">Logout</button>
     </div>
 
@@ -10,12 +10,12 @@
 
 <script>
     import {firebase} from '../../firebase';
-    import YouthSubmitOrders from "./youth/SubmitOrders";
+    import StaffManageSkills from "./staff/ManageApronSkills";
     import TopBar from '../components/TopBar';
     export default {
         name: 'home',
         components: {
-            YouthSubmitOrders,
+            StaffManageSkills,
             TopBar
         },
         methods: {
