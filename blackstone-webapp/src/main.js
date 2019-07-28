@@ -14,6 +14,7 @@ Vue.component('top-bar', TopBar);
 Vue.use(BootstrapVue);
 Vue.use(VueTabulator);
 
+
 let app = '';
 
 firebase.auth().onAuthStateChanged(() => {

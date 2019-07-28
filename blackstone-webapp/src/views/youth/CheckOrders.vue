@@ -7,10 +7,13 @@
             responsive="sm"
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
+            :busy="isBusy"
         >
+            <div slot="table-busy" class="text-center text-danger my-2">
+            <b-spinner class="align-middle"></b-spinner>
+            <strong>Loading...</strong>
+            </div>
         </b-table>
-
-
     </div>
 
 </template>
@@ -29,8 +32,8 @@ export default {
                 sortDesc: false,
                 fields: [],
                 items: [],
+                isBusy: true,
             };
-
     },
 
     methods: {
@@ -59,11 +62,16 @@ export default {
                 return ret;
         },
 
+        toggleBusy() {
+            this.isBusy = !this.isBusy;
+        },
+
     },
 
     async mounted() {
             await this.getHeaders();
             await this.getTData();
+            this.toggleBusy();
     }
 
 }

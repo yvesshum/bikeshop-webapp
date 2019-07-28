@@ -1,6 +1,6 @@
 import firebase_app from 'firebase/app'
 import 'firebase/firestore'
-
+import 'firebase/database'
 const config = {
     apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
     authDomain: "bikeshoptesting-9e034.firebaseapp.com",
@@ -12,5 +12,6 @@ const config = {
 
 firebase_app.initializeApp(config);
 
-export const db = firebase_app.firestore();;
+export const db = firebase_app.firestore();
 export const firebase = firebase_app;
+export const rb = firebase_app.database();
