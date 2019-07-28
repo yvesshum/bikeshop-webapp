@@ -192,6 +192,13 @@ export default {
       edit_input.classList.add("edit_input");
       field_e.appendChild(edit_input);
 
+      let reset_button = document.createElement("button");
+      reset_button.innerHTML = "Reset";
+      reset_button.onclick = function() {
+        edit_input.value = edit_input.defaultValue;
+      };
+      field_e.appendChild(reset_button);
+
       return field_p;
     },
 
