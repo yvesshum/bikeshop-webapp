@@ -6,8 +6,8 @@
       <span class="id_parens">(ID:&nbsp;<span id="ID_field"></span>)</span>
     </div>
 
-    <table id="fields_table" style="display: none;">
-      <tr id="DOB_container" class="field_container">
+    <table id="fields_table" ref="fields_table" style="display: none;">
+      <!-- <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
         <td id="DOB_field" class="field_entry"></td>
         <td id="DOB_edit_container" class="edit_container"></td>
@@ -31,7 +31,7 @@
         <td>Pending Hours:</td>
         <td id="Pending Hours_field" class="field_entry"></td>
         <td id="Pending Hours_edit_container" class="edit_container"></td>
-      </tr>
+      </tr> -->
     </table>
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
@@ -57,6 +57,35 @@ export default {
     return {
       edit_mode: false
     }
+  },
+
+  mounted: function() {
+    let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
+    let table = this.$refs.fields_table;
+
+    fields_list.forEach(function(element) {
+      let new_row = table.insertRow(-1);
+      new_row.id = element + "_container";
+      new_row.classList.add("field_container");
+
+      let title_cell = new_row.insertCell(0);
+      title_cell.innerHTML = element + ":";
+
+      let field_p = new_row.insertCell(-1);
+      field_p.id = element + "_field";
+      field_p.classList.add("field_entry");
+
+      let field_e = new_row.insertCell(-1);
+      field_e.id = element + "_edit_container";
+      field_e.classList.add("edit_container");
+      
+      let edit_input = document.createElement("input");
+      edit_input.type = "text";
+      edit_input.id   = element + "_edit";
+      edit_input.name = element;
+      edit_input.classList.add("edit_input");
+      field_e.appendChild(edit_input);
+    })
   },
 
   watch: {
@@ -85,6 +114,7 @@ export default {
 
           // Find appropriate p for field, or create it if it does not exist
           var field_p = document.getElementById(key + "_field");
+          var edit_input;
 
           if (field_p == null) {
             let new_row = document.getElementById("fields_table").insertRow(-1);
@@ -103,6 +133,15 @@ export default {
             field_e.classList.add("edit_container");
             field_e.placeholder = data[key];
             field_e.value = data[key];
+
+            edit_input = document.createElement("input");
+            edit_input.type = "text";
+            edit_input.id   = key + "_edit";
+            edit_input.name = key;
+            edit_input.classList.add("edit_input");
+            edit_input.placeholder = data[key];
+            edit_input.value       = data[key];
+            field_e.appendChild(edit_input);
           }
 
           // If it already exists, display its container element
@@ -110,7 +149,9 @@ export default {
             let field_c = document.getElementById(key + "_container");
             if (field_c != null) {
               field_c.style.display = "";
-            }
+            };
+
+            edit_input = document.getElementById(key + "_edit");
           };
           
           // Set the data, with special formatting for the dates
@@ -122,6 +163,8 @@ export default {
               year:    'numeric'
             });
             field_p.innerHTML = temp_date;
+            edit_input.placeholder = temp_date;
+            edit_input.value       = temp_date;
           }
           else if (key == "DOB") {
             let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
@@ -130,23 +173,16 @@ export default {
               year:    'numeric'
             });
             field_p.innerHTML = temp_date;
+            edit_input.placeholder = temp_date;
+            edit_input.value       = temp_date;
           }
           else {
             field_p.innerHTML = data[key];
+            if (edit_input != null) {
+              edit_input.placeholder = data[key];
+              edit_input.value       = data[key];
+            }
           }
-
-          // Create edit field
-          var x = document.createElement("input");
-          x.type = "text";
-          x.id = key + "_edit";
-          x.name = key;
-          x.placeholder = data[key];
-          x.value = data[key];
-          if (document.getElementById(key + "_edit_container") != null) {
-            document.getElementById(key + "_edit_container").appendChild(x);
-          } else {
-            document.getElementById("edit_form").appendChild(x);
-          };
         };
       }
 
