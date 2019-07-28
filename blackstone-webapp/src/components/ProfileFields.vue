@@ -169,7 +169,12 @@ export default {
       new_row.id = key + "_container";
       new_row.classList.add("field_container");
 
-      let title_cell = new_row.insertCell(0);
+      let remove_button_container = new_row.insertCell(-1);
+      remove_button_container.id = key + "_remove_button_container";
+      remove_button_container.classList.add("remove_button_container");
+      remove_button_container.style.display = "none";
+
+      let title_cell = new_row.insertCell(-1);
       title_cell.id = key + "_title";
       title_cell.classList.add("field_title");
       title_cell.innerHTML = key + ":";
@@ -204,6 +209,25 @@ export default {
         }
       });
       field_e.appendChild(edit_input);
+
+      let remove_button = document.createElement("button");
+      remove_button.innerHTML = "X";
+      remove_button.onclick = function () {
+        if (this.innerHTML == "+") {
+          this.innerHTML = "X";
+          field_e.style.display = "";
+          field_p.style.display = "none";
+          field_p.classList.remove("to_be_removed");
+          field_e.classList.remove("to_be_removed");
+        } else {
+          this.innerHTML = "+";
+          field_e.style.display = "none";
+          field_p.style.display = "";
+          field_p.classList.add("to_be_removed");
+          field_e.classList.add("to_be_removed");
+        }
+      }
+      remove_button_container.appendChild(remove_button);
 
       let reset_button = document.createElement("button");
       reset_button.innerHTML = "Reset";
@@ -241,6 +265,10 @@ export default {
       Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
         element.style.display = "none";
       });
+
+      Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
+        element.style.display = "none";
+      });
     },
 
     // Switches screen to edit mode
@@ -254,6 +282,10 @@ export default {
       });
 
       Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
+        element.style.display = "";
+      });
+
+      Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
         element.style.display = "";
       });
     },
@@ -301,7 +333,11 @@ export default {
       var c = false;
 
       Object.entries(form).map(([n, element]) => {
-        if (element.value != element.defaultValue) {
+        if (element.classList.contains("to_be_removed")) {
+          changes[element.name] = null;
+          // TODO: Actually remove from the page and the database
+        }
+        else if (element.value != element.defaultValue) {
           changes[element.name] = element.value;
           document.getElementById(element.name + "_field").innerHTML = element.value;
           this.set_all_input_vals(element, element.value);
@@ -337,12 +373,16 @@ export default {
           fields.edit_field.value = fields.edit_field.defaultValue;
         };
 
+        if (fields.remove_button_container != null) {
+          fields.remove_button_container.style.display = "none";
+        }
+
         this.$refs.edit_profile.innerHTML = "Edit!";
         this.$refs.discard_changes.style.display = "none";
         this.edit_mode = false;
       });
     },
-    
+
 
     convert_to_fields: function(container) {
       let key = container.id.slice(0, container.id.lastIndexOf("_"));
@@ -354,6 +394,7 @@ export default {
       fields.field = document.getElementById(key + "_field");
       fields.edit_field = document.getElementById(key + "_edit");
       fields.edit_container = document.getElementById(key + "_edit_container");
+      fields.remove_button_container = document.getElementById(key + "_remove_button_container");
 
       return fields;
     }
@@ -376,5 +417,10 @@ export default {
     /*display: none;*/
     margin: auto;
     text-align: left;
+  }
+
+  .to_be_removed {
+    color: gray;
+    font-style: oblique;
   }
 </style>
