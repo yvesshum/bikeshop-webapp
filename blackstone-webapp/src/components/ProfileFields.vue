@@ -15,6 +15,7 @@
     </table>
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
+    <button ref="discard_changes" v-on:click="discard_changes()" style="display: none;">Discard Changes</button>
 
   </div>
 </template>
@@ -45,6 +46,9 @@ export default {
   },
 
   watch: {
+
+    // TODO: Set watcher for edit_mode
+
     currentProfile: function(doc) {
 
       // Clear the old data from the screen
@@ -166,6 +170,7 @@ export default {
       new_row.classList.add("field_container");
 
       let title_cell = new_row.insertCell(0);
+      title_cell.id = key + "_title";
       title_cell.classList.add("field_title");
       title_cell.innerHTML = key + ":";
 
@@ -225,6 +230,7 @@ export default {
     switch_to_display_mode: function() {
       // console.log("Switching to display mode...");
       this.$refs.edit_profile.innerHTML = "Edit!";
+      this.$refs.discard_changes.style.display = "none";
 
       this.save_edits();
 
@@ -241,6 +247,7 @@ export default {
     switch_to_edit_mode: function() {
       // console.log("Switching to edit mode...");
       this.$refs.edit_profile.innerHTML = "Submit Edits!";
+      this.$refs.discard_changes.style.display = "";
 
       Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
         element.style.display = "none";
@@ -314,6 +321,41 @@ export default {
 
       // Saves edits to firebase
       // db.collection('GlobalYouthProfile').doc(youth_id).update(changes);
+    },
+
+
+    discard_changes: function() {
+      Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
+        let fields = this.convert_to_fields(element);
+
+        console.log(fields.title_cell);
+
+        if (fields.title_cell != null) fields.title_cell.style["font-weight"] = "";
+        if (fields.field != null) fields.field.style["display"] = "";
+        if (fields.edit_container != null) fields.edit_container.style["display"] = "none";
+        if (fields.edit_field != null) {
+          fields.edit_field.value = fields.edit_field.defaultValue;
+        };
+
+        this.$refs.edit_profile.innerHTML = "Edit!";
+        this.$refs.discard_changes.style.display = "none";
+        this.edit_mode = false;
+      });
+    },
+    
+
+    convert_to_fields: function(container) {
+      let key = container.id.slice(0, container.id.lastIndexOf("_"));
+
+      var fields = new Object();
+
+      fields.container = container;
+      fields.title_cell = document.getElementById(key + "_title");
+      fields.field = document.getElementById(key + "_field");
+      fields.edit_field = document.getElementById(key + "_edit");
+      fields.edit_container = document.getElementById(key + "_edit_container");
+
+      return fields;
     }
   }
 }
