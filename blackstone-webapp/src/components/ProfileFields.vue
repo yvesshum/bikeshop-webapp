@@ -88,15 +88,22 @@ export default {
           
           // Set the data, with special formatting for the dates
           if (key == "Last Sign In") {
-            let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
+            let temp_date = new Date(data[key]);
+
+            field_p.innerHTML = temp_date.toLocaleDateString(undefined, {
               weekday: 'long',
               day:     'numeric',
               month:   'long',
               year:    'numeric'
             });
-            field_p.innerHTML = temp_date;
-            edit_input.placeholder = temp_date;
-            edit_input.value       = temp_date;
+            
+            edit_input.placeholder = temp_date.toLocaleDateString(undefined, {
+              day:     'numeric',
+              month:   'long',
+              year:    'numeric'
+            });
+
+            edit_input.value = edit_input.placeholder;
           }
           else if (key == "DOB") {
             let temp_date = new Date(data[key]).toLocaleDateString(undefined, {
