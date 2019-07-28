@@ -4,10 +4,10 @@
     <p>This is the staff view of the youth profile lookup page</p>
 
     <!-- Replaced selector bar with static buttons to test without spamming firebase -->
-    <!-- <YouthIDSelector @selected="selectedID"/> -->
-    <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
+    <YouthIDSelector @selected="selectedID"/>
+    <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
     <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button>
-    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button>
+    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
 
     <div ref="body_fields" style="display: none;">
       <ProfileFields :current-profile="currentProfile" />
@@ -58,14 +58,22 @@ export default {
 
       selectedID: async function(id) {
 
-        this.$refs.body_fields.style.display = "";
+        // No id returned - clear the page
+        if (id == null) {
+          this.load_none();
+        }
 
-        id = id.slice(id.lastIndexOf(' ')+1);
-        let snapshot = db.collection("GlobalYouthProfile").doc(id);
+        // Id returned - load profile for that youth
+        else {
+          this.$refs.body_fields.style.display = "";
 
-        this.currentProfile = await snapshot.get();
-        this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+          id = id.slice(id.lastIndexOf(' ')+1);
+          let snapshot = db.collection("GlobalYouthProfile").doc(id);
+
+          this.currentProfile = await snapshot.get();
+          this.order_log_collection = snapshot.collection("Order Log");
+          this.work_log_collection  = snapshot.collection("Work Log");
+        }
       },
 
       logout: function() {
@@ -82,7 +90,7 @@ export default {
 
         this.currentProfile = await snapshot.get();
         this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+        this.work_log_collection  = snapshot.collection("Work Log");
       },
 
       load_yves: async function() {
@@ -93,15 +101,14 @@ export default {
 
         this.currentProfile = await snapshot.get();
         this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+        this.work_log_collection  = snapshot.collection("Work Log");
       },
 
       load_none: function() {
-
         this.$refs.body_fields.style.display = "none";
         this.currentProfile = null;
         this.order_log_collection = null;
-        this.work_log_collection =  null;
+        this.work_log_collection  = null;
       }
     }
 }
