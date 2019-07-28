@@ -98,6 +98,18 @@
                                 </b-card-text>
                             </b-card>
                         </a>
+                        
+                        <a href="/manage-skills-staff">
+                            <b-card
+                                title="Manage Apron Skills"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Add, remove, and edit skills
+                                </b-card-text>
+                            </b-card>
+                        </a>
                     </b-card-group>
                 </b-col>
 

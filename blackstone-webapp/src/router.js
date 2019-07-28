@@ -10,6 +10,7 @@ import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue'
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
 import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
+import ManageApronSkills from './views/staff/ManageApronSkills.vue'
 
 Vue.use(Router);
 
@@ -103,7 +104,15 @@ const router = new Router({
                 requiresStaff: false
             }
         },
-
+        {
+            path: '/manage-skills-staff',
+            name: 'manage-skills-staff',
+            component: ManageApronSkills,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
 
         ]
 });
