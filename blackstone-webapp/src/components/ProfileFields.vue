@@ -47,7 +47,49 @@ export default {
 
   watch: {
 
-    // TODO: Set watcher for edit_mode
+    
+    edit_mode: function(val) {
+
+      // Go into edit mode
+      if (this.edit_mode) {
+        this.$refs.edit_profile.innerHTML = "Submit Edits!";
+        this.$refs.discard_changes.style.display = "";
+
+        Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
+          element.style.display = "none";
+        });
+
+        Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
+          element.style.display = "";
+        });
+
+        Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
+          element.style.display = "";
+        });
+      }
+
+      // Reset to display mode
+      else {
+        this.$refs.edit_profile.innerHTML = "Edit!";
+        this.$refs.discard_changes.style.display = "none";
+        this.edit_mode = false;
+
+        Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
+          let fields = this.convert_to_fields(element);
+
+          if (fields.title_cell != null) fields.title_cell.style["font-weight"] = "";
+          if (fields.field != null) fields.field.style["display"] = "";
+          if (fields.edit_container != null) fields.edit_container.style["display"] = "none";
+          if (fields.edit_field != null) {
+            fields.edit_field.value = fields.edit_field.defaultValue;
+          };
+
+          if (fields.remove_button_container != null) {
+            fields.remove_button_container.style.display = "none";
+          }
+        });
+      }
+    },
 
     currentProfile: function(doc) {
 
@@ -243,51 +285,9 @@ export default {
     // Toggles between edit mode and display mode
     toggle_edit_mode: function() {
       if (this.edit_mode) {
-        this.switch_to_display_mode();
-      } else {
-        this.switch_to_edit_mode();
+        this.save_edits();
       };
       this.edit_mode = !this.edit_mode;
-    },
-
-    // Switches screen to display mode, submitting any edits to the database
-    switch_to_display_mode: function() {
-      // console.log("Switching to display mode...");
-      this.$refs.edit_profile.innerHTML = "Edit!";
-      this.$refs.discard_changes.style.display = "none";
-
-      this.save_edits();
-
-      Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
-        element.style.display = "";
-      });
-
-      Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
-        element.style.display = "none";
-      });
-
-      Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
-        element.style.display = "none";
-      });
-    },
-
-    // Switches screen to edit mode
-    switch_to_edit_mode: function() {
-      // console.log("Switching to edit mode...");
-      this.$refs.edit_profile.innerHTML = "Submit Edits!";
-      this.$refs.discard_changes.style.display = "";
-
-      Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
-        element.style.display = "none";
-      });
-
-      Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
-        element.style.display = "";
-      });
-
-      Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
-        element.style.display = "";
-      });
     },
 
 
@@ -361,26 +361,7 @@ export default {
 
 
     discard_changes: function() {
-      Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
-        let fields = this.convert_to_fields(element);
-
-        console.log(fields.title_cell);
-
-        if (fields.title_cell != null) fields.title_cell.style["font-weight"] = "";
-        if (fields.field != null) fields.field.style["display"] = "";
-        if (fields.edit_container != null) fields.edit_container.style["display"] = "none";
-        if (fields.edit_field != null) {
-          fields.edit_field.value = fields.edit_field.defaultValue;
-        };
-
-        if (fields.remove_button_container != null) {
-          fields.remove_button_container.style.display = "none";
-        }
-
-        this.$refs.edit_profile.innerHTML = "Edit!";
-        this.$refs.discard_changes.style.display = "none";
-        this.edit_mode = false;
-      });
+      this.edit_mode = !this.edit_mode;
     },
 
 
