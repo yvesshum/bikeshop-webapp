@@ -31,7 +31,7 @@ body {
   <form id = "edit_form">
     <p>
       ID <br>
-      <input type="text" name="idtest" id="idtest" value="Test2">
+      <input type="text" name="ID_field" id="ID_field" value="Test2">
     </p>
     <p>
       Name <br>
@@ -45,37 +45,33 @@ body {
   </form>
 
   <script>
-  //Reference Kate collection
+  //Reference firebase database
   var db = firebase.firestore();
-  //var youthRef = db.collection('Kate').doc('Test');
 
-  //Listen for form submit
+  // Listen for form submit
   const edit = document.getElementById("edit_form");
 
   // Upon submitting form, checks if there are edits
   edit.addEventListener("submit", check_edits);
 
-  //Function to get form values
-  function getInputVal(id) {
-    return document.getElementById(id).value;
-  }
+  //==================== FUNCTIONS =====================//
 
-  // LOOPS THROUGH ALL FORM ELEMENTS AND CHECKS IF FORM CHANGES
+  //FUNCTION to check if form changes with edit
+  //Parameters: called upon form submission
   function check_edits(event) {
     event.preventDefault();
-    var youth_id = getInputVal("idtest");
-    var form = document.getElementById("edit_form");
+    // @Vince change this to: document.getElementById("ID_Field").innerHTML
+    var youth_id = document.getElementById("ID_field").value;
+    const form = document.getElementById("edit_form");
     var n;
     var c = false;
 
     // subtract 1 from form length because of button at the end
     var el = form.elements.length - 1;
-    //DISPLAYS NUMBER OF FIELDS IN EDIT FORM:
-    console.log(el);
+    console.log(el);  // Displays the number of fields in edit form
     for (var e = 0; e < el; e++) {
       n = form.elements[e];
-      //DISPLAYS THE FORM ELEMENTS:
-      console.log(n);
+      console.log(n);  // Displays the form elements
       c = c || (n.value != n.defaultValue);
     }
 
@@ -83,13 +79,15 @@ body {
       alert("The edits have been saved");
       saveEdit(youth_id);
     } else {
-      alert("No edits were made");
+      alert("No edits have been made");
     }
   }
 
-  //Save edit to firebase
+  // FUNCTION that saves edits to firebase, called by check_edits upon
+  // determination that actual edits were made
+  // Parameters: ID of youth
   async function saveEdit(id){
-
+    // creates an object to store edited values
     var changes = new Object();
 
     var youthRef = db.collection('GlobalYouthProfile').doc(id);
@@ -97,15 +95,15 @@ body {
     let fields_data = data.data();
     console.log("ORIGINAL FIELD VALUES:")
     console.log(fields_data);
-    console.log("EDITED FIELD VALUES:")
+    console.log("FIELD VALUES TO BE SUBMITTED:")
     for (d in fields_data) {
       console.log(d);
       changes[d] = document.getElementById(d + "_edit").value;
       console.log(changes[d]);
     }
 
-      console.log(changes);
-      youthRef.update(changes);
+    console.log(changes);
+    youthRef.update(changes);
   }
 
   </script>
