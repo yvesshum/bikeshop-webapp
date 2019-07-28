@@ -201,8 +201,10 @@ export default {
 
     // Switches screen to display mode, submitting any edits to the database
     switch_to_display_mode: function() {
-      console.log("Switching to display mode...");
+      // console.log("Switching to display mode...");
       this.$refs.edit_profile.innerHTML = "Edit!";
+
+      this.save_edits();
 
       Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
         element.style.display = "";
@@ -215,7 +217,7 @@ export default {
 
     // Switches screen to edit mode
     switch_to_edit_mode: function() {
-      console.log("Switching to edit mode...");
+      // console.log("Switching to edit mode...");
       this.$refs.edit_profile.innerHTML = "Submit Edits!";
 
       Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
@@ -225,6 +227,67 @@ export default {
       Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
         element.style.display = "";
       });
+    },
+
+
+
+    //FUNCTION to check if form changes with edit
+    //Parameters: called upon form submission
+    check_edits: function(event) {
+      // event.preventDefault();
+      var youth_id = document.getElementById("ID_field").innerHTML;
+      const form = document.getElementsByClassName("edit_input");
+      
+      var n;
+      var c = false;
+
+      var el = form.elements.length;
+      console.log(el);  // Displays the number of fields in edit form
+      for (var e = 0; e < el; e++) {
+        n = form.elements[e];
+        console.log(n);  // Displays the form elements
+        c = c || (n.value != n.defaultValue);
+      }
+
+      if (c == true) {
+        alert("The edits have been saved");
+        saveEdit(youth_id);
+      } else {
+        alert("No edits have been made");
+      }
+    },
+
+
+
+    // FUNCTION that saves edits to firebase, called by check_edits upon
+    // determination that actual edits were made
+    // Parameters: ID of youth
+    save_edits: async function(){
+      // creates an object to store edited values
+      var changes = new Object();
+
+      let youth_id = document.getElementById("ID_field").innerHTML;
+      const form = document.getElementsByClassName("edit_input");
+
+      var c = false;
+
+      Object.entries(form).map(([n, element]) => {
+        if (element.value != element.defaultValue) {
+          changes[element.name] = element.value;
+          document.getElementById(element.name + "_field").innerHTML = element.value;
+          this.set_all_input_vals(element, element.value);
+          c = true;
+        };
+      });
+
+      if (c) {
+        console.log("Changes to be made: ", changes);
+      } else {
+        console.log("No changes to be made.", changes);
+      }
+
+      // Saves edits to firebase
+      // db.collection('GlobalYouthProfile').doc(youth_id).update(changes);
     }
   }
 }
