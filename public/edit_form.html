@@ -90,18 +90,20 @@ body {
     // creates an object to store edited values
     var changes = new Object();
 
+    // @Vince You might want to delete the next three lines of code
     var youthRef = db.collection('GlobalYouthProfile').doc(id);
     let data = await youthRef.get();
     // Gets the field names in the specified youth id document
-    let fields_data = data.data();
+    data = data.data();
+
     console.log("ORIGINAL FIELD VALUES:")
-    console.log(fields_data);
+    console.log(data);
     console.log("FIELD VALUES TO BE SUBMITTED:")
-    for (d in fields_data) {
-      console.log(d);
+    for (key in data) {
+      console.log(key);
       // Adds current value of field "d" in form to changes object
-      changes[d] = document.getElementById(d + "_edit").value;
-      console.log(changes[d]);
+      changes[key] = document.getElementById(key + "_edit").value;
+      console.log(changes[key]);
     }
 
     console.log(changes);
