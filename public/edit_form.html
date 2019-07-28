@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-firestore.js"></script>
+  <script>
+  // Initialize Firebase, this is always necessary
+  var config = {
+    apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
+    authDomain: "bikeshoptesting-9e034.firebaseapp.com",
+    databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
+    projectId: "bikeshoptesting-9e034",
+    storageBucket: "bikeshoptesting-9e034.appspot.com",
+    messagingSenderId: "50618401035"
+  };
+  firebase.initializeApp(config);
+  firebase.auth().signInWithEmailAndPassword("yvesshum@uchicago.edu","techteam");
+  </script>
+  <title>Edits</title>
+</head>
+
+<style media="screen">
+body {
+  font-family: Montserrat;
+}
+</style>
+
+<body>
+  <h2>Edit Profile</h2>
+  <form id = "edit_form">
+    <p>
+      ID <br>
+      <input type="text" name="idtest" id="idtest" value="Test2">
+    </p>
+    <p>
+      Name <br>
+      <input type="text" name="Name_edit" id="Name_edit" value="John Smith">
+    </p>
+    <p>
+      DOB <br>
+      <input type="text" name="DOB_edit" id="DOB_edit" value="2000-01-01">
+    </p>
+    <button type="submit">Submit Edits</button>
+  </form>
+
+  <script>
+  //Reference Kate collection
+  var db = firebase.firestore();
+  //var youthRef = db.collection('Kate').doc('Test');
+
+  //Listen for form submit
+  const edit = document.getElementById("edit_form");
+
+  // Upon submitting form, checks if there are edits
+  edit.addEventListener("submit", check_edits);
+
+  //Function to get form values
+  function getInputVal(id) {
+    return document.getElementById(id).value;
+  }
+
+  // LOOPS THROUGH ALL FORM ELEMENTS AND CHECKS IF FORM CHANGES
+  function check_edits(event) {
+    event.preventDefault();
+    var youth_id = getInputVal("idtest");
+    var form = document.getElementById("edit_form");
+    var n;
+    var c = false;
+
+    // subtract 1 from form length because of button at the end
+    var el = form.elements.length - 1;
+    //DISPLAYS NUMBER OF FIELDS IN EDIT FORM:
+    console.log(el);
+    for (var e = 0; e < el; e++) {
+      n = form.elements[e];
+      //DISPLAYS THE FORM ELEMENTS:
+      console.log(n);
+      c = c || (n.value != n.defaultValue);
+    }
+
+    if (c == true) {
+      alert("The edits have been saved");
+      saveEdit(youth_id);
+    } else {
+      alert("No edits were made");
+    }
+  }
+
+  //Save edit to firebase
+  async function saveEdit(id){
+
+    var changes = new Object();
+
+    var youthRef = db.collection('GlobalYouthProfile').doc(id);
+    let data = await youthRef.get();
+    let fields_data = data.data();
+    console.log("ORIGINAL FIELD VALUES:")
+    console.log(fields_data);
+    console.log("EDITED FIELD VALUES:")
+    for (d in fields_data) {
+      console.log(d);
+      changes[d] = document.getElementById(d + "_edit").value;
+      console.log(changes[d]);
+    }
+
+      console.log(changes);
+      youthRef.update(changes);
+  }
+
+  </script>
+</body>
+</html>
