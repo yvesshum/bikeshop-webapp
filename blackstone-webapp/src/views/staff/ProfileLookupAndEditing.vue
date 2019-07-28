@@ -4,19 +4,21 @@
     <p>This is the staff view of the youth profile lookup page</p>
 
     <!-- Replaced selector bar with static buttons to test without spamming firebase -->
-    <!-- <YouthIDSelector @selected="selectedID"/> -->
-    <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
+    <YouthIDSelector @selected="selectedID"/>
+    <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
     <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button>
-    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button>
+    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
 
-    <ProfileFields :current-profile="currentProfile" />
-    <!-- <ApronBar /> -->
+    <div ref="body_fields" style="display: none;">
+      <ProfileFields :current-profile="currentProfile" />
+      <!-- <ApronBar /> -->
 
-    <p>Order Log:</p>
-    <CollectionTable ref="order_log" :heading_data="['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes']" :current_collection="order_log_collection"></CollectionTable>
+      <p>Order Log:</p>
+      <CollectionTable ref="order_log" :heading_data="['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes']" :current_collection="order_log_collection"></CollectionTable>
 
-    <p>Work Log:</p>
-    <CollectionTable ref="work_log" :heading_data="['Category 1', 'Category 2', 'Category 3', 'Category 4']" :current_collection="work_log_collection"></CollectionTable>
+      <p>Work Log:</p>
+      <CollectionTable ref="work_log" :heading_data="['Category 1', 'Category 2', 'Category 3', 'Category 4']" :current_collection="work_log_collection"></CollectionTable>
+    </div>
 
     <button @click="logout">Logout</button>
   </div>
@@ -55,13 +57,23 @@ export default {
     methods: {
 
       selectedID: async function(id) {
-        id = id.slice(id.lastIndexOf(' ')+1);
 
-        let snapshot = db.collection("GlobalYouthProfile").doc(id);
+        // No id returned - clear the page
+        if (id == null) {
+          this.load_none();
+        }
 
-        this.currentProfile = await snapshot.get();
-        this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+        // Id returned - load profile for that youth
+        else {
+          this.$refs.body_fields.style.display = "";
+
+          id = id.slice(id.lastIndexOf(' ')+1);
+          let snapshot = db.collection("GlobalYouthProfile").doc(id);
+
+          this.currentProfile = await snapshot.get();
+          this.order_log_collection = snapshot.collection("Order Log");
+          this.work_log_collection  = snapshot.collection("Work Log");
+        }
       },
 
       logout: function() {
@@ -72,26 +84,31 @@ export default {
 
       load_adam: async function() {
 
+        this.$refs.body_fields.style.display = "";
+
         let snapshot = db.collection("GlobalYouthProfile").doc("HPLtPG2rZCfdGhATE36x");
 
         this.currentProfile = await snapshot.get();
         this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+        this.work_log_collection  = snapshot.collection("Work Log");
       },
 
       load_yves: async function() {
+
+        this.$refs.body_fields.style.display = "";
 
         let snapshot = db.collection("GlobalYouthProfile").doc("10001");
 
         this.currentProfile = await snapshot.get();
         this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection =  snapshot.collection("Work Log");
+        this.work_log_collection  = snapshot.collection("Work Log");
       },
 
       load_none: function() {
+        this.$refs.body_fields.style.display = "none";
         this.currentProfile = null;
         this.order_log_collection = null;
-        this.work_log_collection =  null;
+        this.work_log_collection  = null;
       }
     }
 }

@@ -1,13 +1,18 @@
 <!--Usage: <YouthIDSelector @selected="function"/>-->
 <!--This returns a string of "FirstName LastName YouthID"-->
 
+<!-- TODO: Pass in which part of database to grab names from -->
+<!-- TODO: Sort by name -->
+<!-- TODO: Prevent second click from reselecting -->
+
 <template>
     <div class = "YouthIDSelector">
-        <multiselect id = "multiselect" :options="options" placeholder="Select your ID if you are currently active" @select="selected" open-direction="bottom" label="name" :custom-label="nameWithID">
+        <multiselect v-model="value" id="multiselect" :options="options" placeholder="Select your ID if you are currently active" open-direction="bottom" label="name" :custom-label="nameWithID">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
                     <span class="option__name">{{ props.option.name }}</span>
-                    <small class="option__id">\;({{ props.option.id}})</small>
+                    <br />
+                    <small class="option__id">ID: {{ props.option.id}}</small>
                 </span>
             </template>
             <template slot="option" slot-scope="props">
@@ -31,13 +36,15 @@
         components: { Multiselect },
         data () {
             return {
+                value: '',
                 options: []
             }
         },
         methods: {
-            selected(value) {
-                this.$emit('selected', value.name + " " + value.id);
-            },
+            // selected(value) {
+            //     // console.log("Emitting from selected: ", value, value.name, value.id);
+            //     // this.$emit('selected', value.name + " " + value.id);
+            // },
            async getData() {
                 let data = await db.collection("GlobalVariables").doc('CurrentActiveYouths').get();
                 return data.data();
@@ -47,6 +54,19 @@
             }
 
         },
+
+        watch: {
+            value: function() {
+                // console.log("Value changed to ", new_val);
+                if (this.value == null) {
+                    console.log("Emitting null...");
+                    this.$emit('selected', null);
+                } else {
+                    this.$emit('selected', this.value.name + " " + this.value.id);
+                };
+            }
+        },
+
         async mounted() {
             let data = await this.getData();
             var id_list = [];
@@ -72,3 +92,5 @@
 
 
 </style>
+
+

@@ -79,6 +79,12 @@
             },
 
             selectedID(value) {
+
+                // No ID selected - do nothing
+                if (value == null) {
+                    return;
+                }
+
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
                     if (curName === "First Name") this.requiredFields[i]["value"] = value.split(" ")[0];
