@@ -166,6 +166,7 @@ export default {
       new_row.classList.add("field_container");
 
       let title_cell = new_row.insertCell(0);
+      title_cell.classList.add("field_title");
       title_cell.innerHTML = key + ":";
 
       var field_p = new_row.insertCell(-1);
@@ -190,12 +191,20 @@ export default {
       edit_input.id   = key + "_edit";
       edit_input.name = key;
       edit_input.classList.add("edit_input");
+      edit_input.addEventListener('input', function() {
+        if (edit_input.value != edit_input.defaultValue) {
+          title_cell.style["font-weight"] = "bold";
+        } else {
+          title_cell.style["font-weight"] = "";
+        }
+      });
       field_e.appendChild(edit_input);
 
       let reset_button = document.createElement("button");
       reset_button.innerHTML = "Reset";
       reset_button.onclick = function() {
         edit_input.value = edit_input.defaultValue;
+        title_cell.style["font-weight"] = "";
       };
       field_e.appendChild(reset_button);
 
@@ -292,6 +301,10 @@ export default {
           c = true;
         };
       });
+
+      Object.entries(document.getElementsByClassName("field_title")).map(([n, element]) => {
+        element.style["font-weight"] = "";
+      })
 
       if (c) {
         console.log("Changes to be made: ", changes);
