@@ -142,21 +142,28 @@ export default {
 
       // Helper function - clear the data from the screen
       function clear_data() {
-        var fields = document.getElementsByClassName("data_field");
-        for (var i = 0; i < fields.length; i++) {
-          fields[i].innerHTML = "";
-        }
 
-        let containers = document.getElementsByClassName("field_container");
-        for (var i = 0; i < containers.length; i++) {
-          containers[i].style.display = "none";
-        }
+        // Clear the standard fields
+        Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
+          // Hide the row
+          element.style.display = "none";
 
+          // Clear the field
+          element.getElementsByClassName("data_field")[0].innerHTML = "";
+
+          // Clear the edit box
+          let edit_input = element.getElementsByClassName("edit_container")[0].getElementsByClassName("edit_input")[0];
+          edit_input.placeholder = "";
+          edit_input.value = "";
+        });
+
+        // Clear the nonstandard fields
         let temp_containers = document.getElementsByClassName("field_container_temp");
         while (temp_containers[0]) {
           temp_containers[0].parentNode.removeChild(temp_containers[0]);
         }
 
+        // Hide the containers
         document.getElementById("name_div").style.display = "none";
         document.getElementById("fields_table").style.display = "none";
 
