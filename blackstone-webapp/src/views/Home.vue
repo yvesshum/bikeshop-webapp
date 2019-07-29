@@ -111,6 +111,18 @@
                                 </b-card-text>
                             </b-card>
                         </a>
+
+                        <a href="/profile-lookup-staff">
+                            <b-card
+                                    title="Profile Lookup and Editing"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Staff's profile lookup tool
+                                </b-card-text>
+                            </b-card>
+                        </a>
                     </b-card-group>
                 </b-col>
 
