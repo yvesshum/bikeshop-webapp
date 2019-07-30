@@ -1,14 +1,12 @@
 <template>
-    <div>
+    <div id = "TransferHours">
         <top-bar/>
         <br>
         <b-container>
             <b-row>
                 <b-col>
                     <h1>Transfer Hours</h1>
-
                 </b-col>
-
             </b-row>
             <b-row>
                 <b-col>
@@ -20,12 +18,43 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px"/>
-
+                    <b-row>
+                        <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px"/>
+                        <br>
+                    </b-row>
                 </b-col>
                 <b-col>
-                    <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px"/>
+                    <b-row>
+                        <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px"/>
+                    </b-row>
                 </b-col>
+            </b-row>
+            <b-row>
+                <b-col>
+                    <b-row>
+                        <b-form-textarea v-model="fromInput"
+                                         placeholder="Or manually enter an ID for inactive youth"
+                                         rows="3"
+                                         max-rows="6"
+                                         size="sm"
+                                         style="text-align: center"
+                        />
+                    </b-row>
+                </b-col>
+                <b-col>
+                    <b-row>
+                        <b-form-textarea v-model="toInput"
+                                         placeholder="Or manually enter an ID for inactive youth"
+                                         rows="3"
+                                         max-rows="6"
+                                         size="sm"
+                                         style="text-align: center"
+                        />
+                    </b-row>
+                </b-col>
+            </b-row>
+            <b-row>
+                <br>
             </b-row>
             <b-row>
                 <b-col>
@@ -47,6 +76,7 @@
                                      rows="3"
                                      max-rows="6"
                                      size="sm"
+                                     style="text-align: center"
                     ></b-form-textarea>
                 </b-col>
             </b-row>
@@ -55,7 +85,7 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <b-button variant="success" @click="submit">Submit for staff review!</b-button>
+                    <b-button variant="success" @click="submit">{{submitMsg}}</b-button>
                 </b-col>
             </b-row>
         </b-container>
@@ -70,7 +100,7 @@
             <b-button class="mt-3" block @click="closeModal" variant = "primary">ok!</b-button>
         </b-modal>
 
-        <b-modal v-model = "loadingModalVisible" hide-footer lazy >
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
             <template slot="modal-title">
                 {{loadingModalHeader}}
             </template>
@@ -104,12 +134,15 @@
                 modalVisible: false,
                 modalHeader: "",
                 modalMsg: "",
-                to: "",
-                from: "",
-                value: 0,
+                toSelector: "",
+                fromSelector: "",
+                value: 1,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                note: ""
+                note: "",
+                fromInput: "",
+                toInput: "",
+                submitMsg: "Submit order for staff review!",
             }
         },
 
@@ -125,12 +158,28 @@
             },
 
             async submit() {
-
-                let fromID = this.from.split(" ")[2];
-                let toID = this.to.split(" ")[2];
+                let fromSelectorID = this.fromSelector.split(" ")[2];
+                let toSelectorID = this.toSelector.split(" ")[2];
                 let amount = this.value;
-                if (fromID == null || toID == null) {
-                    this.showModal("Error", "Please select an ID for both");
+
+                let fromID;
+                let toID;
+
+                //check if the user has 2 inputs
+                if (fromSelectorID && this.fromInput) {
+                    this.showModal("Error", "Unclear sender, only select OR type in an ID")
+                    return null;
+                }
+                if (toSelectorID && this.toInput) {
+                    this.showModal("Error", "Unclear recipient, only select OR type in an ID")
+                    return null;
+                }
+
+                fromSelectorID ? fromID = fromSelectorID : fromID = this.fromInput;
+                toSelectorID ? toID = toSelectorID : toID = this.toInput;
+
+                if (fromID == "" && toID == "") {
+                    this.showModal("Error", "Please select/enter an ID for both 'To' and 'From'");
                 }
                 else {
                     this.showLoadingModal("One second..");
@@ -139,12 +188,12 @@
                     let toYouthProfile = await db.collection("GlobalYouthProfile").doc(toID).get();
                     if (fromYouthProfile.data() == null) {
                         this.closeLoadingModal();
-                        this.showModal("Error", "From Youth Profile not found");
+                        this.showModal("Error", "Sender Youth Profile not found");
                         return null;
                     }
                     if (toYouthProfile.data() == null) {
                         this.closeLoadingModal();
-                        this.showModal("Error", "To Youth Profile not found");
+                        this.showModal("Error", "Recipient Youth Profile not found");
                         return null;
                     }
 
@@ -157,8 +206,8 @@
                         db.collection("GlobalTransferHours").doc().set({
                             "fromID": fromID,
                             "toID": toID,
-                            "fromName": this.from.split(" ")[0] + " " + this.from.split(" ")[1],
-                            "toName": this.to.split(" ")[0] + " " + this.to.split(" ")[1],
+                            "fromName": this.fromSelector.split(" ")[0] + " " + this.fromSelector.split(" ")[1],
+                            "toName": this.toSelector.split(" ")[0] + " " + this.toSelector.split(" ")[1],
                             "amount": amount,
                             "date": new Date().toLocaleString(),
                             "note": this.note,
@@ -171,7 +220,7 @@
                         let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) + amount;
                         let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) - amount;
                         let newFromHoursSpent = parseFloat(fromYouthProfile["Hours Spent"]) + amount;
-                        
+
                         let status1 = await db.collection("GlobalYouthProfile").doc(toID).update({
                             "Pending Hours": newToPendingHours
                         });
@@ -201,11 +250,11 @@
             },
 
             selectedFrom(value) {
-                this.from = value;
+                this.fromSelector = value;
             },
 
             selectedTo(value) {
-                this.to = value;
+                this.toSelector = value;
             },
 
             showLoadingModal(msg) {
@@ -227,3 +276,7 @@
         }
     }
 </script>
+
+<style>
+
+</style>
