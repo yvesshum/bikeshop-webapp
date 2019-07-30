@@ -43,7 +43,7 @@ export default {
     let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
     let table = this.$refs.fields_table;
 
-    fields_list.forEach(this.create_field_container);
+    fields_list.forEach(this.append_field_container);
   },
 
   watch: {
@@ -68,6 +68,20 @@ export default {
         Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
           element.style.display = "";
         });
+
+        // add_append_button();
+
+        var add_row = this.$refs.fields_table.insertRow(-1);
+        add_row.id = "add_field_button_row";
+        let add_button_cont = add_row.insertCell(-1);
+        let add_button = document.createElement("button");
+        add_button.id = "add_field_button";
+        add_button.innerHTML = "+";
+        add_button_cont.appendChild(add_button);
+        add_button.onclick = this.insert_temp_field_container;
+
+        // console.log(document.getElementById("add_field_button_row"));
+        // document.getElementById("add_field_button_row").style.display = "";
       }
 
       // Reset to display mode
@@ -75,6 +89,8 @@ export default {
         this.$refs.edit_profile.innerHTML = "Edit!";
         this.$refs.discard_changes.style.display = "none";
         this.$refs.reset_changes.style.display = "none";
+
+        // document.getElementById("add_field_button_row").style.display = "none";
 
         Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
           let fields = this.convert_to_fields(element);
@@ -90,7 +106,10 @@ export default {
             fields.remove_button_container.style.display = "none";
           }
         });
-      }
+
+        // remove_append_button();
+        this.$refs.fields_table.deleteRow(-1);
+      };
     },
 
     currentProfile: function(doc) {
@@ -120,7 +139,7 @@ export default {
           var field_p = document.getElementById(key + "_field");
 
           if (field_p == null) {
-            field_p = this.create_field_container(key);
+            field_p = this.append_field_container(key);
           }
 
           // If it already exists, display its container element
@@ -206,10 +225,27 @@ export default {
       input.defaultValue = val;
     },
 
-    create_field_container: function(key) {
+    insert_temp_field_container: function() {
+      var new_field_name = prompt("Please enter the title of the new field:", "");
+      if (new_field_name != null) {
+        new_field_name = new_field_name.trim();
+        if (new_field_name == "") return null;
+        this.create_field_container(new_field_name, this.$refs.fields_table.rows.length-1);
+
+        document.getElementById(new_field_name + "_field").style.display = "none";
+        document.getElementById(new_field_name + "_edit_container").style.display = "";
+        document.getElementById(new_field_name + "_remove_button_container").style.display = "";
+      }
+    },
+
+    append_field_container: function(key) {
+      return this.create_field_container(key, -1);
+    },
+
+    create_field_container: function(key, row_index) {
       let table = this.$refs.fields_table;
 
-      let new_row = table.insertRow(-1);
+      let new_row = table.insertRow(row_index);
       new_row.id = key + "_container";
       new_row.classList.add("field_container");
 
