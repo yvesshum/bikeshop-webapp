@@ -69,8 +69,6 @@ export default {
           element.style.display = "";
         });
 
-        // add_append_button();
-
         var add_row = this.$refs.fields_table.insertRow(-1);
         add_row.id = "add_field_button_row";
         let add_button_cont = add_row.insertCell(-1);
@@ -79,9 +77,6 @@ export default {
         add_button.innerHTML = "+";
         add_button_cont.appendChild(add_button);
         add_button.onclick = this.insert_temp_field_container;
-
-        // console.log(document.getElementById("add_field_button_row"));
-        // document.getElementById("add_field_button_row").style.display = "";
       }
 
       // Reset to display mode
@@ -89,8 +84,6 @@ export default {
         this.$refs.edit_profile.innerHTML = "Edit!";
         this.$refs.discard_changes.style.display = "none";
         this.$refs.reset_changes.style.display = "none";
-
-        // document.getElementById("add_field_button_row").style.display = "none";
 
         Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
           let fields = this.convert_to_fields(element);
@@ -107,7 +100,6 @@ export default {
           }
         });
 
-        // remove_append_button();
         this.$refs.fields_table.deleteRow(-1);
       };
     },
