@@ -169,6 +169,33 @@ export default {
 
             this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,10));
           }
+          else if (Array.isArray(data[key])) {
+            let checkbox_options = document.createElement("div");
+
+            data[key].forEach(function(element) {
+              let new_div = document.createElement("div");
+              new_div.innerHTML = element;
+              new_div.classList.add("field_list_element");
+              field_p.appendChild(new_div);
+
+              let new_option = document.createElement("input");
+              new_option.type = "checkbox";
+              new_option.checked = true;
+              new_option.name = element;
+              new_option.value = element;
+
+              let new_option_name = document.createElement("div");
+              new_option_name.innerHTML = element;
+              new_option_name.style.display = "inline";
+
+              checkbox_options.appendChild(new_option);
+              checkbox_options.appendChild(new_option_name);
+              checkbox_options.appendChild(document.createElement("br"));
+            });
+
+            let edit_container = document.getElementById(key + "_edit_container");
+            edit_container.insertBefore(checkbox_options, edit_container.childNodes[edit_container.childNodes.length-1]);
+          }
           else {
             field_p.innerHTML = data[key];
             if (edit_input != null) {
@@ -266,6 +293,9 @@ export default {
       }
       else if (key == "Last Sign In") {
         edit_input.type = "datetime-local";
+      }
+      else if (key == "ActivePeriods") {
+        edit_input.style.display = "none";
       }
       else {
         edit_input.type = "text";
@@ -442,5 +472,12 @@ export default {
   .to_be_removed {
     color: gray;
     font-style: oblique;
+  }
+
+  .field_list_element {
+    border-radius: 10px;
+    border: 2px solid green;
+    background-color: lightgreen;
+    text-align: center;
   }
 </style>
