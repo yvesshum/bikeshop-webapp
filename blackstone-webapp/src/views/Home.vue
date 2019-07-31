@@ -62,6 +62,18 @@
                             </b-card>
                         </a>
 
+                        <a href="/transfer-hours">
+                            <b-card
+                                    title="Transfer Hours"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Request to transfer hours
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
                     </b-card-group>
                 </b-col>
             </b-row>
@@ -111,7 +123,6 @@
                                 </b-card-text>
                             </b-card>
                         </a>
-                        
                         <a href="/register-new-youth">
                             <b-card
                                 title="Register New Youth"
@@ -120,6 +131,30 @@
                             >
                                 <b-card-text>
                                     Register a new youth volunteer
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
+                        <a href="/profile-lookup-staff">
+                            <b-card
+                                    title="Profile Lookup and Editing"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Staff's profile lookup tool
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
+                        <a href="/approve-transfers">
+                            <b-card
+                                    title="Approve Hour Transfers"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Approve or reject hour transfer requests
                                 </b-card-text>
                             </b-card>
                         </a>
