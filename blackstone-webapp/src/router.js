@@ -12,6 +12,8 @@ import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
 import ManageApronSkills from './views/staff/ManageApronSkills.vue'
 import CheckedIn from './views/staff/CheckedIn.vue'
+import HourTransfer from './views/youth/TransferCurrentHours'
+import ApproveTransfers from './views/staff/ApproveTransferHours'
 
 Vue.use(Router);
 
@@ -122,7 +124,27 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: false
             }
-        }
+        },
+        {
+            path: '/transfer-hours',
+            name: 'transfer-hours',
+            component: HourTransfer,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        },
+        {
+            path: '/approve-transfers',
+            name: 'approve-transfers',
+            component: ApproveTransfers,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+
+
         ]
 });
 

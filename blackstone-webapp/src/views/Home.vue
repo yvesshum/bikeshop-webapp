@@ -62,6 +62,18 @@
                             </b-card>
                         </a>
 
+                        <a href="/transfer-hours">
+                            <b-card
+                                    title="Transfer Hours"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Request to transfer hours
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
                     </b-card-group>
                 </b-col>
             </b-row>
@@ -120,6 +132,18 @@
                             >
                                 <b-card-text>
                                     Staff's profile lookup tool
+                                </b-card-text>
+                            </b-card>
+                        </a>
+
+                        <a href="/approve-transfers">
+                            <b-card
+                                    title="Approve Hour Transfers"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Approve or reject hour transfer requests
                                 </b-card-text>
                             </b-card>
                         </a>
