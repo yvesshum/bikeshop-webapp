@@ -40,13 +40,36 @@ export default {
   },
 
   mounted: function() {
-    let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
-    let table = this.$refs.fields_table;
-
-    fields_list.forEach(this.append_field_container);
+    
   },
 
   watch: {
+
+    header_doc: function(data) {
+      let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
+      let table = this.$refs.fields_table;
+
+      console.log(this.header_doc);
+
+      append_table_section("Required:");
+      this.header_doc["required"].forEach(this.append_field_container);
+      append_table_section("&nbsp;");
+
+      append_table_section("Statistics:");
+      this.header_doc["hidden"].forEach(this.append_field_container);
+
+      append_table_section("Optional:");
+      this.header_doc["optional"].forEach(this.append_field_container);
+
+      // fields_list.forEach(this.append_field_container);
+
+      function append_table_section(heading) {
+        let new_cell = table.insertRow(-1).insertCell(-1);
+        new_cell.colSpan = "3";
+        new_cell.innerHTML = heading;
+        new_cell.style["text-align"] = "center";
+      };
+    },
 
     
     edit_mode: function(val) {
