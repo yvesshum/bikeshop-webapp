@@ -12,6 +12,7 @@ import ApproveOrders from './views/staff/ApproveOrders.vue'
 import YouthCheckOrders from './views/youth/CheckOrders.vue'
 import ManageApronSkills from './views/staff/ManageApronSkills.vue'
 import CheckedIn from './views/staff/CheckedIn.vue'
+import StaffRegisterYouth from './views/staff/RegisterNewYouth.vue'
 
 Vue.use(Router);
 
@@ -121,6 +122,15 @@ const router = new Router({
             meta: {
                 requiresAuth: true,
                 requiresStaff: false
+            }
+        },
+        {
+            path: '/register-new-youth',
+            name: 'register-new-youth',
+            component: StaffRegisterYouth,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
             }
         }
         ]

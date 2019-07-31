@@ -111,6 +111,18 @@
                                 </b-card-text>
                             </b-card>
                         </a>
+                        
+                        <a href="/register-new-youth">
+                            <b-card
+                                title="Register New Youth"
+                                style="max-width: 20rem;"
+                                class="mb-2"
+                            >
+                                <b-card-text>
+                                    Register a new youth volunteer
+                                </b-card-text>
+                            </b-card>
+                        </a>
                     </b-card-group>
                 </b-col>
 
