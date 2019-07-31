@@ -28,7 +28,7 @@ import firebase_auth from 'firebase/auth';
 
 export default {
   name: 'profile_fields',
-  props: ["currentProfile"],
+  props: ["currentProfile", "header_doc"],
   components: {
     
   },
