@@ -110,7 +110,7 @@
         },
         data() {
             return {
-                sortBy: 'Order Date',
+                sortBy: 'Date',
                 sortDesc: false,
                 fields: [],
                 items: [],
@@ -122,7 +122,8 @@
                 rejectModalHeader: "",
                 rejectModalMsg: "",
                 rejectingDocumentID: "",
-                rejectingYouthID: "",
+                rejectingFromID: "",
+                rejectingToID: "",
                 editModalVisible: false,
                 editMsg: "",
                 isBusy: true,
@@ -137,7 +138,12 @@
             },
 
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("OrderTransfers").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("Hour Transfers").get();
+                if (headers.data() == null) {
+                    window.alert("Error, unable to get fields 'Hour Transfers' from 'GlobalFieldsCollection'");
+                    return null;
+                }
+
                 headers = headers.data().fields;
                 let fields = [];
                 for (let i = 0; i < headers.length; i++) {
@@ -182,45 +188,51 @@
                 let row = this.selected[0];
                 console.log(row);
                 //change remotely
-                let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(row["fromID"]).get();
+                let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(row["From ID"]).get();
                 if (fromYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["fromID"]);
+                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["From ID"]);
                     return null;
                 }
 
                 this.showLoadingModal("Doing some work in the background...");
                 fromYouthProfile = fromYouthProfile.data();
-                let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) + parseFloat(row["amount"]);
-                let status = await db.collection("GlobalYouthProfile").doc(row["fromID"]).update({
+                let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) + parseFloat(row["Amount"]);
+                let acceptFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).update({
                     "Pending Hours": newFromPendingHours.toString()
                 });
 
-                if (status) {
+                if (acceptFromStatus) {
                     window.alert("Error, unable to change sender's profile hours")
                 }
 
-                let toYouthProfile = await db.collection("GlobalYouthProfile").doc(row["toID"]).get();
+                let toYouthProfile = await db.collection("GlobalYouthProfile").doc(row["To ID"]).get();
                 if (toYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["fromID"]);
+                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["From ID"]);
                     return null;
                 }
 
-                this.showLoadingModal("Doing some work in the background...");
                 toYouthProfile = toYouthProfile.data();
-                let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) - parseFloat(row["amount"]);
-                let newToHoursEarned = parseFloat(toYouthProfile["Hours Earned"]) + parseFloat(row["amount"]);
-                let status2 = await db.collection("GlobalYouthProfile").doc(row["toID"]).update({
+                let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) - parseFloat(row["Amount"]);
+                let newToHoursEarned = parseFloat(toYouthProfile["Hours Earned"]) + parseFloat(row["Amount"]);
+                let acceptToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).update({
                     "Pending Hours": newToPendingHours.toString(),
                     "Hours Earned": newToHoursEarned
                 });
 
-                if (status2) {
-                    window.alert("Error, unable to change recipient's profile hours")
+                if (acceptToStatus) {
+                    window.alert("Error, unable to change recipient's profile hours");
                     return null;
                 }
 
+                //TODO: Create a log collection in Global Youth Profile for these transfers
+                let logFromStatus = db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
+
+                })
+
+
+
                 this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["fromName"] + "'s transfer to " + row["toName"])
+                this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"])
 
                 this.removeLocally(row["Document ID"]);
 
@@ -252,22 +264,62 @@
             },
 
             reject() {
-                let rows = this.selected;
-                for (let i = 0; i < rows.length; i++){
-                    let curRow = rows[i];
-                    this.rejectingDocumentID = curRow["Document ID"];
-                    this.rejectingYouthID = curRow["Youth ID"];
-                    this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order on " + curRow["Order Date"]);
-                }
-
+                let curRow = this.selected[0];
+                this.rejectingDocumentID = curRow["Document ID"];
+                this.rejectingToID = curRow["To ID"];
+                this.rejectingFromID = curRow["From ID"];
+                this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
+                    + curRow["From Name"]  + "'s transfer for " + curRow["Amount"] + " to " + curRow["To Name"]);
             },
 
             async confirmedDelete() {
                 //adjust hours
-                let YouthProfile = await db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).get();
-                YouthProfile = YouthProfile.data();
+                this.closeRejectModal();
+                this.showLoadingModal("Deleting...");
+                let toYouthProfile = await db.collection("GlobalYouthProfile").doc(this.rejectingToID).get();
+                toYouthProfile = toYouthProfile.data();
+                if(toYouthProfile == null) {
+                    window.alert("Error, Unable to find Youth ID of " + this.rejectingToID);
+                    return null;
+                }
+                let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(this.rejectingFromID).get();
+                fromYouthProfile = fromYouthProfile.data();
+                if(fromYouthProfile == null) {
+                    window.alert("Error, Unable to find Youth ID of " + this.rejectingFromID);
+                    return null;
+                }
 
+                let amount = parseFloat(this.selected[0]["Amount"]);
+                let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) - amount;
+                let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) + amount;
+                let newFromHoursSpent = parseFloat(fromYouthProfile["Hours Spent"]) - amount;
+
+                let rejectingToStatus = db.collection("GlobalYouthProfile").doc(this.rejectingToID).update({
+                    "Pending Hours": newToPendingHours.toString()
+                });
+                if (rejectingToStatus == null) {
+                    window.alert("Err, unable to update " + this.rejectingToID + " " + toYouthProfile["First Name"] + "'s profile")
+                    return null;
+                }
+
+                let rejectingFromStatus = db.collection("GlobalYouthProfile").doc(this.rejectingFromID).update({
+                    "Pending Hours": newFromPendingHours.toString(),
+                    "Hours Spent": newFromHoursSpent.toString()
+                });
+
+                if (rejectingFromStatus == null) {
+                    window.alert("Err, unable to update " + this.rejectingFromID + " " + fromYouthProfile["First Name"] + "'s profile")
+                    return null;
+                }
+
+                let status3 = db.collection("GlobalTransferHours").doc(this.rejectingDocumentID).delete();
+                if (status3 == null) {
+                    window.alert("Err, unable to delete transfer from GlobalTransferHours. Transfer document ID: " + this.rejectingDocumentID)
+                    return null;
+                }
+
+
+                //remove locally
                 let itemIndex = 0;
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === this.rejectingDocumentID) {
@@ -275,55 +327,21 @@
                         break;
                     }
                 }
-
-                //if rejecting document is already approved
-                if (this.items[itemIndex]["Status"] === "Approved") {
-                    //decrease hours spent by item cost
-                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
-                    db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
-                        "Hours Spent": newHoursSpent
-                    }).catch(err => {
-                        window.alert("Error: " + err);
-                        return null;
-                    })
-                }
-                else { //if rejecting document is of pending status
-                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
-                    let newPendingHours = (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
-                    db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
-                        "Hours Spent": newHoursSpent,
-                        "Pending Hours": newPendingHours
-                    }).catch(err => {
-                        window.alert("Error: " + err);
-                        return null;
-                    });
-                }
-
-                this.toggleBusy();
-                //remove order from database
-                db.collection("GlobalPendingOrders").doc(this.rejectingDocumentID).delete().catch(err => {
-                    window.alert("Error on deleting: " + err);
-                    return null;
-                });
-
-                //remove locally
                 this.items.splice(itemIndex, 1);
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
-
-                this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
+                this.closeLoadingModal();
+                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
-                this.toggleBusy();
+
 
 
             },
 
             editNote() {
-                if (this.selected.length > 1) this.showModal("Error", "You can only edit one note at a time!");
-                else {
-                    this.editMsg = this.selected[0]["Notes"];
-                    this.showEditModal();
-                }
+                this.editMsg = this.selected[0]["Notes"];
+                console.log(this.editMsg, this.selected);
+                this.showEditModal();
 
             },
 
@@ -336,13 +354,16 @@
                 this.editModalVisible = false;
             },
 
-            saveNote() {
+            async saveNote() {
                 let note = this.editMsg;
+                this.closeEditModal();
+                this.showLoadingModal("Saving note..");
                 let docID = this.selected[0]["Document ID"];
-                db.collection("GlobalPendingOrders").doc(docID).update({"Notes": this.editMsg}).catch(err => {
-                    window.alert("Err: ", err);
+                let status = await db.collection("GlobalTransferHours").doc(docID).update({"Notes": note});
+                if (status) {
+                    window.alert("Err: " +  err);
                     return null;
-                });
+                }
 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
@@ -350,8 +371,8 @@
                         break;
                     }
                 }
-
-
+                this.closeLoadingModal();
+                this.showModal("Success!", "Your note has been saved")
             },
 
             toggleBusy() {
