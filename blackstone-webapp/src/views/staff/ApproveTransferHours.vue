@@ -186,9 +186,9 @@
 
             async accept() {
                 let row = this.selected[0];
-                console.log(row);
                 //change remotely
                 let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(row["From ID"]).get();
+                console.log(fromYouthProfile.data());
                 if (fromYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + row["From ID"]);
                     return null;
@@ -207,7 +207,7 @@
 
                 let toYouthProfile = await db.collection("GlobalYouthProfile").doc(row["To ID"]).get();
                 if (toYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["From ID"]);
+                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["To ID"]);
                     return null;
                 }
 
@@ -225,11 +225,30 @@
                 }
 
                 //TODO: Create a log collection in Global Youth Profile for these transfers
-                let logFromStatus = db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
+                let logFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
+                    "Date": row["Date"],
+                    "To ID": row["To ID"],
+                    "To Name": row["To Name"],
+                    "Amount": row["Amount"],
+                    "Notes": row["Notes"]
+                });
 
-                })
+                let logToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).collection("Transfer Log").doc().set({
+                    "Date": row["Date"],
+                    "From ID": row["From ID"],
+                    "From Name": row["From Name"],
+                    "Amount": row["Amount"],
+                    "Notes": row["Notes"]
+                });
 
-
+                if (logFromStatus) {
+                    window.alert("Error on creating a log entry in Global Youth Profile -> Transfer Log of Youth ID: " + row["From ID"]);
+                    return null;
+                }
+                if (logToStatus) {
+                    window.alert("Error on creating a log entry in Global Youth Profile -> Transfer Log of Youth ID: " + row["To ID"]);
+                    return null;
+                }
 
                 this.closeLoadingModal();
                 this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"])
