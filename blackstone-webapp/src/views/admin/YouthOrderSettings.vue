@@ -15,7 +15,7 @@
         <h3>Click on these current fields to edit:</h3>
 
         <draggable v-model="requiredFields" @start="drag=true" @end="drag=false">
-            <div v-for="element in requiredFields" :key="element.id">{{element.name}}</div>
+            <FieldCard v-for="element in requiredFields" :key="element.name" :field="element.name"/>
         </draggable>
 
         <SettingsBottomNote/>
@@ -39,11 +39,16 @@ import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
 import {rb} from '../../firebase.js'
 import draggable from 'vuedraggable'
+import FieldCard from '../../components/FieldCard.vue'
+
+
 export default {
     name: 'YouthOrderSettings',
     components: {
         SettingsBottomNote,
-        draggable
+        draggable,
+        FieldCard,
+
     },
     data() {
         return {
