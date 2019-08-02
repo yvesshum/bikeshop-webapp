@@ -162,6 +162,31 @@
                 </b-col>
 
             </b-row>
+
+             <b-row>
+                <b-col>
+                    <h1>Admin Panel</h1>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col>
+                    <b-card-group desk>
+                        <a href="/admin-panel">
+                            <b-card
+                                    title="Admin Panel"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Change various settings here!
+                                </b-card-text>
+                            </b-card>
+                        </a>
+                    </b-card-group>
+                </b-col>
+            </b-row>
+
         </b-container>
 
 
