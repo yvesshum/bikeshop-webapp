@@ -15,6 +15,8 @@ import CheckedIn from './views/staff/CheckedIn.vue'
 import StaffRegisterYouth from './views/staff/RegisterNewYouth.vue'
 import HourTransfer from './views/youth/TransferCurrentHours'
 import ApproveTransfers from './views/staff/ApproveTransferHours'
+import AdminPanel from './views/staff/AdminPanel.vue'
+import YouthOrderSettings from './views/admin/YouthOrderSettings.vue'
 
 Vue.use(Router);
 
@@ -148,6 +150,30 @@ const router = new Router({
             path: '/register-new-youth',
             name: 'register-new-youth',
             component: StaffRegisterYouth,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/admin-panel',
+            name: 'admin-panel',
+            component: AdminPanel,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+
+
+
+
+        // Admin Panels
+
+        {
+            path: '/youth-order-settings',
+            name: 'youth-order-settings',
+            component: YouthOrderSettings,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true
