@@ -10,10 +10,10 @@ import TopBar from './components/TopBar'
 
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faCoffee, faBars, faTimes, faEdit} from '@fortawesome/free-solid-svg-icons'
+import { faCoffee, faBars, faTimes, faEdit, faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'  
 
-library.add(faCoffee, faBars, faTimes, faEdit)
+library.add(faCoffee, faBars, faTimes, faEdit, faPlus)
 
 Vue.component('font-awesome-icon', FontAwesomeIcon) 
 Vue.component('top-bar', TopBar);

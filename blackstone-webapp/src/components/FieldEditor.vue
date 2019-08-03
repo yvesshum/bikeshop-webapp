@@ -1,5 +1,8 @@
 // Usage: 
 // <fieldEditor :ftype="variable name of field array e.g. hidden" :elements="an array of objects with 'name' and 'isProtected' keys e.g. [{name: 'Youth ID', isProtected: true}]"/>
+// TODO: create delete button
+// TODO: create new field button
+
 <template> 
     <div>
         <!-- Content -->
@@ -15,9 +18,15 @@
                 :field="element.name" 
                 :isProtected="element.isProtected"
                 v-on:editClicked="editButtonClicked"
+                v-on:deleteClicked="deleteButtonClicked"
                 />
         </draggable>
-
+        <br>
+        <b-button-group>
+            <b-button variant="info" @click="addButtonClicked">
+                Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
+            </b-button>
+        </b-button-group>
 
         <!-- Modals -->
         <b-modal v-model = "msg_modalVisible" hide-footer lazy>
@@ -56,7 +65,44 @@
             ></b-form-textarea>
             <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
             <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
 
+        <b-modal v-model = "delete_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Deleting Field
+            </template>
+            <div class="d-block text-center">
+                <h3>Are you sure you want to delete {{deletingField}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="deleteField(); delete_closeModal()" variant = "danger">Permanently delete this field and remove all existing uses of this field</b-button>
+            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
+
+        <b-modal v-model = "add_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Adding A Field
+            </template>
+            <p style="margin-bottom: 0">Field Name</p>
+            <b-form-textarea
+                    id="textarea"
+                    v-model="addFieldName"
+                    placeholder="This cannot be empty!"
+                    :state="addFieldName.length >= 1"
+                    size="sm"
+                    rows="1"
+                    max-rows="3"
+            ></b-form-textarea>
+            <p style="margin-bottom: 0">Initial value</p>
+            <b-form-textarea
+                    id="textarea"
+                    v-model="addFieldInitializer"
+                    placeholder="Enter a value or leave empty"
+                    size="sm"
+                    rows="1"
+                    max-rows="3"
+            ></b-form-textarea>
+            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning">Add a new field and change all existing documents to have this field</b-button>
+            <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
     </div>
 </template>
@@ -88,6 +134,11 @@ export default {
             editMsg: "",
             edit_modalVisible: false,
             oldFieldName: "",
+            deletingField: "",
+            delete_modalVisible: false,
+            add_modalVisible: false,
+            addFieldName: "",
+            addFieldInitializer: ""
         }
     },
     mounted() { 
@@ -206,6 +257,119 @@ export default {
             }
         },
 
+        async deleteButtonClicked(field) {
+            this.deletingField = field;
+            this.delete_modalVisible = true;
+        },
+
+        async deleteField() {
+            this.delete_closeModal();
+            this.showLoadingModal("Deleting..");
+
+            let fieldNames = this.names(this.initialFields);
+                for (let i = 0; i < fieldNames.length ; i++) {
+                    if (fieldNames[i] === this.deletingField) {
+                        let arr = fieldNames;
+                        arr.splice(i, 1);
+
+                        let updateValue = {};
+                        updateValue[this.ftype] = arr;
+
+                        let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue);
+                        if (updateStatus) { 
+                            window.alert("Error on removing a field in Youth Order Form in Global Fields Collection. Field: " + this.deletingField);
+                            return null;
+                        }
+
+                        // update the records -> Global Pending Orders & Global Youth Profile
+                        let query = await db.collection("GlobalPendingOrders").get();
+                        let deletingFieldName = this.deletingField;
+                        query.forEach(doc => { 
+                            let id = doc.id;
+                            let data = this.parse(doc.data());
+                            delete data[deletingFieldName];
+                            db.collection("GlobalPendingOrders").doc(id).set(data);
+                        })
+
+                        // update locally 
+                        this.initialFields.splice(i, 1);
+
+                        //A user may have moved the fields, but editing a field name should not also save the ordering
+                        //this.fields may be in a different order, so we would have to find the field
+                        for (let j = 0; j < this.fields.length; j ++) { 
+                            if (this.fields[j]["name"] === this.deletingField) {
+                                this.fields.splice(j, 1);
+                            }
+                        }
+
+                        // once completed, reset (just to be safe)                            
+                        this.deletingField = "";
+
+                        this.closeLoadingModal();
+                        this.msg_showModal("Success", "Successfully deleted field in firebase Global Fields Collection and corresponding documents")
+
+                        break;
+                    }
+                }
+
+        },
+
+        async addButtonClicked() {
+            this.addFieldName = "";
+            this.addFieldInitializer = "";
+            this.add_modalVisible = true;
+        },
+
+        async addField() {
+            this.add_closeModal();
+            this.showLoadingModal();
+
+            let fieldNames = this.names(this.initialFields);
+            let arr = fieldNames;
+            arr.push(this.addFieldName);
+            let updateValue = {};
+            updateValue[this.ftype] = arr;
+
+            let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue);
+            if (updateStatus) { 
+                window.alert("Error on removing a field in Youth Order Form in Global Fields Collection. Field: " + this.deletingField);
+                return null;
+            }
+
+            // update the records -> Global Pending Orders & Global Youth Profile
+            let query = await db.collection("GlobalPendingOrders").get();
+            let newFieldName = this.addFieldName;
+            query.forEach(doc => { 
+                let id = doc.id;
+                let data = this.parse(doc.data());
+                data[newFieldName] = this.addFieldInitializer;
+                console.log(data);
+                db.collection("GlobalPendingOrders").doc(id).set(data);
+            })
+
+            // update locally 
+            this.initialFields.push({
+                "name": this.addFieldName,
+                "isProtected": false
+            })
+
+            this.fields.push({
+                "name": this.addFieldName,
+                "isProtected": false
+            })
+
+            // once completed, reset (just to be safe)                            
+            this.addFieldName = "";
+            this.addFieldInitializer = "";
+
+            this.closeLoadingModal();
+            this.msg_showModal("Success", "Successfully added new field in firebase Global Fields Collection and corresponding documents")
+
+
+
+
+        },
+
 
         // Modal methods
         msg_closeModal() {
@@ -229,6 +393,14 @@ export default {
 
         edit_closeModal() {
             this.edit_modalVisible = false;
+        },
+
+        delete_closeModal() {
+            this.delete_modalVisible = false;
+        },
+
+        add_closeModal() {
+            this.add_modalVisible = false;
         },
 
     }
