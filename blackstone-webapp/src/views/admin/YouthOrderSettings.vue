@@ -12,11 +12,16 @@
     <div>
         <top-bar/>
         <br>
-        <h3>Click on these current fields to edit:</h3>
-
-        <draggable v-model="requiredFields" @start="drag=true" @end="drag=false">
-            <FieldCard v-for="element in requiredFields" :key="element.name" :field="element.name"/>
-        </draggable>
+        <h3 v-b-tooltip.hover title="Drag fields around to reorder them on a form" right>Current Required Fields:</h3>
+        <b-button-group style="margin-bottom:10px">
+                <b-button variant="warning" @click="resetOrdering">Reset</b-button>
+                <b-button variant="success">Save</b-button>
+        </b-button-group>
+        <div class="draggableSelector">
+            <draggable v-model="requiredFields" @start="drag=true" @end="drag=false">
+                <FieldCard v-for="element in requiredFields" :key="element.name" :field="element.name" :isProtected="element.isProtected"/>
+            </draggable>
+        </div>
 
         <SettingsBottomNote/>
 
@@ -53,6 +58,7 @@ export default {
     data() {
         return {
             requiredFields: [],
+            requiredFieldsInitial: [],
             optionalFields: [],
             hiddenFields: [],
             modal_title: "",
@@ -72,17 +78,26 @@ export default {
                 window.alert("Unable to get Youth Order Form fields from Global Fields Collection");
             }
             else {
+                let protectedFields = ["Youth ID", "Item Total Cost"]
                 for (let i = 0; i < fields["required"].length; i++) { 
+                    let isProtected = false;
+                    if (protectedFields.includes(fields["required"][i])) isProtected = true;
                     this.requiredFields.push({
-                        "name": fields["required"][i]
+                        "name": fields["required"][i],
+                        "isProtected": isProtected
                     });
                 }
+                this.requiredFieldsInitial = this.requiredFields;
                 this.optionalFields = fields["optional"];
                 this.hiddenFields = fields["hidden"];
             }
         },
         closeModal() {
             this.modalVisible = false;
+        },
+
+        resetOrdering() {
+            this.requiredFields = this.requiredFieldsInitial;
         }
         
     },
@@ -95,4 +110,16 @@ export default {
 </script>
 
 <style>
+.draggableSelector{
+    /* margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left:34.2%; */
+    /* vertical-align: middle; */
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content: center;
+     
+}
+
 </style>
