@@ -13,11 +13,11 @@ export default {
  
 <style>
 .bottom {
-    /* position: absolute; */
     bottom: 0;
     width: 100%;
     height: 2.5rem;
     background:orangered ;
+    margin-top: 5%;
 }
 .center {
   margin: 0;

@@ -1,6 +1,6 @@
 // Show currently used fields, with feature to edit them
 // features: 
-// Change a field name (updates all Profiles' order logs with the new name, as well as GlobalPendingOrders)
+// #Change a field name (updates all Profiles' order logs with the new name, as well as GlobalPendingOrders)
 // Remove a field (removes corresponding field in all profiles and GlobalPendingOrders)
 // Add a field name (Updates all profiles and pending orders with the new field and a given initialization value)
 // Edit placeholder texts for Youth Orders 
@@ -11,45 +11,37 @@
     <div>
         <top-bar/>
         <br>
-        <b-container>
-            <b-row>
-                <b-col>
-                    <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Required Fields:</h3>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-button-group style="margin-bottom:10px">
-                        <b-button variant="warning" @click="resetOrdering('required')">Reset Ordering</b-button>
-                        <b-button variant="success" @click="saveOrdering('required')">Save Ordering</b-button>
-                    </b-button-group>
-                </b-col>
-            </b-row>
 
-            <b-row>
-                <b-col>
-                    <div class="draggableSelector">
-                        <draggable v-model="fields.required" @start="drag=true" @end="drag=false">
-                            <FieldCard 
-                                v-for="element in fields.required" 
-                                :key="element.name" 
-                                :field="element.name" 
-                                :isProtected="element.isProtected"
-                                v-on:editClicked="editButtonClicked"
-                                />
-                        </draggable>
-                    </div>
-                </b-col>
+        <h1 >Youth Order Form Settings</h1>    
+        <hr class="title">
 
-            </b-row>
+        <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Field editor</h2>  
+        <hr class="subheading">  
 
-        </b-container>
-        
+        <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
+
+
+        <b-button-group style="margin-bottom:10px">
+            <b-button variant="warning" @click="resetOrdering('required')">Reset Ordering</b-button>
+            <b-button variant="success" @click="saveOrdering('required')">Save Ordering</b-button>
+        </b-button-group>
+
+        <div class="draggableSelector">
+            <draggable v-model="fields.required" @start="drag=true" @end="drag=false">
+                <FieldCard 
+                    v-for="element in fields.required" 
+                    :key="element.name" 
+                    :field="element.name" 
+                    :isProtected="element.isProtected"
+                    v-on:editClicked="editButtonClicked"
+                    />
+            </draggable>
+        </div>
         
         
 
-        <hr style="width: 50%">
-        <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Optional Fields:</h3>
+        <hr class="divider">
+        <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
         <b-button-group style="margin-bottom:10px">
                 <b-button variant="warning" @click="resetOrdering('optional')">Reset Ordering</b-button>
                 <b-button variant="success" @click="saveOrdering('optional')">Save Ordering</b-button>
@@ -67,7 +59,7 @@
         </div>
 
         <hr style="width: 50%">
-        <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Hidden Fields:</h3>
+        <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
         <b-button-group style="margin-bottom:10px">
                 <b-button variant="warning" @click="resetOrdering('hidden')">Reset Ordering</b-button>
                 <b-button variant="success" @click="saveOrdering('hidden')">Save Ordering</b-button>
@@ -354,6 +346,18 @@ export default {
     /* width: 30%; */
 
      
+}
+
+hr.title {
+    width: 80%
+}
+
+hr.subheading {
+    width: 70%
+}
+
+hr.divider {
+    width: 50%
 }
 
 </style>

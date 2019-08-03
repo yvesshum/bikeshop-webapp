@@ -115,8 +115,6 @@
                 }
                 else {
                     let input = {};
-                    input["Status"] = "Pending";
-                    input["Order Date"] = new Date().toLocaleDateString();
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -127,7 +125,12 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
-
+                    data = this.parse(this.hiddenFields);
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i]["name"] === "Status") input["Status"] = "Pending"
+                        else if (data[i]["name"] === "Order Date") input["Order Date"] = new Date().toLocaleDateString();
+                        else input[data[i]["name"]] = data[i]["value"];
+                    }
 
 
                     let submitRef = db.collection("GlobalPendingOrders").doc();
