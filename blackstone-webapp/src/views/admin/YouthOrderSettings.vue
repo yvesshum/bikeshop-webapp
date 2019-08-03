@@ -5,22 +5,77 @@
 // Add a field name (Updates all profiles and pending orders with the new field and a given initialization value)
 // Edit placeholder texts for Youth Orders 
 
-// TODO: Create a card component for a single field, where there's a delete button on the right side
-// TODO: Replace draggable div with the component 
+// TODO: Youth Order Log will be in a separate page 
 
 <template>
     <div>
         <top-bar/>
         <br>
-        <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Current Required Fields:</h3>
+        <b-container>
+            <b-row>
+                <b-col>
+                    <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Required Fields:</h3>
+                </b-col>
+            </b-row>
+            <b-row>
+                <b-col>
+                    <b-button-group style="margin-bottom:10px">
+                        <b-button variant="warning" @click="resetOrdering('required')">Reset Ordering</b-button>
+                        <b-button variant="success" @click="saveOrdering('required')">Save Ordering</b-button>
+                    </b-button-group>
+                </b-col>
+            </b-row>
+
+            <b-row>
+                <b-col>
+                    <div class="draggableSelector">
+                        <draggable v-model="fields.required" @start="drag=true" @end="drag=false">
+                            <FieldCard 
+                                v-for="element in fields.required" 
+                                :key="element.name" 
+                                :field="element.name" 
+                                :isProtected="element.isProtected"
+                                v-on:editClicked="editButtonClicked"
+                                />
+                        </draggable>
+                    </div>
+                </b-col>
+
+            </b-row>
+
+        </b-container>
+        
+        
+        
+
+        <hr style="width: 50%">
+        <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Optional Fields:</h3>
         <b-button-group style="margin-bottom:10px">
-                <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
-                <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
+                <b-button variant="warning" @click="resetOrdering('optional')">Reset Ordering</b-button>
+                <b-button variant="success" @click="saveOrdering('optional')">Save Ordering</b-button>
         </b-button-group>
         <div class="draggableSelector">
-            <draggable v-model="requiredFields" @start="drag=true" @end="drag=false">
+            <draggable v-model="fields.optional" @start="drag=true" @end="drag=false">
                 <FieldCard 
-                    v-for="element in requiredFields" 
+                    v-for="element in fields.optional" 
+                    :key="element.name" 
+                    :field="element.name" 
+                    :isProtected="element.isProtected"
+                    v-on:editClicked="editButtonClicked"
+                    />
+            </draggable>
+        </div>
+
+        <hr style="width: 50%">
+        <h3 v-b-tooltip.hover title="Drag fields around to reorder them" right>Hidden Fields:</h3>
+        <b-button-group style="margin-bottom:10px">
+                <b-button variant="warning" @click="resetOrdering('hidden')">Reset Ordering</b-button>
+                <b-button variant="success" @click="saveOrdering('hidden')">Save Ordering</b-button>
+        </b-button-group>
+        <div class="draggableSelector">
+            <draggable v-model="fields.hidden" @start="drag=true" @end="drag=false">
+                <FieldCard 
+                    v-for="element in fields.hidden" 
                     :key="element.name" 
                     :field="element.name" 
                     :isProtected="element.isProtected"
@@ -56,8 +111,6 @@
             </div>
         </b-modal>
 
-        <!-- TODO: write methods for these, and add @click events to the edit buttons. Child emits edit event and the name of the field -->
-        <!-- Saving should also check for duplicates -->
         <b-modal v-model = "edit_modalVisible" hide-footer lazy>
             <template slot = "modal-title">
                 Editing Field Name
@@ -69,9 +122,8 @@
                     rows="2"
                     max-rows="5"
             ></b-form-textarea>
-
-            <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "success">Save and change all existing uses of the field</b-button>
-            <b-button class="mt-3" block @click="edit_closeModal()" variant="warning">Cancel</b-button>
+            <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
+            <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
 
         </b-modal>
     </div>
@@ -85,21 +137,21 @@ import {rb} from '../../firebase.js'
 import draggable from 'vuedraggable'
 import FieldCard from '../../components/FieldCard.vue'
 
-
 export default {
     name: 'YouthOrderSettings',
     components: {
         SettingsBottomNote,
         draggable,
         FieldCard,
-
     },
     data() {
         return {
-            requiredFields: [],
-            requiredFieldsInitial: [],
-            optionalFields: [],
-            hiddenFields: [],
+            fields: {   
+                required: [], 
+                optional: [], 
+                hidden: []
+            },
+            initialFields: {},
             msg_modal_title: "",
             msg_modal_text: "",
             msg_modalVisible: false,
@@ -107,12 +159,23 @@ export default {
             loading_modalHeader: "",
             edit_modalVisible: false,
             editMsg: "",
+            editingFieldInitial :"",
 
         }
     },
     methods: {
         parse(item) {
                 return JSON.parse(JSON.stringify(item));
+        },
+
+        parseFields(items, dest, protectedFields) {
+            for (let i = 0; i < items.length; i ++) { 
+                let isProtected = protectedFields.includes(items[i])
+                dest.push({
+                    "name": items[i],
+                    "isProtected": isProtected
+                })
+            }   
         },
         
         async getFields() {
@@ -122,18 +185,11 @@ export default {
                 window.alert("Unable to get Youth Order Form fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["Youth ID", "Item Total Cost", "First Name", "Last Name"]
-                for (let i = 0; i < fields["required"].length; i++) { 
-                    let isProtected = false;
-                    if (protectedFields.includes(fields["required"][i])) isProtected = true;
-                    this.requiredFields.push({
-                        "name": fields["required"][i],
-                        "isProtected": isProtected
-                    });
-                }
-                this.requiredFieldsInitial = this.requiredFields;
-                this.optionalFields = fields["optional"];
-                this.hiddenFields = fields["hidden"];
+                let protectedFields = ["Youth ID", "Item Total Cost", "First Name", "Last Name", "Status", "Order Date"]
+                this.parseFields(fields["required"], this.fields.required, protectedFields);
+                this.parseFields(fields["optional"], this.fields.optional, protectedFields);
+                this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
+                this.initialFields = this.parse(this.fields);
             }
         },
 
@@ -160,19 +216,19 @@ export default {
             this.edit_modalVisible = false;
         },
 
-        resetOrdering() {
-            this.requiredFields = this.requiredFieldsInitial;
+        resetOrdering(ftype) {
+            this.fields[ftype] = this.initialFields[ftype];
         },
 
-        async saveOrdering() {
+        async saveOrdering(ftype) {
             this.showLoadingModal("One second...")
             let res = [];
-            this.requiredFields.forEach(element => {
+            this.fields[ftype].forEach(element => {
                 res.push(element["name"])
             });
 
             let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update({
-                "required": res
+                ftype: res
             })
 
             if(updateStatus) {
@@ -187,14 +243,93 @@ export default {
         },
 
         editButtonClicked(field) {
+            this.editingFieldInitial = field;
             this.editMsg = field;
             this.edit_modalVisible = true;
         },
 
         async save_edit() {
             // check if the field already exists
-            let field = this.editMsg;
-            
+            this.showLoadingModal("Saving")
+            let newFieldName = this.editMsg;
+            if (this.alreadyExists(newFieldName)) {
+                this.closeLoadingModal();
+                this.showModal("Error", "Field already exists!")
+            }
+            else { 
+                // change corresponding this.editingFieldInitial field to the new text, including initial field
+                // change on firebase 
+                
+
+                // find which field it is
+                for (let ftype in this.initialFields) { 
+                    let found = false;
+                    for (let i = 0; i < this.initialFields[ftype].length; i++) { 
+                        if (this.initialFields[ftype][i]["name"] === this.editingFieldInitial) { 
+                            found = true;
+                            let arr = this.getNames(this.initialFields[ftype]);
+                            arr[i] = newFieldName;
+                            let updateValue = {};
+                            updateValue[ftype] = arr;
+
+                            
+                            let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue)
+                            if (updateStatus) { 
+                                window.alert("Error on updating Youth Order Form in Global Fields Collection. Field: " + ftype);
+                                return null;
+                            }
+
+                            // update the records -> Global Pending Orders & Global Youth Profile
+                            let query = await db.collection("GlobalPendingOrders").get();
+                            let initialField = this.editingFieldInitial;
+                            query.forEach(doc => { 
+                                let id = doc.id;
+                                let data = this.parse(doc.data());
+                                data[newFieldName] = data[initialField];
+                                delete data[initialField];
+                                db.collection("GlobalPendingOrders").doc(id).set(data);
+                            })
+
+                            // update locally 
+                            this.initialFields[ftype][i]["name"] = newFieldName;
+
+                            //A user may have moved the fields, but editing a field name should not also save the ordering
+                            //this.fields may be in a different order, so we would have to find the field
+                            for (let j = 0; j < this.fields[ftype].length; j ++) { 
+                                if (this.fields[ftype][j]["name"] === this.editingFieldInitial) {
+                                    this.fields[ftype][j]["name"] = newFieldName;
+                                }
+                            }
+
+                            // once completed, reset (just to be safe)                            
+                            this.editingFieldInitial = "";
+
+                            this.closeLoadingModal()
+                            this.showModal("Success", "Successfully updated firebase Global Fields Collection and corresponding documents")
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+            }
+        
+        },
+
+        alreadyExists(newName) { 
+            const namesOf = this.getNames;
+            let fields  = namesOf(this.fields.required)
+                            .concat(namesOf(this.fields.optional))
+                            .concat(namesOf(this.fields.hidden))
+                            .map(f => {return f.toLowerCase()});
+            return fields.includes(newName.toLowerCase());
+        },
+
+        getNames(fields) {
+            let res = [];
+            fields.forEach(f => { 
+                res.push(f["name"])
+            })
+            return res;
         }
         
     },
@@ -212,10 +347,12 @@ export default {
     margin-bottom: 5px;
     margin-left:34.2%; */
     /* vertical-align: middle; */
-    margin:auto;
+    /* margin:auto;
     display:flex;
     align-items:center;
-    justify-content: center;
+    justify-content: center; */
+    /* width: 30%; */
+
      
 }
 

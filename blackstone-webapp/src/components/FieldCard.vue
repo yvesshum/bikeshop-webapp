@@ -1,7 +1,8 @@
 <template>
     <div>
-        <b-container fluid>
-            <b-row>
+        <!-- <b-container>
+            <b-row> -->
+            <b-button-group>
                 <b-button squared variant="light" pressed><font-awesome-icon icon="bars" class="icon alt"/></b-button>
                 <div class="fieldText">
                 <b-button 
@@ -16,9 +17,9 @@
                 </div>
                 <b-button :disabled="isProtected" variant="info" @click="onEditClicked" squared><font-awesome-icon icon="edit" class ="icon alt"/></b-button>
                 <b-button :disabled="isProtected" variant="danger" @click="onDeleteClicked" squared><font-awesome-icon icon="times" class="icon alt"/></b-button>
-                
-            </b-row>
-        </b-container>
+            </b-button-group>
+            <!-- </b-row>
+        </b-container> -->
     </div>
 </template>
 
@@ -43,6 +44,7 @@ export default {
 
 <style>
 .fieldText{
-    width: 50%
+    width:15rem;
+
 }
 </style>
