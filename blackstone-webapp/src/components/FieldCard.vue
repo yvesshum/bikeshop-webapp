@@ -14,8 +14,8 @@
                     {{field}}
                 </b-button>
                 </div>
-                <b-button :disabled="isProtected" variant="info" squared><font-awesome-icon icon="edit" class ="icon alt"/></b-button>
-                <b-button :disabled="isProtected" variant="danger" squared><font-awesome-icon icon="times" class="icon alt"/></b-button>
+                <b-button :disabled="isProtected" variant="info" @click="onEditClicked" squared><font-awesome-icon icon="edit" class ="icon alt"/></b-button>
+                <b-button :disabled="isProtected" variant="danger" @click="onDeleteClicked" squared><font-awesome-icon icon="times" class="icon alt"/></b-button>
                 
             </b-row>
         </b-container>
@@ -27,9 +27,17 @@ export default {
     name: 'FieldCard',
     props: {
         field: String,
-        isProtected: Boolean
+        isProtected: Boolean,
     },
+   methods: {
+       onEditClicked() {
+           this.$emit('editClicked', this.field);
+       },
 
+       onDeleteClicked() {
+
+       }
+   }
 }
 </script>
 
