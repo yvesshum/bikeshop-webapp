@@ -37,7 +37,8 @@ export default {
     return {
       edit_mode: false,
       specially_displayed_fields: ["First Name", "Last Name"],
-      row_status: null
+      row_status: null,
+      array_fields: null
     }
   },
 
@@ -50,6 +51,7 @@ export default {
     header_doc: function(data) {
       let table = this.$refs.fields_table;
       this.row_status = new Object();
+      this.array_fields = new Object();
 
       append_table_section(this, "Required:",   this.header_doc["required"].concat(["ActivePeriods"]));
       append_table_section(this, "Statistics:", this.header_doc["hidden"]);
@@ -219,31 +221,8 @@ export default {
             this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,10));
           }
           else if (Array.isArray(data[key])) {
-            let checkbox_options = document.createElement("div");
-
-            data[key].forEach(function(element) {
-              let new_div = document.createElement("div");
-              new_div.innerHTML = element;
-              new_div.classList.add("field_list_element");
-              field_p.appendChild(new_div);
-
-              let new_option = document.createElement("input");
-              new_option.type = "checkbox";
-              new_option.checked = true;
-              new_option.name = element;
-              new_option.value = element;
-
-              let new_option_name = document.createElement("div");
-              new_option_name.innerHTML = element;
-              new_option_name.style.display = "inline";
-
-              checkbox_options.appendChild(new_option);
-              checkbox_options.appendChild(new_option_name);
-              checkbox_options.appendChild(document.createElement("br"));
-            });
-
-            let edit_container = document.getElementById(key + "_edit_container");
-            edit_container.insertBefore(checkbox_options, edit_container.childNodes[edit_container.childNodes.length-1]);
+            this.create_fields_array(key, data[key]);
+            // create_edit_array(key, data[key], field_p, document.getElementById(key + "_edit_container"));
           }
           else {
             field_p.innerHTML = data[key];
@@ -286,6 +265,65 @@ export default {
   },
 
   methods: {
+
+    get_changes_as_array: function(key) {
+      var form = document.getElementById(key + "_array_edit_container").childNodes;
+      var len = form.length;
+
+      var list = [];
+
+      for (var i = 0; i < len; i += 3) {
+        let input = form[i];
+        let title = form[i+1];
+
+        if (input.checked) {
+          list.push(title.innerHTML);
+        }
+      };
+
+      return list;
+    },
+
+    create_fields_array: function(key, arr) {
+      let display_dest = document.getElementById(key + "_field");
+      display_dest.innerHTML = "";
+
+      let edit_dest = document.getElementById(key + "_edit_container");
+
+      let checkbox_options = document.getElementById(key + "_array_edit_container");
+      if (checkbox_options == null) {
+        checkbox_options = document.createElement("div");
+        checkbox_options.id = key + "_array_edit_container";
+        edit_dest.insertBefore(checkbox_options, edit_dest.childNodes[edit_dest.childNodes.length-1]);
+      }
+      else {
+        checkbox_options.innerHTML = "";
+      }
+      
+
+      arr.forEach(function(element) {
+        let new_div = document.createElement("div");
+        new_div.innerHTML = element;
+        new_div.classList.add("field_list_element");
+        display_dest.appendChild(new_div);
+
+        let new_option = document.createElement("input");
+        new_option.type = "checkbox";
+        new_option.checked = true;
+        new_option.name = element;
+        new_option.value = element;
+
+        let new_option_name = document.createElement("div");
+        new_option_name.innerHTML = element;
+        new_option_name.style.display = "inline";
+
+        checkbox_options.appendChild(new_option);
+        checkbox_options.appendChild(new_option_name);
+        checkbox_options.appendChild(document.createElement("br"));
+      });
+
+      this.array_fields[key] = arr;
+    },
 
     set_row_status: function(key, new_status) {
 
@@ -493,8 +531,13 @@ export default {
         for (var e = 0; e < el; e++) {
           n = form[e];
           if (n.parentNode.parentNode.classList.contains("unused_field")) continue;
-          // console.log(n);  // Displays the form elements
-          c = c || (n.value != n.defaultValue);
+
+          if (this.array_fields[n.name] != null) {
+            c = c || (JSON.stringify(this.array_fields[n.name]) !== JSON.stringify(this.get_changes_as_array(n.name)));
+          } else {
+            // console.log(n);  // Displays the form elements
+            c = c || (n.value != n.defaultValue);
+          };
         }
       };
 
@@ -533,11 +576,17 @@ export default {
 
           // Data field is used: Save its updated value to the new profile and to the page
           // TODO: If database update fails, don't change page
-          // TODO: Save data from list input
+          // TODO: Allow user to add list item
+          // TODO: Display all possible active periods?
           case "used":
-            changes[input_field.name] = input_field.value;
-            data_field.innerHTML      = input_field.value;
-            this.set_all_input_vals(input_field, input_field.value);
+            if (this.array_fields[key] != null) {
+              changes[input_field.name] = this.get_changes_as_array(key);
+              this.create_fields_array(input_field.name, changes[input_field.name]);
+            } else {
+              changes[input_field.name] = input_field.value;
+              data_field.innerHTML      = input_field.value;
+              this.set_all_input_vals(input_field, input_field.value);
+            }
             break;
 
           // Data field is being added: Save its value to the new profile
