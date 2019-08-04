@@ -26,9 +26,6 @@ export default {
     //   } else {
     //     return 'error'
     //   }
-      Vue.prototype.$plugin_test = () => {
-        return 'hi'
-      }
 
     }
     // Vue.prototype.$firestore_array_remove = (object) => {

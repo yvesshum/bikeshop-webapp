@@ -1,20 +1,23 @@
 <template>
     <div class = "YouthSubmitOrders">
+        <top-bar/>
         <h3 style="margin: 20px">Submit an order here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>
         <YouthIDSelector @selected="selectedID"/>
-
+        <p class = "separator">Or manually input it below</p>
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <textarea v-model="field.value":placeholder="field.name + '*'"></textarea>
+                <p class="field_header">{{field.name}}</p>
+                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                <textarea v-model="field.value":placeholder="'field.name'"></textarea>
+                <p class="field_header">{{field.name}}</p>
+                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
             </div>
         </div>
 
@@ -28,7 +31,7 @@
                 Order Submitted!
             </template>
             <div class="d-block text-center">
-                <h3>Your order has been received!</h3>
+                <h3>Your order has been received and will be reviewed by staff!</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -50,9 +53,8 @@
 
 <script>
     import {db} from '../../firebase';
-    import {firebase} from '../../firebase';
+    import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
-
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -69,7 +71,9 @@
                 modalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
-                YouthProfile: {} //The current Youth profile trying to submit
+                YouthProfile: {}, //The current Youth profile trying to submit
+                placeholders: {}
+        
             };
 
         },
@@ -80,6 +84,12 @@
             },
 
             selectedID(value) {
+
+                // No ID selected - do nothing
+                if (value == null) {
+                    return;
+                }
+
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
                     if (curName === "First Name") this.requiredFields[i]["value"] = value.split(" ")[0];
@@ -105,7 +115,6 @@
                 }
                 else {
                     let input = {};
-                    input["Status"] = "Pending";
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -116,8 +125,15 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
+                    data = this.parse(this.hiddenFields);
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i]["name"] === "Status") input["Status"] = "Pending"
+                        else if (data[i]["name"] === "Order Date") input["Order Date"] = new Date().toLocaleDateString();
+                        else input[data[i]["name"]] = data[i]["value"];
+                    }
 
-                    let submitRef = db.collection("GlobalPendingOrders").doc(new Date().toISOString());
+
+                    let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
                     if (submitResponse) {
                         window.alert("Submit wasn't successful, please check your connection and try again");
@@ -130,7 +146,7 @@
                     let newPendingHours = parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]);
                     let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
                     youthRef.update({
-                        "Hours Spent": newHoursSpent,
+                        "Hours Spent": newHoursSpent.toString(),
                         "Pending Hours": newPendingHours.toString()
                     }).then(() => {
                         //reset youth profile
@@ -140,14 +156,6 @@
                     }).catch(error => {
                         window.alert(error);
                     });
-
-                    console.log(this.YouthProfile["Hours Earned"]);
-                    //update youth's balance
-                    //take away from current hours
-                    //Subtract that value from pending hours
-
-
-
                 }
             },
 
@@ -163,6 +171,7 @@
 
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
+                if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
 
                 let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
                 if (currentHours < parseFloat(ITC["value"])) {
@@ -199,16 +208,27 @@
         },
         async mounted() {
             let fields = await this.getFields();
+            await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => { 
+                this.placeholders = snapshot.val();
+            })
+
+            if (this.placeholders === {}) { 
+                window.alert("Error on getting placeholder text values");
+                return null;
+            }
+
             for (let i = 0; i < fields["required"].length; i ++) {
                 this.requiredFields.push({
                     name: fields["required"][i],
-                    value: ""
-                })
+                    value: "",
+                    placeholder: this.placeholders[fields["required"][i]]
+                });
             }
             for (let i = 0; i < fields["optional"].length; i ++) {
                 this.optionalFields.push({
                     name: fields["optional"][i],
-                    value: ""
+                    value: "",
+                    placeholder: this.placeholders[fields["optional"][i]]
                 })
             }
             for (let i = 0; i <fields["hidden"].length; i ++) {
@@ -233,7 +253,7 @@
         border: 1px solid;
         border-radius: 4px;
         width: 30%;
-        margin-top: 5px;
+        margin-bottom: 5px;
     }
     ::placeholder span{
         color: red;
@@ -241,6 +261,18 @@
     }
     .field_msg{
         text-decoration: underline;
+    }
+
+    .separator{
+        color:grey;
+        margin-top:2px;
+        margin-bottom:2px;
+        font-style:italic;
+    }
+
+    .field_header{
+        margin-bottom:1px;
+        
     }
 
 </style>

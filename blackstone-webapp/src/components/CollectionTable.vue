@@ -1,5 +1,5 @@
 <!--
-    Usage:
+    Displays a Firestore collection as a Tabulator table:
 
     <CollectionTable :heading_data="['Category 1', 'Category 2', 'Category 3']" :current_profile="Profile" collection_name="Collection">
 
@@ -16,7 +16,7 @@
 
     export default {
         name: 'CollectionTable',
-        props: ['heading_data', 'current_profile', 'collection_name', 'args'],
+        props: ['heading_data', 'current_collection', 'args'],
         components: {Table},
 
         data: function () {
@@ -26,9 +26,14 @@
         },
 
         watch: {
-            current_profile: async function(coll) {
-                var temp = await coll.unloaded.collection(this.collection_name).get();
-                this.tableData = this.formatCollection(temp);
+            current_collection: async function(coll) {
+                if (coll != null) {
+                    var temp = await coll.get();
+                    this.tableData = this.formatCollection(temp);
+                }
+                else {
+                    this.tableData = [];
+                }
             }
         },
 

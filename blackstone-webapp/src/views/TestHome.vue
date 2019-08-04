@@ -10,13 +10,13 @@
 
 <script>
     import {firebase} from '../../firebase';
-    import YouthSubmitOrders from "./youth/SubmitOrders";
+    import StaffManageSkills from "./staff/ManageApronSkills";
     import TopBar from '../components/TopBar';
     import CheckIn from '../views/youth/CheckIn.vue'
     export default {
         name: 'home',
         components: {
-            YouthSubmitOrders,
+            StaffManageSkills,
             TopBar,
             CheckIn
         },

@@ -8,16 +8,24 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.20",
+    "@fortawesome/free-solid-svg-icons": "^5.10.0",
+    "@fortawesome/vue-fontawesome": "^0.1.6",
     "bootstrap-vue": "^2.0.0-rc.26",
     "core-js": "^2.6.5",
     "firebase": "^6.2.4",
+    "jshint": "^2.10.2",
     "lodash": "^4.17.14",
     "tabulator-tables": "^4.2.7",
     "vue": "^2.6.10",
+    "vue-data-tabulator": "^0.2.4",
     "vue-multiselect": "^2.1.6",
+    "vue-numeric-input": "^1.0.5",
     "vue-router": "^3.0.3",
     "vue-simple-search-dropdown": "^1.0.1",
-    "vue-tabulator": "^1.0.0"
+    "vue-tabulator": "^1.0.0",
+    "vuedraggable": "^2.23.0",
+    "vuefire": "^2.1.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.9.0",
