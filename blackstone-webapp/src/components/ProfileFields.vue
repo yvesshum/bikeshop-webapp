@@ -36,7 +36,8 @@ export default {
   data: function() {
     return {
       edit_mode: false,
-      specially_displayed_fields: ["First Name", "Last Name"]
+      specially_displayed_fields: ["First Name", "Last Name"],
+      row_status: null
     }
   },
 
@@ -48,6 +49,7 @@ export default {
 
     header_doc: function(data) {
       let table = this.$refs.fields_table;
+      this.row_status = new Object();
 
       append_table_section(this, "Required:",   this.header_doc["required"].concat(["ActivePeriods"]));
       append_table_section(this, "Statistics:", this.header_doc["hidden"]);
@@ -66,7 +68,10 @@ export default {
       // Takes in vue component as self for scoping
       function append_table_section(self, heading, content) {
         append_table_fullrow(heading);
-        content.forEach(self.append_field_container);
+        content.forEach(function(element) {
+          self.append_field_container(element);
+          self.set_row_status(element, "unused");
+        });
         append_table_fullrow("&nbsp;");
       };
     },
@@ -78,11 +83,17 @@ export default {
       if (this.edit_mode) {
         this.$refs.edit_profile.innerHTML = "Submit Edits!";
 
-        Object.entries(document.getElementsByClassName("edit_mode_only")).map(([n, element]) => {
+        document.querySelectorAll(".edit_mode_only").forEach((element, n) => {
           element.style.display = "";
         });
 
-        Object.entries(document.getElementsByClassName("display_mode_only")).map(([n, element]) => {
+        document.querySelectorAll(".edit_input").forEach((element, n) => {
+          if (this.row_status[element.name] == "unused") {
+            element.parentNode.style.display = "none";
+          };
+        });
+
+        document.querySelectorAll(".display_mode_only").forEach((element, n) => {
           element.style.display = "none";
         });
 
@@ -102,19 +113,22 @@ export default {
 
         document.querySelectorAll(".edit_mode_only").forEach((element, n) => {
           element.style.display = "none";
-        })
+        });
 
         document.querySelectorAll(".display_mode_only").forEach((element, n) => {
           element.style.display = "";
-        })
+        });
 
         document.querySelectorAll('.field_title').forEach((element, n) => {
           element.style["font-weight"] = "";
         });
 
-        document.querySelectorAll('.edit_field').forEach((element, n) => {
-          console.log(element);
+        document.querySelectorAll('.edit_input').forEach((element, n) => {
+          // console.log(element);
           element.value = element.defaultValue;
+          if (this.row_status[element.name] == "unused") {
+            this.set_all_input_vals(element, "");
+          }
         });
 
         this.$refs.fields_table.deleteRow(-1);
@@ -125,6 +139,9 @@ export default {
 
       // Clear the old data from the screen
       clear_data();
+      for (key in this.row_status.elements) {
+        this.set_row_status(key, "unused");
+      };
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
@@ -171,7 +188,9 @@ export default {
           field_c.classList.remove("unused_field");
           if (!this.specially_displayed_fields.includes(key)) {
             field_c.classList.remove("edit_mode_only");
-          }
+          };
+
+          this.set_row_status(key, "used");
 
           var edit_input = document.getElementById(key + "_edit");
           
@@ -257,7 +276,7 @@ export default {
         let temp_containers = document.getElementsByClassName("field_container_temp");
         while (temp_containers[0]) {
           temp_containers[0].parentNode.removeChild(temp_containers[0]);
-        }
+        };
 
         // Hide the containers
         document.getElementById("name_div").style.display = "none";
@@ -268,23 +287,97 @@ export default {
 
   methods: {
 
+    set_row_status: function(key, new_status) {
+
+      // If special X or + is entered, determine which new status to use based on current status
+      let old_status = this.row_status[key];
+      if (new_status == "X") new_status = ((old_status == "used") ? "remove" : "unused");
+      if (new_status == "+") new_status = ((old_status == "unused") ? "add" : "used");
+
+      // Update the status
+      this.row_status[key] = new_status;
+
+      let container =      document.getElementById(key + "_container");
+      let remove_button =  document.getElementById(key + "_remove_button")
+      let data_field =     document.getElementById(key + "_field");
+      let edit_container = document.getElementById(key + "_edit_container");
+      let data_title =     document.getElementById(key + "_title");
+      let edit_field =     document.getElementById(key + "_edit");
+
+      // Perform any extra operations
+      switch (new_status) {
+
+        // Field is currently being used in the profile
+        case "used":
+          container.classList.remove("edit_mode_only");
+          remove_button.innerHTML = "X";
+          if (this.edit_mode) {
+            edit_container.style.display = "";
+            data_field.style.display = "none";
+          } else {
+            data_field.style.display = "";
+            if (this.specially_displayed_fields.includes(key)) {
+              edit_container.style.display = "";
+              container.classList.add("edit_mode_only");
+            }
+          };
+
+          data_field.classList.remove("to_be_removed");
+          data_title.classList.remove("to_be_removed_title");
+          data_title.classList.remove("to_be_added_title");
+          
+          break;
+
+        // Field is to be added to the profile (edit mode only)
+        case "add":
+          remove_button.innerHTML = "X";
+          edit_container.style.display = "";
+          data_field.style.display = "none";
+          data_title.classList.add("to_be_added_title");
+          break;
+
+
+        // Field is not currently being used in the profile
+        case "unused":
+          container.classList.add("edit_mode_only");
+          remove_button.innerHTML = "+";
+          edit_container.style.display = "none";
+          data_field.style.display = "none";
+          data_field.classList.remove("to_be_removed");
+          data_title.classList.remove("to_be_removed_title");
+          data_title.classList.remove("to_be_added_title");
+          break;
+
+        // Field is to be removed from the profile (edit mode only)
+        case "remove":
+          remove_button.innerHTML = "+";
+          edit_container.style.display = "none";
+          data_field.style.display = "";
+          data_field.classList.add("to_be_removed");
+          data_title.classList.add("to_be_removed_title");
+          break;
+
+        default:
+          console.log("Error: Row cannot be set to status \"" + new_status + "\".");
+      };
+    },
+
     set_all_input_vals: function(input, val) {
       input.placeholder  = val;
       input.value        = val;
       input.defaultValue = val;
     },
 
+    //TODO: Delete temp field container if 
     insert_temp_field_container: function() {
       var new_field_name = prompt("Please enter the title of the new field:", "");
       if (new_field_name != null) {
         new_field_name = new_field_name.trim();
         if (new_field_name == "") return null;
         this.create_field_container(new_field_name, this.$refs.fields_table.rows.length-1);
-
-        document.getElementById(new_field_name + "_field").style.display = "none";
-        document.getElementById(new_field_name + "_edit_container").style.display = "";
+        this.set_row_status(new_field_name, "add");
         document.getElementById(new_field_name + "_remove_button_container").style.display = "";
-      }
+      };
     },
 
     append_field_container: function(key) {
@@ -348,22 +441,12 @@ export default {
       field_e.appendChild(edit_input);
 
       let remove_button = document.createElement("button");
-      remove_button.innerHTML = "X";
+      remove_button.id = key + "_remove_button";
+      remove_button.innerHTML = "+";
+      let self = this;
       remove_button.onclick = function () {
-        if (this.innerHTML == "+") {
-          this.innerHTML = "X";
-          field_e.style.display = "";
-          field_p.style.display = "none";
-          field_p.classList.remove("to_be_removed");
-          edit_input.classList.remove("to_be_removed");
-        } else {
-          this.innerHTML = "+";
-          field_e.style.display = "none";
-          field_p.style.display = "";
-          field_p.classList.add("to_be_removed");
-          edit_input.classList.add("to_be_removed");
-        }
-      }
+        self.set_row_status(key, this.innerHTML);
+      };
       remove_button_container.appendChild(remove_button);
 
       let reset_button = document.createElement("button");
@@ -391,23 +474,34 @@ export default {
     //Parameters: called upon form submission
     check_edits: function(event) {
       // event.preventDefault();
-      var youth_id = document.getElementById("ID_field").innerHTML;
       const form = document.getElementsByClassName("edit_input");
       
       var n;
       var c = false;
 
-      var el = form.length;
-      // console.log(el);  // Displays the number of fields in edit form
-      for (var e = 0; e < el; e++) {
-        n = form[e];
-        // console.log(n);  // Displays the form elements
-        c = c || (n.value != n.defaultValue) || n.classList.contains("to_be_removed");
-      }
+      // Check for any fields to be added/removed
+      Object.keys(this.row_status).forEach(function(element) {
+        if (!(this.row_status[element] == "used" || this.row_status[element] == "unused")) {
+          c = true;
+        };
+      }.bind(this));
 
-      if (c == true) {
+      // If no fields to be added/removed, check existing fields for edits
+      if (!c) {
+        var el = form.length;
+        // console.log(el);  // Displays the number of fields in edit form
+        for (var e = 0; e < el; e++) {
+          n = form[e];
+          if (n.parentNode.parentNode.classList.contains("unused_field")) continue;
+          // console.log(n);  // Displays the form elements
+          c = c || (n.value != n.defaultValue);
+        }
+      };
+
+      if (c) {
+        // TODO: Modal which confirms changes
         alert("The edits have been saved");
-        this.save_edits(youth_id);
+        this.save_edits();
       } else {
         alert("No edits have been made");
       }
@@ -421,39 +515,47 @@ export default {
     save_edits: async function(){
       // creates an object to store edited values
       var changes = new Object();
-
       let youth_id = document.getElementById("ID_field").innerHTML;
-      const form = document.getElementsByClassName("edit_input");
 
-      Object.entries(form).map(([n, element]) => {
+      // Cycle through each potential field and use the data accordingly
+      Object.keys(this.row_status).forEach(function(key) {
+        let input_field = document.getElementById(key + "_edit");
+        let data_field = document.getElementById(input_field.name + "_field");
+        switch(this.row_status[key]) {
+          // Data field is not used by this profile: Do nothing
+          case "unused":
+            break;
 
-        if (!element.classList.contains("to_be_removed")) {
-          changes[element.name] = element.value;
-          document.getElementById(element.name + "_field").innerHTML = element.value;
-          this.set_all_input_vals(element, element.value);
-        }
+          // Data field is being removed: Set it do unused and do nothing w the data
+          case "remove":
+            this.set_row_status(key, "unused");
+            break;
 
-        else {
-          element.classList.remove("to_be_removed");
-          document.getElementById(element.name + "_field").classList.remove("to_be_removed");
-          document.getElementById(element.name + "_container").classList.add("unused_field");
+          // Data field is used: Save its updated value to the new profile and to the page
+          // TODO: If database update fails, don't change page
+          // TODO: Save data from list input
+          case "used":
+            changes[input_field.name] = input_field.value;
+            data_field.innerHTML      = input_field.value;
+            this.set_all_input_vals(input_field, input_field.value);
+            break;
 
+          // Data field is being added: Save its value to the new profile
+          case "add":
+            changes[input_field.name] = input_field.value;
+            data_field.innerHTML      = input_field.value;
+            this.set_all_input_vals(input_field, input_field.value);
+            this.set_row_status(key, "used");
+            break;
+
+          // Catchall case
+          default:
+            console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
         };
+      }.bind(this));
 
-        // if (element.classList.contains("to_be_removed")) {
-        //   console.log("Removing " + element.name);
-        //   changes[element.name] = FieldValue.delete();
-        //   c = true;
-        //   // TODO: Actually remove from the page and the database
-        // }
-        // else if (element.value != element.defaultValue) {
-        //   changes[element.name] = element.value;
-        //   document.getElementById(element.name + "_field").innerHTML = element.value;
-        //   this.set_all_input_vals(element, element.value);
-        //   c = true;
-        // };
-      });
-
+      // Remove bolding from edited field titles
+      // TODO: Make this a CSS class
       Object.entries(document.getElementsByClassName("field_title")).map(([n, element]) => {
         element.style["font-weight"] = "";
       })
@@ -524,5 +626,9 @@ export default {
     border: 2px solid green;
     background-color: lightgreen;
     text-align: center;
+  }
+
+  .to_be_added_title, .to_be_removed_title {
+    font-weight: bold;
   }
 </style>
