@@ -18,6 +18,19 @@
     <button ref="discard_changes" v-on:click="discard_changes()" class="edit_mode_only" style="display: none;">Discard Changes</button>
     <button ref="reset_changes" v-on:click="reset_changes()" class="edit_mode_only" style="display: none;">Reset All Changes</button>
 
+    <b-modal v-model="confirmModalVisible" hide-footer lazy>
+      <template slot="modal-title">
+          Please Confirm the Following Changes
+      </template>
+      <div class="d-block text-center">
+          <h3>The following changes will be saved:</h3>
+          <p>{{modalList}}</p>
+          <!-- <ul ref="confirm_changes_list"></ul> -->
+      </div>
+      <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
+      <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
+    </b-modal>
+
   </div>
 </template>
 
@@ -38,7 +51,9 @@ export default {
       edit_mode: false,
       specially_displayed_fields: ["First Name", "Last Name"],
       row_status: null,
-      array_fields: null
+      array_fields: null,
+      confirmModalVisible: false,
+      modalList: ""
     }
   },
 
@@ -502,8 +517,9 @@ export default {
     toggle_edit_mode: function() {
       if (this.edit_mode) {
         this.check_edits();
+      } else {
+        this.edit_mode = !this.edit_mode;
       };
-      this.edit_mode = !this.edit_mode;
     },
 
 
@@ -542,12 +558,57 @@ export default {
       };
 
       if (c) {
-        // TODO: Modal which confirms changes
-        alert("The edits have been saved");
-        this.save_edits();
+        this.create_confirm_modal();
+        this.confirmModalVisible = true;
       } else {
         alert("No edits have been made");
       }
+    },
+
+    create_confirm_modal: function() {
+      this.modalList = "";
+      // const change_list = this.$refs["confirm_changes_list"];
+      // console.log(change_list);
+
+      Object.keys(this.row_status).forEach(function(key) {
+        let input_field = document.getElementById(key + "_edit");
+        switch(this.row_status[key]) {
+          case "unused":
+            break;
+          case "remove":
+            this.modalList += "The field " + input_field.name + " has been removed.\n";
+            break;
+
+          case "used":
+            if (input_field.defaultValue != input_field.value) {
+              let temp1 = "";
+              if (this.array_fields[key] != null) {
+                temp1 = this.get_changes_as_array(key);
+              } else {
+                temp1 = input_field.value;
+              };
+              this.modalList += "The field " + key + " has been set to " + temp1 + "\n";
+            };
+            break;
+
+          // Data field is being added: Save its value to the new profile
+          case "add":
+            if (input_field.defaultValue != input_field.value) {
+              let temp2 = "";
+              if (this.array_fields[key] != null) {
+                temp2 = this.get_changes_as_array(key);
+              } else {
+                temp2 = input_field.value;
+              };
+              this.modalList += "The field " + key + " has been created and set to " + temp2 + "\n";
+            };
+            break;
+
+          // Catchall case
+          default:
+            console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
+        };
+      }.bind(this));
     },
 
 
@@ -638,6 +699,15 @@ export default {
       })
     },
 
+    acceptConfirmModal: function() {
+      this.confirmModalVisible = false;
+      this.save_edits();
+      this.edit_mode = false;
+    },
+
+    cancelConfirmModal: function() {
+      this.confirmModalVisible = false;
+    },
 
     convert_to_fields: function(container) {
       let key = container.id.slice(0, container.id.lastIndexOf("_"));
