@@ -575,25 +575,20 @@ export default {
             break;
 
           // Data field is used: Save its updated value to the new profile and to the page
-          // TODO: If database update fails, don't change page
           // TODO: Allow user to add list item
           // TODO: Display all possible active periods?
+          // TODO: Fallthrough from add to used?
           case "used":
             if (this.array_fields[key] != null) {
               changes[input_field.name] = this.get_changes_as_array(key);
-              this.create_fields_array(input_field.name, changes[input_field.name]);
             } else {
               changes[input_field.name] = input_field.value;
-              data_field.innerHTML      = input_field.value;
-              this.set_all_input_vals(input_field, input_field.value);
             }
             break;
 
           // Data field is being added: Save its value to the new profile
           case "add":
             changes[input_field.name] = input_field.value;
-            data_field.innerHTML      = input_field.value;
-            this.set_all_input_vals(input_field, input_field.value);
             this.set_row_status(key, "used");
             break;
 
@@ -612,7 +607,21 @@ export default {
       console.log("New profile:", changes);
 
       // Saves edits to firebase
-      // db.collection('GlobalYouthProfile').doc(youth_id).update(changes);
+      // db.collection('GlobalYouthProfile').doc(youth_id).update(changes).catch(err => {
+      //   window.alert("Error: " + err);
+      //   return null;
+      // });
+
+      // If no error updating database, change the field data on the page
+      for (var key in changes) {
+        if (this.array_fields[key] != null) {
+          this.create_fields_array(key, changes[key]);
+        } else {
+          let input_field = document.getElementById(key + "_edit");
+          document.getElementById(key + "_field").innerHTML = changes[key];
+          this.set_all_input_vals(input_field, input_field.value);
+        };
+      };
     },
 
 
