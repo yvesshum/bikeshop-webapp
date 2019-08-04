@@ -35,7 +35,8 @@ export default {
 
   data: function() {
     return {
-      edit_mode: false
+      edit_mode: false,
+      specially_displayed_fields: ["First Name", "Last Name"]
     }
   },
 
@@ -146,19 +147,32 @@ export default {
 
           // Find appropriate p for field, or create it if it does not exist
           var field_p = document.getElementById(key + "_field");
+          let field_c = document.getElementById(key + "_container");
 
           if (field_p == null) {
             field_p = this.append_field_container(key);
+            field_c = document.getElementById(key + "_container");
+          }
+
+          
+          else if (this.specially_displayed_fields.includes(key)) {
+            if (field_c != null) {
+              field_c.classList.add("edit_mode_only");
+            };
           }
 
           // If it already exists, display its container element
           else {
             field_p.style.display = "";
-            let field_c = document.getElementById(key + "_container");
             if (field_c != null) {
               field_c.style.display = "";
             };
           };
+
+          field_c.classList.remove("unused_field");
+          if (!this.specially_displayed_fields.includes(key)) {
+            field_c.classList.remove("edit_mode_only");
+          }
 
           var edit_input = document.getElementById(key + "_edit");
           
