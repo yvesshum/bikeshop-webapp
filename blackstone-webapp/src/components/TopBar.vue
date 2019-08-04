@@ -3,7 +3,7 @@
         <b-navbar type="dark" variant="info" fill>
             <div class ="NavBarContents">
             <b-navbar-brand href="/" style="align-self: center">Dashboard</b-navbar-brand>
-            <img alt="experimental_station_logo" src = "../assets/experimental_station_logo.png" width = "20%" @click="imageUrl" style="align-self: center">
+            <img alt="experimental_station_logo" src = "../assets/experimental_station_logo.png" width = "20%" @click="imageUrl">
             <b-button pill @click="logout" style="align-self: center">{{buttonText}}</b-button>
             </div>
         </b-navbar>
@@ -42,6 +42,9 @@
 <style scoped>
     img{
         cursor: pointer;
+        align-self: center;
+        min-width: 10rem;
+        margin: 0.7rem 1rem;
     }
     .NavBarContents{
         display: flex;
