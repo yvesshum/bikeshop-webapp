@@ -5,17 +5,19 @@
 
         <h4 class = "field_msg">Required fields:</h4>
         <YouthIDSelector @selected="selectedID"/>
-
+        <p class = "separator">Or manually input it below</p>
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea>
+                <p class="field_header">{{field.name}}</p>
+                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                <textarea v-model="field.value" :placeholder="field.name"></textarea>
+                <p class="field_header">{{field.name}}</p>
+                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
             </div>
         </div>
 
@@ -51,6 +53,7 @@
 
 <script>
     import {db} from '../../firebase';
+    import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
@@ -68,7 +71,9 @@
                 modalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
-                YouthProfile: {} //The current Youth profile trying to submit
+                YouthProfile: {}, //The current Youth profile trying to submit
+                placeholders: {}
+        
             };
 
         },
@@ -110,8 +115,6 @@
                 }
                 else {
                     let input = {};
-                    input["Status"] = "Pending";
-                    input["Order Date"] = new Date().toLocaleDateString();
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -122,7 +125,12 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
-
+                    data = this.parse(this.hiddenFields);
+                    for (let i = 0; i < data.length; i++) {
+                        if (data[i]["name"] === "Status") input["Status"] = "Pending"
+                        else if (data[i]["name"] === "Order Date") input["Order Date"] = new Date().toLocaleDateString();
+                        else input[data[i]["name"]] = data[i]["value"];
+                    }
 
 
                     let submitRef = db.collection("GlobalPendingOrders").doc();
@@ -200,16 +208,27 @@
         },
         async mounted() {
             let fields = await this.getFields();
+            await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => { 
+                this.placeholders = snapshot.val();
+            })
+
+            if (this.placeholders === {}) { 
+                window.alert("Error on getting placeholder text values");
+                return null;
+            }
+
             for (let i = 0; i < fields["required"].length; i ++) {
                 this.requiredFields.push({
                     name: fields["required"][i],
-                    value: ""
-                })
+                    value: "",
+                    placeholder: this.placeholders[fields["required"][i]]
+                });
             }
             for (let i = 0; i < fields["optional"].length; i ++) {
                 this.optionalFields.push({
                     name: fields["optional"][i],
-                    value: ""
+                    value: "",
+                    placeholder: this.placeholders[fields["optional"][i]]
                 })
             }
             for (let i = 0; i <fields["hidden"].length; i ++) {
@@ -234,7 +253,7 @@
         border: 1px solid;
         border-radius: 4px;
         width: 30%;
-        margin-top: 5px;
+        margin-bottom: 5px;
     }
     ::placeholder span{
         color: red;
@@ -242,6 +261,18 @@
     }
     .field_msg{
         text-decoration: underline;
+    }
+
+    .separator{
+        color:grey;
+        margin-top:2px;
+        margin-bottom:2px;
+        font-style:italic;
+    }
+
+    .field_header{
+        margin-bottom:1px;
+        
     }
 
 </style>

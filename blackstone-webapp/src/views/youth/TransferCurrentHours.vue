@@ -204,13 +204,13 @@
                     if (currentHours >= amount) {
                         //create request for it
                         db.collection("GlobalTransferHours").doc().set({
-                            "fromID": fromID,
-                            "toID": toID,
-                            "fromName": this.fromSelector.split(" ")[0] + " " + this.fromSelector.split(" ")[1],
-                            "toName": this.toSelector.split(" ")[0] + " " + this.toSelector.split(" ")[1],
-                            "amount": amount,
-                            "date": new Date().toLocaleString(),
-                            "note": this.note,
+                            "From ID": fromID,
+                            "To ID": toID,
+                            "From Name": fromYouthProfile["First Name"] + " " +  fromYouthProfile["Last Name"],
+                            "To Name": toYouthProfile["First Name"] + " " + toYouthProfile["Last Name"],
+                            "Amount": amount,
+                            "Date": new Date().toLocaleString(),
+                            "Notes": this.note,
                         }).catch(err => {
                            window.alert("Err: " + err);
                            return null;

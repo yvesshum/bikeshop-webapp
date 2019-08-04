@@ -1,5 +1,6 @@
 <template>
     <div class = "StaffManageSkills">
+        <top-bar/>
         <h3 style="margin: 20px">Manage Apron skills here!</h3>
         <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px">
         <b-button variant="success" @click="add_category" style="margin-top:10px">Add Category</b-button></br>
@@ -122,7 +123,10 @@
                 new_data_text = new_data_text.slice(0, -2);
                 new_data_text += "}"
                 console.log(new_data_text)
-                ApronSkillsRef.set(JSON.parse(new_data_text));
+                ApronSkillsRef.set(JSON.parse(new_data_text)).then((err) => {
+                    if (err) this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem")
+                    return null;
+                });
             }
         },
         async mounted() {
