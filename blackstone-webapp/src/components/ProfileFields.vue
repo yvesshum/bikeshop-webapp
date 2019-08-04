@@ -15,8 +15,8 @@
     </table>
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
-    <button ref="discard_changes" v-on:click="discard_changes()" style="display: none;">Discard Changes</button>
-    <button ref="reset_changes" v-on:click="reset_changes()" style="display: none;">Reset All Changes</button>
+    <button ref="discard_changes" v-on:click="discard_changes()" class="edit_mode_only" style="display: none;">Discard Changes</button>
+    <button ref="reset_changes" v-on:click="reset_changes()" class="edit_mode_only" style="display: none;">Reset All Changes</button>
 
   </div>
 </template>
@@ -77,19 +77,13 @@ export default {
       // Go into edit mode
       if (this.edit_mode) {
         this.$refs.edit_profile.innerHTML = "Submit Edits!";
-        this.$refs.discard_changes.style.display = "";
-        this.$refs.reset_changes.style.display = "";
 
-        Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
+        Object.entries(document.getElementsByClassName("edit_mode_only")).map(([n, element]) => {
+          element.style.display = "";
+        });
+
+        Object.entries(document.getElementsByClassName("display_mode_only")).map(([n, element]) => {
           element.style.display = "none";
-        });
-
-        Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
-          element.style.display = "";
-        });
-
-        Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
-          element.style.display = "";
         });
 
         var add_row = this.$refs.fields_table.insertRow(-1);
@@ -105,22 +99,22 @@ export default {
       // Reset to display mode
       else {
         this.$refs.edit_profile.innerHTML = "Edit!";
-        this.$refs.discard_changes.style.display = "none";
-        this.$refs.reset_changes.style.display = "none";
 
-        Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
-          let fields = this.convert_to_fields(element);
+        document.querySelectorAll(".edit_mode_only").forEach((element, n) => {
+          element.style.display = "none";
+        })
 
-          if (fields.title_cell != null) fields.title_cell.style["font-weight"] = "";
-          if (fields.field != null) fields.field.style["display"] = "";
-          if (fields.edit_container != null) fields.edit_container.style["display"] = "none";
-          if (fields.edit_field != null) {
-            fields.edit_field.value = fields.edit_field.defaultValue;
-          };
+        document.querySelectorAll(".display_mode_only").forEach((element, n) => {
+          element.style.display = "";
+        })
 
-          if (fields.remove_button_container != null) {
-            fields.remove_button_container.style.display = "none";
-          }
+        document.querySelectorAll('.field_title').forEach((element, n) => {
+          element.style["font-weight"] = "";
+        });
+
+        document.querySelectorAll('.edit_field').forEach((element, n) => {
+          console.log(element);
+          element.value = element.defaultValue;
         });
 
         this.$refs.fields_table.deleteRow(-1);
@@ -290,10 +284,13 @@ export default {
       let new_row = table.insertRow(row_index);
       new_row.id = key + "_container";
       new_row.classList.add("field_container");
+      new_row.classList.add("unused_field");
+      new_row.classList.add("edit_mode_only");
 
       let remove_button_container = new_row.insertCell(-1);
       remove_button_container.id = key + "_remove_button_container";
       remove_button_container.classList.add("remove_button_container");
+      remove_button_container.classList.add("edit_mode_only");
       remove_button_container.style.display = "none";
 
       let title_cell = new_row.insertCell(-1);
@@ -304,10 +301,12 @@ export default {
       var field_p = new_row.insertCell(-1);
       field_p.id = key + "_field";
       field_p.classList.add("data_field");
+      field_p.classList.add("display_mode_only");
 
       let field_e = new_row.insertCell(-1);
       field_e.id = key + "_edit_container";
       field_e.classList.add("edit_container");
+      field_e.classList.add("edit_mode_only");
       field_e.style.display = "none";
       
       let edit_input = document.createElement("input");
@@ -343,13 +342,13 @@ export default {
           field_e.style.display = "";
           field_p.style.display = "none";
           field_p.classList.remove("to_be_removed");
-          field_e.classList.remove("to_be_removed");
+          edit_input.classList.remove("to_be_removed");
         } else {
           this.innerHTML = "+";
           field_e.style.display = "none";
           field_p.style.display = "";
           field_p.classList.add("to_be_removed");
-          field_e.classList.add("to_be_removed");
+          edit_input.classList.add("to_be_removed");
         }
       }
       remove_button_container.appendChild(remove_button);
@@ -368,7 +367,7 @@ export default {
     // Toggles between edit mode and display mode
     toggle_edit_mode: function() {
       if (this.edit_mode) {
-        this.save_edits();
+        this.check_edits();
       };
       this.edit_mode = !this.edit_mode;
     },
@@ -385,17 +384,17 @@ export default {
       var n;
       var c = false;
 
-      var el = form.elements.length;
-      console.log(el);  // Displays the number of fields in edit form
+      var el = form.length;
+      // console.log(el);  // Displays the number of fields in edit form
       for (var e = 0; e < el; e++) {
-        n = form.elements[e];
-        console.log(n);  // Displays the form elements
-        c = c || (n.value != n.defaultValue);
+        n = form[e];
+        // console.log(n);  // Displays the form elements
+        c = c || (n.value != n.defaultValue) || n.classList.contains("to_be_removed");
       }
 
       if (c == true) {
         alert("The edits have been saved");
-        saveEdit(youth_id);
+        this.save_edits(youth_id);
       } else {
         alert("No edits have been made");
       }
@@ -413,30 +412,40 @@ export default {
       let youth_id = document.getElementById("ID_field").innerHTML;
       const form = document.getElementsByClassName("edit_input");
 
-      var c = false;
-
       Object.entries(form).map(([n, element]) => {
-        if (element.classList.contains("to_be_removed")) {
-          changes[element.name] = null;
-          // TODO: Actually remove from the page and the database
-        }
-        else if (element.value != element.defaultValue) {
+
+        if (!element.classList.contains("to_be_removed")) {
           changes[element.name] = element.value;
           document.getElementById(element.name + "_field").innerHTML = element.value;
           this.set_all_input_vals(element, element.value);
-          c = true;
+        }
+
+        else {
+          element.classList.remove("to_be_removed");
+          document.getElementById(element.name + "_field").classList.remove("to_be_removed");
+          document.getElementById(element.name + "_container").classList.add("unused_field");
+
         };
+
+        // if (element.classList.contains("to_be_removed")) {
+        //   console.log("Removing " + element.name);
+        //   changes[element.name] = FieldValue.delete();
+        //   c = true;
+        //   // TODO: Actually remove from the page and the database
+        // }
+        // else if (element.value != element.defaultValue) {
+        //   changes[element.name] = element.value;
+        //   document.getElementById(element.name + "_field").innerHTML = element.value;
+        //   this.set_all_input_vals(element, element.value);
+        //   c = true;
+        // };
       });
 
       Object.entries(document.getElementsByClassName("field_title")).map(([n, element]) => {
         element.style["font-weight"] = "";
       })
 
-      if (c) {
-        console.log("Changes to be made: ", changes);
-      } else {
-        console.log("No changes to be made.", changes);
-      }
+      console.log("New profile:", changes);
 
       // Saves edits to firebase
       // db.collection('GlobalYouthProfile').doc(youth_id).update(changes);
