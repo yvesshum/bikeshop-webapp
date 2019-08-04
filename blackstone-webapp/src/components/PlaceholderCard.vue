@@ -36,6 +36,16 @@
                     <font-awesome-icon icon="edit" class ="icon alt"/>
                 </b-button>
             </div>
+            <div class="button">
+                <b-button
+                    squared 
+                    block 
+                    variant="danger"
+                    @click="onDeleteClicked"
+                >
+                    <font-awesome-icon icon="times" class ="icon alt"/>
+                </b-button>
+            </div>
             <!-- <b-button variant="info" @click="onEditClicked" squared><font-awesome-icon icon="edit" class ="icon alt"/></b-button>
             <b-button variant="danger" @click="onDeleteClicked" squared><font-awesome-icon icon="times" class="icon alt"/></b-button> -->
         </b-button-group>
@@ -118,6 +128,17 @@ export default {
         }
     },
     methods: {
+        async onDeleteClicked() {
+            //TODO: Test this
+            this.showLoadingModal();
+            let status2 = await rb.ref(this.rbRef).child(this.fieldText).remove()
+            if (status2){
+                window.alert("Error on deleting firebase, realtime database on child: " + this.fieldText);
+                return null;
+            }
+            this.loading_closeModal();
+        },
+
         onEditClicked() {
             this.edit_modalVisible = true;
             this.editFieldName = this.field;
@@ -140,8 +161,6 @@ export default {
                 window.alert("Error on updating firebase, realtime database on child: " + this.rbRef);
                 return null;
             }
-
-            //TODO: Fix remove (Unchanged field name, changing placeholder)
             
             this.loading_closeModal();
         },
@@ -190,6 +209,6 @@ export default {
     width: 20rem;
 } 
 .button{
-    width: 3rem;
+    /* width: 3rem; */
 }
 </style>

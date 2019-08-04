@@ -11,6 +11,55 @@
                 rbRef="Submit Orders Placeholders"
             />
         </div>
+        <b-button-group>
+            <b-button variant="info" @click="addButtonClicked">
+                Add a placeholder <font-awesome-icon icon="plus" class ="icon alt"/>
+            </b-button>
+        <br>
+        </b-button-group>
+
+
+
+
+        <!-- Modals -->
+        <b-modal v-model = "new_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                New Placeholder
+            </template>
+            <p style="margin-bottom: 0">Field Name</p>
+            <b-form-textarea
+                    id="textarea"
+                    v-model="newFieldName"
+                    placeholder="This must match one of the current fields, but not one that already has a placeholder"
+                    :state="existingFieldNames.includes(newFieldName) && !data.some(f => {return Object.values(f).indexOf(newFieldName) > -1})"
+                    size="sm"
+                    rows="1"
+                    max-rows="3"
+            ></b-form-textarea>
+            <p style="margin-bottom: 0">Placeholder Text</p>
+            <b-form-textarea
+                    id="textarea"
+                    v-model="newPlaceholderText"
+                    placeholder="Enter a value"
+                    :state="newPlaceholderText.length > 0"
+                    size="sm"
+                    rows="1"
+                    max-rows="3"
+            ></b-form-textarea>
+            <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning">Save</b-button>
+            <b-button class="mt-3" block @click="new_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
+
+        <b-modal v-model = "msg_modalVisible" hide-footer lazy>
+            <template slot="modal-title">
+                {{msg_modal_title}}
+            </template>
+            <div class="d-block text-center">
+                <h3>{{msg_modal_text}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="msg_closeModal" variant = "primary">ok!</b-button>
+
+        </b-modal>
     </div>
 </template>
 
@@ -33,6 +82,13 @@ export default {
             data: [],
             existingFieldNames: [],
             dataLoaded: false,
+            newFieldName: "",
+            newPlaceholderText: "",
+            new_modalVisible: false,
+            msg_modalVisible: false,
+            msg_modal_title: "",
+            msg_modal_text: ""
+
         }
     },
     methods: {
@@ -58,11 +114,42 @@ export default {
                 }
             }
             return ret;
-         },
+        },
 
-         forceUpdate() {
+        forceUpdate() {
             this.$forceUpdate();
-         }
+        },
+
+        addButtonClicked() {
+            this.newFieldName = "";
+            this.new_modalVisible = true;
+            
+        },
+
+        save_new() {
+            this.new_closeModal();
+            let val = {}
+            val[this.newFieldName] = this.newPlaceholderText;
+            console.log(val);
+            rb.ref(this.placeholderRef).update(val).then(err => {
+                if (err) window.alert("Error on saving new placeholder in realtime database, ref: " + this.doc)
+                else this.msg_showModal("Success!", "Added a new placeholder")
+            })
+
+        },
+
+        new_closeModal() {
+            this.new_modalVisible = false;
+        },
+
+        msg_closeModal() {
+            this.msg_modalVisible = false;
+        },
+        msg_showModal(title, msg) { 
+            this.msg_modal_title = title;
+            this.msg_modal_text = msg;
+            this.msg_modalVisible = true;
+        }
 
     },
     async mounted() {
@@ -72,6 +159,7 @@ export default {
         })
         rb.ref(this.placeholderRef).on('value', snapshot => {
                 this.data = this.formatData(snapshot.val());
+                console.log(this.data);
                 this.forceUpdate();
         });
     },
