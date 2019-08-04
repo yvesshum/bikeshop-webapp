@@ -405,7 +405,7 @@ export default {
       title_cell.innerHTML = key + ":";
 
       var field_p = new_row.insertCell(-1);
-      field_p.id = key + "_field";
+      if (!this.specially_displayed_fields.includes(key)) field_p.id = key + "_field";
       field_p.classList.add("data_field");
       field_p.classList.add("display_mode_only");
 
