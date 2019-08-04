@@ -36,7 +36,7 @@ export default {
        },
 
        onDeleteClicked() {
-
+           this.$emit('deleteClicked', this.field);
        }
    }
 }

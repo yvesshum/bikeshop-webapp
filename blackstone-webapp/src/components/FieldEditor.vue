@@ -1,7 +1,7 @@
 // Usage: 
 // <fieldEditor :ftype="variable name of field array e.g. hidden" :elements="an array of objects with 'name' and 'isProtected' keys e.g. [{name: 'Youth ID', isProtected: true}]"/>
-// TODO: create delete button
-// TODO: create new field button
+// TODO: Change placeholders
+
 
 <template> 
     <div>
@@ -59,7 +59,7 @@
             <b-form-textarea
                     id="textarea"
                     v-model="editMsg"
-                    placeholder="Enter a new name here.."
+                    placeholder="Edit here.."
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
@@ -138,7 +138,7 @@ export default {
             delete_modalVisible: false,
             add_modalVisible: false,
             addFieldName: "",
-            addFieldInitializer: ""
+            addFieldInitializer: "",
         }
     },
     mounted() { 
@@ -365,9 +365,6 @@ export default {
             this.closeLoadingModal();
             this.msg_showModal("Success", "Successfully added new field in firebase Global Fields Collection and corresponding documents")
 
-
-
-
         },
 
 
@@ -408,5 +405,7 @@ export default {
 </script>
 
 <style>
-
+.fieldText{
+    width: 10rem;
+}
 </style>

@@ -4,11 +4,8 @@
 // Remove a field (removes corresponding field in all profiles and GlobalPendingOrders)
 // Add a field name (Updates all profiles and pending orders with the new field and a given initialization value)
 // Edit placeholder texts for Youth Orders 
-
-// TODO: Youth Order Log will be in a separate page 
-
 <template>
-    <div>
+    <div v-if="dataLoaded">
         <top-bar/>
         <br>
 
@@ -29,6 +26,10 @@
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
         <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden"/>
         <hr class="divider">
+        
+        <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
+        <hr class="subheading">  
+        <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
 
         <SettingsBottomNote/>
 
@@ -39,14 +40,16 @@
 <script>
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
-import {rb} from '../../firebase.js'
 import fieldEditor from '../../components/FieldEditor.vue'
+import PlaceholderEditor from '../../components/PlaceholderEditor.vue'
+
 
 export default {
     name: 'YouthOrderSettings',
     components: {
         SettingsBottomNote,
-        fieldEditor
+        fieldEditor,
+        PlaceholderEditor
     },
     data() {
         return {
@@ -87,6 +90,9 @@ export default {
                 this.initialFields = this.parse(this.fields);
             }
         },
+
+       
+
         
     },
     async mounted() {
