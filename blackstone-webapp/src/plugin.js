@@ -1,5 +1,6 @@
-import {db} from '../../firebase';
-import {firebase} from '../../firebase';
+import {db} from '../firebase';
+import {firebase} from '../firebase';
+import Vue from 'vue'
 export default {
   install (Vue, options) {
     // Vue.prototype.$firestore_array_insert = (collection, doc, arrayName, object) => {
@@ -26,7 +27,7 @@ export default {
     //     return 'error'
     //   }
       Vue.prototype.$plugin_test = () => {
-        console.log('hi')
+        return 'hi'
       }
 
     }
@@ -44,4 +45,3 @@ export default {
     // }
 
   }
-}

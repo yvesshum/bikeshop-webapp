@@ -2,7 +2,7 @@
     <div class="home">
         <TopBar/>
         <p>This is the test home page, put things in here for testing specific pages</p>
-        <YouthSubmitOrders />
+        <CheckIn />
         <button @click="logout" style="margin: 30px">Logout</button>
     </div>
 
@@ -12,11 +12,13 @@
     import {firebase} from '../../firebase';
     import YouthSubmitOrders from "./youth/SubmitOrders";
     import TopBar from '../components/TopBar';
+    import CheckIn from '../views/youth/CheckIn.vue'
     export default {
         name: 'home',
         components: {
             YouthSubmitOrders,
-            TopBar
+            TopBar,
+            CheckIn
         },
         methods: {
             logout: function() {
