@@ -11,17 +11,16 @@
 
     <br />
 
-    <button v-on:click="edit_youth_periods">Edit Active Quarters for <span class="sel_youth_name"></span></button>
+    <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
+    <form ref="sel_youth_periods" id="sel_youth_periods"></form>
 
-    <div ref="selected_youth">
-      <h2 ref="sel_youth_name_full">
-        <span class="sel_youth_name"></span>&nbsp;
-        <span class="id_parens">(ID:&nbsp;<span ref="sel_youth_id"></span>)</span>
-      </h2>
-    </div>
 
+
+    <br /><br />
 
     <button @click="logout">Logout</button>
+
+
 
     <b-modal v-model="confirm_modal_visible" hide-footer lazy>
       <template slot="modal-title">
@@ -87,6 +86,8 @@ export default {
 
       // Misc
       month_list: ["winter", "spring", "summer", "autumn"],
+
+      period_form_inputs: [],
     };
   },
 
@@ -103,24 +104,38 @@ export default {
     this.current_active_youths = data["CurrentActiveYouths"];
     this.future_active_youths  = data["FutureActiveYouths"];
 
+    this.create_edit_quarters_form(this.$refs.sel_youth_periods);
+
     this.display_current_period();
     this.display_future_period();
+
+    this.$refs.edit_youth_quarters_button.style.display = "none";
   },
 
   watch: {
     selected_youth: function(youth) {
       if (youth == null) {
         console.log("No youth selected");
-        this.$refs.selected_youth.style.display = "none";
-        return;
-      } else {
+        this.$refs.edit_youth_quarters_button.style.display = "none";
+        // this.$refs.selected_youth.style.display = "none";
+      }
+
+      else {
         console.log("Youth selected: ", youth);
-        this.$refs.selected_youth.style.display = "";
-        document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
-          element.innerHTML = youth.name;
-        });
-        // this.$refs.sel_youth_name.innerHTML = youth.name;
-        this.$refs.sel_youth_id.innerHTML = youth.id;
+
+        // Dummy profile value
+        this.selected_youth_profile = {
+          data: function() {return {ActivePeriods: ["summer19", "spring19", "winter19"]};}
+        };
+        // this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
+
+        // this.$refs.selected_youth.style.display = "";
+        // document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
+        //   element.innerHTML = youth.name;
+        // });
+        this.$refs.sel_youth_name.innerHTML = youth.name;
+        // this.$refs.sel_youth_id.innerHTML = youth.id;
+        this.$refs.edit_youth_quarters_button.style.display = "";
       };
     },
   },
@@ -134,6 +149,10 @@ export default {
 
     edit_youth_periods: function(event) {
       event.preventDefault();
+      this.match_form_to_youth(
+        this.selected_youth_profile.data().ActivePeriods,
+        this.$refs.sel_youth_periods
+      );
     },
 
     unpack_id: function(id) {
@@ -146,6 +165,59 @@ export default {
         id: id.slice(id.lastIndexOf(" ")+1),
         is_rolling_over: rollover,
       };
+    },
+
+    create_edit_quarters_form: function(form) {
+      form.style.display = "none";
+
+      this.period_form_inputs = [];
+      let period_inputs = this.period_form_inputs;
+
+      display_quarter(this.future_period, " (next)");
+      display_quarter(this.current_period, " (current)");
+      this.past_periods.forEach((element, n) => {display_quarter(element, "")});
+
+      let submit_button = document.createElement("input");
+      submit_button.type = "submit";
+      submit_button.value = "Submit";
+      form.appendChild(submit_button);
+
+      form.onsubmit = function(event) {
+        event.preventDefault();
+        let checked_periods = [];
+        this.period_form_inputs.forEach((element, n) => {
+          if (element.checkbox.checked) {
+            checked_periods.push(element.quarter);
+          };
+        });
+        form.style.display = "none";
+        return checked_periods;
+      }.bind(this);
+
+      function display_quarter(quarter, extra_text) {
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.name = quarter;
+        checkbox.style.display = "inline";
+
+        let text = document.createElement("p");
+        text.innerHTML = "&nbsp;" + quarter + extra_text;
+        text.style.display = "inline";
+
+        form.appendChild(checkbox);
+        form.appendChild(text);
+        form.appendChild(document.createElement("br"));
+
+        period_inputs.push({quarter, checkbox});
+      }
+    },
+
+    match_form_to_youth: function(youth_periods, form) {
+      this.period_form_inputs.forEach((element, n) => {
+        element.checkbox.checked = youth_periods.includes(element.quarter);
+      });
+
+      form.style.display = "";
     },
 
     // Save changes to Firebase
@@ -310,7 +382,6 @@ export default {
     select_youth: async function(row) {
       this.selected_youth = this.unpack_id(row._row.data.Name + " " + row._row.data.ID);
       let id = row._row.data.ID;
-      this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(id).get();
     },
   }
 }
