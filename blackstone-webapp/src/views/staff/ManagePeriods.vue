@@ -233,13 +233,43 @@ export default {
       };
     },
 
+    check_changes: function() {
+      let active = !objects_equal(this.get_default_changes(), this.active_periods_doc.data());
+      let previous = false;
+
+      // TODO: Track a list of edited youth/ids, and use that to check for changes in past data?
+      
+      return {active, previous};
+
+      function objects_equal(a, b) {
+        let a_keys = Object.getOwnPropertyNames(a);
+        let b_keys = Object.getOwnPropertyNames(b);
+
+        if (a_keys.length != b_keys.length) return false;
+
+        for (var i = 0; i < a.length; i++) {
+          if (a[a_keys[i]] != b[a_keys[i]]) {
+            return false;
+          };
+        };
+
+        return true;
+      };
+    },
+
     save_changes: function() {
       let changes = this.get_default_changes();
-      this.show_modal(
-        "The following changes will be saved to the database:",
-        changes,
-        function() {this.update_database(changes);}
-      );
+      let is_changed = this.check_changes();
+
+      if (!is_changed.active && !is_changed.previous) {
+        this.show_modal("No changes have been made.", "", this.close_modal);
+      } else {
+        this.show_modal(
+          "The following changes will be saved to the database:",
+          changes,
+          function() {this.update_database(changes);}
+        );
+      }
     },
 
     // Save changes to Firebase
@@ -255,6 +285,7 @@ export default {
         // Success
         function() {
           window.alert("Changes saved successfully!");
+          // Reset any tracking variables
           return null;
         },
         // Failure
