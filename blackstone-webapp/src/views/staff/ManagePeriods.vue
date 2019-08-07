@@ -3,11 +3,23 @@
     <TopBar/>
     <h1>Manage Periods</h1>
 
-    <h3 ref="current_period_title"></h3>
-    <ul ref="current_youths"></ul>
+    <h3>Current Quarter (<span ref="current_period_title"></span>)</h3>
+    <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
 
-    <h3 ref="future_period_title"></h3>
-    <ul ref="future_youths"></ul>
+    <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
+    <Table ref="future_youths" :headingdata="this.future_table_headers" :table_data="this.future_table_data" @selectedRow="this.select_youth"></Table>
+
+    <br />
+
+    <button v-on:click="edit_youth_periods">Edit Active Quarters for <span class="sel_youth_name"></span></button>
+
+    <div ref="selected_youth">
+      <h2 ref="sel_youth_name_full">
+        <span class="sel_youth_name"></span>&nbsp;
+        <span class="id_parens">(ID:&nbsp;<span ref="sel_youth_id"></span>)</span>
+      </h2>
+    </div>
+
 
     <button @click="logout">Logout</button>
 
@@ -32,11 +44,13 @@ import {firebase} from '../../firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
+import Table from '@/components/Table';
 
 export default {
   name: 'manage_periods',
   components: {
-    TopBar
+    TopBar,
+    Table,
   },
 
   data: function() {
@@ -56,11 +70,20 @@ export default {
       current_active_youths: [],
       future_active_youths: [],
 
+      active_table_headers: ["Name", "ID", "Status"],
+      active_table_data: [],
+
+      future_table_headers: ["Name", "ID", "Status"],
+      future_table_data: [],
+
       // Modal variables
       confirm_modal_visible: false,
       modal_title: "",
       modal_body: "",
       accept_modal: null,
+
+      selected_youth: null,
+      selected_youth_profile: null,
 
       // Misc
       month_list: ["winter", "spring", "summer", "autumn"],
@@ -84,11 +107,33 @@ export default {
     this.display_future_period();
   },
 
+  watch: {
+    selected_youth: function(youth) {
+      if (youth == null) {
+        console.log("No youth selected");
+        this.$refs.selected_youth.style.display = "none";
+        return;
+      } else {
+        console.log("Youth selected: ", youth);
+        this.$refs.selected_youth.style.display = "";
+        document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
+          element.innerHTML = youth.name;
+        });
+        // this.$refs.sel_youth_name.innerHTML = youth.name;
+        this.$refs.sel_youth_id.innerHTML = youth.id;
+      };
+    },
+  },
+
   methods: {
     logout: function() {
         firebase_app.auth().signOut().then(() => {
             this.$router.replace('login');
         });
+    },
+
+    edit_youth_periods: function(event) {
+      event.preventDefault();
     },
 
     unpack_id: function(id) {
@@ -147,11 +192,16 @@ export default {
     display_current_period: function() {
       this.$refs.current_period_title.innerHTML = this.current_period;
 
+      this.active_table_data = [];
+
       for (var n in this.current_active_youths) {
-        let item = document.createElement("li");
         let youth = this.unpack_id(this.current_active_youths[n]);
-        item.innerHTML = youth.name + " (ID: " + youth.id + ")";
-        this.$refs.current_youths.appendChild(item);
+        let status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
+        this.active_table_data.push({
+          Name: youth.name,
+          ID: youth.id,
+          Status: status
+        });
       };
     },
 
@@ -159,12 +209,16 @@ export default {
     display_future_period: function() {
       this.$refs.future_period_title.innerHTML  = this.future_period;
 
+      this.future_table_data = [];
+
       for (var n in this.future_active_youths) {
-        let item = document.createElement("li");
-        let youth = this.unpack_id(this.current_active_youths[n]);
-        item.innerHTML = youth.name + " (ID: " + youth.id + ")";
-        if (youth.is_rolling_over()) item.innerHTML += " (Rolling over)";
-        this.$refs.future_youths.appendChild(item);
+        let youth = this.unpack_id(this.future_active_youths[n]);
+        let status = (youth.is_rolling_over()) ? "Rolling Over" : "New";
+        this.future_table_data.push({
+          Name: youth.name,
+          ID: youth.id,
+          Status: status
+        });
       };
     },
 
@@ -251,6 +305,12 @@ export default {
             return null;
         }
       }
+    },
+
+    select_youth: async function(row) {
+      this.selected_youth = this.unpack_id(row._row.data.Name + " " + row._row.data.ID);
+      let id = row._row.data.ID;
+      this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(id).get();
     },
   }
 }
