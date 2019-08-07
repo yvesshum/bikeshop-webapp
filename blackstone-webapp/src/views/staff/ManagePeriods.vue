@@ -14,6 +14,8 @@
     <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
     <form ref="sel_youth_periods" id="sel_youth_periods"></form>
 
+    <br />
+    <button v-on:click="save_changes">Save Changes</button>
 
 
     <br /><br />
@@ -220,23 +222,47 @@ export default {
       form.style.display = "";
     },
 
+    get_default_changes: function() {
+      return {
+        CurrentPeriod: this.current_period,
+        FuturePeriod:  this.future_period,
+        PastPeriods:   this.past_periods,
+        CurrentActiveYouths: this.current_active_youths,
+        FutureActiveYouths:  this.future_active_youths,
+        PastPeriodsDoc: this.active_periods_doc.data()["PastPeriodsDoc"],
+      };
+    },
+
+    save_changes: function() {
+      let changes = this.get_default_changes();
+      this.show_modal(
+        "The following changes will be saved to the database:",
+        changes,
+        function() {this.update_database(changes);}
+      );
+    },
+
     // Save changes to Firebase
     // Returns null on success, and error on failure
     update_database: function(changes) {
 
       if (changes == null) {
-        changes = {
-          CurrentPeriod: this.current_period,
-          FuturePeriod:  this.future_period,
-          PastPeriods:   this.past_periods,
-          CurrentActiveYouths: this.current_active_youths,
-          FutureActiveYouths:  this.future_active_youths,
-          PastPeriodsDoc: this.active_periods_doc.data()["PastPeriodsDoc"],
-        };
+        changes = this.get_default_changes();
       }
 
       console.log("Changes to be saved: ", changes);
-
+      this.active_periods_db.update(changes).then(
+        // Success
+        function() {
+          window.alert("Changes saved successfully!");
+          return null;
+        },
+        // Failure
+        function(err) {
+          window.alert("Error updating ActivePeriods document: " + err);
+          return err;
+        }
+      );
       return null;
     },
 
