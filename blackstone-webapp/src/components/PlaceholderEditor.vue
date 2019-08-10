@@ -1,3 +1,4 @@
+//  Usage <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
 <template>
     <div >
         <p v-b-tooltip.hover title="Field Name, Placeholder Text, Status, Edit, Delete">Hint</p>
@@ -11,6 +12,7 @@
                 rbRef="Submit Orders Placeholders"
             />
         </div>
+        <br>
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
                 Add a placeholder <font-awesome-icon icon="plus" class ="icon alt"/>

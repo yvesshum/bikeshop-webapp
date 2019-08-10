@@ -16,15 +16,15 @@
         <hr class="subheading">  
 
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required"/>
+        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required" doc="Youth Order Form"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional"/>
+        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Order Form"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden"/>
+        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden" doc="Youth Order Form"/>
         <hr class="divider">
         
         <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
@@ -98,7 +98,6 @@ export default {
     async mounted() {
         await this.getFields();
         this.dataLoaded = true;
-        // await this.getPlaceholders();
     }
     
 }
