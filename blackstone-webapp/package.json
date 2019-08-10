@@ -25,7 +25,8 @@
     "vue-simple-search-dropdown": "^1.0.1",
     "vue-tabulator": "^1.0.0",
     "vuedraggable": "^2.23.0",
-    "vuefire": "^2.1.0"
+    "vuefire": "^2.1.0",
+    "vuejs-datepicker": "^1.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.9.0",

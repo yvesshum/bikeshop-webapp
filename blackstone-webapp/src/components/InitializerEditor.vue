@@ -1,7 +1,7 @@
 //  Usage <InitializerEditor v-if="dataLoaded" initializerRef="Youth Profile Initializers" doc="Youth Profile"/>
 <template>
     <div >
-        <p v-b-tooltip.hover title="Field Name, Initializer Value, Status, Edit, Delete">Hint</p>
+        <p v-b-tooltip.hover title="Field Name, Initializer Value, Status, Edit, Delete" v-if="data.length !== 0">Hint</p>
         <div  v-if="dataLoaded">
             <InitializerCard 
                 v-for="element in data"
@@ -12,6 +12,7 @@
                 :rbRef="initializerRef"
             />
         </div>
+        <p v-if="data.length === 0">No user-defined initializers found</p>
         <br>
 
         <b-button-group>
@@ -33,7 +34,7 @@
                     id="textarea"
                     v-model="newFieldName"
                     placeholder="This must match one of the current hidden fields, but not one that already has a initializer or is protected"
-                    :state="existingFieldNames.includes(newFieldName) && !data.some(f => {return Object.values(f).indexOf(newFieldName) > -1})"
+                    :state="isValidFieldName"
                     size="sm"
                     rows="1"
                     max-rows="3"
@@ -43,12 +44,12 @@
                     id="textarea"
                     v-model="newInitializerText"
                     placeholder="Enter a value"
-                    :state="newInitializerText.length > 0"
+                    :state="isValidInitializer"
                     size="sm"
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning">Save</b-button>
+            <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning" :disabled="!(isValidFieldName && isValidInitializer)">Save</b-button>
             <b-button class="mt-3" block @click="new_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
@@ -79,6 +80,15 @@ export default {
     components: {
         InitializerCard
     },
+    computed: {
+        isValidFieldName: function() {
+            return this.existingFieldNames.includes(this.newFieldName) && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
+        },
+
+        isValidInitializer: function() {
+            return this.newInitializerText.length > 0
+        }
+    },
     data() {
         return {
             data: [],
@@ -89,7 +99,11 @@ export default {
             new_modalVisible: false,
             msg_modalVisible: false,
             msg_modal_title: "",
-            msg_modal_text: ""
+            msg_modal_text: "",
+            detachSnapshot: "",
+            listenerRef: "",
+
+
 
         }
     },
@@ -157,18 +171,21 @@ export default {
 
     },
     async mounted() {
-        db.collection("GlobalFieldsCollection").doc(this.doc).onSnapshot(doc => {
+        this.detachSnapshot = db.collection("GlobalFieldsCollection").doc(this.doc).onSnapshot(doc => {
             this.existingFieldNames = this.formatNames(doc.data());
             this.dataLoaded = true;
         });
 
-        rb.ref(this.initializerRef+'/Unprotected').on('value', snapshot => {
-            console.log('changed');
+        this.listenerRef = rb.ref(this.initializerRef+'/Unprotected').on('value', snapshot => {
             this.data = this.formatData(snapshot.val());
-            console.log('d', this.data);
             this.forceUpdate();
         });
     },
+
+    beforeDestroy() {
+        this.detachSnapshot();
+        rb.ref(this.initializerRef).off("value", this.listenerRef);
+    }
 
 }
 </script>

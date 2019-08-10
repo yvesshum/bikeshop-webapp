@@ -50,6 +50,7 @@
 
 <script>
     import {db} from '../../firebase';
+    import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     export default {
@@ -91,10 +92,18 @@
                 }
                 else {
                     var input = {};
-                    input["Current Hours"] = 0;
-                    input["Pending Hours"] = 0;
-                    input["Last Sign In"] = null;
-                    input["Apron level"] = "Green";
+                    //hidden field initializers
+                    let listener = await rb.ref('Youth Profile Initializers').on("value", snapshot => { 
+                        let hiddenProtectedInitializers = snapshot.val()["Protected"];
+                        let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
+                        for (let key in hiddenProtectedInitializers) {
+                            input[key] = hiddenProtectedInitializers[key]
+                        }
+                        for (let key in hiddenUnprotectedInitializers) { 
+                            input[key] = hiddenUnprotectedInitializers[key]
+                        }
+                    })
+                
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -105,6 +114,9 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
                     let submitRef = db.collection("GlobalYouthProfile").doc();
+
+                    //detach RTD listener
+                    rb.ref('Youth Profile Initializers').off("value", listener);
                     
                     submitRef.set(input).then(response => {
                         // console.log("Document written with ID: ", submitRef.id);

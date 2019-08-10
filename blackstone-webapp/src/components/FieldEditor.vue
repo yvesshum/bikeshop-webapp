@@ -19,6 +19,7 @@
                 v-on:deleteClicked="deleteButtonClicked"
                 />
         </draggable>
+        <p v-if="fields.length === 0">No Fields Found </p>
         <br>
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
@@ -86,8 +87,8 @@
             <b-form-textarea
                     id="textarea"
                     v-model="addFieldName"
-                    placeholder="This cannot be empty!"
-                    :state="addFieldName.length >= 1"
+                    placeholder="This cannot be empty and must not already exist!"
+                    :state="isValidFieldName"
                     size="sm"
                     rows="1"
                     max-rows="3"
@@ -101,7 +102,7 @@
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning">Add a new field and change all existing documents to have this field and value</b-button>
+            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidFieldName">Add a new field and change all existing documents to have this field and value</b-button>
             <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
     </div>
@@ -123,6 +124,11 @@ export default {
         elements: Array,
         doc: String,
         collection: String
+    },
+    computed: { 
+        isValidFieldName: function() {
+            return !this.fields.some(f => {return Object.values(f).indexOf(this.addFieldName) > -1}) && this.addFieldName.length > 0
+        }
     },
     data() {
         return {

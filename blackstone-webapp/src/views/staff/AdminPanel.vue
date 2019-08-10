@@ -19,8 +19,6 @@
                     <p>Change Youth Order Form's settings</p>
                     </button>
                 </a>
-            </div>
-            <div class="options">
                 <a href="/youth-profile-staff-settings">
                     <button class="page">
                     <h4>Youth Profile Staff View</h4>
