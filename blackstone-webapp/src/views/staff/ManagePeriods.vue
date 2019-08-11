@@ -148,8 +148,10 @@ export default {
         else {
           console.log("Retrieving " + youth.full_id + " from the database...");
           this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
+          this.selected_youth_data = this.selected_youth_profile.data();
+
           this.cached_youth_profiles[youth.id] = this.selected_youth_profile;
-          this.cached_youth_data[youth.id]     = this.selected_youth_profile.data();
+          this.cached_youth_data[youth.id]     = this.selected_youth_data;
         }
         
 
@@ -440,6 +442,10 @@ export default {
       this.pending_changes = [];
       this.cached_youth_data = new Object();
       this.cached_youth_profiles = new Object();
+      this.edited_youth = null;
+      this.selected_youth = null;
+      this.selected_youth_data = null;
+      this.selected_youth_profile = null;
 
       return null;
     },
