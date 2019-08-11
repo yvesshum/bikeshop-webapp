@@ -70,6 +70,7 @@ export default {
       future_period: null,
       current_active_youths: [],
       future_active_youths: [],
+      past_periods_doc_name: null,
 
       active_table_headers: ["Name", "ID", "Status"],
       active_table_data: [],
@@ -111,6 +112,8 @@ export default {
 
     this.current_active_youths = data["CurrentActiveYouths"];
     this.future_active_youths  = data["FutureActiveYouths"];
+
+    this.past_periods_doc_name = data["PastPeriodsDoc"];
 
     this.create_edit_quarters_form(this.$refs.sel_youth_periods);
 
@@ -272,7 +275,7 @@ export default {
         PastPeriods:   this.past_periods,
         CurrentActiveYouths: this.current_active_youths,
         FutureActiveYouths:  this.future_active_youths,
-        PastPeriodsDoc: this.active_periods_doc.data()["PastPeriodsDoc"],
+        PastPeriodsDoc: this.past_periods_doc_name,
       };
     },
 
