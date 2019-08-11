@@ -101,6 +101,8 @@ export default {
 
     this.past_periods_db = db.collection("GlobalVariables").doc(data["PastPeriodsDoc"]);
 
+    this.cached_youth_profiles = new Object();
+
     this.current_period = data["CurrentPeriod"];
     this.future_period  = data["FuturePeriod"];
     this.past_periods   = data["PastPeriods"];
@@ -117,7 +119,7 @@ export default {
   },
 
   watch: {
-    selected_youth: function(youth) {
+    selected_youth: async function(youth) {
       if (youth == null) {
         console.log("No youth selected");
         this.$refs.edit_youth_quarters_button.style.display = "none";
@@ -127,11 +129,19 @@ export default {
       else {
         console.log("Youth selected: ", youth);
 
-        // Dummy profile value
-        this.selected_youth_profile = {
-          data: function() {return {ActivePeriods: ["summer19", "spring19", "winter19"]};}
-        };
-        // this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
+        // Youth profile has already been retrieved - load if from the cache
+        if (this.cached_youth_profiles[youth.full_id] != null) {
+          console.log("Already retrieved " + youth.full_id);
+          this.selected_youth_profile = this.cached_youth_profiles[youth.full_id];
+        }
+
+        // Youth profile has not been retrieved yet - load it from the database and cache it
+        else {
+          console.log("Retrieving " + youth.full_id + " from the database...");
+          this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
+          this.cached_youth_profiles[youth.full_id] = this.selected_youth_profile;
+        }
+        
 
         // this.$refs.selected_youth.style.display = "";
         // document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
