@@ -404,7 +404,7 @@ export default {
 
           // Add the updated version of this period to the new object
           updated_data[period] = data[period].concat(to_add).filter(function(val) {
-            to_remove.includes(val);
+            return !to_remove.includes(val);
           });
         });
 
