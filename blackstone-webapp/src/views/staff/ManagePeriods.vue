@@ -446,6 +446,7 @@ export default {
       this.selected_youth = null;
       this.selected_youth_data = null;
       this.selected_youth_profile = null;
+      this.past_periods_doc = null;
 
       return null;
     },
