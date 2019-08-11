@@ -7,14 +7,18 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea>
+                {{field.name}}: 
+                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
+                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea>
+                {{field.name}}: 
+                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
+                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
 
@@ -52,6 +56,7 @@
     import {db} from '../../firebase';
     import {firebase} from '../../firebase';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+    let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
         name: 'StaffRegisterYouth',
         components: {
@@ -74,6 +79,10 @@
                 let f = await fieldsRef.get();
                 return f.data();
             },
+            async getQuarter() {
+                let f = await quarterRef.get();
+                return f.data();
+            },
             selectedID(value) {
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
@@ -91,10 +100,13 @@
                 }
                 else {
                     var input = {};
-                    input["Current Hours"] = 0;
+                    input["Hours Earned"] = 0;
+                    input["Hours Spent"] = 0;
                     input["Pending Hours"] = 0;
                     input["Last Sign In"] = null;
                     input["Apron level"] = "Green";
+                    let quarter = await this.getQuarter()
+                    input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
@@ -144,15 +156,6 @@
                     //if it is of length 0
                     if (!currentField["value"].length) ret.push(currentField["name"]);
                 }
-                // let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
-                // if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
-                //let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
-                //if (!(YouthID["value"] == null || YouthID["value"] === "")) {
-                //    let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
-                //    YouthProfile = YouthProfile.data();
-                //    if (YouthProfile == null) ret.push("YouthID not found");
-                //    if (parseFloat(YouthProfile["Current Hours"]) < parseFloat(ITC["value"])) ret.push("Not enough current hours, you have " + YouthProfile["Current Hours"]);
-                //}
                 return ret;
             },
             find(key, arr) {
@@ -180,16 +183,40 @@
         async mounted() {
             let fields = await this.getFields();
             for (let i = 0; i < fields["required"].length; i ++) {
-                this.requiredFields.push({
-                    name: fields["required"][i],
-                    value: ""
-                })
+                if(fields["required"][i] != "DOB"){
+                    this.requiredFields.push({
+                        name: fields["required"][i],
+                        value: "",
+                        type: "textarea"
+                    })
+                } else {
+                  this.requiredFields.push({
+                      name: fields["required"][i],
+                      value: "",
+                      type: "date"
+                  })
+                }
             }
             for (let i = 0; i < fields["optional"].length; i ++) {
-                this.optionalFields.push({
-                    name: fields["optional"][i],
-                    value: ""
-                })
+                if(fields["optional"][i] == "Current Grade"){
+                    this.optionalFields.push({
+                        name: fields["optional"][i],
+                        value: "",
+                        type: "number"
+                    })
+                } else if(fields["optional"][i] == "Qualified for free/reduced lunch?"){
+                    this.optionalFields.push({
+                        name: fields["optional"][i],
+                        value: "",
+                        type: "checkbox"
+                    })
+                } else {
+                    this.optionalFields.push({
+                        name: fields["optional"][i],
+                        value: "",
+                        type: "textarea"
+                    })
+                }
             }
             for (let i = 0; i <fields["hidden"].length; i ++) {
                 this.hiddenFields.push({

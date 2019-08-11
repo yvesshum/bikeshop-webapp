@@ -146,6 +146,18 @@
                                 </b-card-text>
                             </b-card>
                         </a>
+                        
+                        <a href="/approve-hours">
+                            <b-card
+                                    title="Approve Hour Logs"
+                                    style="max-width: 20rem;"
+                                    class="mb-2"
+                            >
+                                <b-card-text>
+                                    Approve or reject a youth's logged hours
+                                </b-card-text>
+                            </b-card>
+                        </a>
 
                         <a href="/approve-transfers">
                             <b-card

@@ -17,6 +17,7 @@ import HourTransfer from './views/youth/TransferCurrentHours'
 import ApproveTransfers from './views/staff/ApproveTransferHours'
 import AdminPanel from './views/staff/AdminPanel.vue'
 import YouthOrderSettings from './views/admin/YouthOrderSettings.vue'
+import ApproveHourLogs from './views/staff/ApproveHourLogs.vue'
 
 Vue.use(Router);
 
@@ -150,6 +151,15 @@ const router = new Router({
             path: '/register-new-youth',
             name: 'register-new-youth',
             component: StaffRegisterYouth,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/approve-hours',
+            name: 'approve-hours',
+            component: ApproveHourLogs,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true
