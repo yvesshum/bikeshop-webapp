@@ -8,7 +8,7 @@
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
+                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -17,7 +17,7 @@
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
+                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -72,7 +72,8 @@
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
-                newID: "123"
+                newID: "123",
+                placeholders: {}
             };
         },
         methods: {
@@ -193,12 +194,22 @@
         },
         async mounted() {
             let fields = await this.getFields();
+            await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
+                this.placeholders = snapshot.val();
+            })
+
+            if (this.placeholders === {}) { 
+                window.alert("Error on getting placeholder text values");
+                return null;
+            }
+            
             for (let i = 0; i < fields["required"].length; i ++) {
                 if(fields["required"][i] != "DOB"){
                     this.requiredFields.push({
                         name: fields["required"][i],
                         value: "",
-                        type: "textarea"
+                        type: "textarea",
+                        placeholder: this.placeholders[fields["required"][i]]
                     })
                 } else {
                   this.requiredFields.push({
@@ -225,7 +236,8 @@
                     this.optionalFields.push({
                         name: fields["optional"][i],
                         value: "",
-                        type: "textarea"
+                        type: "textarea",
+                        placeholder: this.placeholders[fields["required"][i]]
                     })
                 }
             }
