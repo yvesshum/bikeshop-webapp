@@ -138,10 +138,10 @@ export default {
         console.log("Youth selected: ", youth);
 
         // Youth profile has already been retrieved - load if from the cache
-        if (this.cached_youth_profiles[youth.id] != null) {
+        if (this.cached_youth_profiles[youth.full_id] != null) {
           console.log("Already retrieved " + youth.full_id);
-          this.selected_youth_profile = this.cached_youth_profiles[youth.id];
-          this.selected_youth_data    = this.cached_youth_data[youth.id];
+          this.selected_youth_profile = this.cached_youth_profiles[youth.full_id];
+          this.selected_youth_data    = this.cached_youth_data[youth.full_id];
         }
 
         // Youth profile has not been retrieved yet - load it from the database and cache it
@@ -150,8 +150,8 @@ export default {
           this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
           this.selected_youth_data = this.selected_youth_profile.data();
 
-          this.cached_youth_profiles[youth.id] = this.selected_youth_profile;
-          this.cached_youth_data[youth.id]     = this.selected_youth_data;
+          this.cached_youth_profiles[youth.full_id] = this.selected_youth_profile;
+          this.cached_youth_data[youth.full_id]     = this.selected_youth_data;
         }
         
 
@@ -219,9 +219,9 @@ export default {
         });
         form.style.display = "none";
 
-        this.cached_youth_data[this.edited_youth.id]["ActivePeriods"] = checked_periods;
+        this.cached_youth_data[this.edited_youth.full_id]["ActivePeriods"] = checked_periods;
 
-        this.pending_changes[this.edited_youth.id] = checked_periods;
+        this.pending_changes[this.edited_youth.full_id] = checked_periods;
         this.update_active_arrays(this.edited_youth, checked_periods);
 
       }.bind(this);
@@ -422,15 +422,16 @@ export default {
 
       // Save changes to individual youth profiles
       console.log("Updating youth profiles...");
-      changes.youth.forEach(function(id) {
-        db.collection("GlobalYouthProfile").doc(id).update({
-          ActivePeriods: this.pending_changes[id]
+      changes.youth.forEach(function(full_id) {
+        let temp_youth = this.unpack_id(full_id);
+        db.collection("GlobalYouthProfile").doc(temp_youth.id).update({
+          ActivePeriods: this.pending_changes[full_id]
         }).then(
           // Success
           function() {},
           // Failure
           function() {
-            window.alert("Error updating youth profile doc #" + id + ": " + err);
+            window.alert("Error updating youth profile doc #" + temp_youth.id + ": " + err);
             return err;
           }
         );
