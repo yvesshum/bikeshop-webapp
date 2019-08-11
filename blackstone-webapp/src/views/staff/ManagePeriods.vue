@@ -2,13 +2,24 @@
   <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
+    <br />
 
     <h3>Current Quarter (<span ref="current_period_title"></span>)</h3>
     <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
 
+    <br />
+
     <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
     <Table ref="future_youths" :headingdata="this.future_table_headers" :table_data="this.future_table_data" @selectedRow="this.select_youth"></Table>
 
+    <br />
+
+    <h3>Past Quarters</h3>
+    <!-- <Table :headingdata="['test', 'test2']" :table_data="[{'test': 'hi', 'test2': 'bye', 
+      'cat':'a'}, {'test': 'hi', 'test2': 'bye', 'cat':'b'}]" :args="{groupBy:'cat'}" /> -->
+    <div id="past-quarters-table"></div>
+
+    <br />
     <br />
 
     <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
@@ -46,6 +57,7 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
+const Tabulator = require('tabulator-tables');
 
 export default {
   name: 'manage_periods',
@@ -78,6 +90,9 @@ export default {
       future_table_headers: ["Name", "ID", "Status"],
       future_table_data: [],
 
+      past_table: null,
+      past_table_data: [],
+
       // Modal variables
       confirm_modal_visible: false,
       modal_title: "",
@@ -105,6 +120,7 @@ export default {
     let data = this.active_periods_doc.data();
 
     this.past_periods_db = db.collection("GlobalVariables").doc(data["PastPeriodsDoc"]);
+    this.past_periods_doc = await this.past_periods_db.get();
 
     this.cached_youth_data     = new Object();
     this.cached_youth_profiles = new Object();
@@ -122,6 +138,7 @@ export default {
 
     this.display_current_period();
     this.display_future_period();
+    this.display_past_periods();
 
     this.$refs.edit_youth_quarters_button.style.display = "none";
   },
@@ -257,8 +274,21 @@ export default {
       this.current_active_youths = toggle_youth_in_array(this.current_active_youths, this.current_period);
       this.future_active_youths  = toggle_youth_in_array(this.future_active_youths,  this.future_period);
 
+      this.past_periods.forEach(function(period) {
+        if (periods.includes(period)) {
+          console.log("Youth ", youth, " should be in period " + period);
+          if (split_table_youth_period(this.past_table_data, period, true).length == 0) {
+            add_youth_to_table(this.past_table_data, period);
+          };
+        } else {
+          console.log("Youth ", youth, " should NOT be in period " + period);
+          this.past_table_data = split_table_youth_period(this.past_table_data, period, false);
+        }
+      }.bind(this));
+
       this.display_current_period();
       this.display_future_period();
+      this.past_table.replaceData(this.past_table_data);
 
       function toggle_youth_in_array(arr, arr_name) {
         if (periods.includes(arr_name)) {
@@ -271,6 +301,24 @@ export default {
             return val != youth.full_id;
           });
         };
+      };
+
+      // If match is true, returns all table elements matching current youth and given period
+      // If match is false, returns all table elements NOT matching above criteria
+      function split_table_youth_period(table_data, period, match) {
+        return table_data.filter(function(element) {
+          let temp = ((element.quarter == period) && (element.full_id == youth.full_id));
+          return (match ? temp : !temp);
+        });
+      };
+
+      function add_youth_to_table(table_data, period) {
+        table_data.push({
+          name: youth.name,
+          id: youth.id,
+          full_id: youth.full_id,
+          quarter: period,
+        });
       };
 
     },
@@ -508,7 +556,32 @@ export default {
 
     // Display the previous periods on the page
     display_past_periods: function() {
-      
+      let data = this.past_periods_doc.data();
+
+      this.past_periods.forEach(function(period) {
+        data[period].forEach(function (full_id) {
+          let youth = this.unpack_id(full_id);
+          this.past_table_data.push({
+            name: youth.name,
+            id: youth.id,
+            full_id: youth.full_id,
+            quarter: period,
+          });
+        }.bind(this));
+      }.bind(this));
+
+      this.past_table = new Tabulator("#past-quarters-table", {
+        data:this.past_table_data,
+        layout:"fitColumns",
+        groupBy:"quarter",
+        groupValues:[this.past_periods],
+        groupStartOpen:false,
+        groupToggleElement:"header",
+        columns:[
+          {title:"Name", field:"name", width:200},
+          {title:"ID", field:"id"},
+        ],
+      });
     },
 
     // Set the youth with the given ID to active or not in the given period
