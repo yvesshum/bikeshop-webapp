@@ -90,6 +90,8 @@ export default {
       month_list: ["winter", "spring", "summer", "autumn"],
 
       period_form_inputs: [],
+
+      pending_changes: [],
     };
   },
 
@@ -193,7 +195,10 @@ export default {
           };
         });
         form.style.display = "none";
-        return checked_periods;
+
+        this.pending_changes[this.selected_youth.id] = checked_periods;
+        this.update_active_arrays(this.selected_youth, checked_periods);
+
       }.bind(this);
 
       function display_quarter(quarter, extra_text) {
@@ -214,12 +219,36 @@ export default {
       }
     },
 
+    // TODO: Update the form once changes are made client side
     match_form_to_youth: function(youth_periods, form) {
       this.period_form_inputs.forEach((element, n) => {
         element.checkbox.checked = youth_periods.includes(element.quarter);
       });
 
       form.style.display = "";
+    },
+
+    update_active_arrays: function(youth, periods) {
+
+      this.current_active_youths = toggle_youth_in_array(this.current_active_youths, this.current_period);
+      this.future_active_youths  = toggle_youth_in_array(this.future_active_youths,  this.future_period);
+
+      this.display_current_period();
+      this.display_future_period();
+
+      function toggle_youth_in_array(arr, arr_name) {
+        if (periods.includes(arr_name)) {
+          if (!arr.includes(youth.full_id)) {
+            arr.push(youth.full_id);
+          };
+          return arr;
+        } else {
+          return arr.filter(function(val) {
+            return val != youth.full_id;
+          });
+        };
+      };
+
     },
 
     get_default_changes: function() {
