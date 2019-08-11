@@ -85,6 +85,7 @@ export default {
       accept_modal: null,
 
       selected_youth: null,
+      selected_youth_data: null,
       selected_youth_profile: null,
       edited_youth: null,
 
@@ -94,6 +95,7 @@ export default {
       period_form_inputs: [],
 
       pending_changes: [],
+      cached_youth_data: null,
       cached_youth_profiles: null,
     };
   },
@@ -104,6 +106,7 @@ export default {
 
     this.past_periods_db = db.collection("GlobalVariables").doc(data["PastPeriodsDoc"]);
 
+    this.cached_youth_data     = new Object();
     this.cached_youth_profiles = new Object();
 
     this.current_period = data["CurrentPeriod"];
@@ -138,13 +141,15 @@ export default {
         if (this.cached_youth_profiles[youth.id] != null) {
           console.log("Already retrieved " + youth.full_id);
           this.selected_youth_profile = this.cached_youth_profiles[youth.id];
+          this.selected_youth_data    = this.cached_youth_data[youth.id];
         }
 
         // Youth profile has not been retrieved yet - load it from the database and cache it
         else {
           console.log("Retrieving " + youth.full_id + " from the database...");
-          this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get().data();
+          this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
           this.cached_youth_profiles[youth.id] = this.selected_youth_profile;
+          this.cached_youth_data[youth.id]     = this.selected_youth_profile.data();
         }
         
 
@@ -170,7 +175,7 @@ export default {
       event.preventDefault();
       this.edited_youth = this.selected_youth;
       this.match_form_to_youth(
-        this.selected_youth_profile.ActivePeriods,
+        this.selected_youth_data.ActivePeriods,
         this.$refs.sel_youth_periods
       );
     },
@@ -212,7 +217,7 @@ export default {
         });
         form.style.display = "none";
 
-        this.cached_youth_profiles[this.edited_youth.id]["ActivePeriods"] = checked_periods;
+        this.cached_youth_data[this.edited_youth.id]["ActivePeriods"] = checked_periods;
 
         this.pending_changes[this.edited_youth.id] = checked_periods;
         this.update_active_arrays(this.edited_youth, checked_periods);
