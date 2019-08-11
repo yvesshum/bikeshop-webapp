@@ -13,7 +13,7 @@
                     <b-button variant="info" @click="editNote">Edit note</b-button>
                 </b-button-group>
                 <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Transfer</b-button>
+                    <b-button variant="danger" @click="reject">Reject/Cancel Log</b-button>
                 </b-button-group>
 
                 <b-button-group>

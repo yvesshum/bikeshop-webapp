@@ -7,7 +7,7 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                {{field.name}}: 
+                <p class="field_header">{{field.name}}</p>
                 <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
@@ -16,7 +16,7 @@
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
-                {{field.name}}: 
+                <p class="field_header">{{field.name}}</p>
                 <input size="35" v-model="field.value" :type="field.type" :placeholder="field.name + '*'"></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
@@ -112,6 +112,8 @@
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
+                    let quarter = await this.getQuarter()
+                    input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                 
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
@@ -236,3 +238,37 @@
         }
     }
 </script>
+<style scoped>
+    p a {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    input{
+        outline-color: cadetblue;
+        text-align: center;
+        border: 1px solid;
+        border-radius: 4px;
+        /* width: 30%; */
+        margin-bottom: 5px;
+    }
+    ::placeholder span{
+        color: red;
+        opacity: 1;
+    }
+    .field_msg{
+        text-decoration: underline;
+    }
+
+    .separator{
+        color:grey;
+        margin-top:2px;
+        margin-bottom:2px;
+        font-style:italic;
+    }
+
+    .field_header{
+        margin-bottom:1px;
+        
+    }
+
+</style>

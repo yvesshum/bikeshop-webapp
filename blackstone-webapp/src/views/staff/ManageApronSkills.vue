@@ -15,6 +15,12 @@
             <input v-model="new_skill" type="text" id="new_skill_field" aria-describedby="emailHelp" placeholder="Skill Name" style="margin-top:10px">
             <b-button variant="success" @click="add_skill" style="margin-top:10px">Add Skill</b-button>
         </div>
+        <div>
+          <b-button-group>
+              <b-button variant="danger" @click="deleteSkill">Delete selected skill</b-button>
+          </b-button-group>
+        </div>
+        </br>
         <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skills']" @rowSelected="updateSelected"/>
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button>
@@ -87,8 +93,10 @@
             async update_selected_category(category) {
                 this.selected_category = category;
             },
-            async deleteSkill(index){
+            async deleteSkill(){
                 console.log("delete!");
+                console.log(this.selectedRow);
+                let index = this.selectedRow;
                 this.table_data.splice(index, 1);
             },
             async add_category() {

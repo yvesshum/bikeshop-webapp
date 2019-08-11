@@ -70,12 +70,6 @@
                         })
                     }
                 }
-                ret.push({formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
-                    //el.$broadcast('deleteSkill', cell.getRow().getIndex())
-                    //deleteSkill(cell.getRow().getIndex());
-                    this.data = null
-                    cell.getRow().delete();
-                }})
                 return ret;
             }
         },
