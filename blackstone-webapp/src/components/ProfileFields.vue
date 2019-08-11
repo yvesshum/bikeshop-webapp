@@ -15,8 +15,21 @@
     </table>
 
     <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
-    <button ref="discard_changes" v-on:click="discard_changes()" style="display: none;">Discard Changes</button>
-    <button ref="reset_changes" v-on:click="reset_changes()" style="display: none;">Reset All Changes</button>
+    <button ref="discard_changes" v-on:click="discard_changes()" class="edit_mode_only" style="display: none;">Discard Changes</button>
+    <button ref="reset_changes" v-on:click="reset_changes()" class="edit_mode_only" style="display: none;">Reset All Changes</button>
+
+    <b-modal v-model="confirmModalVisible" hide-footer lazy>
+      <template slot="modal-title">
+          Please Confirm the Following Changes
+      </template>
+      <div class="d-block text-center">
+          <h3>The following changes will be saved:</h3>
+          <p>{{modalList}}</p>
+          <!-- <ul ref="confirm_changes_list"></ul> -->
+      </div>
+      <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
+      <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
+    </b-modal>
 
   </div>
 </template>
@@ -28,25 +41,57 @@ import firebase_auth from 'firebase/auth';
 
 export default {
   name: 'profile_fields',
-  props: ["currentProfile"],
+  props: ["currentProfile", "header_doc"],
   components: {
     
   },
 
   data: function() {
     return {
-      edit_mode: false
+      edit_mode: false,
+      specially_displayed_fields: ["First Name", "Last Name"],
+      row_status: null,
+      array_fields: null,
+      confirmModalVisible: false,
+      modalList: ""
     }
   },
 
   mounted: function() {
-    let fields_list = ["DOB", "ActivePeriods", "Hours Earned", "Hours Spent", "Pending Hours"];
-    let table = this.$refs.fields_table;
-
-    fields_list.forEach(this.create_field_container);
+    
   },
 
   watch: {
+
+    header_doc: function(data) {
+      let table = this.$refs.fields_table;
+      this.row_status = new Object();
+      this.array_fields = new Object();
+
+      append_table_section(this, "Required:",   this.header_doc["required"].concat(["ActivePeriods"]));
+      append_table_section(this, "Statistics:", this.header_doc["hidden"]);
+      append_table_section(this, "Optional:",   this.header_doc["optional"]);
+
+      function append_table_fullrow(heading) {
+        let new_row = table.insertRow(-1);
+        new_row.classList.add("edit_mode_only");
+        new_row.style.display = "none";
+        let new_cell = new_row.insertCell(-1);
+        new_cell.colSpan = "3";
+        new_cell.innerHTML = heading;
+        new_cell.style["text-align"] = "center";
+      };
+
+      // Takes in vue component as self for scoping
+      function append_table_section(self, heading, content) {
+        append_table_fullrow(heading);
+        content.forEach(function(element) {
+          self.append_field_container(element);
+          self.set_row_status(element, "unused");
+        });
+        append_table_fullrow("&nbsp;");
+      };
+    },
 
     
     edit_mode: function(val) {
@@ -54,49 +99,66 @@ export default {
       // Go into edit mode
       if (this.edit_mode) {
         this.$refs.edit_profile.innerHTML = "Submit Edits!";
-        this.$refs.discard_changes.style.display = "";
-        this.$refs.reset_changes.style.display = "";
 
-        Object.entries(document.getElementsByClassName("data_field")).map(([n, element]) => {
+        document.querySelectorAll(".edit_mode_only").forEach((element, n) => {
+          element.style.display = "";
+        });
+
+        document.querySelectorAll(".edit_input").forEach((element, n) => {
+          if (this.row_status[element.name] == "unused") {
+            element.parentNode.style.display = "none";
+          };
+        });
+
+        document.querySelectorAll(".display_mode_only").forEach((element, n) => {
           element.style.display = "none";
         });
 
-        Object.entries(document.getElementsByClassName("edit_container")).map(([n, element]) => {
-          element.style.display = "";
-        });
-
-        Object.entries(document.getElementsByClassName("remove_button_container")).map(([n, element]) => {
-          element.style.display = "";
-        });
+        var add_row = this.$refs.fields_table.insertRow(-1);
+        add_row.id = "add_field_button_row";
+        let add_button_cont = add_row.insertCell(-1);
+        let add_button = document.createElement("button");
+        add_button.id = "add_field_button";
+        add_button.innerHTML = "+";
+        add_button_cont.appendChild(add_button);
+        add_button.onclick = this.insert_temp_field_container;
       }
 
       // Reset to display mode
       else {
         this.$refs.edit_profile.innerHTML = "Edit!";
-        this.$refs.discard_changes.style.display = "none";
-        this.$refs.reset_changes.style.display = "none";
 
-        Object.entries(document.getElementsByClassName("field_container")).map(([n, element]) => {
-          let fields = this.convert_to_fields(element);
+        document.querySelectorAll(".edit_mode_only").forEach((element, n) => {
+          element.style.display = "none";
+        });
 
-          if (fields.title_cell != null) fields.title_cell.style["font-weight"] = "";
-          if (fields.field != null) fields.field.style["display"] = "";
-          if (fields.edit_container != null) fields.edit_container.style["display"] = "none";
-          if (fields.edit_field != null) {
-            fields.edit_field.value = fields.edit_field.defaultValue;
-          };
+        document.querySelectorAll(".display_mode_only").forEach((element, n) => {
+          element.style.display = "";
+        });
 
-          if (fields.remove_button_container != null) {
-            fields.remove_button_container.style.display = "none";
+        document.querySelectorAll('.field_title').forEach((element, n) => {
+          element.style["font-weight"] = "";
+        });
+
+        document.querySelectorAll('.edit_input').forEach((element, n) => {
+          // console.log(element);
+          element.value = element.defaultValue;
+          if (this.row_status[element.name] == "unused") {
+            this.set_all_input_vals(element, "");
           }
         });
-      }
+
+        this.$refs.fields_table.deleteRow(-1);
+      };
     },
 
     currentProfile: function(doc) {
 
       // Clear the old data from the screen
       clear_data();
+      for (key in this.row_status.elements) {
+        this.set_row_status(key, "unused");
+      };
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
@@ -118,19 +180,34 @@ export default {
 
           // Find appropriate p for field, or create it if it does not exist
           var field_p = document.getElementById(key + "_field");
+          let field_c = document.getElementById(key + "_container");
 
           if (field_p == null) {
-            field_p = this.create_field_container(key);
+            field_p = this.append_field_container(key);
+            field_c = document.getElementById(key + "_container");
+          }
+
+          
+          else if (this.specially_displayed_fields.includes(key)) {
+            if (field_c != null) {
+              field_c.classList.add("edit_mode_only");
+            };
           }
 
           // If it already exists, display its container element
           else {
             field_p.style.display = "";
-            let field_c = document.getElementById(key + "_container");
             if (field_c != null) {
               field_c.style.display = "";
             };
           };
+
+          field_c.classList.remove("unused_field");
+          if (!this.specially_displayed_fields.includes(key)) {
+            field_c.classList.remove("edit_mode_only");
+          };
+
+          this.set_row_status(key, "used");
 
           var edit_input = document.getElementById(key + "_edit");
           
@@ -157,6 +234,10 @@ export default {
             });
 
             this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,10));
+          }
+          else if (Array.isArray(data[key])) {
+            this.create_fields_array(key, data[key]);
+            // create_edit_array(key, data[key], field_p, document.getElementById(key + "_edit_container"));
           }
           else {
             field_p.innerHTML = data[key];
@@ -189,7 +270,7 @@ export default {
         let temp_containers = document.getElementsByClassName("field_container_temp");
         while (temp_containers[0]) {
           temp_containers[0].parentNode.removeChild(temp_containers[0]);
-        }
+        };
 
         // Hide the containers
         document.getElementById("name_div").style.display = "none";
@@ -200,22 +281,175 @@ export default {
 
   methods: {
 
+    get_changes_as_array: function(key) {
+      var form = document.getElementById(key + "_array_edit_container").childNodes;
+      var len = form.length;
+
+      var list = [];
+
+      for (var i = 0; i < len; i += 3) {
+        let input = form[i];
+        let title = form[i+1];
+
+        if (input.checked) {
+          list.push(title.innerHTML);
+        }
+      };
+
+      return list;
+    },
+
+    create_fields_array: function(key, arr) {
+      let display_dest = document.getElementById(key + "_field");
+      display_dest.innerHTML = "";
+
+      let edit_dest = document.getElementById(key + "_edit_container");
+
+      let checkbox_options = document.getElementById(key + "_array_edit_container");
+      if (checkbox_options == null) {
+        checkbox_options = document.createElement("div");
+        checkbox_options.id = key + "_array_edit_container";
+        edit_dest.insertBefore(checkbox_options, edit_dest.childNodes[edit_dest.childNodes.length-1]);
+      }
+      else {
+        checkbox_options.innerHTML = "";
+      }
+      
+
+      arr.forEach(function(element) {
+        let new_div = document.createElement("div");
+        new_div.innerHTML = element;
+        new_div.classList.add("field_list_element");
+        display_dest.appendChild(new_div);
+
+        let new_option = document.createElement("input");
+        new_option.type = "checkbox";
+        new_option.checked = true;
+        new_option.name = element;
+        new_option.value = element;
+
+        let new_option_name = document.createElement("div");
+        new_option_name.innerHTML = element;
+        new_option_name.style.display = "inline";
+
+        checkbox_options.appendChild(new_option);
+        checkbox_options.appendChild(new_option_name);
+        checkbox_options.appendChild(document.createElement("br"));
+      });
+
+      this.array_fields[key] = arr;
+    },
+
+    set_row_status: function(key, new_status) {
+
+      // If special X or + is entered, determine which new status to use based on current status
+      let old_status = this.row_status[key];
+      if (new_status == "X") new_status = ((old_status == "used") ? "remove" : "unused");
+      if (new_status == "+") new_status = ((old_status == "unused") ? "add" : "used");
+
+      // Update the status
+      this.row_status[key] = new_status;
+
+      let container =      document.getElementById(key + "_container");
+      let remove_button =  document.getElementById(key + "_remove_button")
+      let data_field =     document.getElementById(key + "_field");
+      let edit_container = document.getElementById(key + "_edit_container");
+      let data_title =     document.getElementById(key + "_title");
+      let edit_field =     document.getElementById(key + "_edit");
+
+      // Perform any extra operations
+      switch (new_status) {
+
+        // Field is currently being used in the profile
+        case "used":
+          container.classList.remove("edit_mode_only");
+          remove_button.innerHTML = "X";
+          if (this.edit_mode) {
+            edit_container.style.display = "";
+            data_field.style.display = "none";
+          } else {
+            data_field.style.display = "";
+            if (this.specially_displayed_fields.includes(key)) {
+              edit_container.style.display = "";
+              container.classList.add("edit_mode_only");
+            }
+          };
+
+          data_field.classList.remove("to_be_removed");
+          data_title.classList.remove("to_be_removed_title");
+          data_title.classList.remove("to_be_added_title");
+          
+          break;
+
+        // Field is to be added to the profile (edit mode only)
+        case "add":
+          remove_button.innerHTML = "X";
+          edit_container.style.display = "";
+          data_field.style.display = "none";
+          data_title.classList.add("to_be_added_title");
+          break;
+
+
+        // Field is not currently being used in the profile
+        case "unused":
+          container.classList.add("edit_mode_only");
+          remove_button.innerHTML = "+";
+          edit_container.style.display = "none";
+          data_field.style.display = "none";
+          data_field.classList.remove("to_be_removed");
+          data_title.classList.remove("to_be_removed_title");
+          data_title.classList.remove("to_be_added_title");
+          break;
+
+        // Field is to be removed from the profile (edit mode only)
+        case "remove":
+          remove_button.innerHTML = "+";
+          edit_container.style.display = "none";
+          data_field.style.display = "";
+          data_field.classList.add("to_be_removed");
+          data_title.classList.add("to_be_removed_title");
+          break;
+
+        default:
+          console.log("Error: Row cannot be set to status \"" + new_status + "\".");
+      };
+    },
+
     set_all_input_vals: function(input, val) {
       input.placeholder  = val;
       input.value        = val;
       input.defaultValue = val;
     },
 
-    create_field_container: function(key) {
+    //TODO: Delete temp field container if 
+    insert_temp_field_container: function() {
+      var new_field_name = prompt("Please enter the title of the new field:", "");
+      if (new_field_name != null) {
+        new_field_name = new_field_name.trim();
+        if (new_field_name == "") return null;
+        this.create_field_container(new_field_name, this.$refs.fields_table.rows.length-1);
+        this.set_row_status(new_field_name, "add");
+        document.getElementById(new_field_name + "_remove_button_container").style.display = "";
+      };
+    },
+
+    append_field_container: function(key) {
+      return this.create_field_container(key, -1);
+    },
+
+    create_field_container: function(key, row_index) {
       let table = this.$refs.fields_table;
 
-      let new_row = table.insertRow(-1);
+      let new_row = table.insertRow(row_index);
       new_row.id = key + "_container";
       new_row.classList.add("field_container");
+      new_row.classList.add("unused_field");
+      new_row.classList.add("edit_mode_only");
 
       let remove_button_container = new_row.insertCell(-1);
       remove_button_container.id = key + "_remove_button_container";
       remove_button_container.classList.add("remove_button_container");
+      remove_button_container.classList.add("edit_mode_only");
       remove_button_container.style.display = "none";
 
       let title_cell = new_row.insertCell(-1);
@@ -224,12 +458,14 @@ export default {
       title_cell.innerHTML = key + ":";
 
       var field_p = new_row.insertCell(-1);
-      field_p.id = key + "_field";
+      if (!this.specially_displayed_fields.includes(key)) field_p.id = key + "_field";
       field_p.classList.add("data_field");
+      field_p.classList.add("display_mode_only");
 
       let field_e = new_row.insertCell(-1);
       field_e.id = key + "_edit_container";
       field_e.classList.add("edit_container");
+      field_e.classList.add("edit_mode_only");
       field_e.style.display = "none";
       
       let edit_input = document.createElement("input");
@@ -238,6 +474,9 @@ export default {
       }
       else if (key == "Last Sign In") {
         edit_input.type = "datetime-local";
+      }
+      else if (key == "ActivePeriods") {
+        edit_input.style.display = "none";
       }
       else {
         edit_input.type = "text";
@@ -255,22 +494,12 @@ export default {
       field_e.appendChild(edit_input);
 
       let remove_button = document.createElement("button");
-      remove_button.innerHTML = "X";
+      remove_button.id = key + "_remove_button";
+      remove_button.innerHTML = "+";
+      let self = this;
       remove_button.onclick = function () {
-        if (this.innerHTML == "+") {
-          this.innerHTML = "X";
-          field_e.style.display = "";
-          field_p.style.display = "none";
-          field_p.classList.remove("to_be_removed");
-          field_e.classList.remove("to_be_removed");
-        } else {
-          this.innerHTML = "+";
-          field_e.style.display = "none";
-          field_p.style.display = "";
-          field_p.classList.add("to_be_removed");
-          field_e.classList.add("to_be_removed");
-        }
-      }
+        self.set_row_status(key, this.innerHTML);
+      };
       remove_button_container.appendChild(remove_button);
 
       let reset_button = document.createElement("button");
@@ -287,9 +516,10 @@ export default {
     // Toggles between edit mode and display mode
     toggle_edit_mode: function() {
       if (this.edit_mode) {
-        this.save_edits();
+        this.check_edits();
+      } else {
+        this.edit_mode = !this.edit_mode;
       };
-      this.edit_mode = !this.edit_mode;
     },
 
 
@@ -298,26 +528,87 @@ export default {
     //Parameters: called upon form submission
     check_edits: function(event) {
       // event.preventDefault();
-      var youth_id = document.getElementById("ID_field").innerHTML;
       const form = document.getElementsByClassName("edit_input");
       
       var n;
       var c = false;
 
-      var el = form.elements.length;
-      console.log(el);  // Displays the number of fields in edit form
-      for (var e = 0; e < el; e++) {
-        n = form.elements[e];
-        console.log(n);  // Displays the form elements
-        c = c || (n.value != n.defaultValue);
-      }
+      // Check for any fields to be added/removed
+      Object.keys(this.row_status).forEach(function(element) {
+        if (!(this.row_status[element] == "used" || this.row_status[element] == "unused")) {
+          c = true;
+        };
+      }.bind(this));
 
-      if (c == true) {
-        alert("The edits have been saved");
-        saveEdit(youth_id);
+      // If no fields to be added/removed, check existing fields for edits
+      if (!c) {
+        var el = form.length;
+        // console.log(el);  // Displays the number of fields in edit form
+        for (var e = 0; e < el; e++) {
+          n = form[e];
+          if (n.parentNode.parentNode.classList.contains("unused_field")) continue;
+
+          if (this.array_fields[n.name] != null) {
+            c = c || (JSON.stringify(this.array_fields[n.name]) !== JSON.stringify(this.get_changes_as_array(n.name)));
+          } else {
+            // console.log(n);  // Displays the form elements
+            c = c || (n.value != n.defaultValue);
+          };
+        }
+      };
+
+      if (c) {
+        this.create_confirm_modal();
+        this.confirmModalVisible = true;
       } else {
         alert("No edits have been made");
       }
+    },
+
+    create_confirm_modal: function() {
+      this.modalList = "";
+      // const change_list = this.$refs["confirm_changes_list"];
+      // console.log(change_list);
+
+      Object.keys(this.row_status).forEach(function(key) {
+        let input_field = document.getElementById(key + "_edit");
+        switch(this.row_status[key]) {
+          case "unused":
+            break;
+          case "remove":
+            this.modalList += "The field " + input_field.name + " has been removed.\n";
+            break;
+
+          case "used":
+            if (input_field.defaultValue != input_field.value) {
+              let temp1 = "";
+              if (this.array_fields[key] != null) {
+                temp1 = this.get_changes_as_array(key);
+              } else {
+                temp1 = input_field.value;
+              };
+              this.modalList += "The field " + key + " has been set to " + temp1 + "\n";
+            };
+            break;
+
+          // Data field is being added: Save its value to the new profile
+          case "add":
+            if (input_field.defaultValue != input_field.value) {
+              let temp2 = "";
+              if (this.array_fields[key] != null) {
+                temp2 = this.get_changes_as_array(key);
+              } else {
+                temp2 = input_field.value;
+              };
+              this.modalList += "The field " + key + " has been created and set to " + temp2 + "\n";
+            };
+            break;
+
+          // Catchall case
+          default:
+            console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
+        };
+      }.bind(this));
     },
 
 
@@ -328,37 +619,70 @@ export default {
     save_edits: async function(){
       // creates an object to store edited values
       var changes = new Object();
-
       let youth_id = document.getElementById("ID_field").innerHTML;
-      const form = document.getElementsByClassName("edit_input");
 
-      var c = false;
+      // Cycle through each potential field and use the data accordingly
+      Object.keys(this.row_status).forEach(function(key) {
+        let input_field = document.getElementById(key + "_edit");
+        let data_field = document.getElementById(input_field.name + "_field");
+        switch(this.row_status[key]) {
+          // Data field is not used by this profile: Do nothing
+          case "unused":
+            break;
 
-      Object.entries(form).map(([n, element]) => {
-        if (element.classList.contains("to_be_removed")) {
-          changes[element.name] = null;
-          // TODO: Actually remove from the page and the database
-        }
-        else if (element.value != element.defaultValue) {
-          changes[element.name] = element.value;
-          document.getElementById(element.name + "_field").innerHTML = element.value;
-          this.set_all_input_vals(element, element.value);
-          c = true;
+          // Data field is being removed: Set it do unused and do nothing w the data
+          case "remove":
+            this.set_row_status(key, "unused");
+            break;
+
+          // Data field is used: Save its updated value to the new profile and to the page
+          // TODO: Allow user to add list item
+          // TODO: Display all possible active periods?
+          // TODO: Fallthrough from add to used?
+          case "used":
+            if (this.array_fields[key] != null) {
+              changes[input_field.name] = this.get_changes_as_array(key);
+            } else {
+              changes[input_field.name] = input_field.value;
+            }
+            break;
+
+          // Data field is being added: Save its value to the new profile
+          case "add":
+            changes[input_field.name] = input_field.value;
+            this.set_row_status(key, "used");
+            break;
+
+          // Catchall case
+          default:
+            console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
         };
-      });
+      }.bind(this));
 
+      // Remove bolding from edited field titles
+      // TODO: Make this a CSS class
       Object.entries(document.getElementsByClassName("field_title")).map(([n, element]) => {
         element.style["font-weight"] = "";
       })
 
-      if (c) {
-        console.log("Changes to be made: ", changes);
-      } else {
-        console.log("No changes to be made.", changes);
-      }
+      console.log("New profile:", changes);
 
       // Saves edits to firebase
-      // db.collection('GlobalYouthProfile').doc(youth_id).update(changes);
+      // db.collection('GlobalYouthProfile').doc(youth_id).update(changes).catch(err => {
+      //   window.alert("Error: " + err);
+      //   return null;
+      // });
+
+      // If no error updating database, change the field data on the page
+      for (var key in changes) {
+        if (this.array_fields[key] != null) {
+          this.create_fields_array(key, changes[key]);
+        } else {
+          let input_field = document.getElementById(key + "_edit");
+          document.getElementById(key + "_field").innerHTML = changes[key];
+          this.set_all_input_vals(input_field, input_field.value);
+        };
+      };
     },
 
 
@@ -375,6 +699,15 @@ export default {
       })
     },
 
+    acceptConfirmModal: function() {
+      this.confirmModalVisible = false;
+      this.save_edits();
+      this.edit_mode = false;
+    },
+
+    cancelConfirmModal: function() {
+      this.confirmModalVisible = false;
+    },
 
     convert_to_fields: function(container) {
       let key = container.id.slice(0, container.id.lastIndexOf("_"));
@@ -414,5 +747,16 @@ export default {
   .to_be_removed {
     color: gray;
     font-style: oblique;
+  }
+
+  .field_list_element {
+    border-radius: 10px;
+    border: 2px solid green;
+    background-color: lightgreen;
+    text-align: center;
+  }
+
+  .to_be_added_title, .to_be_removed_title {
+    font-weight: bold;
   }
 </style>

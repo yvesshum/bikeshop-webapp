@@ -4,20 +4,20 @@
     <p>This is the staff view of the youth profile lookup page</p>
 
     <!-- Replaced selector bar with static buttons to test without spamming firebase -->
-    <YouthIDSelector @selected="selectedID"/>
-    <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
+    <!-- <YouthIDSelector @selected="selectedID"/> -->
+    <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
     <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button>
-    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
+    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button>
 
     <div ref="body_fields" style="display: none;">
-      <ProfileFields :current-profile="currentProfile" />
+      <ProfileFields :current-profile="currentProfile" :header_doc="this.header_doc" />
       <!-- <ApronBar /> -->
 
       <p>Order Log:</p>
-      <CollectionTable ref="order_log" :heading_data="['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes']" :current_collection="order_log_collection"></CollectionTable>
+      <CollectionTable ref="order_log" :heading_data="this.header_doc['order_log']" :current_collection="order_log_collection"></CollectionTable>
 
       <p>Work Log:</p>
-      <CollectionTable ref="work_log" :heading_data="['Category 1', 'Category 2', 'Category 3', 'Category 4']" :current_collection="work_log_collection"></CollectionTable>
+      <CollectionTable ref="work_log" :heading_data="this.header_doc['work_log']" :current_collection="work_log_collection"></CollectionTable>
     </div>
 
     <button @click="logout">Logout</button>
@@ -50,8 +50,19 @@ export default {
     return {
       currentProfile: null,
       order_log_collection: null,
-      work_log_collection: null
+      work_log_collection: null,
+      header_doc: null
     };
+  },
+
+  mounted: function() {
+    // this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
+    this.header_doc = new Object();
+    this.header_doc["required"] = ["First Name", "Last Name", "DOB"];
+    this.header_doc["hidden"] = ["Hours Spent", "Pending Hours", "Last Sign In", "Work Log", "Order Log", "Hours Earned"];
+    this.header_doc["optional"] = ["Gender", "Home Address"];
+    this.header_doc["order_log"] = ['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes'];
+    this.header_doc["work_log"] = ['Category 1', 'Category 2', 'Category 3', 'Category 4'];
   },
 
     methods: {
