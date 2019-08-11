@@ -591,7 +591,6 @@ export default {
 
     select_youth: async function(row) {
       this.selected_youth = this.unpack_id(row._row.data.Name + " " + row._row.data.ID);
-      let id = row._row.data.ID;
     },
   }
 }
