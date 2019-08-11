@@ -92,6 +92,7 @@ export default {
       period_form_inputs: [],
 
       pending_changes: [],
+      cached_youth_profiles: null,
     };
   },
 
