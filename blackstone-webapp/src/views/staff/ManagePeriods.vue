@@ -336,7 +336,7 @@ export default {
       };
     },
 
-    save_changes: function() {
+    save_changes: async function() {
       let changes = this.check_changes();
 
       if (!changes.active && !changes.previous) {
@@ -353,51 +353,79 @@ export default {
     // Save changes to Firebase
     // Returns null on success, and error on failure
     // If arg "changes" is null, grabs all changes itself
-    update_database: function(changes) {
+    update_database: async function(changes) {
 
+      // Load changes if no argument given
       if (changes == null) {
         changes = this.check_changes();
       };
 
-
-
       console.log("Changes to be saved: ", changes);
 
+      // Save changes to the ActivePeriods doc
       if (changes.active) {
         console.log("Setting active periods doc to ", changes.def);
-        // this.active_periods_db.update(changes.def).then(
-        //   // Success
-        //   function() {},
-        //   // Failure
-        //   function(err) {
-        //     window.alert("Error updating ActivePeriods document: " + err);
-        //     return err;
-        //   }
-        // );
+        this.active_periods_db.update(changes.def).then(
+          // Success
+          function() {},
+          // Failure
+          function(err) {
+            window.alert("Error updating ActivePeriods document: " + err);
+            return err;
+          }
+        );
       };
 
+      // Save changes to the period arrays in the PastPeriods doc
       if (changes.previous) {
         console.log("Setting previous docs...");
-        // this.past_periods_db
-        // this.past_periods_db.update(____).then(
-        //   // Success
-        //   function() {},
-        //   // Failure
-        //   function(err) {
-        //     window.alert("Error updating PreviousPeriods document: " + err);
-        //     return err;
-        //   }
-        // );
+
+        if (this.past_periods_doc == null) {
+          this.past_periods_doc = await this.past_periods_db.get();
+        };
+
+        let data = this.past_periods_doc.data();
+        let updated_data = new Object();
+
+        changes.periods.filter(function(period) {
+          return ((period != this.current_period) && (period != this.future_period))
+        }.bind(this)).forEach(function(period) {
+          // Remove youth from this period if they are in the list to be changed
+          let to_remove = data[period].filter(function(val) {
+            return changes.youth.includes(val);
+          });
+
+          // Add youth to this period if they are not in it yet but are in the list to be changed
+          let to_add = changes.youth.filter(function(val) {
+            return !data[period].includes(val);
+          });
+
+          // Add the updated version of this period to the new object
+          updated_data[period] = data[period].concat(to_add).filter(function(val) {
+            to_remove.includes(val);
+          });
+        });
+
+        // Update the database
+        this.past_periods_db.update(updated_data).then(
+          // Success
+          function() {},
+          // Failure
+          function(err) {
+            window.alert("Error updating PreviousPeriods document: " + err);
+            return err;
+          }
+        );
       };
 
+      // Save changes to individual youth profiles
       console.log("Updating youth profiles...");
       changes.youth.forEach(function(id) {
-        console.log("Setting " + id + "'s active periods to " + this.pending_changes[id]);
         db.collection("GlobalYouthProfile").doc(id).update({
           ActivePeriods: this.pending_changes[id]
         }).then(
           // Success
-          function() {console.log("Successfully updated " + id);},
+          function() {},
           // Failure
           function() {
             window.alert("Error updating youth profile doc #" + id + ": " + err);
