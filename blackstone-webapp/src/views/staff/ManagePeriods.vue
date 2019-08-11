@@ -284,35 +284,62 @@ export default {
       };
     },
 
+    get_active_changes: function() {
+      let def = this.get_default_changes();
+      let ret = null;
+
+      // Copy all fields from def to ret if they are different from the corresponding field
+      // in the active_periods doc - i.e. if they have been changed client-side
+      Object.keys(def).filter(function(val) {
+        // Have to use stringify for arrays
+        return (JSON.stringify(def[val]) != JSON.stringify(this.active_periods_doc.data()[val]));
+      }.bind(this)).forEach(function(val) {
+        if (ret == null) ret = new Object();
+        ret[val] = def[val];
+      });
+
+      return ret;
+    },
+
     check_changes: function() {
-      let active = !objects_equal(this.get_default_changes(), this.active_periods_doc.data());
+      let active = false;
       let previous = false;
+      let youth = [];
+      let periods = [];
+      let def = this.get_active_changes();
 
-      // TODO: Track a list of edited youth/ids, and use that to check for changes in past data?
-      
-      return {active, previous};
-
-      function objects_equal(a, b) {
-        let a_keys = Object.getOwnPropertyNames(a);
-        let b_keys = Object.getOwnPropertyNames(b);
-
-        if (a_keys.length != b_keys.length) return false;
-
-        for (var i = 0; i < a.length; i++) {
-          if (a[a_keys[i]] != b[a_keys[i]]) {
-            return false;
-          };
+      for (var key in this.cached_youth_data) {
+        if (JSON.stringify(this.cached_youth_data[key]) !== JSON.stringify(this.cached_youth_profiles[key].data())) {
+          youth.push(key);
+          periods = periods.concat(unique_array_vals(
+            this.cached_youth_data[key]["ActivePeriods"],
+            this.cached_youth_profiles[key].data()["ActivePeriods"]
+          ));
         };
+      };
 
-        return true;
+      active = periods.filter(function(element) {
+        return ((element == this.current_period) || (element == this.future_period))
+      }.bind(this)).length != 0;
+      active = active || (def != null);
+
+      previous = periods.filter(function(element) {
+        return ((element != this.current_period) && (element != this.future_period))
+      }.bind(this)).length != 0;
+
+      return {active, previous, youth, periods, def};
+
+      function unique_array_vals(arr1, arr2) {
+        return arr1.concat(arr2).filter(function(val) {
+          return (arr1.includes(val) != arr2.includes(val));
+        });
       };
     },
 
     save_changes: function() {
-      let changes = this.get_default_changes();
-      let is_changed = this.check_changes();
+      let changes = this.check_changes();
 
-      if (!is_changed.active && !is_changed.previous) {
+      if (!changes.active && !changes.previous) {
         this.show_modal("No changes have been made.", "", this.close_modal);
       } else {
         this.show_modal(
@@ -325,26 +352,67 @@ export default {
 
     // Save changes to Firebase
     // Returns null on success, and error on failure
+    // If arg "changes" is null, grabs all changes itself
     update_database: function(changes) {
 
       if (changes == null) {
-        changes = this.get_default_changes();
-      }
+        changes = this.check_changes();
+      };
+
+
 
       console.log("Changes to be saved: ", changes);
-      this.active_periods_db.update(changes).then(
-        // Success
-        function() {
-          window.alert("Changes saved successfully!");
-          // Reset any tracking variables
-          return null;
-        },
-        // Failure
-        function(err) {
-          window.alert("Error updating ActivePeriods document: " + err);
-          return err;
-        }
-      );
+
+      if (changes.active) {
+        console.log("Setting active periods doc to ", changes.def);
+        // this.active_periods_db.update(changes.def).then(
+        //   // Success
+        //   function() {},
+        //   // Failure
+        //   function(err) {
+        //     window.alert("Error updating ActivePeriods document: " + err);
+        //     return err;
+        //   }
+        // );
+      };
+
+      if (changes.previous) {
+        console.log("Setting previous docs...");
+        // this.past_periods_db
+        // this.past_periods_db.update(____).then(
+        //   // Success
+        //   function() {},
+        //   // Failure
+        //   function(err) {
+        //     window.alert("Error updating PreviousPeriods document: " + err);
+        //     return err;
+        //   }
+        // );
+      };
+
+      console.log("Updating youth profiles...");
+      changes.youth.forEach(function(id) {
+        console.log("Setting " + id + "'s active periods to " + this.pending_changes[id]);
+        db.collection("GlobalYouthProfile").doc(id).update({
+          ActivePeriods: this.pending_changes[id]
+        }).then(
+          // Success
+          function() {console.log("Successfully updated " + id);},
+          // Failure
+          function() {
+            window.alert("Error updating youth profile doc #" + id + ": " + err);
+            return err;
+          }
+        );
+      }.bind(this));
+
+      window.alert("Changes saved successully!");
+
+      // Reset tracking variables
+      this.pending_changes = [];
+      this.cached_youth_data = new Object();
+      this.cached_youth_profiles = new Object();
+
       return null;
     },
 
