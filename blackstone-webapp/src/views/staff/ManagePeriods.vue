@@ -581,6 +581,14 @@ export default {
           {title:"Name", field:"name", width:200},
           {title:"ID", field:"id"},
         ],
+        selectable:1,
+        rowSelected:function(row){
+          this.past_table.selectRow(row.getIndex());
+          this.selected_youth = this.unpack_id(row.getData().full_id);
+        }.bind(this),
+        rowDeselected:function(row){
+          this.past_table.deselectRow();
+        }.bind(this),
       });
     },
 
