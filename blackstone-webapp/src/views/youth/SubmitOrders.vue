@@ -101,11 +101,13 @@
             async submit() {
                 //Populate this.YouthProfile with the current youth trying to submit
                 let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
+                console.log(YouthID);
                 if (!(YouthID["value"] == null || YouthID["value"] === "")) {
                     let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
                     this.YouthProfile = YouthProfile.data();
                     if (YouthProfile == null) this.errorFields.push("YouthID not found");
                 }
+                
 
                 let badFields = await this.checkValid();
                 //if an error field has been returned

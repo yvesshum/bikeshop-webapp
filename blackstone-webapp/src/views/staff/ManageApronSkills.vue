@@ -2,9 +2,11 @@
     <div class = "StaffManageSkills">
         <top-bar/>
         <h3 style="margin: 20px">Manage Apron skills here!</h3>
-        <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px">
+        <b>Add category: </b>
+        <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px"> 
         <b-button variant="success" @click="add_category" style="margin-top:10px">Add Category</b-button></br>
         <div>
+            <b>Add skill: </b>
             <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
                 <div v-for="category in uniqueCategories">
                     <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
@@ -13,9 +15,24 @@
             <input v-model="new_skill" type="text" id="new_skill_field" aria-describedby="emailHelp" placeholder="Skill Name" style="margin-top:10px">
             <b-button variant="success" @click="add_skill" style="margin-top:10px">Add Skill</b-button>
         </div>
+        <div>
+          <b-button-group>
+              <b-button variant="danger" @click="deleteSkill">Delete selected skill</b-button>
+          </b-button-group>
+        </div>
+        </br>
         <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skills']" @rowSelected="updateSelected"/>
-        <b-button variant="success" @click="update" style="margin-top:10px">Update Table (Discards changes)</b-button>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
+        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
+        <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button>
+        <b-modal v-model = "modalVisible" hide-footer lazy >
+            <template slot="modal-title">
+                {{modalHeader}}
+            </template>
+            <div class="d-block text-center">
+                <h3>{{modalMsg}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="closeModal" variant = "primary">ok</b-button>
+        </b-modal>
     </div>
 </template>
 
@@ -39,6 +56,9 @@
                 current_categories: [],
                 new_category: "",
                 new_skill: "",
+                modalHeader: "",
+                modalMsg: "",
+                modalVisible: false,
                 selected_category: "Select Category"
             };
         },
@@ -62,11 +82,21 @@
             updateSelected (data) {
                 this.selectedRow = data;
             },
+            showModal(header, msg) {
+                this.modalHeader = header;
+                this.modalMsg = msg;
+                this.modalVisible = true;1
+            },
+            closeModal() {
+                this.modalVisible = false;
+            },
             async update_selected_category(category) {
                 this.selected_category = category;
             },
-            async deleteSkill(index){
+            async deleteSkill(){
                 console.log("delete!");
+                console.log(this.selectedRow);
+                let index = this.selectedRow;
                 this.table_data.splice(index, 1);
             },
             async add_category() {
@@ -124,16 +154,21 @@
                 new_data_text += "}"
                 console.log(new_data_text)
                 ApronSkillsRef.set(JSON.parse(new_data_text)).then((err) => {
-                    if (err) this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem")
+                    if(err){
+                        this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem")
+                    } else {
+                        this.showModal("Success", "New apron categories and skills submitted")
+                    }
                     return null;
                 });
+                
             }
         },
         async mounted() {
             let categories = await this.getCategories();
             console.log(JSON.stringify(categories));
             for(var category in categories) {
-                var skills =  categories[category];
+                var skills = categories[category];
                 for(let i = 0; i < skills.length; i++){
                     this.table_data.push({
                         'Category': category,

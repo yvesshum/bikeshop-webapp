@@ -1,8 +1,6 @@
 // Usage: 
-// <fieldEditor :ftype="variable name of field array e.g. hidden" :elements="an array of objects with 'name' and 'isProtected' keys e.g. [{name: 'Youth ID', isProtected: true}]"/>
-// TODO: Change placeholders
-
-
+// e.g. <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
+//  <fieldEditor v-if="boolean" ftype="string name of field array" :elements="array of strings" doc="string, name of doc in collection" collection="String, name of collection that houses the doc"/>
 <template> 
     <div>
         <!-- Content -->
@@ -21,12 +19,15 @@
                 v-on:deleteClicked="deleteButtonClicked"
                 />
         </draggable>
+        <p v-if="fields.length === 0">No Fields Found </p>
         <br>
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
                 Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
             </b-button>
         </b-button-group>
+
+
 
         <!-- Modals -->
         <b-modal v-model = "msg_modalVisible" hide-footer lazy>
@@ -86,13 +87,13 @@
             <b-form-textarea
                     id="textarea"
                     v-model="addFieldName"
-                    placeholder="This cannot be empty!"
-                    :state="addFieldName.length >= 1"
+                    placeholder="This cannot be empty and must not already exist!"
+                    :state="isValidFieldName"
                     size="sm"
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <p style="margin-bottom: 0">Initial value</p>
+            <p style="margin-bottom: 0">Value</p>
             <b-form-textarea
                     id="textarea"
                     v-model="addFieldInitializer"
@@ -101,7 +102,7 @@
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning">Add a new field and change all existing documents to have this field</b-button>
+            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidFieldName">Add a new field and change all existing documents to have this field and value</b-button>
             <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
     </div>
@@ -121,6 +122,13 @@ export default {
     props: {
         ftype: String,
         elements: Array,
+        doc: String,
+        collection: String
+    },
+    computed: { 
+        isValidFieldName: function() {
+            return !this.fields.some(f => {return Object.values(f).indexOf(this.addFieldName) > -1}) && this.addFieldName.length > 0
+        }
     },
     data() {
         return {
@@ -164,10 +172,10 @@ export default {
             let updateVal = {};
             updateVal[this.ftype] = res;
         
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateVal)
+            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateVal)
 
             if(updateStatus) {
-                window.alert("Error on updating Youth Order Form in GlobalFieldsCollection");
+                window.alert("Error on updating GlobalFieldsCollectionm doc: " + doc);
                 return null;
             }
 
@@ -215,21 +223,21 @@ export default {
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue);
+                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
                         if (updateStatus) { 
-                            window.alert("Error on updating Youth Order Form in Global Fields Collection. Field: " + ftype);
+                            window.alert("Error on updating Global Fields Collection. Field: " + ftype + ", doc: " + doc);
                             return null;
                         }
 
                         // update the records -> Global Pending Orders & Global Youth Profile
-                        let query = await db.collection("GlobalPendingOrders").get();
+                        let query = await db.collection(this.collection).get();
                         let initialField = this.oldFieldName;
                         query.forEach(doc => { 
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[initialField];
                             delete data[initialField];
-                            db.collection("GlobalPendingOrders").doc(id).set(data);
+                            db.collection(this.collection).doc(id).set(data);
                         })
 
                         // update locally 
@@ -275,20 +283,20 @@ export default {
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue);
+                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
                         if (updateStatus) { 
-                            window.alert("Error on removing a field in Youth Order Form in Global Fields Collection. Field: " + this.deletingField);
+                            window.alert("Error on removing a field Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                             return null;
                         }
 
                         // update the records -> Global Pending Orders & Global Youth Profile
-                        let query = await db.collection("GlobalPendingOrders").get();
+                        let query = await db.collection(this.collection).get();
                         let deletingFieldName = this.deletingField;
                         query.forEach(doc => { 
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             delete data[deletingFieldName];
-                            db.collection("GlobalPendingOrders").doc(id).set(data);
+                            db.collection(this.collection).doc(id).set(data);
                         })
 
                         // update locally 
@@ -330,21 +338,21 @@ export default {
             let updateValue = {};
             updateValue[this.ftype] = arr;
 
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").update(updateValue);
+            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
             if (updateStatus) { 
-                window.alert("Error on removing a field in Youth Order Form in Global Fields Collection. Field: " + this.deletingField);
+                window.alert("Error on removing a field in Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                 return null;
             }
 
             // update the records -> Global Pending Orders & Global Youth Profile
-            let query = await db.collection("GlobalPendingOrders").get();
+            let query = await db.collection(this.collection).get();
             let newFieldName = this.addFieldName;
             query.forEach(doc => { 
                 let id = doc.id;
                 let data = this.parse(doc.data());
                 data[newFieldName] = this.addFieldInitializer;
                 console.log(data);
-                db.collection("GlobalPendingOrders").doc(id).set(data);
+                db.collection(this.collection).doc(id).set(data);
             })
 
             // update locally 
