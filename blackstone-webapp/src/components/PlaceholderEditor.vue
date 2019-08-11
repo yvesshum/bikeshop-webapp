@@ -1,3 +1,4 @@
+//  Usage <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
 <template>
     <div >
         <p v-b-tooltip.hover title="Field Name, Placeholder Text, Status, Edit, Delete">Hint</p>
@@ -11,6 +12,8 @@
                 rbRef="Submit Orders Placeholders"
             />
         </div>
+        <p v-if="data.length === 0">No user-defined placeholders found</p>
+        <br>
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
                 Add a placeholder <font-awesome-icon icon="plus" class ="icon alt"/>
@@ -31,7 +34,7 @@
                     id="textarea"
                     v-model="newFieldName"
                     placeholder="This must match one of the current fields, but not one that already has a placeholder"
-                    :state="existingFieldNames.includes(newFieldName) && !data.some(f => {return Object.values(f).indexOf(newFieldName) > -1})"
+                    :state="isValidField"
                     size="sm"
                     rows="1"
                     max-rows="3"
@@ -41,12 +44,12 @@
                     id="textarea"
                     v-model="newPlaceholderText"
                     placeholder="Enter a value"
-                    :state="newPlaceholderText.length > 0"
+                    :state="isValidPlaceholder"
                     size="sm"
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning">Save</b-button>
+            <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning" :disabled="!(isValidField && isValidPlaceholder)">Save</b-button>
             <b-button class="mt-3" block @click="new_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
@@ -77,6 +80,15 @@ export default {
     components: {
         PlaceholderCard
     },
+    computed: {
+        isValidField: function() {
+            return this.existingFieldNames.includes(this.newFieldName) && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
+        },
+
+        isValidPlaceholder: function() {
+            return this.newPlaceholderText.length > 0
+        }
+    },
     data() {
         return {
             data: [],
@@ -87,8 +99,8 @@ export default {
             new_modalVisible: false,
             msg_modalVisible: false,
             msg_modal_title: "",
-            msg_modal_text: ""
-
+            msg_modal_text: "",
+            listenerRef: ""
         }
     },
     methods: {
@@ -157,12 +169,15 @@ export default {
             this.existingFieldNames = this.formatNames(doc.data());
             this.dataLoaded = true;
         })
-        rb.ref(this.placeholderRef).on('value', snapshot => {
+        this.listenerRef = await rb.ref(this.placeholderRef).on('value', snapshot => {
                 this.data = this.formatData(snapshot.val());
-                console.log(this.data);
                 this.forceUpdate();
         });
     },
+
+    beforeDestroy() {
+        rb.ref(this.placeholderRef).off("value", this.listenerRef);
+    }
 
 }
 </script>

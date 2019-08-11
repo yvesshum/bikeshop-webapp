@@ -1,0 +1,101 @@
+<template>
+    <div v-if="dataLoaded">
+        <top-bar/>
+        <br>
+
+        <h1 v-b-tooltip.hover title="These settings here correspond to the youth profile view and registering a new youth">Youth Profile Staff View Settings</h1>    
+        <hr class="title">
+
+        <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Field editor</h2>  
+        <hr class="subheading">  
+
+        <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
+        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <hr class="divider">
+
+        <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
+        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <hr class="divider">
+
+        <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
+        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <hr class="divider">
+        
+        <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
+        <hr class="subheading">  
+        <PlaceholderEditor v-if="dataLoaded" placeholderRef="Youth Profile Placeholders" doc="Youth Profile"/>
+        <hr class="divider">
+
+        <h2 v-b-tooltip.hover title="Change the initial value for hidden fields. This value will be stored when a new youth has been registered">Initializer editor</h2>  
+        <hr class="subheading"> 
+        <InitializerEditor v-if="dataLoaded" initializerRef="Youth Profile Initializers" doc="Youth Profile"/>
+
+        <SettingsBottomNote/>
+
+    </div>
+    
+</template>
+
+<script>
+import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
+import {db} from '../../firebase.js'
+import fieldEditor from '../../components/FieldEditor.vue'
+import PlaceholderEditor from '../../components/PlaceholderEditor.vue'
+import InitializerEditor from '../../components/InitializerEditor.vue'
+
+export default {
+    name: 'YouthProfileStaffSettings',
+    components: {
+        SettingsBottomNote,
+        fieldEditor,
+        PlaceholderEditor,
+        InitializerEditor
+    },
+    data() {
+        return {
+            dataLoaded: false,
+            fields: {
+                required: [],
+                hidden: [],
+                optional: []
+            }
+        }
+    },
+    methods: {
+        parse(item) {
+                return JSON.parse(JSON.stringify(item));
+        },
+
+        parseFields(items, dest, protectedFields) {
+            for (let i = 0; i < items.length; i ++) { 
+                let isProtected = protectedFields.includes(items[i])
+                dest.push({
+                    "name": items[i],
+                    "isProtected": isProtected
+                })
+            }   
+        },
+        
+        async getFields() {
+            let fields = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
+            fields = fields.data();
+            if (fields == null) { 
+                window.alert("Unable to get Youth Profile fields from Global Fields Collection");
+            }
+            else {
+                let protectedFields = ["Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log"]
+                this.parseFields(fields["required"], this.fields.required, protectedFields);
+                this.parseFields(fields["optional"], this.fields.optional, protectedFields);
+                this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
+                this.initialFields = this.parse(this.fields);
+            }
+        },
+    },
+    async mounted() {
+        await this.getFields();
+        this.dataLoaded = true;
+    }
+
+    
+}
+</script>

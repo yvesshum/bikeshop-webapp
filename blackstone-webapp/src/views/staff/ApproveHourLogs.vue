@@ -300,11 +300,11 @@
                 // var amount = 0;
                 // for(var key in this.selected[0]){
                 //     if(key != "Date" && key != "For ID" && key != "For Name" && key != "Notes" && key != "Document ID"){
-                //         console.log("Adding approve amount: " + amount);
                 //         let addAmount = parseFloat(this.selected[0][key]);
                 //         if(!isNaN(addAmount)){
                 //             amount += addAmount;
                 //         }
+                //         console.log("Current approve amount: " + amount);
                 //     }
                 // }
                 // console.log("Delete Amount: " + amount)
