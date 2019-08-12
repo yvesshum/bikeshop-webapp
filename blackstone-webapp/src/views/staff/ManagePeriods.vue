@@ -106,6 +106,7 @@ export default {
 
       // Misc
       month_list: ["winter", "spring", "summer", "autumn"],
+      period_sort_map: null,
 
       period_form_inputs: [],
 
@@ -133,6 +134,11 @@ export default {
     this.future_active_youths  = data["FutureActiveYouths"];
 
     this.past_periods_doc_name = data["PastPeriodsDoc"];
+
+    this.period_sort_map = new Object();
+    this.month_list.forEach(function(element, n) {
+      this.period_sort_map[element] = n;
+    }.bind(this));
 
     this.create_edit_quarters_form(this.$refs.sel_youth_periods);
 
@@ -592,18 +598,44 @@ export default {
       });
     },
 
-    // Set the youth with the given ID to active or not in the given period
-    set_youth_status: function(id, period, status) {
-      switch (period) {
-        case this.current_period:
-          console.log("Adding youth " + id + " to the current period!");
-          break;
-        case this.next_period:
-          console.log("Adding youth " + id + " to the next period!");
-          break;
-        default:
-          console.log("Adding youth " + id + " to period " + period + "!");
-          break;
+    // Set the youth with the given ID to active or not in the given period or periods
+    // Periods may be a single item or an array
+    set_youth_status: function(id, periods, status) {
+
+      // Init the youth's new periods to any pending changes
+      // If youth doesn't have any pending changes yet, grab their current active periods
+      // TODO: Figure out default pending_changes value if none exists yet
+      let new_periods = this.pending_changes[id];
+      if (new_periods == null) {
+        // new_periods = 
+      };
+
+      // If a single element is passed, make it an array
+      if (!Array.isArray(periods)) periods = [periods];
+      
+      // Update the pending changes array with a ternary operation using the new_periods array
+      this.pending_changes[id] = (status)
+
+        // If the youth is being activated, add the given period to the list
+        ? [...new_periods, ...periods].filter((e, n, arr) => arr.indexOf(e) == n).sort(this.sort_periods)
+        // If the youth is being deactivated, remove the given period
+        : new_periods.filter((element) => !periods.includes(element));
+
+      // Update the different period arrays & displays with the new pending changes
+      this.update_active_arrays(id, this.pending_changes[id]);
+    },
+
+    // Function to determine period ordering.
+    // Usage: some_period_array.sort(sort_periods)
+    sort_periods: function(a, b) {
+      let a_month = a.slice(0,6);
+      let b_month = b.slice(0,6);
+      let a_year = a.slice(-2);
+      let b_year = b.slice(-2);
+      if (a_year == b_year) {
+        return this.period_sort_map[a_month] - this.period_sort_map[b_month];
+      } else {
+        return a_year.localeCompare(b_year);
       }
     },
 
