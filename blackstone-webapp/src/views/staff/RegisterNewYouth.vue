@@ -190,6 +190,57 @@
             },
             closeErrorModal() {
                 this.errorModalVisible = false;
+            },
+
+            /* Set the active periods for the new youth.
+             *   youth_id: The name and id of the new youth (e.g. "Yves Shum 10001")
+             *   current_period: Whether to add the youth to the current period (boolean)
+             *   next_period: Whether to add the youth to the next period (boolean)
+             *
+             * Handles the database loading and updating itself. If you want to load the active
+             * periods database elsewhere for any reason, just move that first line of code to
+             * wherever you'd like.
+             *
+             * Returns an array which is what the new youth's ActivePeriods field should be.
+             * You can just set it to that directly, eg:
+             *
+             * new_profile["ActivePeriods"] = setYouthActivePeriods("Yves Shum 10001", true, false)
+             */
+            async setYouthActivePeriods(youth_id, current_period, next_period) {
+                let active_periods_doc = await db.collection("GlobalVariables").doc("ActivePeriods").get();
+                let data = active_periods_doc.data();
+                let activePeriods = [];
+
+                // Copy existing array of currently active youth and adds youth_id if applicable
+                let current_active_youth = data["CurrentActiveYouths"];
+                if (current_period) {
+                    current_active_youth.concat([youth_id]);
+                    activePeriods.push(data["CurrentPeriod"]);
+                };
+
+                // Copy existing array of future active youth and adds youth_id if applicable
+                let future_active_youth = data["FutureActiveYouths"];
+                if (next_period) {
+                    future_active_youth.concat([youth_id]);
+                    activePeriods.push(data["FuturePeriod"]);
+                };
+
+                // Update the database with the (potentially) changed arrays
+                db.collection("GlobalVariables").doc("ActivePeriods").update({
+                    CurrentActiveYouths: current_active_youth,
+                    FutureActiveYouths:  future_active_youth
+                }).then(
+                    // TODO: This function will be run on a successful update
+                    function() {},
+                    // TODO: This function will be run if the update fails
+                    function(err) {
+                        window.alert("Error updating Active Periods document: " + err);
+                        return err;
+                    }
+                );
+
+                // Return the ActivePeriods variable for the youth represented by youth_id
+                return activePeriods;
             }
         },
         async mounted() {
