@@ -43,7 +43,7 @@
                             paginationSize: "20",
                             groupBy:"Category",
                             rowSelected: row => {
-                                this.$emit('selectedRow', row);
+                                this.$emit('rowSelected', row);
                             }
             };
             this.tabulator = new Tabulator(this.$refs.edit_table, {...defaultArgs, ...this.args});

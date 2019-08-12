@@ -127,13 +127,18 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
-                    data = this.parse(this.hiddenFields);
-                    for (let i = 0; i < data.length; i++) {
-                        if (data[i]["name"] === "Status") input["Status"] = "Pending"
-                        else if (data[i]["name"] === "Order Date") input["Order Date"] = new Date().toLocaleDateString();
-                        else input[data[i]["name"]] = data[i]["value"];
-                    }
-
+                    //TODO: Submit order hidden fields from realtime database 
+                    await rb.ref('Submit Orders Initializers').once("value" , snapshot => { 
+                        let hiddenProtectedInitializers = snapshot.val()["Protected"];
+                        let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
+                        for (let key in hiddenProtectedInitializers) {
+                            input[key] = hiddenProtectedInitializers[key]
+                        }
+                        for (let key in hiddenUnprotectedInitializers) { 
+                            input[key] = hiddenUnprotectedInitializers[key]
+                        }
+                    })
+                    input["Order Date"] = new Date().toLocaleDateString();
 
                     let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned

@@ -96,8 +96,19 @@
             async deleteSkill(){
                 console.log("delete!");
                 console.log(this.selectedRow);
-                let index = this.selectedRow;
-                this.table_data.splice(index, 1);
+                console.log(this.selectedRow._row.data.Category);
+                console.log(this.selectedRow._row.data.Skills);
+                for (var i = 0; i < this.table_data.length; i++) {
+                    console.log(this.table_data[i].Category)
+                    if (this.table_data[i].Category == this.selectedRow._row.data.Category) {
+                        console.log(this.table_data[i].skill)
+                        if(this.table_data[i].Skills == this.selectedRow._row.data.Skills){
+                            this.table_data.splice(i,1);
+                            break;
+                        }
+                    }
+                }
+                // this.table_data.splice(this.selectedRow, 1);
             },
             async add_category() {
                 this.table_data.push({
