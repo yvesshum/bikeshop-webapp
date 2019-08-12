@@ -16,20 +16,26 @@
         <hr class="subheading">  
 
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required"/>
+        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required" doc="Youth Order Form" collection="GlobalPendingOrders"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional"/>
+        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Order Form" collection="GlobalPendingOrders"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden"/>
+        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden" doc="Youth Order Form" collection="GlobalPendingOrders"/>
         <hr class="divider">
         
         <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
         <hr class="subheading">  
         <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
+
+        <hr class="divider">  
+        
+        <h2 v-b-tooltip.hover title="Change the initial value for hidden fields. This value will be stored when a new order is placed">Initializer editor</h2>  
+        <hr class="subheading"> 
+        <InitializerEditor v-if="dataLoaded" initializerRef="Submit Orders Initializers" doc="Youth Order Form"/>
 
         <SettingsBottomNote/>
 
@@ -42,6 +48,7 @@ import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
 import fieldEditor from '../../components/FieldEditor.vue'
 import PlaceholderEditor from '../../components/PlaceholderEditor.vue'
+import InitializerEditor from '../../components/InitializerEditor.vue'
 
 
 export default {
@@ -49,7 +56,9 @@ export default {
     components: {
         SettingsBottomNote,
         fieldEditor,
-        PlaceholderEditor
+        PlaceholderEditor,
+        InitializerEditor
+
     },
     data() {
         return {
@@ -98,7 +107,6 @@ export default {
     async mounted() {
         await this.getFields();
         this.dataLoaded = true;
-        // await this.getPlaceholders();
     }
     
 }

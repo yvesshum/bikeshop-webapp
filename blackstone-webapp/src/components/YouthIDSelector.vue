@@ -3,7 +3,6 @@
 
 <!-- TODO: Pass in which part of database to grab names from -->
 <!-- TODO: Sort by name -->
-<!-- TODO: Prevent second click from reselecting -->
 
 <template>
     <div class = "YouthIDSelector">
@@ -46,8 +45,8 @@
             //     // this.$emit('selected', value.name + " " + value.id);
             // },
            async getData() {
-                let data = await db.collection("GlobalVariables").doc('CurrentActiveYouths').get();
-                return data.data();
+                let data = await db.collection("GlobalVariables").doc("ActivePeriods").get();
+                return data.data()["CurrentActiveYouths"];
             },
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
@@ -70,7 +69,7 @@
         async mounted() {
             let data = await this.getData();
             var id_list = [];
-            data["IDs"].forEach(function(item, index) {
+            data.forEach(function(item, index) {
                 let name = item.slice(0, item.lastIndexOf(' ')  );
                 let id   = item.slice(   item.lastIndexOf(' ')+1);
                 id_list.push({name, id});

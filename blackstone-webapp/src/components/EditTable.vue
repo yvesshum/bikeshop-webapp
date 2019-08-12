@@ -43,7 +43,7 @@
                             paginationSize: "20",
                             groupBy:"Category",
                             rowSelected: row => {
-                                this.$emit('selectedRow', row);
+                                this.$emit('rowSelected', row);
                             }
             };
             this.tabulator = new Tabulator(this.$refs.edit_table, {...defaultArgs, ...this.args});
@@ -54,17 +54,22 @@
                 let ret = [];
                 for (let i = 0; i < this.headingdata.length; i++) {
                     let heading = this.headingdata[i];
-                    ret.push({
-                        title: heading,
-                        field: heading,
-                        editor:true
-                    })
+                    if(heading == "Skills"){
+                        ret.push({
+                            title: heading,
+                            field: heading,
+                            editor:true,
+                            widthGrow: 6
+                        });
+                    }else{
+                        ret.push({
+                            title: heading,
+                            field: heading,
+                            editor:true,
+                            widthGrow: 1
+                        })
+                    }
                 }
-                ret.push({formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
-                    //el.$broadcast('deleteSkill', cell.getRow().getIndex())
-                    //deleteSkill(cell.getRow().getIndex());
-                    cell.getRow().delete();
-                }})
                 return ret;
             }
         },
