@@ -59,12 +59,12 @@
 </template>
 
 <script>
-import plugin from '@/plugin.js'
+//import plugin from '@/plugin.js'
 import Vue from 'vue'
 import {db} from '@/firebase.js'
 import {rb} from '../../firebase'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
-Vue.use(plugin, {})
+//Vue.use(plugin, {})
 export default {
   data() {
     return {
