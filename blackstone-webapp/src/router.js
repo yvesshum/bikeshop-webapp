@@ -19,6 +19,7 @@ import AdminPanel from './views/staff/AdminPanel.vue'
 import YouthOrderSettings from './views/admin/YouthOrderSettings.vue'
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue'
 import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue'
+import ManagePeriods from './views/staff/ManagePeriods.vue'
 
 Vue.use(Router);
 
@@ -161,6 +162,15 @@ const router = new Router({
             path: '/approve-hours',
             name: 'approve-hours',
             component: ApproveHourLogs,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/manage-periods',
+            name: '/manage-periods',
+            component: ManagePeriods,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

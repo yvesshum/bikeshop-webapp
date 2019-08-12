@@ -93,6 +93,13 @@
   </button>
 </a>
 
+<a href="/manage-periods">
+  <button class="page">
+    <h4>Manage Periods</h4>
+    <p>Manage which youth are active during which periods</p>
+  </button>
+</a>
+
 </div>
 
 <div class="heading">
