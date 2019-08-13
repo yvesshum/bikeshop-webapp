@@ -1,28 +1,20 @@
 <template>
     <div>
         <top-bar/>
-        <h1>Order Status Dashboard</h1>
-        <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-                <p>Selected {{selected.length}} rows</p>
-                <b-button-group>
-                    <b-dropdown right text="Set Status">
+        <h1 class="title">Order Status Dashboard</h1>
+        <div class="toolbarwrapper">
+              <b-button-toolbar style="justify-content: center;">
+                    <b-dropdown right text="Set Status" style="margin: 1%;">
                         <b-dropdown-item @click="setPending">Pending</b-dropdown-item>
                         <b-dropdown-item @click="setApproved">Approved</b-dropdown-item>
                         <b-dropdown-item @click="setCompleted">Completed</b-dropdown-item>
                     </b-dropdown>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="success" @click="editNote">Edit note</b-button>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Order</b-button>
-                </b-button-group>
+                    <b-button variant="success" @click="editNote" style="margin: 1%;">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Order</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
+              </b-button-toolbar>
 
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
-            </b-button-toolbar>
+            <p style="margin: 1rem;">Selected {{selected.length}} rows</p>
         </div>
 
         <b-table
@@ -361,7 +353,7 @@
 
                 //remove locally
                 this.items.splice(itemIndex, 1);
-                
+
                 this.$root.$emit('bv::refresh::table', 'order-table');
 
                 this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
@@ -380,7 +372,7 @@
 
             },
 
-            showEditModal() { 
+            showEditModal() {
                 this.editModalVisible = true;
             },
 
@@ -392,18 +384,18 @@
             saveNote() {
                 let note = this.editMsg;
                 let docID = this.selected[0]["Document ID"];
-                db.collection("GlobalPendingOrders").doc(docID).update({"Notes": this.editMsg}).catch(err => { 
+                db.collection("GlobalPendingOrders").doc(docID).update({"Notes": this.editMsg}).catch(err => {
                     window.alert("Err: ", err);
                     return null;
                 });
-                
-                for (let i = 0; i < this.items.length; i++) { 
-                    if (this.items[i]["Document ID"] === docID) { 
+
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items[i]["Document ID"] === docID) {
                         this.items[i]["Notes"] = note;
                         break;
                     }
                 }
-            
+
 
             },
 
@@ -424,12 +416,11 @@
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
+  .toolbarwrapper {
+  margin-bottom: 1rem;
+  }
+  .title {
+  margin-bottom: 1rem;
+  }
 
 </style>
