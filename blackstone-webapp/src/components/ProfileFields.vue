@@ -1,5 +1,5 @@
 <template>
-  <div class="profile_fields" style="border-style: solid; border-width: 5px;">
+  <div class="profile_fields">
 
     <div id="name_div" style="display: none;">
       <div class="full_name"><span id="First Name_field"></span>&nbsp;<span id="Last Name_field"></span></div>
