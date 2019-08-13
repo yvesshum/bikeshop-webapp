@@ -89,7 +89,7 @@ export default {
         return {
             listenerRef: "",
             checkedInUsers: {},
-            selectedUser: null,
+            selectedUser: "",
             categoryHours: [0, 0, 0, 0, 0],
             checkoutStatus: {
                 title: '',
@@ -139,7 +139,6 @@ export default {
         checkIn() {
             // check user into realtime database
             let user = this.selectedUser.split(" ");
-            console.log(user);
             let ret = {
                 "First Name": user[0],
                 "Last Name": user[1],
@@ -184,6 +183,15 @@ export default {
                 return null;
             }
 
+            // add user's pending hours
+            let profile = await db.collection("GlobalYouthProfile").doc(user[2]).get();
+            profile = profile.data();
+            let newPendingHours = parseFloat(profile["Pending Hours"]) + categoryHourSum;
+
+            await db.collection("GlobalYouthProfile").doc(user[2]).update({
+                "Pending Hours": newPendingHours
+            })
+
             // check user out of realtime database
             await rb.ref('Checked In').child(user[2]).remove().catch(err => {
                     window.alert("Err: " + err);
@@ -227,9 +235,9 @@ export default {
         }
     },
     computed: {
-        totalHours() {
-            if (this.selectedUser) {
-                let id = this.selectedUser.split(" ")[2]
+        totalHours: function() {
+            let id = this.selectedUser.split(" ")[2]
+            if (this.selectedUser && this.checkedInUsers[id] !== null) {
                 let checkInTime = this.checkedInUsers[id]["Check In Time"]
                 let diff = moment().diff(moment(checkInTime), 'hours', true);
                 diff = Math.round(diff*2)/2; //closest 0.5 hour
@@ -241,6 +249,7 @@ export default {
 
         isCheckedIn() {
             let id = this.selectedUser.split(" ")[2];
+            console.log('t', !(this.checkedInUsers[id] == null));
             return !(this.checkedInUsers[id] == null)
         },
 
@@ -254,7 +263,8 @@ export default {
     },
     async mounted() {
         this.listenerRef = await rb.ref('Checked In').on("value", snapshot => { 
-                this.checkedInUsers = snapshot.val();          
+            if (snapshot.val() == null) this.checkedInUsers = {};
+            else this.checkedInUsers = snapshot.val();          
         })
 
         //Apron Skills Categories
