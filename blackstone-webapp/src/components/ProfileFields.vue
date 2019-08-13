@@ -202,39 +202,46 @@ export default {
           
           // Set the data, with special formatting for the dates
           if (key == "Last Sign In") {
-            let temp_date = new Date(data[key]);
-
-            field_p.innerHTML = temp_date.toLocaleDateString(undefined, {
-              weekday: 'long',
-              day:     'numeric',
-              month:   'long',
-              year:    'numeric'
-            });
-
-            this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,19));
+            try {
+              display_date(this, key, field_p, edit_input, 19, {
+                weekday: 'long',
+                day:     'numeric',
+                month:   'long',
+                year:    'numeric'
+              });
+            } catch {
+              display_string(this, key, field_p, edit_input);
+            };
           }
           else if (key == "DOB") {
-            let temp_date = new Date(data[key]);
-
-            field_p.innerHTML = temp_date.toLocaleDateString(undefined, {
-              day:     'numeric',
-              month:   'long',
-              year:    'numeric'
-            });
-
-            this.set_all_input_vals(edit_input, temp_date.toJSON().slice(0,10));
+            try {
+              display_date(this, key, field_p, edit_input, 10, {
+                day:     'numeric',
+                month:   'long',
+                year:    'numeric'
+              });
+            } catch {
+              display_string(this, key, field_p, edit_input);
+            };
           }
           else if (Array.isArray(data[key])) {
             this.create_fields_array(key, data[key]);
-            // create_edit_array(key, data[key], field_p, document.getElementById(key + "_edit_container"));
           }
           else {
-            field_p.innerHTML = data[key];
-            if (edit_input != null) {
-              this.set_all_input_vals(edit_input, data[key]);
-            }
+            display_string(this, key, field_p, edit_input);
           }
         };
+      }
+
+      function display_date(self, key, field_p, edit_input, slice_range, display_options) {
+        let temp_date = data[key].toDate();
+        field_p.innerHTML = temp_date.toLocaleDateString(undefined, display_options);
+        self.set_all_input_vals(edit_input, temp_date.toJSON().slice(0, slice_range));
+      }
+
+      function display_string(self, key, field_p, edit_input) {
+        field_p.innerHTML = data[key];
+        self.set_all_input_vals(edit_input, data[key]);
       }
 
       // Helper function - clear the data from the screen
