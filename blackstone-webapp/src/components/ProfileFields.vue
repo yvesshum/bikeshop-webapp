@@ -434,12 +434,12 @@ export default {
       switch (new_status) {
 
         case "immutable":
-          container.classList.add("display_mode_only");
+          if (container != null) container.classList.add("display_mode_only");
           break;
 
         // Field is currently being used in the profile
         case "used":
-          container.classList.remove("edit_mode_only");
+          if (container != null) container.classList.remove("edit_mode_only");
           if (remove_button != null) remove_button.innerHTML = "&times;";
           if (this.edit_mode) {
             edit_container.style.display = "";
@@ -448,7 +448,7 @@ export default {
             data_field.style.display = "";
             if (this.specially_displayed_fields.includes(key)) {
               edit_container.style.display = "";
-              container.classList.add("edit_mode_only");
+              if (container != null) container.classList.add("edit_mode_only");
             }
           };
 
@@ -469,7 +469,7 @@ export default {
 
         // Field is not currently being used in the profile
         case "unused":
-          container.classList.add("edit_mode_only");
+          if (container != null) container.classList.add("edit_mode_only");
           if (remove_button != null) remove_button.innerHTML = "+";
           edit_container.style.display = "none";
           data_field.style.display = "none";
