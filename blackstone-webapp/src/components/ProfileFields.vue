@@ -415,6 +415,8 @@ export default {
         return;
       };
 
+      if (new_status == "×") new_status = "X";
+
       // If special X or + is entered, determine which new status to use based on current status
       let old_status = this.row_status[key];
       if (new_status == "X") new_status = ((old_status == "used") ? "remove" : "unused");
