@@ -9,8 +9,8 @@
       <div class="options">
          <a href="/check-in">
             <button class="page">
-              <h4>Check In</h4>
-              <p>Youth's check-in page</p>
+              <h4>Check In/Check Out</h4>
+              <p>Youth's check-in/check-out page</p>
             </button>
           </a>
           <a href="/profile-lookup">

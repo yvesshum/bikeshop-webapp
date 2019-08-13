@@ -50,6 +50,9 @@
             },
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
+            },
+            reset() {
+                this.value = null;
             }
 
         },

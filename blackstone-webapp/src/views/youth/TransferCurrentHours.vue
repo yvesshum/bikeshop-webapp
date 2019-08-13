@@ -161,7 +161,6 @@
                 let fromSelectorID = this.fromSelector.split(" ")[2];
                 let toSelectorID = this.toSelector.split(" ")[2];
                 let amount = this.value;
-
                 let fromID;
                 let toID;
 

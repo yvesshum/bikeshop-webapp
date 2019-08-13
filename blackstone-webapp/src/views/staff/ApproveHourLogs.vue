@@ -23,17 +23,20 @@
         </div>
 
         <b-table
-                selectable
-                select-mode="single"
-                selectedVaraint = "success"
-                :items="items"
-                :fields="fields"
-                @row-selected="rowSelected"
-                responsive="sm"
-                :sort-by.sync="sortBy"
-                :sort-desc.sync="sortDesc"
-                id="transfer_table"
-                :busy="isBusy"
+            striped
+            hover
+            selectable
+            responsive
+            select-mode="single"
+            selectedVaraint = "success"
+            :items="items"
+            :fields="fields"
+            @row-selected="rowSelected"
+            sticky-header
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="sortDesc"
+            id="transfer_table"
+            :busy="isBusy"
         >
             <div slot="table-busy" class="text-center text-danger my-2">
                 <b-spinner class="align-middle"></b-spinner>
@@ -102,6 +105,7 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import moment from 'moment'
     export default {
         name: 'ApproveHourLogs',
         components: {
@@ -165,6 +169,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+                    data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
                     ret.push(data);
                 });
                 return ret;
