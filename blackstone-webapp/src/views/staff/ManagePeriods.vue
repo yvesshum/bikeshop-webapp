@@ -23,14 +23,28 @@
     <br />
 
     <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
-    <form ref="sel_youth_periods" id="sel_youth_periods"></form>
-
+    
     <br />
     <button v-on:click="save_changes">Save Changes</button>
 
 
     <br /><br />
 
+    <b-modal v-model="checkbox_modal_visible" lazy>
+      <template slot="modal-title">
+          Edit Active Periods for {{checkbox_modal_name}}
+      </template>
+      <h3>Please select the periods that {{checkbox_modal_name}} should be active in:</h3>
+      <div class="d-block" style="width:fit-content;margin:auto;">
+        <div v-for="(data, n) in checkbox_modal_form">
+          <input type="checkbox" v-on:change="modal_form_check(n, data)" v-bind:checked="data.checked"> {{data.period}} {{data.msg}}
+        </div>
+      </div>
+      <template slot="modal-footer" slot-scope="{cancel}">
+        <b-button class="mt-3" block @click="accept_edit_modal" variant="primary">Confirm</b-button>
+        <b-button class="mt-3" block @click="cancel()" variant="primary">Cancel</b-button>
+      </template>
+    </b-modal>
 
 
 
@@ -107,11 +121,18 @@ export default {
       month_list: ["winter", "spring", "summer", "autumn"],
       period_sort_map: null,
 
-      period_form_inputs: [],
-
       pending_changes: [],
       cached_youth_data: null,
       cached_youth_profiles: null,
+
+      checkbox_modal_visible: false,
+      checkbox_modal_name: null,
+      checkbox_modal_form: [
+        {period:"autumn19", msg:"(Next Period)", checked:true},
+        {period:"summer19", msg:"(Current Period)", checked:false},
+        {period:"spring19", msg:"", checked:true},
+        {period:"winter19", msg:"", checked:false},
+      ],
     };
   },
 
@@ -138,8 +159,6 @@ export default {
     this.month_list.forEach(function(element, n) {
       this.period_sort_map[element] = n;
     }.bind(this));
-
-    this.create_edit_quarters_form(this.$refs.sel_youth_periods);
 
     this.display_current_period();
     this.display_future_period();
@@ -193,10 +212,8 @@ export default {
     edit_youth_periods: function(event) {
       event.preventDefault();
       this.edited_youth = this.selected_youth;
-      this.match_form_to_youth(
-        this.selected_youth_data.ActivePeriods,
-        this.$refs.sel_youth_periods
-      );
+      this.match_form_to_youth(this.selected_youth_data.ActivePeriods);
+      this.show_form();
     },
 
     unpack_id: function(id) {
@@ -211,62 +228,18 @@ export default {
       };
     },
 
-    create_edit_quarters_form: function(form) {
-      form.style.display = "none";
+    match_form_to_youth: function(youth_periods) {
+      this.checkbox_modal_name = this.edited_youth.name;
 
-      this.period_form_inputs = [];
-      let period_inputs = this.period_form_inputs;
-
-      display_quarter(this.future_period, " (next)");
-      display_quarter(this.current_period, " (current)");
-      this.past_periods.forEach((element, n) => {display_quarter(element, "")});
-
-      let submit_button = document.createElement("input");
-      submit_button.type = "submit";
-      submit_button.value = "Submit";
-      form.appendChild(submit_button);
-
-      form.onsubmit = function(event) {
-        event.preventDefault();
-        let checked_periods = [];
-        this.period_form_inputs.forEach((element, n) => {
-          if (element.checkbox.checked) {
-            checked_periods.push(element.quarter);
-          };
-        });
-        form.style.display = "none";
-
-        this.cached_youth_data[this.edited_youth.full_id]["ActivePeriods"] = checked_periods;
-
-        this.pending_changes[this.edited_youth.full_id] = checked_periods;
-        this.update_active_arrays(this.edited_youth, checked_periods);
-
-      }.bind(this);
-
-      function display_quarter(quarter, extra_text) {
-        let checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.name = quarter;
-        checkbox.style.display = "inline";
-
-        let text = document.createElement("p");
-        text.innerHTML = "&nbsp;" + quarter + extra_text;
-        text.style.display = "inline";
-
-        form.appendChild(checkbox);
-        form.appendChild(text);
-        form.appendChild(document.createElement("br"));
-
-        period_inputs.push({quarter, checkbox});
-      }
-    },
-
-    match_form_to_youth: function(youth_periods, form) {
-      this.period_form_inputs.forEach((element, n) => {
-        element.checkbox.checked = youth_periods.includes(element.quarter);
+      this.checkbox_modal_form.forEach(function (element) {
+        element.checked = youth_periods.includes(element.period);
       });
 
-      form.style.display = "";
+      this.show_form();
+    },
+
+    show_form: function() {
+      this.checkbox_modal_visible = true;
     },
 
     update_active_arrays: function(youth, periods) {
@@ -518,6 +491,31 @@ export default {
     // Will be called at the end of every accept_modal function
     close_modal: function() {
       this.confirm_modal_visible = false;
+    },
+
+    modal_form_check: function(index, item) {
+      item.checked = !item.checked;
+    },
+
+    accept_edit_modal: function() {
+
+      // Collect names of all checked periods
+      let checked_periods = [];
+      this.checkbox_modal_form.forEach(function(element) {
+        if (element.checked) {
+          checked_periods.push(element.period);
+        };
+      });
+
+      // Update cached profile with new checked periods
+      this.cached_youth_data[this.edited_youth.full_id]["ActivePeriods"] = checked_periods;
+
+      // Add changes to pending_changes array, and update displays
+      this.pending_changes[this.edited_youth.full_id] = checked_periods;
+      this.update_active_arrays(this.edited_youth, checked_periods);
+
+      // Hide the edit modal
+      this.checkbox_modal_visible = false;
     },
 
     // Display the current period on the page
