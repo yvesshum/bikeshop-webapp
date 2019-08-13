@@ -6,6 +6,29 @@
       <span class="id_parens">(ID:&nbsp;<span id="ID_field"></span>)</span>
     </div>
 
+    <br />
+
+    <div id="stats_div" style="display:none;">
+      <table style="margin:auto;">
+        <tr>
+          <td><h3 id="Hours Earned_field"></h3></td>
+          <td>&nbsp;&nbsp;</td>
+          <td><h3 id="Hours Spent_field"></h3></td>
+          <td>&nbsp;&nbsp;</td>
+          <td><h3 id="Pending Hours_field"></h3></td>
+        </tr>
+        <tr>
+          <td>Hours<br />Earned</td>
+          <td>&nbsp;&nbsp;</td>
+          <td>Hours<br />Spent</td>
+          <td>&nbsp;&nbsp;</td>
+          <td>Pending<br />Hours</td>
+        </tr>
+      </table>
+    </div>
+
+    <br />
+
     <table id="fields_table" ref="fields_table" style="display: none;">
       <!-- <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
@@ -51,7 +74,13 @@ export default {
   data: function() {
     return {
       edit_mode: false,
-      specially_displayed_fields: ["First Name", "Last Name"],
+      specially_displayed_fields: [
+        "First Name",
+        "Last Name",
+        "Hours Earned",
+        "Hours Spent",
+        "Pending Hours",
+      ],
       hidden_fields: [
         "Apron Level",
         "Work Log",
@@ -113,7 +142,9 @@ export default {
       function append_table_section(self, heading, content, default_state) {
         append_table_fullrow(heading);
         content.filter((item) => !self.hidden_fields.includes(item)).forEach(function(element) {
-          self.append_field_container(element, default_state);
+          if (!(default_state == "immutable" && self.specially_displayed_fields.includes(element))) {
+            self.append_field_container(element, default_state);
+          }
           self.set_row_status(element, default_state);
         });
         append_table_fullrow("&nbsp;");
@@ -187,6 +218,7 @@ export default {
 
         // Show the name and table of fields
         document.getElementById("name_div").style.display = "";
+        document.getElementById("stats_div").style.display = "";
         document.getElementById("fields_table").style.display = "";
 
         // Init vars
@@ -374,6 +406,9 @@ export default {
     },
 
     set_row_status: function(key, new_status) {
+
+      // TODO: Should this be the case?
+      if (this.row_status[key] == "required" || this.row_status[key] == "immutable") return;
 
       if (new_status == "required") {
         this.row_status[key] = new_status;
