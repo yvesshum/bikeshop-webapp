@@ -393,7 +393,7 @@ export default {
         // Field is currently being used in the profile
         case "used":
           container.classList.remove("edit_mode_only");
-          if (remove_button != null) remove_button.innerHTML = "X";
+          if (remove_button != null) remove_button.innerHTML = "&times;";
           if (this.edit_mode) {
             edit_container.style.display = "";
             data_field.style.display = "none";
@@ -413,7 +413,7 @@ export default {
 
         // Field is to be added to the profile (edit mode only)
         case "add":
-          if (remove_button != null) remove_button.innerHTML = "X";
+          if (remove_button != null) remove_button.innerHTML = "&times;";
           edit_container.style.display = "";
           data_field.style.display = "none";
           data_title.classList.add("to_be_added_title");
