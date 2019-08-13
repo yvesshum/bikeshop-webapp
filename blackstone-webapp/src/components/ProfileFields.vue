@@ -49,8 +49,7 @@
       </template>
       <div class="d-block text-center">
           <h3>The following changes will be saved:</h3>
-          <p>{{modalList}}</p>
-          <!-- <ul ref="confirm_changes_list"></ul> -->
+          <p v-for="change in this.changes_list">{{change}}</p>
       </div>
       <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
       <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
@@ -91,7 +90,7 @@ export default {
       row_status: null,
       array_fields: null,
       confirmModalVisible: false,
-      modalList: ""
+      changes_list: [],
     }
   },
 
@@ -656,9 +655,7 @@ export default {
     },
 
     create_confirm_modal: function() {
-      this.modalList = "";
-      // const change_list = this.$refs["confirm_changes_list"];
-      // console.log(change_list);
+      this.changes_list = [];
 
       Object.keys(this.row_status).forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
@@ -671,7 +668,7 @@ export default {
             break;
 
           case "remove":
-            this.modalList += "The field " + input_field.name + " has been removed.\n";
+            this.changes_list.push("The field " + input_field.name + " has been removed.");
             break;
 
           case "required":
@@ -683,7 +680,7 @@ export default {
               } else {
                 temp1 = input_field.value;
               };
-              this.modalList += "The field " + key + " has been set to " + temp1 + "\n";
+              this.changes_list.push("The field " + key + " has been set to " + temp1 + ".");
             };
             break;
 
@@ -696,7 +693,7 @@ export default {
               } else {
                 temp2 = input_field.value;
               };
-              this.modalList += "The field " + key + " has been created and set to " + temp2 + "\n";
+              this.changes_list.push("The field " + key + " has been created and set to " + temp2 + ".");
             };
             break;
 
