@@ -49,7 +49,9 @@
       </template>
       <div class="d-block text-center">
           <h3>The following changes will be saved:</h3>
-          <p v-for="change in this.changes_list">{{change}}</p>
+          <p v-for="(change, field) in this.changes_list">
+            The field <code>{{field}}</code> has been {{changes_list[field].message}}<code>{{changes_list[field].new_val}}</code>.
+          </p>
       </div>
       <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
       <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
@@ -90,7 +92,7 @@ export default {
       row_status: null,
       array_fields: null,
       confirmModalVisible: false,
-      changes_list: [],
+      changes_list: null,
     }
   },
 
@@ -655,7 +657,7 @@ export default {
     },
 
     create_confirm_modal: function() {
-      this.changes_list = [];
+      this.changes_list = new Object();
 
       Object.keys(this.row_status).forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
@@ -668,7 +670,10 @@ export default {
             break;
 
           case "remove":
-            this.changes_list.push("The field " + input_field.name + " has been removed.");
+            this.changes_list[input_field.name] = {
+              message: "removed",
+              new_val: "",
+            };
             break;
 
           case "required":
@@ -680,7 +685,10 @@ export default {
               } else {
                 temp1 = input_field.value;
               };
-              this.changes_list.push("The field " + key + " has been set to " + temp1 + ".");
+              this.changes_list[key] = {
+                message: "set to ",
+                new_val: temp1,
+              };
             };
             break;
 
@@ -693,7 +701,10 @@ export default {
               } else {
                 temp2 = input_field.value;
               };
-              this.changes_list.push("The field " + key + " has been created and set to " + temp2 + ".");
+              this.changes_list[key] = {
+                message: "created and set to ",
+                new_val: temp2,
+              };
             };
             break;
 
