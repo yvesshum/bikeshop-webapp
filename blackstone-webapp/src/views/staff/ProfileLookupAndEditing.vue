@@ -4,10 +4,10 @@
     <p>This is the staff view of the youth profile lookup page</p>
 
     <!-- Replaced selector bar with static buttons to test without spamming firebase -->
-    <!-- <YouthIDSelector @selected="selectedID"/> -->
-    <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button>
-    <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button>
-    <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button>
+    <YouthIDSelector @selected="selectedID"/>
+    <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button> -->
+    <!-- <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button> -->
+    <!-- <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
 
     <div ref="body_fields" style="display: none;">
       <ProfileFields :current-profile="currentProfile" :header_doc="this.header_doc" :allow_edits="true" />
@@ -55,14 +55,8 @@ export default {
     };
   },
 
-  mounted: function() {
-    // this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-    this.header_doc = new Object();
-    this.header_doc["required"] = ["First Name", "Last Name", "DOB"];
-    this.header_doc["hidden"] = ["Hours Spent", "Pending Hours", "Last Sign In", "Work Log", "Order Log", "Hours Earned"];
-    this.header_doc["optional"] = ["Gender", "Home Address"];
-    this.header_doc["order_log"] = ['Item Name', 'Item ID', 'Item Cost', 'Status', 'Date', 'Notes'];
-    this.header_doc["work_log"] = ['Category 1', 'Category 2', 'Category 3', 'Category 4'];
+  mounted: async function() {
+    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
   },
 
     methods: {
