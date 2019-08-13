@@ -16,6 +16,7 @@
     "firebase": "^6.2.4",
     "jshint": "^2.10.2",
     "lodash": "^4.17.14",
+    "moment": "^2.24.0",
     "tabulator-tables": "^4.2.7",
     "vue": "^2.6.10",
     "vue-data-tabulator": "^0.2.4",
