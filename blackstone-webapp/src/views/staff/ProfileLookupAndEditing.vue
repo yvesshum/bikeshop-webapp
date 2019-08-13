@@ -14,10 +14,10 @@
       <!-- <ApronBar /> -->
 
       <p>Order Log:</p>
-      <CollectionTable ref="order_log" :heading_data="this.header_doc['order_log']" :current_collection="order_log_collection"></CollectionTable>
+      <CollectionTable ref="order_log" :heading_data="this.order_log_headers" :current_collection="order_log_collection"></CollectionTable>
 
       <p>Work Log:</p>
-      <CollectionTable ref="work_log" :heading_data="this.header_doc['work_log']" :current_collection="work_log_collection"></CollectionTable>
+      <CollectionTable ref="work_log" :heading_data="this.work_log_headers" :current_collection="work_log_collection"></CollectionTable>
     </div>
   </div>
 </template>
@@ -49,12 +49,21 @@ export default {
       currentProfile: null,
       order_log_collection: null,
       work_log_collection: null,
-      header_doc: null
+      header_doc: null,
+
+      log_headers_doc: null,
+
+      order_log_headers: [],
+      work_log_headers: [],
     };
   },
 
   mounted: async function() {
     this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
+    this.log_headers_doc = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
+
+    this.order_log_headers = this.log_headers_doc.data()['Order Log Headers'];
+    this.work_log_headers = this.log_headers_doc.data()['Work Log Headers'];
   },
 
     methods: {
