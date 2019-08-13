@@ -8,11 +8,31 @@
 
         <YouthIDSelector
             @selected="handleSelect"
-            style="margin-bottom: 30px;"
+            style="margin-bottom: 20px;"
+            ref="selector"
         />
 
+        <p>Or fill in the information below</p>
+
+        <b-container block>
+            <b-row>
+                <b-col>
+                    <b-textarea placeholder="ID" style="text-align: center; align-self: center" v-model="ID"></b-textarea>
+                </b-col>
+                <b-col>
+                    <b-textarea placeholder="First Name" style="text-align: center; align-self: center" v-model="FirstName"></b-textarea>
+                </b-col>
+                <b-col>
+                    <b-textarea placeholder="Last Name" style="text-align: center; align-self: center" v-model="LastName"></b-textarea>
+                </b-col>
+            </b-row>
+            
+        </b-container>
+
+        <br>
+
         <!-- Check In -->
-        <div v-if="selectedUser && !isCheckedIn">
+        <div v-if="userSelected && !isCheckedIn" >
             <b-button
                 class="check-in-out-button"
                 @click="checkIn()"
@@ -25,7 +45,7 @@
         </div>
 
         <!-- Check Out -->
-        <div v-if="selectedUser && isCheckedIn">
+        <div v-if="userSelected && isCheckedIn">
             <b-button
                 class="check-in-out-button"
                 @click="showCheckoutModal"
@@ -46,7 +66,6 @@
             </template>
             <p >Please Enter your hours, round to the nearest 0.5 hours e.g. 0.5, 1.5, 3</p>
             <div class ="form-group">
-                
                 <div v-for="category in categories" :key="category">
                     <label class="col-sm-2 col-form-label" >{{category}}</label>
                     <div class="col-sm-10">
@@ -54,6 +73,10 @@
                     </div>
                 </div>
                 <br>
+                <label class="col-sm-2 col-form-label" >Notes</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!">
+                    </div>
             </div>
             <b-button class="mt-3" block @click="closeCheckoutModal" variant="danger">Cancel</b-button>
             <b-button class="mt-3" block @click="checkOut()" variant="success">Confirm</b-button>
@@ -74,22 +97,20 @@
 </template>
 
 <script>
-//import plugin from '@/plugin.js'
-import Vue from 'vue'
 import {db} from '@/firebase.js'
 import {rb} from '../../firebase'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import moment from 'moment';
-
-// <label>{{category}}</label>
-// <input type="number" class="form-control" :value="hours[category]" placeholder="0">
 
 export default {
     data() {
         return {
             listenerRef: "",
             checkedInUsers: {},
-            selectedUser: "",
+            selected: false,
+            ID: "",
+            FirstName: "",
+            LastName: "",
             categoryHours: [0, 0, 0, 0, 0],
             checkoutStatus: {
                 title: '',
@@ -99,59 +120,69 @@ export default {
             categories: [],
             hours: {},
             notes: "",
+            totalHours: "", 
+
 
         }
     },
     methods: {
         handleSelect(item) {
-            this.selectedUser = item;
+            if (item !== null && item !== undefined && item !== "") {
+                this.selected = true;
+                this.ID = item.split(" ")[2]
+                this.FirstName = item.split(" ")[0]
+                this.LastName = item.split(" ")[1]
+                console.log(this.FirstName, item.split(" "));
+            }
+            else {
+                this.selected = false;
+                this.ID = ""
+                this.FirstName = ""
+                this.LastName = ""
+            }
+            
         },
         showCheckoutModal() {
+            this.getTotalHours();
             this.checkoutModalVisible = true;
         },
         closeCheckoutModal() {
             this.checkoutModalVisible = false;
         },
-        // currentDateTime(type) {
-        //     var d = new Date()
-        //     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        //     var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        //     var day = days[d.getDay()];
-        //     var hr = d.getHours();
-        //     var min = d.getMinutes();
-        //     if (min < 10) {
-        //             min = "0" + min;
-        //     }
-        //     var ampm = " am";
-        //     if( hr > 12 ) {
-        //             hr -= 12;
-        //             ampm = " pm";
-        //     }
-        //     var date = d.getDate();
-        //     var month = months[d.getMonth()];
-        //     var year = d.getFullYear();
-        //     if (type === 'time') {
-        //         return hr + ":" + min + ampm
-        //     } else if (type === 'date') {
-        //             return day + ', ' + date + " " + month + " " + year;
-        //     }
-        // },
-        checkIn() {
+        async checkIn() {
+            //check if ID exists if manual entry
+            if (!this.selected) {
+                let profile = await db.collection("GlobalYouthProfile").doc(this.ID).get();
+                if (profile.data() == null) {
+                    this.checkoutStatus.title = 'Error'
+                    this.checkoutStatus.message = 'ID not found! Please check again.'
+                    this.$bvModal.show('checkout-status-modal')
+                    return null;
+                }
+            }
+
             // check user into realtime database
-            let user = this.selectedUser.split(" ");
             let ret = {
-                "First Name": user[0],
-                "Last Name": user[1],
+                "First Name": this.FirstName,
+                "Last Name": this.LastName,
                 "Check In Time": moment().format(),
             }
-            rb.ref('Checked In/' + user[2]).set(ret).catch(err => {
+            rb.ref('Checked In/' + this.ID).set(ret).catch(err => {
                 window.alert("Err: " + err);
                 return null;
             })
             this.checkoutStatus.title = 'Success'
             this.checkoutStatus.message = 'You have successfully checked in.'
             this.$bvModal.show('checkout-status-modal')
+            this.resetInput();
         
+        },
+        resetInput() {
+            this.$refs.selector.reset();
+            this.ID = "";
+            this.FirstName = "";
+            this.LastName = "";
+            this.$forceUpdate();
         },
 
         parseHours(hours) {
@@ -167,13 +198,12 @@ export default {
             }
             
             //add to GlobbalPendingHours
-            let user = this.selectedUser.split(" ")
             let val = {
-                "Check In": this.checkedInUsers[user[2]]["Check In Time"],
+                "Check In": this.checkedInUsers[this.ID]["Check In Time"],
                 "Check Out": moment().format(),
-                "First Name": user[0],
-                "Last Name": user[1],
-                "Youth ID": user[2],
+                "First Name": this.FirstName,
+                "Last Name": this.LastName,
+                "Youth ID": this.ID,
                 "Notes": this.notes,
             };
             val = {...val, ...this.hours};
@@ -184,73 +214,42 @@ export default {
             }
 
             // add user's pending hours
-            let profile = await db.collection("GlobalYouthProfile").doc(user[2]).get();
+            let profile = await db.collection("GlobalYouthProfile").doc(this.ID).get();
             profile = profile.data();
             let newPendingHours = parseFloat(profile["Pending Hours"]) + categoryHourSum;
 
-            await db.collection("GlobalYouthProfile").doc(user[2]).update({
+            await db.collection("GlobalYouthProfile").doc(this.ID).update({
                 "Pending Hours": newPendingHours
             })
 
             // check user out of realtime database
-            await rb.ref('Checked In').child(user[2]).remove().catch(err => {
+            await rb.ref('Checked In').child(this.ID).remove().catch(err => {
                     window.alert("Err: " + err);
             })
+
+            this.closeCheckoutModal();
+            
            
             this.checkoutStatus.title = 'Success'
             this.checkoutStatus.message = 'You have successfully checked out. Your hours have been requested.'
             this.$bvModal.show('checkout-status-modal')
 
-
-            // if (categoryHourSum === this.totalHours) {
-            //     var promises = []
-            //     // check user out of realtime database
-            //     promises.push(rb.ref('Checked In').child(this.selectedUserID).remove().catch(err => {
-            //         window.alert("Err: " + err);
-            //     }))
-            //     // check user out of firestore database
-            //     promises.push(db.collection('GlobalYouthProfile').doc(this.selectedUserID).update({
-            //     lastSignIn: null
-            //     }))
-            //     promises.push(db.collection('GlobalPendingHours').add({
-            //         category1: this.categoryHours[1],
-            //         category2: this.categoryHours[2],
-            //         category3: this.categoryHours[3],
-            //         category4: this.categoryHours[4],
-            //         date: Date.now(),
-            //         forID: this.selectedUserID,
-            //         forName: this.selectedUser['First Name'] + this.selectedUser['Last Name'],
-            //         notes: ''
-            //     }))
-            //     Promise.all(promises).then(() => {
-            //     this.checkoutStatus.title = 'Success'
-            //     this.checkoutStatus.message = 'You have successfully checked out. Your hours have been requested.'
-            //     this.$bvModal.show('checkout-status-modal')
-            //     })
-            // } else {
-            //     this.checkoutStatus.title = 'Oops!'
-            //     this.checkoutStatus.message = 'It seems that your category hours don\'t match your total hours. Please try again.'
-            //     this.$bvModal.show('checkout-status-modal')
-            // }
-        }
-    },
-    computed: {
-        totalHours: function() {
-            let id = this.selectedUser.split(" ")[2]
-            if (this.selectedUser && this.checkedInUsers[id] !== null) {
-                let checkInTime = this.checkedInUsers[id]["Check In Time"]
+            this.resetInput();
+        },
+        getTotalHours() {
+            if (this.checkedInUsers[this.ID] !== null) {
+                let checkInTime = this.checkedInUsers[this.ID]["Check In Time"]
                 let diff = moment().diff(moment(checkInTime), 'hours', true);
                 diff = Math.round(diff*2)/2; //closest 0.5 hour
-                return diff
+                this.totalHours = diff
             } else {
-                return null
+                this.totalHours = "Error"
             }
         },
-
+    },
+    computed: {
         isCheckedIn() {
-            let id = this.selectedUser.split(" ")[2];
-            console.log('t', !(this.checkedInUsers[id] == null));
-            return !(this.checkedInUsers[id] == null)
+            return !(this.checkedInUsers[this.ID] == null)
         },
 
         date() {
@@ -259,6 +258,10 @@ export default {
 
         time() {
             return moment().format("hh:mm a")
+        },
+
+        userSelected() {
+            return !([this.ID, this.FirstName, this.LastName].includes(""));
         }
     },
     async mounted() {
