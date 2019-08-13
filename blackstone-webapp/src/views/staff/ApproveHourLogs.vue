@@ -96,8 +96,9 @@
             <!-- <div class="d-block text-center">
                 <h3>Edit the following message:</h3>
             </div> -->
-            <div v-for="(category, index) in editSelectedHours">
-                Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)</br>
+            <div v-for="(category, index) in editSelectedHours" :key="index">
+                Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
+                <br>
                 <b-form-input
                 id="number"
                 type="number"
@@ -401,6 +402,9 @@
             
             editHours() {
                 let curRow = this.selected[0];
+                if (curRow == null) {
+                    return null;
+                }
                 var editSelectedHours = [];
                 for(var key in curRow){
                     if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
@@ -461,10 +465,12 @@
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelectedHours);
                 
+                let newTotalHours = 0;
                 var newHours = '{'
                 for(let i = 0; i < this.editSelectedHours.length; i++){
                     let category = this.editSelectedHours[i]["Category"];
                     let hours = this.editSelectedHours[i]["Hours"];
+                    newTotalHours += parseFloat(hours);
                     if(i == this.editSelectedHours.length - 1){
                         newHours += '"' + category + '": "' + hours + '"'
                     }else{
@@ -480,6 +486,33 @@
                     this.editSelectedHours = {};
                     return null;
                 }
+
+                //TODO: Update user's pending hours
+                let profile = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).get();
+                if (profile.data() == null) {
+                    window.alert("Error, Youth ID does not exists: " + this.selected[0]["YouthID"])
+                }
+                //find amount to change for pending hours 
+                var originalAmount = 0;
+                for(var key in this.selected[0]){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                        let addAmount = parseFloat(this.selected[0][key]);
+                        if(!isNaN(addAmount)){
+                            originalAmount += addAmount;
+                        }
+                    }
+                }
+
+                let netChange = newTotalHours - originalAmount;
+                let newPendingHours = parseFloat(profile.data()["Pending Hours"]) + netChange
+                let status2 = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).update({
+                    "Pending Hours": newPendingHours.toString()
+                })
+
+                if (status2) {
+                    window.alert("Error on updating Youth Profile's Pending Hours, ID: " + this.selected[0]["Youth ID"])
+                }
+                
                 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
