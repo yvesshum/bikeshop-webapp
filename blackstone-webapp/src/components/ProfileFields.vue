@@ -52,6 +52,13 @@ export default {
     return {
       edit_mode: false,
       specially_displayed_fields: ["First Name", "Last Name"],
+      hidden_fields: [
+        "Apron Level",
+        "Work Log",
+        "Transfer Log",
+        "Order Log",
+        "Last Sign In",
+      ],
       row_status: null,
       array_fields: null,
       confirmModalVisible: false,
@@ -81,12 +88,8 @@ export default {
       this.row_status = new Object();
       this.array_fields = new Object();
 
-      let immutable_fields = data["hidden"].concat("Last Sign In").filter(function(element) {
-        return !["Work Log", "Order Log", "Transfer Log"].includes(element);
-      });
-
       append_table_section(this, "Required:", data["required"], "required");
-      append_table_section(this, "",          immutable_fields, "immutable");
+      append_table_section(this, "",          data["hidden"],   "immutable");
       append_table_section(this, "Optional:", data["optional"], "unused");
 
       function append_table_fullrow(heading) {
@@ -102,7 +105,7 @@ export default {
       // Takes in vue component as self for scoping
       function append_table_section(self, heading, content, default_state) {
         append_table_fullrow(heading);
-        content.forEach(function(element) {
+        content.filter((item) => !self.hidden_fields.includes(item)).forEach(function(element) {
           self.append_field_container(element, default_state);
           self.set_row_status(element, default_state);
         });
@@ -188,7 +191,7 @@ export default {
         // Loop through each field in the data
         for (var key in data) {
 
-          if (key == "Apron Level") continue;
+          if (this.hidden_fields.includes(key)) continue;
 
           // Find appropriate p for field, or create it if it does not exist
           var field_p = document.getElementById(key + "_field");
