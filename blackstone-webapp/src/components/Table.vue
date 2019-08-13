@@ -57,10 +57,14 @@
                 let ret = [];
                 for (let i = 0; i < this.headingdata.length; i++) {
                     let heading = this.headingdata[i];
-                    ret.push({
-                        title: heading,
-                        field: heading,
-                    })
+                    if (typeof heading == "string") {
+                        ret.push({
+                            title: heading,
+                            field: heading,
+                        });
+                    } else {
+                        ret.push(heading);
+                    }
                 }
                 return ret;
             },
