@@ -43,7 +43,7 @@ import firebase_auth from 'firebase/auth';
 
 export default {
   name: 'profile_fields',
-  props: ["currentProfile", "header_doc", "allow_edits"],
+  props: ["currentProfile", "header_doc", "allow_edits", "show_optional_fields", "hide_fields"],
   components: {
     
   },
@@ -76,7 +76,11 @@ export default {
 
     if (!this.allow_edits) {
       this.$refs.edit_profile.style.display = "none";
-    }
+    };
+
+    if (this.hide_fields != null) {
+      this.hidden_fields = [...this.hidden_fields, ...this.hide_fields];
+    };
   },
 
   watch: {
@@ -90,7 +94,10 @@ export default {
 
       append_table_section(this, "Required:", data["required"], "required");
       append_table_section(this, "",          data["hidden"],   "immutable");
-      append_table_section(this, "Optional:", data["optional"], "unused");
+
+      if (this.show_optional_fields) {
+        append_table_section(this, "Optional:", data["optional"], "unused");
+      };
 
       function append_table_fullrow(heading) {
         let new_row = table.insertRow(-1);
@@ -199,6 +206,7 @@ export default {
 
           // TODO: If you have to add a table row, it should be flagged - it's nonstandard
           if (field_p == null) {
+            if (!this.show_optional_fields) continue;
             field_p = this.append_field_container(key, "unused");
             field_c = document.getElementById(key + "_container");
           }
