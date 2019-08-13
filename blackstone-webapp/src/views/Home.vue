@@ -9,8 +9,8 @@
       <div class="options">
          <a href="/check-in">
             <button class="page">
-              <h4>Check In</h4>
-              <p>Youth's check-in page</p>
+              <h4>Check In/Check Out</h4>
+              <p>Youth's check-in/check-out page</p>
             </button>
           </a>
           <a href="/profile-lookup">
@@ -97,6 +97,13 @@
   <button class="page">
     <h4>Manage Periods</h4>
     <p>Manage which youth are active during which periods</p>
+  </button>
+</a>
+
+<a href="/add-subtract-hours">
+  <button class="page">
+    <h4>Add/Subtract Hours</h4>
+    <p>Give or take away hours from youth</p>
   </button>
 </a>
 

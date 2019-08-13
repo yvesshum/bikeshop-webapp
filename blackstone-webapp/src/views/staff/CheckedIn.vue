@@ -95,34 +95,8 @@ export default {
 
         viewProfile() {
             let YouthID = this.selected[0]["Youth ID"];
-            console.log(YouthID);
+            window.alert("This has not been implemented yet")
         },
-
-
-        // METHODS FOR JEFFREY's CHECKIN and OUT
-
-        //this function just blindly checks people in without checking if they're
-        //already checked in.
-        checkIn(id, fname, lname) {
-            rb.ref('Checked In').child(id).set({
-                "First Name": fname,
-                "Last Name": lname,
-                "Check In Time": new Date().toLocaleString(),
-            }).catch(err => {
-                window.alert("Err: " + err);
-            });
-        },
-
-        //If an ID is not found, nothing will happen
-        checkOut(id) {
-            rb.ref('Checked In').child(id).remove().catch(err => {
-                window.alert("Err: " + err);
-            })
-        },
-
-        //////////////////////////
-
-
 
     },
 
@@ -130,7 +104,6 @@ export default {
         await this.getHeaders();
         await this.getTData();
         this.toggleBusy();
-        this.checkOut("no id")
 
     }
 }

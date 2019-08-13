@@ -50,6 +50,9 @@
             },
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
+            },
+            reset() {
+                this.value = null;
             }
 
         },
@@ -75,6 +78,7 @@
                 id_list.push({name, id});
             })
             this.options = id_list;
+            this.$emit("ready", null);
         }
     }
 </script>

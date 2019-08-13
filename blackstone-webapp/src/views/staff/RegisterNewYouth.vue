@@ -288,7 +288,7 @@
                         name: fields["optional"][i],
                         value: "",
                         type: "textarea",
-                        placeholder: this.placeholders[fields["required"][i]]
+                        placeholder: this.placeholders[fields["optional"][i]]
                     })
                 }
             }

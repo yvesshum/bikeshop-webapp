@@ -8,6 +8,10 @@
                 <b-button-group>
                     <b-button variant="success" @click="accept">Approve</b-button>
                 </b-button-group>
+                
+                <b-button-group>
+                    <b-button variant="info" @click="editHours">Edit Hours</b-button>
+                </b-button-group>
 
                 <b-button-group>
                     <b-button variant="info" @click="editNote">Edit note</b-button>
@@ -23,17 +27,20 @@
         </div>
 
         <b-table
-                selectable
-                select-mode="single"
-                selectedVaraint = "success"
-                :items="items"
-                :fields="fields"
-                @row-selected="rowSelected"
-                responsive="sm"
-                :sort-by.sync="sortBy"
-                :sort-desc.sync="sortDesc"
-                id="transfer_table"
-                :busy="isBusy"
+            striped
+            hover
+            selectable
+            responsive
+            select-mode="single"
+            selectedVaraint = "success"
+            :items="items"
+            :fields="fields"
+            @row-selected="rowSelected"
+            sticky-header
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="sortDesc"
+            id="transfer_table"
+            :busy="isBusy"
         >
             <div slot="table-busy" class="text-center text-danger my-2">
                 <b-spinner class="align-middle"></b-spinner>
@@ -81,6 +88,37 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
+        
+        <b-modal v-model = "hoursModalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Editing hours
+            </template>
+            <!-- <div class="d-block text-center">
+                <h3>Edit the following message:</h3>
+            </div> -->
+            <div v-for="(category, index) in editSelectedHours" :key="index">
+                Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
+                <br>
+                <b-form-input
+                id="number"
+                type="number"
+                v-model="editSelectedHours[index].Hours"
+                :placeholder="category.Hours"
+                ></b-form-input>
+                <hr>
+            </div>
+            <!-- <b-form-textarea
+                    id="textarea"
+                    v-model="editSelectedHours"
+                    placeholder="Enter a new message here.."
+                    rows="2"
+                    max-rows="5"
+            ></b-form-textarea> -->
+
+            <b-button class="mt-3" block @click="saveHours(); closeHoursModal()" variant = "success">Save</b-button>
+            <b-button class="mt-3" block @click="closeHoursModal(); this.editSelectedHours = {};" variant="warning">Cancel</b-button>
+
+        </b-modal>
 
         <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
             <template slot="modal-title">
@@ -102,13 +140,14 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import moment from 'moment'
     export default {
         name: 'ApproveHourLogs',
         components: {
         },
         data() {
             return {
-                sortBy: 'Date',
+                sortBy: 'Check In',
                 sortDesc: false,
                 fields: [],
                 items: [],
@@ -126,6 +165,9 @@
                 isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
+                deleteAmount: 0,
+                hoursModalVisible: false,
+                editSelectedHours: {}
             };
 
         },
@@ -150,7 +192,7 @@
                 let categories = await db.collection("ApronSkills").doc("Categories").get();
                 categories = categories.data();
                 for(var category in categories) {
-                    fields.push({key: category, sortable: true});
+                    fields.push({key: category, sortable: true, editor:"input"});
                 }
                 this.fields = fields;
             },
@@ -165,6 +207,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+                    data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
                     ret.push(data);
                 });
                 return ret;
@@ -190,10 +234,10 @@
             async accept() {
                 let row = this.selected[0];
                 //change remotely
-                let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["For ID"]).get();
+                let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).get();
                 console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["For ID"]);
+                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["Youth ID"]);
                     return null;
                 }
 
@@ -201,7 +245,7 @@
                 forYouthProfile = forYouthProfile.data();
                 var amount = 0;
                 for(var key in this.selected[0]){
-                    if(key != "Date" && key != "For ID" && key != "For Name" && key != "Notes" && key != "Document ID"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         let addAmount = parseFloat(this.selected[0][key]);
                         if(!isNaN(addAmount)){
                             amount += addAmount;
@@ -210,12 +254,12 @@
                     }
                     console.log(key);
                 }
-                // let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - amount;
+                let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - amount;
                 let newHoursEarned = parseFloat(forYouthProfile["Hours Earned"]) + amount;
-                // console.log("New pending hours: " + newPendingHours)
+                console.log("New pending hours: " + newPendingHours)
                 console.log("New current hours: " + newHoursEarned)
-                let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["For ID"]).update({
-                    // "Pending Hours": newPendingHours.toString(), 
+                let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
+                    "Pending Hours": newPendingHours.toString(), 
                     "Hours Earned": newHoursEarned.toString()
                 });
 
@@ -225,27 +269,29 @@
 
                 this.removeLocally(row["Document ID"]);
                 
-                // let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
-                // if (status3 == null) {
-                //     window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
-                //     return null;
-                // }
+                let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
+                if (status3 == null) {
+                    window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
+                    return null;
+                }
                 
-                let logStatus = await db.collection("GlobalYouthProfile").doc(row["For ID"]).collection("Work Log").doc().set({
-                    "Date": row["Date"],
-                    "For ID": row["For ID"],
-                    "For Name": row["For Name"],
+                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set({
+                    "Check In": row["Check In"],
+                    "Check Out": row["Check Out"],
+                    "Youth ID": row["Youth ID"],
+                    "First Name": row["First Name"],
+                    "Last Name": row["Last Name"],
                     "Amount": amount.toString(),
                     "Notes": row["Notes"]
                 });
 
                 if (logStatus) {
-                    window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["For ID"]);
+                    window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
                     return null;
                 }
                 
                 this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["For Name"] + "'s log")
+                this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
 
             },
 
@@ -277,47 +323,49 @@
             reject() {
                 let curRow = this.selected[0];
                 this.rejectingDocumentID = curRow["Document ID"];
-                this.rejectingID = curRow["For ID"];
+                this.rejectingID = curRow["Youth ID"];
+                var amount = 0;
+                for(var key in curRow){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                        let addAmount = parseFloat(curRow[key]);
+                        if(!isNaN(addAmount)){
+                            amount += addAmount;
+                        }
+                        console.log("Current delete amount: " + amount);
+                    }
+                }
+                console.log("Delete Amount: " + amount)
+                this.deleteAmount = amount
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                    + curRow["For Name"]  + "'s log for " + curRow["Amount"]);
+                    + curRow["First Name"] + " " + curRow["Last Name"] + "'s log for " + this.deleteAmount);
             },
 
             async confirmedDelete() {
                 //adjust hours
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
+                let curRow = this.selected[0];
                 
-                // let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["For ID"]).get();
-                // console.log(forYouthProfile.data());
-                // if (forYouthProfile.data() == null) {
-                //     window.alert("Error, unable to retrieve Youth Profile data on id " + row["For ID"]);
-                //     return null;
-                // }
-                // 
-                // this.showLoadingModal("Doing some work in the background...");
-                // forYouthProfile = forYouthProfile.data();
-                // 
-                // var amount = 0;
-                // for(var key in this.selected[0]){
-                //     if(key != "Date" && key != "For ID" && key != "For Name" && key != "Notes" && key != "Document ID"){
-                //         let addAmount = parseFloat(this.selected[0][key]);
-                //         if(!isNaN(addAmount)){
-                //             amount += addAmount;
-                //         }
-                //         console.log("Current approve amount: " + amount);
-                //     }
-                // }
-                // console.log("Delete Amount: " + amount)
-                // let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - amount;
-                // 
-                // let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
-                //     "Pending Hours": newPendingHours.toString(),
-                // });
-                // 
-                // if (rejectingStatus == null) {
-                //     window.alert("Err, unable to update " + this.rejectingID + " " + forYouthProfile["First Name"] + "'s profile")
-                //     return null;
-                // }
+                let forYouthProfile = await db.collection("GlobalYouthProfile").doc(curRow["Youth ID"]).get();
+                console.log(forYouthProfile.data());
+                if (forYouthProfile.data() == null) {
+                    window.alert("Error, unable to retrieve Youth Profile data on id " + curRow["Youth ID"]);
+                    return null;
+                }
+                
+                this.showLoadingModal("Doing some work in the background...");
+                forYouthProfile = forYouthProfile.data();
+                
+                let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount;
+                
+                let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
+                    "Pending Hours": newPendingHours.toString(),
+                });
+                
+                if (rejectingStatus == null) {
+                    window.alert("Err, unable to update " + this.rejectingID + " " + forYouthProfile["First Name"] + "'s profile")
+                    return null;
+                }
 
                 let status3 = db.collection("GlobalPendingHours").doc(this.rejectingDocumentID).delete();
                 if (status3 == null) {
@@ -351,6 +399,34 @@
                 this.showEditModal();
 
             },
+            
+            editHours() {
+                let curRow = this.selected[0];
+                if (curRow == null) {
+                    return null;
+                }
+                var editSelectedHours = [];
+                for(var key in curRow){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                        editSelectedHours.push({
+                            "Category" : key,
+                            "Hours" : curRow[key]
+                        });
+                        console.log("Pushing");
+                    }
+                }
+                this.editSelectedHours = editSelectedHours;
+                console.log(this.editSelectedHours, this.selected);
+                this.showHoursModal();
+            },
+            
+            showHoursModal() {
+                this.hoursModalVisible = true;
+            },
+            
+            closeHoursModal() {
+                this.hoursModalVisible = false;
+            },
 
             showEditModal() {
                 this.editModalVisible = true;
@@ -380,6 +456,77 @@
                 }
                 this.closeLoadingModal();
                 this.showModal("Success!", "Your note has been saved")
+            },
+            
+            async saveHours() {
+                let note = this.editHours;
+                this.closeHoursModal();
+                this.showLoadingModal("Saving hours..");
+                let docID = this.selected[0]["Document ID"];
+                console.log(this.editSelectedHours);
+                
+                let newTotalHours = 0;
+                var newHours = '{'
+                for(let i = 0; i < this.editSelectedHours.length; i++){
+                    let category = this.editSelectedHours[i]["Category"];
+                    let hours = this.editSelectedHours[i]["Hours"];
+                    newTotalHours += parseFloat(hours);
+                    if(i == this.editSelectedHours.length - 1){
+                        newHours += '"' + category + '": "' + hours + '"'
+                    }else{
+                        newHours += '"' + category + '": "' + hours + '",'
+                    }
+                }
+                newHours += '}';
+                console.log("New hours: " + newHours);
+                
+                let status = await db.collection("GlobalPendingHours").doc(docID).update(JSON.parse(newHours));
+                if (status) {
+                    window.alert("Err: " +  err);
+                    this.editSelectedHours = {};
+                    return null;
+                }
+
+                //TODO: Update user's pending hours
+                let profile = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).get();
+                if (profile.data() == null) {
+                    window.alert("Error, Youth ID does not exists: " + this.selected[0]["YouthID"])
+                }
+                //find amount to change for pending hours 
+                var originalAmount = 0;
+                for(var key in this.selected[0]){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                        let addAmount = parseFloat(this.selected[0][key]);
+                        if(!isNaN(addAmount)){
+                            originalAmount += addAmount;
+                        }
+                    }
+                }
+
+                let netChange = newTotalHours - originalAmount;
+                let newPendingHours = parseFloat(profile.data()["Pending Hours"]) + netChange
+                let status2 = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).update({
+                    "Pending Hours": newPendingHours.toString()
+                })
+
+                if (status2) {
+                    window.alert("Error on updating Youth Profile's Pending Hours, ID: " + this.selected[0]["Youth ID"])
+                }
+                
+                
+                for (let i = 0; i < this.items.length; i++) {
+                    if (this.items[i]["Document ID"] === docID) {
+                        console.log(this.editSelectedHours);
+                        for(var index in this.editSelectedHours){
+                            console.log(this.editSelectedHours[index]);
+                            this.items[i][this.editSelectedHours[index].Category] = this.editSelectedHours[index].Hours;
+                        }
+                        break;
+                    }
+                }
+                this.closeLoadingModal();
+                this.showModal("Success!", "Your hours have been saved")
+                this.editSelectedHours = {};
             },
 
             toggleBusy() {
