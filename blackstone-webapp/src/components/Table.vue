@@ -25,6 +25,9 @@
             table_data: function() {
                 this.tableData = this.table_data;
             },
+            headingdata: function() {
+                this.tabulator.setColumns(this.getColumns());
+            },
         },
         mounted () {
             // instantiate Tabulator when element is mounted
