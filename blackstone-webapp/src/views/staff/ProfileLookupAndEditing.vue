@@ -13,10 +13,14 @@
       <ProfileFields :current-profile="currentProfile" :header_doc="this.header_doc" :allow_edits="true" />
       <!-- <ApronBar /> -->
 
-      <p>Order Log:</p>
+      <br /><br />
+
+      <h2>Order Log</h2>
       <CollectionTable ref="order_log" :heading_data="this.order_log_headers" :current_collection="order_log_collection"></CollectionTable>
 
-      <p>Work Log:</p>
+      <br />
+
+      <h2>Work Log</h2>
       <CollectionTable ref="work_log" :heading_data="this.work_log_headers" :current_collection="work_log_collection"></CollectionTable>
     </div>
   </div>
