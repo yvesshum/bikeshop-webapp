@@ -27,6 +27,7 @@
     <br />
     <button v-on:click="save_changes">Save Changes</button>
 
+    <button v-on:click="collect_all_youth">Collect All Youth!</button>
 
     <br /><br />
 
@@ -96,6 +97,7 @@ export default {
       current_active_youths: [],
       future_active_youths: [],
       past_periods_doc_name: null,
+      never_active_youths: [],
 
       active_table_headers: ["Name", "ID", "Status"],
       active_table_data: [],
@@ -116,6 +118,8 @@ export default {
       selected_youth_data: null,
       selected_youth_profile: null,
       edited_youth: null,
+
+      all_youth: null,
 
       // Misc
       month_list: ["winter", "spring", "summer", "autumn"],
@@ -154,11 +158,15 @@ export default {
     this.future_active_youths  = data["FutureActiveYouths"];
 
     this.past_periods_doc_name = data["PastPeriodsDoc"];
+    this.never_active_youths = data["NeverActiveYouths"];
 
     this.period_sort_map = new Object();
     this.month_list.forEach(function(element, n) {
       this.period_sort_map[element] = n;
     }.bind(this));
+
+    this.collect_all_youth();
+    console.log(this.all_youth);
 
     this.display_current_period();
     this.display_future_period();
@@ -208,6 +216,37 @@ export default {
   },
 
   methods: {
+
+    manually_collect_youths: async function() {
+      this.all_youth = [];
+      this.never_active_youths = [];
+
+      let youth_collection = await db.collection("GlobalYouthProfile").get();
+
+      youth_collection.forEach(doc => {
+        console.log(doc.data());
+        let full_id = doc.data()["First Name"] + " " + doc.data()["Last Name"] + " " + doc.id;
+        let active_periods = doc.data()["ActivePeriods"];
+
+        if (active_periods == null || active_periods == []) {
+          this.never_active_youths.push(full_id);
+        }
+        // TODO: else clause to check existing data against their profiles?
+        this.all_youth.push(full_id);
+      });
+    },
+
+    collect_all_youth: function() {
+      this.all_youth = [...this.current_active_youths, ...this.future_active_youths, ...this.never_active_youths];
+      console.log(this.past_periods_doc.data());
+      Object.keys(this.past_periods_doc.data()).forEach(function(period) {
+        this.all_youth = [...this.all_youth, ...this.past_periods_doc.data()[period]];
+      }.bind(this));
+
+      this.all_youth = this.all_youth.filter(function(element, n, arr) {
+        return arr.indexOf(element) == n;
+      });
+    },
 
     edit_youth_periods: function(event) {
       event.preventDefault();
