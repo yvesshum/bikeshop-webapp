@@ -197,6 +197,7 @@ export default {
           var field_p = document.getElementById(key + "_field");
           let field_c = document.getElementById(key + "_container");
 
+          // TODO: If you have to add a table row, it should be flagged - it's nonstandard
           if (field_p == null) {
             field_p = this.append_field_container(key, "unused");
             field_c = document.getElementById(key + "_container");
