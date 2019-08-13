@@ -202,8 +202,9 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Check In"] = Date(data["Check In"]).toLocaleString()
-                    data["Check Out"] = Date(data["Check In"]).toLocaleString()
+                    // let options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+                    // data["Check In"] = Date(data["Check In"]).toLocaleString();
+                    // data["Check Out"] = Date(data["Check Out"]).toLocaleString();
                     ret.push(data);
                 });
                 return ret;
