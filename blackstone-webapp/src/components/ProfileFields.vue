@@ -113,15 +113,6 @@ export default {
         document.querySelectorAll(".display_mode_only").forEach((element, n) => {
           element.style.display = "none";
         });
-
-        var add_row = this.$refs.fields_table.insertRow(-1);
-        add_row.id = "add_field_button_row";
-        let add_button_cont = add_row.insertCell(-1);
-        let add_button = document.createElement("button");
-        add_button.id = "add_field_button";
-        add_button.innerHTML = "+";
-        add_button_cont.appendChild(add_button);
-        add_button.onclick = this.insert_temp_field_container;
       }
 
       // Reset to display mode
@@ -147,8 +138,6 @@ export default {
             this.set_all_input_vals(element, "");
           }
         });
-
-        this.$refs.fields_table.deleteRow(-1);
       };
     },
 
@@ -419,18 +408,6 @@ export default {
       input.placeholder  = val;
       input.value        = val;
       input.defaultValue = val;
-    },
-
-    //TODO: Delete temp field container if 
-    insert_temp_field_container: function() {
-      var new_field_name = prompt("Please enter the title of the new field:", "");
-      if (new_field_name != null) {
-        new_field_name = new_field_name.trim();
-        if (new_field_name == "") return null;
-        this.create_field_container(new_field_name, this.$refs.fields_table.rows.length-1);
-        this.set_row_status(new_field_name, "add");
-        document.getElementById(new_field_name + "_remove_button_container").style.display = "";
-      };
     },
 
     append_field_container: function(key) {
