@@ -31,7 +31,6 @@
 
     <br /><br />
 
-    <button @click="logout">Logout</button>
 
 
 
@@ -190,11 +189,6 @@ export default {
   },
 
   methods: {
-    logout: function() {
-        firebase_app.auth().signOut().then(() => {
-            this.$router.replace('login');
-        });
-    },
 
     edit_youth_periods: function(event) {
       event.preventDefault();

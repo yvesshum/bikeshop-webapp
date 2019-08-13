@@ -6,7 +6,6 @@
     <ProfileFields />
     <ApronBar />
     <ProfileItemLogs />
-    <button @click="logout">Logout</button>
   </div>
 </template>
 
@@ -30,11 +29,7 @@ export default {
     ProfileItemLogs
   },
     methods: {
-      logout: function() {
-          firebase_app.auth().signOut().then(() => {
-              this.$router.replace('login');
-          });
-      }
+      
     }
 }
 </script>

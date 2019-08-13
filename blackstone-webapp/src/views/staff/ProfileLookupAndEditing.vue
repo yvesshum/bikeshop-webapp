@@ -19,8 +19,6 @@
       <p>Work Log:</p>
       <CollectionTable ref="work_log" :heading_data="this.header_doc['work_log']" :current_collection="work_log_collection"></CollectionTable>
     </div>
-
-    <button @click="logout">Logout</button>
   </div>
 </template>
 
@@ -79,12 +77,6 @@ export default {
           this.order_log_collection = snapshot.collection("Order Log");
           this.work_log_collection  = snapshot.collection("Work Log");
         }
-      },
-
-      logout: function() {
-          firebase_app.auth().signOut().then(() => {
-              this.$router.replace('login');
-          });
       },
 
       load_adam: async function() {
