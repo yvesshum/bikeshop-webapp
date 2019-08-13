@@ -112,30 +112,30 @@ export default {
         closeCheckoutModal() {
             this.checkoutModalVisible = false;
         },
-        currentDateTime(type) {
-            var d = new Date()
-            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            var day = days[d.getDay()];
-            var hr = d.getHours();
-            var min = d.getMinutes();
-            if (min < 10) {
-                    min = "0" + min;
-            }
-            var ampm = " am";
-            if( hr > 12 ) {
-                    hr -= 12;
-                    ampm = " pm";
-            }
-            var date = d.getDate();
-            var month = months[d.getMonth()];
-            var year = d.getFullYear();
-            if (type === 'time') {
-                return hr + ":" + min + ampm
-            } else if (type === 'date') {
-                    return day + ', ' + date + " " + month + " " + year;
-            }
-        },
+        // currentDateTime(type) {
+        //     var d = new Date()
+        //     var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        //     var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        //     var day = days[d.getDay()];
+        //     var hr = d.getHours();
+        //     var min = d.getMinutes();
+        //     if (min < 10) {
+        //             min = "0" + min;
+        //     }
+        //     var ampm = " am";
+        //     if( hr > 12 ) {
+        //             hr -= 12;
+        //             ampm = " pm";
+        //     }
+        //     var date = d.getDate();
+        //     var month = months[d.getMonth()];
+        //     var year = d.getFullYear();
+        //     if (type === 'time') {
+        //         return hr + ":" + min + ampm
+        //     } else if (type === 'date') {
+        //             return day + ', ' + date + " " + month + " " + year;
+        //     }
+        // },
         checkIn() {
             // check user into realtime database
             let user = this.selectedUser.split(" ");
