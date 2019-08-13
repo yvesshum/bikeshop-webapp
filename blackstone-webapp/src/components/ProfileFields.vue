@@ -18,6 +18,8 @@
     <button ref="discard_changes" v-on:click="discard_changes()" class="edit_mode_only" style="display: none;">Discard Changes</button>
     <button ref="reset_changes" v-on:click="reset_changes()" class="edit_mode_only" style="display: none;">Reset All Changes</button>
 
+    <br />
+
     <b-modal v-model="confirmModalVisible" hide-footer lazy>
       <template slot="modal-title">
           Please Confirm the Following Changes
@@ -41,7 +43,7 @@ import firebase_auth from 'firebase/auth';
 
 export default {
   name: 'profile_fields',
-  props: ["currentProfile", "header_doc"],
+  props: ["currentProfile", "header_doc", "allow_edits"],
   components: {
     
   },
@@ -58,7 +60,16 @@ export default {
   },
 
   mounted: function() {
-    
+    if (this.allow_edits == null) {
+      this.allow_edits = false;
+    }
+    else if (typeof this.allow_edits != "boolean") {
+      throw "Var \"allow_edits\" of ProfileFields component must be a boolean value, not \"" + this.allow_edits + "\".";
+    };
+
+    if (!this.allow_edits) {
+      this.$refs.edit_profile.style.display = "none";
+    }
   },
 
   watch: {
@@ -101,6 +112,8 @@ export default {
 
     
     edit_mode: function(val) {
+
+      if (!this.allow_edits) return;
 
       // Go into edit mode
       if (this.edit_mode) {
@@ -452,7 +465,7 @@ export default {
       if (!["unused", "immutable", "required"].includes(default_state)) {
         console.log("The default state of key ", key, " cannot be ", default_state);
       };
-      
+
       let table = this.$refs.fields_table;
 
       let new_row = table.insertRow(row_index);
