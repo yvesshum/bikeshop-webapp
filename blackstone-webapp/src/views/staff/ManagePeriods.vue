@@ -635,10 +635,13 @@ export default {
 
       // Init the youth's new periods to any pending changes
       // If youth doesn't have any pending changes yet, grab their current active periods
-      // TODO: Figure out default pending_changes value if none exists yet
       let new_periods = this.pending_changes[id];
       if (new_periods == null) {
-        // new_periods = 
+        try {
+          new_periods = this.cached_youth_data[id]["ActivePeriods"];
+        } catch {
+          new_periods = [];
+        };
       };
 
       // If a single element is passed, make it an array
