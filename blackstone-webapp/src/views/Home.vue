@@ -93,6 +93,20 @@
   </button>
 </a>
 
+<a href="/manage-periods">
+  <button class="page">
+    <h4>Manage Periods</h4>
+    <p>Manage which youth are active during which periods</p>
+  </button>
+</a>
+
+<a href="/add-subtract-hours">
+  <button class="page">
+    <h4>Add/Subtract Hours</h4>
+    <p>Give or take away hours from youth</p>
+  </button>
+</a>
+
 </div>
 
 <div class="heading">

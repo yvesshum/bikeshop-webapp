@@ -19,6 +19,8 @@ import AdminPanel from './views/staff/AdminPanel.vue'
 import YouthOrderSettings from './views/admin/YouthOrderSettings.vue'
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue'
 import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue'
+import ManagePeriods from './views/staff/ManagePeriods.vue'
+import AddSubtractHours from './views/staff/AddSubtractHours.vue'
 
 Vue.use(Router);
 
@@ -167,9 +169,27 @@ const router = new Router({
             }
         },
         {
+            path: '/manage-periods',
+            name: '/manage-periods',
+            component: ManagePeriods,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
             path: '/admin-panel',
             name: 'admin-panel',
             component: AdminPanel,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/add-subtract-hours',
+            name: 'add-subtract-hours',
+            component: AddSubtractHours,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

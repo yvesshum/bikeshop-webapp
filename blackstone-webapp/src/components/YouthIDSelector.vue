@@ -75,6 +75,7 @@
                 id_list.push({name, id});
             })
             this.options = id_list;
+            this.$emit("ready", null);
         }
     }
 </script>
