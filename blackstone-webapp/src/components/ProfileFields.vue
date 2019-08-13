@@ -63,14 +63,20 @@ export default {
 
   watch: {
 
-    header_doc: function(data) {
+    header_doc: function(new_header) {
       let table = this.$refs.fields_table;
+      let data = new_header.data();
+
       this.row_status = new Object();
       this.array_fields = new Object();
 
-      append_table_section(this, "Required:",   this.header_doc["required"].concat(["ActivePeriods"]));
-      append_table_section(this, "Statistics:", this.header_doc["hidden"]);
-      append_table_section(this, "Optional:",   this.header_doc["optional"]);
+      let immutable_fields = data["hidden"].concat("Last Sign In").filter(function(element) {
+        return !["Work Log", "Order Log", "Transfer Log"].includes(element);
+      });
+
+      append_table_section(this, "Required:", data["required"], "required");
+      append_table_section(this, "",          immutable_fields, "immutable");
+      append_table_section(this, "Optional:", data["optional"], "unused");
 
       function append_table_fullrow(heading) {
         let new_row = table.insertRow(-1);
@@ -83,11 +89,11 @@ export default {
       };
 
       // Takes in vue component as self for scoping
-      function append_table_section(self, heading, content) {
+      function append_table_section(self, heading, content, default_state) {
         append_table_fullrow(heading);
         content.forEach(function(element) {
-          self.append_field_container(element);
-          self.set_row_status(element, "unused");
+          self.append_field_container(element, default_state);
+          self.set_row_status(element, default_state);
         });
         append_table_fullrow("&nbsp;");
       };
@@ -145,9 +151,13 @@ export default {
 
       // Clear the old data from the screen
       clear_data();
-      for (key in this.row_status.elements) {
+
+      // Set the status of all non-required and non-immutable fields to "unused"
+      Object.keys(this.row_status).filter(function(key) {
+        return !["required", "immutable"].includes(this.row_status[key]);
+      }.bind(this)).forEach(function(key) {
         this.set_row_status(key, "unused");
-      };
+      }.bind(this));
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
@@ -172,7 +182,7 @@ export default {
           let field_c = document.getElementById(key + "_container");
 
           if (field_p == null) {
-            field_p = this.append_field_container(key);
+            field_p = this.append_field_container(key, "unused");
             field_c = document.getElementById(key + "_container");
           }
 
@@ -191,7 +201,6 @@ export default {
             };
           };
 
-          field_c.classList.remove("unused_field");
           if (!this.specially_displayed_fields.includes(key)) {
             field_c.classList.remove("edit_mode_only");
           };
@@ -257,9 +266,12 @@ export default {
 
           // Clear the edit box
           let edit_input = element.getElementsByClassName("edit_container")[0].getElementsByClassName("edit_input")[0];
-          edit_input.placeholder = "";
-          edit_input.value = "";
-          edit_input.defaultValue = "";
+          // TODO: Fix scoping issue so we can use set_all_fields function
+          if (edit_input != null) {
+            edit_input.placeholder = "";
+            edit_input.value = "";
+            edit_input.defaultValue = "";
+          }
         });
 
         // Clear the nonstandard fields
@@ -338,6 +350,11 @@ export default {
 
     set_row_status: function(key, new_status) {
 
+      if (new_status == "required") {
+        this.row_status[key] = new_status;
+        return;
+      };
+
       // If special X or + is entered, determine which new status to use based on current status
       let old_status = this.row_status[key];
       if (new_status == "X") new_status = ((old_status == "used") ? "remove" : "unused");
@@ -356,10 +373,14 @@ export default {
       // Perform any extra operations
       switch (new_status) {
 
+        case "immutable":
+          container.classList.add("display_mode_only");
+          break;
+
         // Field is currently being used in the profile
         case "used":
           container.classList.remove("edit_mode_only");
-          remove_button.innerHTML = "X";
+          if (remove_button != null) remove_button.innerHTML = "X";
           if (this.edit_mode) {
             edit_container.style.display = "";
             data_field.style.display = "none";
@@ -379,7 +400,7 @@ export default {
 
         // Field is to be added to the profile (edit mode only)
         case "add":
-          remove_button.innerHTML = "X";
+          if (remove_button != null) remove_button.innerHTML = "X";
           edit_container.style.display = "";
           data_field.style.display = "none";
           data_title.classList.add("to_be_added_title");
@@ -389,7 +410,7 @@ export default {
         // Field is not currently being used in the profile
         case "unused":
           container.classList.add("edit_mode_only");
-          remove_button.innerHTML = "+";
+          if (remove_button != null) remove_button.innerHTML = "+";
           edit_container.style.display = "none";
           data_field.style.display = "none";
           data_field.classList.remove("to_be_removed");
@@ -399,11 +420,14 @@ export default {
 
         // Field is to be removed from the profile (edit mode only)
         case "remove":
-          remove_button.innerHTML = "+";
+          if (remove_button != null) remove_button.innerHTML = "+";
           edit_container.style.display = "none";
           data_field.style.display = "";
           data_field.classList.add("to_be_removed");
           data_title.classList.add("to_be_removed_title");
+          break;
+
+        case "required":
           break;
 
         default:
@@ -412,22 +436,28 @@ export default {
     },
 
     set_all_input_vals: function(input, val) {
-      input.placeholder  = val;
-      input.value        = val;
-      input.defaultValue = val;
+      if (input != null) {
+        input.placeholder  = val;
+        input.value        = val;
+        input.defaultValue = val;
+      };
     },
 
-    append_field_container: function(key) {
-      return this.create_field_container(key, -1);
+    append_field_container: function(key, default_state) {
+      return this.create_field_container(key, -1, default_state);
     },
 
-    create_field_container: function(key, row_index) {
+    create_field_container: function(key, row_index, default_state) {
+
+      if (!["unused", "immutable", "required"].includes(default_state)) {
+        console.log("The default state of key ", key, " cannot be ", default_state);
+      };
+      
       let table = this.$refs.fields_table;
 
       let new_row = table.insertRow(row_index);
       new_row.id = key + "_container";
       new_row.classList.add("field_container");
-      new_row.classList.add("unused_field");
       new_row.classList.add("edit_mode_only");
 
       let remove_button_container = new_row.insertCell(-1);
@@ -451,48 +481,60 @@ export default {
       field_e.classList.add("edit_container");
       field_e.classList.add("edit_mode_only");
       field_e.style.display = "none";
-      
-      let edit_input = document.createElement("input");
-      if (key == "DOB") {
-        edit_input.type = "date";
-      }
-      else if (key == "Last Sign In") {
-        edit_input.type = "datetime-local";
-      }
-      else if (key == "ActivePeriods") {
-        edit_input.style.display = "none";
-      }
-      else {
-        edit_input.type = "text";
-      }
-      edit_input.id   = key + "_edit";
-      edit_input.name = key;
-      edit_input.classList.add("edit_input");
-      edit_input.addEventListener('input', function() {
-        if (edit_input.value != edit_input.defaultValue) {
-          title_cell.style["font-weight"] = "bold";
-        } else {
-          title_cell.style["font-weight"] = "";
+
+      // TODO: Only set input type as date if field is actually a date
+      // TODO: Collect which fields are dates into an array on profile switch?
+
+      // Only create an edit bar if the field can be changed
+      if (default_state != "immutable") {
+        let edit_input = document.createElement("input");
+        if (key == "DOB") {
+          edit_input.type = "date";
         }
-      });
-      field_e.appendChild(edit_input);
-
-      let remove_button = document.createElement("button");
-      remove_button.id = key + "_remove_button";
-      remove_button.innerHTML = "+";
-      let self = this;
-      remove_button.onclick = function () {
-        self.set_row_status(key, this.innerHTML);
+        else if (key == "Last Sign In") {
+          edit_input.type = "datetime-local";
+        }
+        else if (key == "ActivePeriods") {
+          edit_input.style.display = "none";
+        }
+        else {
+          edit_input.type = "text";
+        }
+        edit_input.id   = key + "_edit";
+        edit_input.name = key;
+        edit_input.classList.add("edit_input");
+        edit_input.addEventListener('input', function() {
+          if (edit_input.value != edit_input.defaultValue) {
+            title_cell.style["font-weight"] = "bold";
+          } else {
+            title_cell.style["font-weight"] = "";
+          }
+        });
+        field_e.appendChild(edit_input);
       };
-      remove_button_container.appendChild(remove_button);
 
-      let reset_button = document.createElement("button");
-      reset_button.innerHTML = "Reset";
-      reset_button.onclick = function() {
-        edit_input.value = edit_input.defaultValue;
-        title_cell.style["font-weight"] = "";
+      // Only create a remove button if the field can be removed
+      if (default_state == "unused") {
+        let remove_button = document.createElement("button");
+        remove_button.id = key + "_remove_button";
+        remove_button.innerHTML = "+";
+        let self = this;
+        remove_button.onclick = function () {
+          self.set_row_status(key, this.innerHTML);
+        };
+        remove_button_container.appendChild(remove_button);
       };
-      field_e.appendChild(reset_button);
+
+      // Only create a reset button if the field can be edited
+      if (default_state != "immutable") {
+        let reset_button = document.createElement("button");
+        reset_button.innerHTML = "Reset";
+        reset_button.onclick = function() {
+          edit_input.value = edit_input.defaultValue;
+          title_cell.style["font-weight"] = "";
+        };
+        field_e.appendChild(reset_button);
+      }
 
       return field_p;
     },
@@ -519,7 +561,7 @@ export default {
 
       // Check for any fields to be added/removed
       Object.keys(this.row_status).forEach(function(element) {
-        if (!(this.row_status[element] == "used" || this.row_status[element] == "unused")) {
+        if ((this.row_status[element] == "add" || this.row_status[element] == "remove")) {
           c = true;
         };
       }.bind(this));
@@ -530,7 +572,9 @@ export default {
         // console.log(el);  // Displays the number of fields in edit form
         for (var e = 0; e < el; e++) {
           n = form[e];
-          if (n.parentNode.parentNode.classList.contains("unused_field")) continue;
+          
+          // Don't bother checking immutable or unused fields for changes
+          if (["immutable", "unused"].includes(this.row_status[n.name])) continue;
 
           if (this.array_fields[n.name] != null) {
             c = c || (JSON.stringify(this.array_fields[n.name]) !== JSON.stringify(this.get_changes_as_array(n.name)));
@@ -556,13 +600,19 @@ export default {
 
       Object.keys(this.row_status).forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
+        if (input_field == null) return;
+
         switch(this.row_status[key]) {
+          // If field is unused or immutable, it won't have any changes to report
           case "unused":
+          case "immutable":
             break;
+
           case "remove":
             this.modalList += "The field " + input_field.name + " has been removed.\n";
             break;
 
+          case "required":
           case "used":
             if (input_field.defaultValue != input_field.value) {
               let temp1 = "";
@@ -608,6 +658,8 @@ export default {
       // Cycle through each potential field and use the data accordingly
       Object.keys(this.row_status).forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
+        if (input_field == null) return;
+
         let data_field = document.getElementById(input_field.name + "_field");
         switch(this.row_status[key]) {
           // Data field is not used by this profile: Do nothing
@@ -623,6 +675,11 @@ export default {
           // TODO: Allow user to add list item
           // TODO: Display all possible active periods?
           // TODO: Fallthrough from add to used?
+
+          // TODO: Save dates as dates!
+          // TODO: If name field is changed, update ActivePeriods doc
+          case "required":
+          case "immutable":
           case "used":
             if (this.array_fields[key] != null) {
               changes[input_field.name] = this.get_changes_as_array(key);
