@@ -9,6 +9,20 @@
 
     <br />
 
+    <DoubleTable
+      :headers="this.edit_table_headers"
+      :data="this.current_edit_data"
+      @DataChange="this.current_edit_change"
+      @DataUpdate="this.current_edit_update"
+    >
+      <template slot="left_title"><h4>Inactive</h4></template>
+      <template slot="right_title"><h4>Active</h4></template>
+    </DoubleTable>
+
+    <button ref="current_edit_button" v-on:click="accept_current_edits">Update Table!</button>
+
+    <br />
+
     <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
     <Table ref="future_youths" :headingdata="this.future_table_headers" :table_data="this.future_table_data" @selectedRow="this.select_youth"></Table>
 
@@ -71,6 +85,8 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
+import DoubleTable from '@/components/DoubleTable';
+
 const Tabulator = require('tabulator-tables');
 
 export default {
@@ -78,6 +94,7 @@ export default {
   components: {
     TopBar,
     Table,
+    DoubleTable,
   },
 
   data: function() {
@@ -115,6 +132,15 @@ export default {
 
       past_table: null,
       past_table_data: [],
+
+      edit_table_headers: [
+        {title:"Name", field:"name"},
+        {title:"ID", field:"id"},
+      ],
+      current_edit_data: null,
+      current_edit_pending: null,
+      future_edit_data: null,
+      future_edit_pending: null,
 
       // Modal variables
       confirm_modal_visible: false,
@@ -177,6 +203,7 @@ export default {
     console.log(this.all_youth);
 
     this.display_current_period();
+    this.display_current_period_edit();
     this.display_future_period();
     this.display_past_periods();
 
@@ -578,6 +605,45 @@ export default {
           this.active_table_data.push(youth);
         }
       };
+    },
+
+    display_current_period_edit: function() {
+      let inactive_youths = [];
+      for (var n in this.all_youth) {
+        if (!this.current_active_youths.includes(this.all_youth[n])) {
+          let youth = this.unpack_id(this.all_youth[n]);
+          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
+          inactive_youths.push(youth);
+        }
+      };
+
+      this.current_edit_data = {
+        left: inactive_youths,
+        right: this.active_table_data,
+      };
+    },
+
+    accept_current_edits: function() {
+      this.current_edit_pending.right.forEach(function(youth) {
+        this.set_youth_status(youth.full_id, this.current_period, true);
+      }.bind(this));
+
+      this.current_edit_pending.left.forEach(function(youth) {
+        this.set_youth_status(youth.full_id, this.current_period, false);
+      }.bind(this));
+
+      // TODO: Update the arrays all at once
+      // this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
+    },
+
+    current_edit_change: function(changes) {
+      console.log("Changes: ", changes);
+      this.current_edit_pending = changes;
+    },
+
+    current_edit_update: function(updates) {
+      console.log("Updates: ", updates);
+      this.current_edit_pending = updates;
     },
 
     // Display the next period on the page
