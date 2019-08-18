@@ -104,8 +104,6 @@
 
         mounted: function() {
 
-            console.log("From the tables:", this.data);
-
             this._placeholders = this.placeholders;
             if (this._placeholders == null) {
                 this._placeholders = {
