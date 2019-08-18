@@ -22,8 +22,8 @@
         move_left: Array of rows to move to the left iff they exist on the right
         move_right: Array of rows to move to the right iff they exist on the left
 
-        create_left: Array of rows to add to the left iff they do not exist on the right
-        create_right: Array of rows to add to the right iff they do not exist on the left
+        add_left: Array of rows to add to the left iff they do not exist on the right
+        add_right: Array of rows to add to the right iff they do not exist on the left
 
         remove: Array of rows to remove from the table altogether
         remove_left: Array of rows to remove if they are in the left table
@@ -146,30 +146,60 @@
             },
 
             // Soft set - Move rows between tables without overwriting other rows
-            // pending_data: function() {
-            //     if (this.pending_data.left != null) {
-            //         this.pending_data.left.forEach(function(row) {
-            //             this.move_data(row, "left", false);
-            //         }.bind(this));
-            //     }
-            //     if (this.pending_data.right != null) {
-            //         this.pending_data.right.forEach(function(row) {
-            //             this.move_data(row, "right", false);
-            //         }.bind(this));
-            //     }
-            //     if (this.pending_data.remove != null) {
-            //         this.pending_data.remove.forEach(function(row) {
-            //             this.remove_row(row, null, false);
-            //         }.bind(this));
-            //     }
-
-            //     this.emit_updates();
-            // },
-
+            // TODO: Rigorous testing!
             pending_data: function() {
-                this.pending_data.forEach(function(arr) {
-                    console.log(arr);
-                });
+                Object.keys(this.pending_data).forEach(function(key) {
+                    let arr = this.pending_data[key];
+                    switch (key) {
+                        // Put cases - Put data on given side, removing from other if applicable
+                        case "put_left":
+                            arr.forEach((row) => this.move_data(row, "left", false));
+                            break;
+                        case "put_right":
+                            arr.forEach((row) => this.move_data(row, "right", false));
+                            break;
+
+                        // Move cases - Move data to given side if it exists on the other side (i.e. only operate on data if it already exists in the table)
+                        case "move_left":
+                            arr
+                            .filter((row) => this.right_table.getData().includes(row))
+                            .forEach((row) => move_data(row, "left", false));
+                            break;
+                        case "move_right":
+                            arr
+                            .filter((row) => this.left_table.getData().includes(row))
+                            .forEach((row) => move_data(row, "right", false));
+                            break;
+
+                        // Add cases - Move data to given side if it does not exist on the other side (i.e. operate on data if it does not already exist in the table)
+                        case "add_left":
+                            arr
+                            .filter((row) => !this.right_table.getData().includes(row))
+                            .forEach((row) => move_data(row, "left", false));
+                            break;
+                        case "add_right":
+                            arr
+                            .filter((row) => !this.left_table.getData().includes(row))
+                            .forEach((row) => move_data(row, "right", false));
+                            break;
+
+                        // Remove cases - Remove data from whole table or given side
+                        case "remove":
+                            arr.forEach((row) => this.remove_row(row, null, false));
+                            break;
+                        case "remove_left":
+                            arr.forEach((row) => this.remove_row(row, "left", false));
+                            break;
+                        case "remove_right":
+                            arr.forEach((row) => this.remove_row(row, "right", false));
+                            break;
+
+                        // Default - Unrecognized specifier
+                        default:
+                            console.log("Invalid specifier \"" + key + "\" in pending_data object.");
+                            break;
+                    }
+                }.bind(this));
                 this.emit_updates();
             },
         },
@@ -193,6 +223,8 @@
                 };
             },
 
+            // Returns data[side] if data exists and data[side] exists,
+            // returns default_value otherwise
             get_data_safe: function(side, default_value) {
                 return (this.data == null || this.data == undefined || this.data[side] == null || this.data[side] == undefined) ? default_value : this.data[side];
             },
