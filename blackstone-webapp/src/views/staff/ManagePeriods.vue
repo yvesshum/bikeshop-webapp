@@ -10,8 +10,6 @@
       <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
     </div>
 
-    <br />
-
     <div ref="current_youths_edit" style="display:none;">
       <DoubleTable
         :headers="this.edit_table_headers"
@@ -24,9 +22,11 @@
       </DoubleTable>
     </div>
 
+    <br />
+
     <ToggleButton :onText="'Update Table'" :offText="'Edit Currently Active Youth'" @Toggle="toggle_current_edits"></ToggleButton>
 
-    <br />
+    <br /><br />
 
     <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
     <Table ref="future_youths" :headingdata="this.future_table_headers" :table_data="this.future_table_data" @selectedRow="this.select_youth"></Table>
