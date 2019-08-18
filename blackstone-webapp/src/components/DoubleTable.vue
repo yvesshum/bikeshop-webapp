@@ -1,0 +1,256 @@
+<!--
+    Display two Tabulator tables side by side, such that rows can be moved from one to the other. Usage:
+
+    <DoubleTable
+        :headers="['Column 1', 'Column 2']"
+        :data="{left_data, right_data}"
+        @DataChange="function_to_handle_data"
+        @DataUpdate="function_after_updates_applied"
+    >
+
+    Emits:
+        DataChange - Object containing fields in left and in right, every time data is changed from within this component
+        DataUpdate - Object containing fields in left and in right, once updates are applied from a parent component
+
+    To manually set all the data in the table, set the "data" prop to the desired values.
+
+    To update certain data in the table without overwriting, set the "pending_data" prop to an object containing any of the following fields:
+        
+        put_left: Array of rows to add to the left, removing from right if applicable
+        put_right: Array of rows to add to the right, removing from left if applicable
+
+        move_left: Array of rows to move to the left iff they exist on the right
+        move_right: Array of rows to move to the right iff they exist on the left
+
+        create_left: Array of rows to add to the left iff they do not exist on the right
+        create_right: Array of rows to add to the right iff they do not exist on the left
+
+        remove: Array of rows to remove from the table altogether
+        remove_left: Array of rows to remove if they are in the left table
+        remove_right: Array of rows to remove if they are in the right table
+
+    Note that, at the current time, DataChange and DataUpdate are the only ways to retrive the data from the table.
+
+-->
+
+<template>
+    <div class="double_table">
+        <div class="table_container">
+            <slot name="left_title"></slot>
+            <div ref="left_table"></div>
+            <slot name="left_footer"></slot>
+        </div>
+        <div class="table_container">
+            <slot name="right_title"></slot>
+            <div ref="right_table"></div>
+            <slot name="right_footer"></slot>
+        </div>
+    </div>
+</template>
+
+<script>
+    import Table from "@/components/Table.vue"
+    const Tabulator = require('tabulator-tables');
+
+    export default {
+        name: 'DoubleTable',
+        props: ['headers', 'data', 'pending_data', 'options', 'placeholders'],
+        components: {Table},
+
+        data: function () {
+            return {
+
+                // The two table objects
+                left_table: null,
+                right_table: null,
+
+                // The arguments used to construct the Tabulators
+                args: null,
+                default_args: {
+                    height:311,
+                    layout:"fitColumns",
+                    movableRows:true,
+                    movableRowsReceiver: "add",
+                    movableRowsSender: "delete",
+                    resizableColumns:false,
+                    columns:this.headers,
+                    movableRowsReceivedFailed:this.row_change_fail,
+                    movableRowsReceivingStop:this.row_change_complete,
+                },
+
+                // The actual placeholder text
+                _placeholders: null,
+            };
+        },
+
+        mounted: function() {
+
+            console.log("From the tables:", this.data);
+
+            this._placeholders = this.placeholders;
+            if (this._placeholders == null) {
+                this._placeholders = {
+                    left: "",
+                    right: "",
+                };
+            } else {
+                if (this._placeholders.left == null) {
+                    this._placeholders.left = "";
+                };
+                if (this._placeholders.right == null) {
+                    this._placeholders.right = "";
+                };
+            };
+
+            // Initialize what options will be passed to both tables
+            this.args = {...this.default_args, ...this.options};
+
+            // Initialize the left table
+            this.left_table = new Tabulator(this.$refs.left_table, {
+                ...this.args,
+                movableRowsConnectedTables: this.$refs.right_table,
+                placeholder:                this._placeholders.left,
+                data:                       this.get_data_safe("left", []),
+            });
+
+            // Initialize the right table
+            this.right_table = new Tabulator(this.$refs.right_table, {
+                ...this.args,
+                movableRowsConnectedTables: this.$refs.left_table,
+                placeholder:                this._placeholders.right,
+                data:                       this.get_data_safe("right", []),
+            });
+        },
+
+        watch: {
+
+            // Hard set - Update the data if changed from the parent
+            data: function() {
+
+                // Replace table data, using empty array for null/undefined values
+                this.left_table.replaceData(this.get_data_safe("left", []));
+                this.right_table.replaceData(this.get_data_safe("right", []));
+
+                // Return successful updates to parent
+                this.emit_updates();
+            },
+
+            // Hard set - Update the headers if changed from the parent
+            headers: function() {
+                // Replace table headers
+                this.left_table.setColumns(this.headers);
+                this.right_table.setColumns(this.headers);
+
+                // Return successful updates to parent
+                this.emit_updates();
+            },
+
+            // Soft set - Move rows between tables without overwriting other rows
+            // pending_data: function() {
+            //     if (this.pending_data.left != null) {
+            //         this.pending_data.left.forEach(function(row) {
+            //             this.move_data(row, "left", false);
+            //         }.bind(this));
+            //     }
+            //     if (this.pending_data.right != null) {
+            //         this.pending_data.right.forEach(function(row) {
+            //             this.move_data(row, "right", false);
+            //         }.bind(this));
+            //     }
+            //     if (this.pending_data.remove != null) {
+            //         this.pending_data.remove.forEach(function(row) {
+            //             this.remove_row(row, null, false);
+            //         }.bind(this));
+            //     }
+
+            //     this.emit_updates();
+            // },
+
+            pending_data: function() {
+                this.pending_data.forEach(function(arr) {
+                    console.log(arr);
+                });
+                this.emit_updates();
+            },
+        },
+
+        methods: {
+            // Emitted when changes are made from within the tables
+            emit_changes: function() {
+                this.$emit("DataChange", this.get_data());
+            },
+
+            // Emitted when changes from the parent are successfully applied
+            emit_updates: function() {
+                this.$emit("DataUpdate", this.get_data());
+            },
+
+            // Returns the data in the two tables
+            get_data: function() {
+                return {
+                    left: this.left_table.getData(),
+                    right: this.right_table.getData(),
+                };
+            },
+
+            get_data_safe: function(side, default_value) {
+                return (this.data == null || this.data == undefined || this.data[side] == null || this.data[side] == undefined) ? default_value : this.data[side];
+            },
+
+            // Runs after row movement finishes
+            row_change_complete: function(fromTable) {
+                this.emit_changes();
+            },
+
+            // Runs if row movement fails for some reason
+            row_change_fail: function(fromRow, toRow, fromTable){
+                console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
+            },
+
+            // Manually move a row to one table, removing from the other if applicable
+            move_data: function(row, to_side, allow_emit) {
+                to_side = to_side.toLowerCase();
+
+                let to_table = null;
+                let from_table = null;
+                if (to_side == "left") {
+                    to_table = this.left_table;
+                    from_table = this.right_table;
+                }
+                else if (to_side == "right") {
+                    to_table = this.right_table;
+                    from_table = this.left_table;
+                }
+                else {
+                    console.log("Unrecognized side \"" + to_side + "\". Please use \"left\" or \"right\".");
+                    return;
+                };
+
+                this.remove_row(row, from_table, false);
+                to_table.addRow(row);
+
+                if (allow_emit) {
+                    this.emit_updates();
+                };
+            },
+
+            // Remove a row from the given table
+            // If table is null, removes from either table
+            remove_row: function(row, table, allow_emit) {
+                // TODO: Some code to remove a row
+                // if table == null, use both
+
+                if (allow_emit) {
+                    this.emit_updates();
+                };
+            },
+        }
+    }
+</script>
+
+<style>
+    .table_container {
+        width: 50%;
+        display: inline-block;
+    }
+</style>
