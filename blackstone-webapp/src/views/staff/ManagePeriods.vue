@@ -227,23 +227,9 @@ export default {
       else {
         console.log("Youth selected: ", youth);
 
-        // Youth profile has already been retrieved - load if from the cache
-        if (this.cached_youth_profiles[youth.full_id] != null) {
-          console.log("Already retrieved " + youth.full_id);
-          this.selected_youth_profile = this.cached_youth_profiles[youth.full_id];
-          this.selected_youth_data    = this.cached_youth_data[youth.full_id];
-        }
-
-        // Youth profile has not been retrieved yet - load it from the database and cache it
-        else {
-          console.log("Retrieving " + youth.full_id + " from the database...");
-          this.selected_youth_profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
-          this.selected_youth_data = this.selected_youth_profile.data();
-
-          this.cached_youth_profiles[youth.full_id] = this.selected_youth_profile;
-          this.cached_youth_data[youth.full_id]     = this.selected_youth_data;
-        }
-        
+        let pd = await this.retrieve_youth_profile(youth.full_id);
+        this.selected_youth_profile = pd.profile;
+        this.selected_youth_data = pd.data;
 
         // this.$refs.selected_youth.style.display = "";
         // document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
@@ -287,6 +273,60 @@ export default {
       this.all_youth = this.all_youth.filter(function(element, n, arr) {
         return arr.indexOf(element) == n;
       });
+    },
+
+    retrieve_youth_profile: async function(full_id) {
+
+      // Youth profile has already been retrieved - load if from the cache
+      if (this.cached_youth_profiles[full_id] != null) {
+        return {
+          profile: this.cached_youth_profiles[full_id],
+          data: this.cached_youth_data[full_id],
+        };
+      }
+
+      // Youth profile has not been retrieved yet - load it from the database and cache it
+      else {
+        let profile = await db.collection("GlobalYouthProfile").doc(this.selected_youth.id).get();
+        let data = profile.data();
+
+        this.cached_youth_profiles[full_id] = profile;
+        this.cached_youth_data[full_id] = data;
+
+        return {profile, data};
+      }
+    },
+
+    is_cached: function(full_id) {
+      return Object.keys(this.cached_youth_profiles).includes(full_id);
+    },
+
+    get_youth_profile: function(full_id) {
+      return this.cached_youth_profiles[full_id];
+    },
+
+    get_youth_data: function(full_id) {
+      return this.cached_youth_data[full_id];
+    },
+
+    get_youth_updated_periods: function(full_id) {
+      let new_periods = this.pending_changes[full_id];
+      if (new_periods == null) {
+        if (this.is_cached(full_id)) {
+          new_periods = this.get_youth_data(full_id)["ActivePeriods"];
+        }
+        else {
+          new_periods = [];
+        };
+      };
+      return new_periods;
+    },
+
+    get_youth_original_periods: function(full_id) {
+      if (this.is_cached(full_id)) {
+        return this.get_youth_profile(full_id).data()["ActivePeriods"];
+      };
+      throw "Error retrieving original periods for youth " + full_id + ".";
     },
 
     edit_youth_periods: function(event) {
@@ -412,12 +452,12 @@ export default {
       let def = this.get_active_changes();
 
       for (var key in this.cached_youth_data) {
-        if (JSON.stringify(this.cached_youth_data[key]) !== JSON.stringify(this.cached_youth_profiles[key].data())) {
+        let original = this.get_youth_original_periods(key);
+        let updated = this.get_youth_updated_periods(key);
+
+        if (JSON.stringify(original) !== JSON.stringify(updated)) {
           youth.push(key);
-          periods = periods.concat(unique_array_vals(
-            this.cached_youth_data[key]["ActivePeriods"],
-            this.cached_youth_profiles[key].data()["ActivePeriods"]
-          ));
+          periods = periods.concat(unique_array_vals(updated, original));
         };
       };
 
@@ -722,15 +762,7 @@ export default {
     set_youth_status: function(id, periods, status) {
 
       // Init the youth's new periods to any pending changes
-      // If youth doesn't have any pending changes yet, grab their current active periods
-      let new_periods = this.pending_changes[id];
-      if (new_periods == null) {
-        try {
-          new_periods = this.cached_youth_data[id]["ActivePeriods"];
-        } catch {
-          new_periods = [];
-        };
-      };
+      let new_periods = this.get_youth_updated_periods(id);
 
       // If a single element is passed, make it an array
       if (!Array.isArray(periods)) periods = [periods];
