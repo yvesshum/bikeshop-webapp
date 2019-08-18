@@ -99,10 +99,18 @@ export default {
       past_periods_doc_name: null,
       never_active_youths: [],
 
-      active_table_headers: ["Name", "ID", "Status"],
+      active_table_headers: [
+        {title:"Name",   field:"name"},
+        {title:"ID",     field:"id"},
+        {title:"Status", field:"status"},
+      ],
       active_table_data: [],
 
-      future_table_headers: ["Name", "ID", "Status"],
+      future_table_headers: [
+        {title:"Name",   field:"name"},
+        {title:"ID",     field:"id"},
+        {title:"Status", field:"status"},
+      ],
       future_table_data: [],
 
       past_table: null,
@@ -563,14 +571,12 @@ export default {
 
       this.active_table_data = [];
 
-      for (var n in this.current_active_youths) {
-        let youth = this.unpack_id(this.current_active_youths[n]);
-        let status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
-        this.active_table_data.push({
-          Name: youth.name,
-          ID: youth.id,
-          Status: status
-        });
+      for (var n in this.all_youth) {
+        if (this.current_active_youths.includes(this.all_youth[n])) {
+          let youth = this.unpack_id(this.all_youth[n]);
+          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
+          this.active_table_data.push(youth);
+        }
       };
     },
 
@@ -582,12 +588,8 @@ export default {
 
       for (var n in this.future_active_youths) {
         let youth = this.unpack_id(this.future_active_youths[n]);
-        let status = (youth.is_rolling_over()) ? "Rolling Over" : "New";
-        this.future_table_data.push({
-          Name: youth.name,
-          ID: youth.id,
-          Status: status
-        });
+        youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "New";
+        this.future_table_data.push(youth);
       };
     },
 
@@ -597,12 +599,9 @@ export default {
 
       this.past_periods.forEach(function(period) {
         data[period].forEach(function (full_id) {
-          let youth = this.unpack_id(full_id);
           this.past_table_data.push({
-            name: youth.name,
-            id: youth.id,
-            full_id: youth.full_id,
-            quarter: period,
+            ...this.unpack_id(full_id),
+            quarter: period
           });
         }.bind(this));
       }.bind(this));
@@ -656,7 +655,8 @@ export default {
         : new_periods.filter((element) => !periods.includes(element));
 
       // Update the different period arrays & displays with the new pending changes
-      this.update_active_arrays(id, this.pending_changes[id]);
+      console.log("Updating active arrays with id " + id + " and periods ", this.pending_changes[id]);
+      this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
     },
 
     // Function to determine period ordering.
@@ -739,7 +739,7 @@ export default {
     },
 
     select_youth: async function(row) {
-      this.selected_youth = this.unpack_id(row._row.data.Name + " " + row._row.data.ID);
+      this.selected_youth = this.unpack_id(row.getData().full_id);
     },
   }
 }
