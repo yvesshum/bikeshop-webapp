@@ -8,6 +8,23 @@
         @DataUpdate="function_after_updates_applied"
     >
 
+    Props:
+        headers - The column headers to use on both tables
+
+        data - An object with two fields:
+            left: The rows to place in the left table
+            right: The rows to place in the right table
+
+        pending_data - Used to update data within the table (see below)
+
+        options - Arguments for the Tabulator constructor to be applied to both tables
+
+        placeholders - An object with two fields. If null, no placeholder text is used.
+            left: The placeholder text for the left table when it has no rows
+            right: The placeholder text for the right table when it has no rows
+
+        table_height - The height for both tables. Defaults to 311.
+
     Emits:
         DataChange - Object containing fields in left and in right, every time data is changed from within this component
         DataUpdate - Object containing fields in left and in right, once updates are applied from a parent component
@@ -28,6 +45,8 @@
         remove: Array of rows to remove from the table altogether
         remove_left: Array of rows to remove if they are in the left table
         remove_right: Array of rows to remove if they are in the right table
+
+    Once the above changes have been made, the DataUpdate trigger will be emitted - this is how the parent knows the updates are complete.
 
     Note that, at the current time, DataChange and DataUpdate are the only ways to retrive the data from the table.
 
@@ -54,7 +73,7 @@
 
     export default {
         name: 'DoubleTable',
-        props: ['headers', 'data', 'pending_data', 'options', 'placeholders'],
+        props: ['headers', 'data', 'pending_data', 'options', 'placeholders', 'table_height'],
         components: {Table},
 
         data: function () {
@@ -67,7 +86,7 @@
                 // The arguments used to construct the Tabulators
                 args: null,
                 default_args: {
-                    height:311,
+                    height:(this.table_height == null)?311:this.table_height,
                     layout:"fitColumns",
                     movableRows:true,
                     movableRowsReceiver: "add",
