@@ -743,6 +743,10 @@ export default {
         // If the youth is being deactivated, remove the given period
         : new_periods.filter((element) => !periods.includes(element));
 
+      if (this.cached_youth_data[id] != null) {
+        this.cached_youth_data[id]["ActivePeriods"] = this.pending_changes[id];
+      };
+
       // Update the different period arrays & displays with the new pending changes
       console.log("Updating active arrays with id " + id + " and periods ", this.pending_changes[id]);
       this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
