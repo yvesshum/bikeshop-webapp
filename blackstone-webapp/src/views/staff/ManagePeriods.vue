@@ -5,21 +5,26 @@
     <br />
 
     <h3>Current Quarter (<span ref="current_period_title"></span>)</h3>
-    <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
+
+    <div ref="current_youths_display">
+      <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
+    </div>
 
     <br />
 
-    <DoubleTable
-      :headers="this.edit_table_headers"
-      :data="this.current_edit_data"
-      @DataChange="this.current_edit_change"
-      @DataUpdate="this.current_edit_update"
-    >
-      <template slot="left_title"><h4>Inactive</h4></template>
-      <template slot="right_title"><h4>Active</h4></template>
-    </DoubleTable>
+    <div ref="current_youths_edit" style="display:none;">
+      <DoubleTable
+        :headers="this.edit_table_headers"
+        :data="this.current_edit_data"
+        @DataChange="this.current_edit_change"
+        @DataUpdate="this.current_edit_update"
+      >
+        <template slot="left_title"><h4>Inactive</h4></template>
+        <template slot="right_title"><h4>Active</h4></template>
+      </DoubleTable>
+    </div>
 
-    <button ref="current_edit_button" v-on:click="accept_current_edits">Update Table!</button>
+    <button ref="current_edit_button" v-on:click="toggle_current_edits">Edit Currently Active Youth</button>
 
     <br />
 
@@ -137,8 +142,10 @@ export default {
         {title:"Name", field:"name"},
         {title:"ID", field:"id"},
       ],
+      current_edit_mode: false,
       current_edit_data: null,
       current_edit_pending: null,
+      future_edit_mode: false,
       future_edit_data: null,
       future_edit_pending: null,
 
@@ -203,7 +210,6 @@ export default {
     console.log(this.all_youth);
 
     this.display_current_period();
-    this.display_current_period_edit();
     this.display_future_period();
     this.display_past_periods();
 
@@ -621,6 +627,14 @@ export default {
         left: inactive_youths,
         right: this.active_table_data,
       };
+
+      this.$refs.current_youths_edit.style.display = "";
+      this.$refs.current_youths_display.style.display = "none";
+    },
+
+    hide_current_period_edit: function() {
+      this.$refs.current_youths_edit.style.display = "none";
+      this.$refs.current_youths_display.style.display = "";
     },
 
     accept_current_edits: function() {
@@ -634,6 +648,18 @@ export default {
 
       // TODO: Update the arrays all at once
       // this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
+    },
+
+    toggle_current_edits: function() {
+      if (this.current_edit_mode) {
+        this.accept_current_edits();
+        this.hide_current_period_edit();
+        this.$refs.current_edit_button.innerHTML = "Edit Currently Active Youth";
+      } else {
+        this.display_current_period_edit();
+        this.$refs.current_edit_button.innerHTML = "Update Table";
+      };
+      this.current_edit_mode = !this.current_edit_mode;
     },
 
     current_edit_change: function(changes) {
