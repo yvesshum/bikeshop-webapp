@@ -24,7 +24,7 @@
       </DoubleTable>
     </div>
 
-    <button ref="current_edit_button" v-on:click="toggle_current_edits">Edit Currently Active Youth</button>
+    <ToggleButton :onText="'Update Table'" :offText="'Edit Currently Active Youth'" @Toggle="toggle_current_edits"></ToggleButton>
 
     <br />
 
@@ -91,6 +91,7 @@ import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
 import DoubleTable from '@/components/DoubleTable';
+import ToggleButton from '@/components/ToggleButton';
 
 const Tabulator = require('tabulator-tables');
 
@@ -100,6 +101,7 @@ export default {
     TopBar,
     Table,
     DoubleTable,
+    ToggleButton,
   },
 
   data: function() {
@@ -142,10 +144,8 @@ export default {
         {title:"Name", field:"name"},
         {title:"ID", field:"id"},
       ],
-      current_edit_mode: false,
       current_edit_data: null,
       current_edit_pending: null,
-      future_edit_mode: false,
       future_edit_data: null,
       future_edit_pending: null,
 
@@ -650,16 +650,13 @@ export default {
       // this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
     },
 
-    toggle_current_edits: function() {
-      if (this.current_edit_mode) {
+    toggle_current_edits: function(toggle_val) {
+      if (!toggle_val) {
         this.accept_current_edits();
         this.hide_current_period_edit();
-        this.$refs.current_edit_button.innerHTML = "Edit Currently Active Youth";
       } else {
         this.display_current_period_edit();
-        this.$refs.current_edit_button.innerHTML = "Update Table";
       };
-      this.current_edit_mode = !this.current_edit_mode;
     },
 
     current_edit_change: function(changes) {
