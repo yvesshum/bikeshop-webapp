@@ -16,6 +16,8 @@ Props:
         "next"    - Youths active in the next period
         "all"     - Youths active in any period
         "none"    - Youths not active in any period
+
+        If no value is specified, defaults to using the current period.
     
         Examples:
 
