@@ -3,24 +3,13 @@
 <template>
     <div>
         <top-bar/>
-        <h1>Transfer Hours Approval Dashboard</h1>
-        <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-
-                <b-button-group>
-                    <b-button variant="success" @click="accept">Approve</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="editNote">Edit note</b-button>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Transfer</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
+        <h1 class="title">Transfer Hours Approval Dashboard</h1>
+        <div class="toolbarwrapper">
+            <b-button-toolbar style="justify-content: center;">
+                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Transfer</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
 
@@ -420,12 +409,7 @@
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
-
+.title {
+  margin-bottom: 1rem;
+}
 </style>

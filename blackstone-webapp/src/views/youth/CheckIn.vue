@@ -1,3 +1,4 @@
+// TODO: Moment JS Time deoes not update in real time 
 <template>
     <div>
         <top-bar/>

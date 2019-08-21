@@ -46,6 +46,9 @@
         min-width: 10rem;
         margin: 0.7rem 1rem;
     }
+    .NavBar {
+      margin-bottom: 2rem;
+    }
     .NavBarContents{
         display: flex;
         flex-direciton: row;
