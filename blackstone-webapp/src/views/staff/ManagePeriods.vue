@@ -4,32 +4,37 @@
     <h1>Manage Periods</h1>
     <br />
 
+    <!-- TODO: Use {{variable}} syntax to set this without explicit code -->
     <h3>Current Quarter (<span ref="current_period_title"></span>)</h3>
 
-    <div ref="current_youths_display">
-      <Table ref="current_youths" :headingdata="this.active_table_headers" :table_data="this.active_table_data" @selectedRow="this.select_youth"></Table>
-    </div>
+    <BinaryTable
+      :displayTableHeaders="this.display_table_headers"
+      :editTableHeaders="this.edit_table_headers"
+      :tableData="active_table_data"
 
-    <div ref="current_youths_edit" style="display:none;">
-      <DoubleTable
-        :headers="this.edit_table_headers"
-        :data="this.current_edit_data"
-        @DataChange="this.current_edit_change"
-        @DataUpdate="this.current_edit_update"
-      >
-        <template slot="left_title"><h4>Inactive</h4></template>
-        <template slot="right_title"><h4>Active</h4></template>
-      </DoubleTable>
-    </div>
+      :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
+      onText="Update Table"
+      offText="Edit Currently Active Youth"
 
-    <br />
-
-    <ToggleButton :onText="'Update Table'" :offText="'Edit Currently Active Youth'" @Toggle="toggle_current_edits"></ToggleButton>
+      @AcceptEdits="this.accept_current_edits"
+      @selectedRow="this.select_youth"
+    ></BinaryTable>
 
     <br /><br />
 
     <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
-    <Table ref="future_youths" :headingdata="this.future_table_headers" :table_data="this.future_table_data" @selectedRow="this.select_youth"></Table>
+    <BinaryTable
+      :displayTableHeaders="this.display_table_headers"
+      :editTableHeaders="this.edit_table_headers"
+      :tableData="future_table_data"
+
+      :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
+      onText="Update Table"
+      offText="Edit Future Active Youth"
+
+      @AcceptEdits="this.accept_future_edits"
+      @selectedRow="this.select_youth"
+    ></BinaryTable>
 
     <br />
 
@@ -92,6 +97,7 @@ import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
 import DoubleTable from '@/components/DoubleTable';
 import ToggleButton from '@/components/ToggleButton';
+import BinaryTable from '@/components/BinaryTable';
 
 const Tabulator = require('tabulator-tables');
 
@@ -102,6 +108,7 @@ export default {
     Table,
     DoubleTable,
     ToggleButton,
+    BinaryTable,
   },
 
   data: function() {
@@ -123,31 +130,21 @@ export default {
       past_periods_doc_name: null,
       never_active_youths: [],
 
-      active_table_headers: [
+      // Data for the current and future display/edit tables
+      display_table_headers: [
         {title:"Name",   field:"name"},
         {title:"ID",     field:"id"},
         {title:"Status", field:"status"},
+      ],
+      edit_table_headers: [
+        {title:"Name", field:"name"},
+        {title:"ID",   field:"id"},
       ],
       active_table_data: [],
-
-      future_table_headers: [
-        {title:"Name",   field:"name"},
-        {title:"ID",     field:"id"},
-        {title:"Status", field:"status"},
-      ],
       future_table_data: [],
 
       past_table: null,
       past_table_data: [],
-
-      edit_table_headers: [
-        {title:"Name", field:"name"},
-        {title:"ID", field:"id"},
-      ],
-      current_edit_data: null,
-      current_edit_pending: null,
-      future_edit_data: null,
-      future_edit_pending: null,
 
       // Modal variables
       confirm_modal_visible: false,
@@ -642,47 +639,35 @@ export default {
     display_current_period: function() {
       this.$refs.current_period_title.innerHTML = this.current_period;
 
-      this.active_table_data = [];
+      // Initialize arrays to store youth active and inactive in the current period
+      let active = [];
+      let inactive = [];
 
+      // Sort all youth into either active this period or inactive this period
       for (var n in this.all_youth) {
+
+        // Create the new row from the preexisting youth object, plus a status
+        let youth = this.unpack_id(this.all_youth[n]);
+        youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "Not Returning";
+
+        // Put the row in the appropriate array
         if (this.current_active_youths.includes(this.all_youth[n])) {
-          let youth = this.unpack_id(this.all_youth[n]);
-          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
-          this.active_table_data.push(youth);
-        }
-      };
-    },
-
-    display_current_period_edit: function() {
-      let inactive_youths = [];
-      for (var n in this.all_youth) {
-        if (!this.current_active_youths.includes(this.all_youth[n])) {
-          let youth = this.unpack_id(this.all_youth[n]);
-          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "n/a";
-          inactive_youths.push(youth);
+          active.push(youth);
+        } else {
+          inactive.push(youth);
         }
       };
 
-      this.current_edit_data = {
-        left: inactive_youths,
-        right: this.active_table_data,
-      };
-
-      this.$refs.current_youths_edit.style.display = "";
-      this.$refs.current_youths_display.style.display = "none";
+      // Set the table data prop
+      this.active_table_data = {active, inactive};
     },
 
-    hide_current_period_edit: function() {
-      this.$refs.current_youths_edit.style.display = "none";
-      this.$refs.current_youths_display.style.display = "";
-    },
-
-    accept_current_edits: function() {
-      this.current_edit_pending.right.forEach(function(youth) {
+    accept_current_edits: function(edits) {
+      edits.active.forEach(function(youth) {
         this.set_youth_status(youth.full_id, this.current_period, true);
       }.bind(this));
 
-      this.current_edit_pending.left.forEach(function(youth) {
+      edits.inactive.forEach(function(youth) {
         this.set_youth_status(youth.full_id, this.current_period, false);
       }.bind(this));
 
@@ -690,36 +675,41 @@ export default {
       // this.update_active_arrays(this.unpack_id(id), this.pending_changes[id]);
     },
 
-    toggle_current_edits: function(toggle_val) {
-      if (!toggle_val) {
-        this.accept_current_edits();
-        this.hide_current_period_edit();
-      } else {
-        this.display_current_period_edit();
-      };
-    },
-
-    current_edit_change: function(changes) {
-      console.log("Changes: ", changes);
-      this.current_edit_pending = changes;
-    },
-
-    current_edit_update: function(updates) {
-      console.log("Updates: ", updates);
-      this.current_edit_pending = updates;
-    },
-
     // Display the next period on the page
     display_future_period: function() {
-      this.$refs.future_period_title.innerHTML  = this.future_period;
+      this.$refs.future_period_title.innerHTML = this.future_period;
 
-      this.future_table_data = [];
+      // Initialize arrays to store youth active and inactive in the future period
+      let active = [];
+      let inactive = [];
 
-      for (var n in this.future_active_youths) {
-        let youth = this.unpack_id(this.future_active_youths[n]);
+      // Sort all youth into either active this period or inactive next period
+      for (var n in this.all_youth) {
+
+        // Create the new row from the preexisting youth object, plus a status
+        let youth = this.unpack_id(this.all_youth[n]);
         youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "New";
-        this.future_table_data.push(youth);
+
+        // Put the row in the appropriate array
+        if (this.future_active_youths.includes(this.all_youth[n])) {
+          active.push(youth);
+        } else {
+          inactive.push(youth);
+        }
       };
+
+      // Set the table data prop
+      this.future_table_data = {active, inactive};
+    },
+
+    accept_future_edits: function(edits) {
+      edits.active.forEach(function(youth) {
+        this.set_youth_status(youth.full_id, this.future_period, true);
+      }.bind(this));
+
+      edits.inactive.forEach(function(youth) {
+        this.set_youth_status(youth.full_id, this.future_period, false);
+      }.bind(this));
     },
 
     // Display the previous periods on the page
