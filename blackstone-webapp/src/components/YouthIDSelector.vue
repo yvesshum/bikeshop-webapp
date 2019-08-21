@@ -35,12 +35,6 @@ Emits:
 
  -->
 
-<!--Usage: <YouthIDSelector @selected="function"/>-->
-<!--This returns a string of "FirstName LastName YouthID"-->
-
-<!-- TODO: Pass in which part of database to grab names from -->
-<!-- TODO: Sort by name -->
-
 <template>
     <div class = "YouthIDSelector">
         <multiselect v-model="value" id="multiselect" :options="options" :placeholder="this.r_placeholder" open-direction="bottom" label="name" :custom-label="nameWithID">
@@ -86,34 +80,31 @@ Emits:
                 using_past: false,
 
                 r_placeholder: null,
-                def_placeholder: "Select an ID",
-                //Select your ID if you are currently active
+                def_placeholder: "Select an ID", //Select your ID if you are currently active
 
                 id_list: null,
             }
         },
         methods: {
-            // selected(value) {
-            //     // console.log("Emitting from selected: ", value, value.name, value.id);
-            //     // this.$emit('selected', value.name + " " + value.id);
-            // },
-           async getData() {
+            // Retrieve all youth from the specified periods from the database
+            async getData() {
 
                 // Load active periods from the database
                 // TODO: Attach as a listener? If not, only load the one time?
                 this.active_periods_doc = await this.vars_coll.doc("ActivePeriods").get();
 
-                // Initialize some variables
+                // Data from the retrieved doc(s) - past_data will only be retrieved if needed
                 let data = this.active_periods_doc.data();
                 let past_data = null;
 
+                // Names of current and next period
                 let ap = data["CurrentPeriod"];
                 let fp = data["FuturePeriod"];
 
                 // The variable to store the results in
                 let youth_arr = [];
 
-                // Create a modified array `periods` decoding "all" and "null" inputs
+                // Create a modified array `periods` decoding special inputs (see usage comment)
                 let periods = [];
 
                 // Parent set prop to "all" - wants all youth
@@ -184,6 +175,7 @@ Emits:
                 };
             },
 
+            // Format list of ID strings "FirstName LastName ID" into list of objects
             getOptions(data) {
                 var id_list = [];
                 data.forEach(function(item, index) {
@@ -194,23 +186,19 @@ Emits:
                 return id_list;
             },
 
+            // Reformat separated name/id into single string
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
             },
-            reset() {
-                this.value = null;
-            }
 
         },
 
         watch: {
             value: function() {
-                // console.log("Value changed to ", new_val);
                 if (this.value == null) {
-                    console.log("Emitting null...");
                     this.$emit('selected', null);
                 } else {
-                    this.$emit('selected', this.value.name + " " + this.value.id);
+                    this.$emit('selected', this.nameWithID(this.value));
                 };
             },
 
