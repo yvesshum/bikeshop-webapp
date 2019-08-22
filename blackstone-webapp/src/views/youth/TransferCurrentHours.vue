@@ -228,7 +228,7 @@
                         let newFromHoursSpent = parseFloat(fromYouthProfile["Hours Spent"]) + amount;
 
                         let status1 = await db.collection("GlobalYouthProfile").doc(toID).update({
-                            "Pending Hours": newToPendingHours
+                            "Pending Hours": newToPendingHours.toString()
                         });
 
                         let status2 = await db.collection("GlobalYouthProfile").doc(fromID).update({

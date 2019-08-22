@@ -185,7 +185,7 @@
 
                 this.showLoadingModal("Doing some work in the background...");
                 fromYouthProfile = fromYouthProfile.data();
-                let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) + parseFloat(row["Amount"]);
+                let newFromPendingHours = Math.round((parseFloat(fromYouthProfile["Pending Hours"]) + parseFloat(row["Amount"]))*100)/100;
                 let acceptFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).update({
                     "Pending Hours": newFromPendingHours.toString()
                 });
@@ -201,11 +201,11 @@
                 }
 
                 toYouthProfile = toYouthProfile.data();
-                let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) - parseFloat(row["Amount"]);
-                let newToHoursEarned = parseFloat(toYouthProfile["Hours Earned"]) + parseFloat(row["Amount"]);
+                let newToPendingHours = Math.round((parseFloat(toYouthProfile["Pending Hours"]) - parseFloat(row["Amount"]))*100)/100;
+                let newToHoursEarned = Math.round((parseFloat(toYouthProfile["Hours Earned"]) + parseFloat(row["Amount"]))*100)/100;
                 let acceptToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).update({
                     "Pending Hours": newToPendingHours.toString(),
-                    "Hours Earned": newToHoursEarned
+                    "Hours Earned": newToHoursEarned.toString()
                 });
 
                 if (acceptToStatus) {
@@ -307,9 +307,9 @@
                 }
 
                 let amount = parseFloat(this.selected[0]["Amount"]);
-                let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) - amount;
-                let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) + amount;
-                let newFromHoursSpent = parseFloat(fromYouthProfile["Hours Spent"]) - amount;
+                let newToPendingHours = Math.round((parseFloat(toYouthProfile["Pending Hours"]) - amount)*100)/100;
+                let newFromPendingHours = Math.round((parseFloat(fromYouthProfile["Pending Hours"]) + amount)*100)/100;
+                let newFromHoursSpent = Math.round((parseFloat(fromYouthProfile["Hours Spent"]) - amount)*100)/100;
 
                 let rejectingToStatus = db.collection("GlobalYouthProfile").doc(this.rejectingToID).update({
                     "Pending Hours": newToPendingHours.toString()

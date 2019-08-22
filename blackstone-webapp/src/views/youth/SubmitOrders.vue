@@ -107,7 +107,6 @@
                     this.YouthProfile = YouthProfile.data();
                     if (YouthProfile == null) this.errorFields.push("YouthID not found");
                 }
-                
 
                 let badFields = await this.checkValid();
                 //if an error field has been returned
@@ -153,9 +152,9 @@
                     }
 
                     //update youth hours with the appropriate value
-                    let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
-                    let newHoursSpent =  parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC["value"]);
-                    let newPendingHours = parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]);
+                    let ITC = Math.round((this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost"))*100)/100;
+                    let newHoursSpent =  Math.round((parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC["value"]))*100) / 100;
+                    let newPendingHours = Math.round((parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]))*100)/ 100;
                     let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
                     youthRef.update({
                         "Hours Spent": newHoursSpent.toString(),

@@ -252,12 +252,10 @@
                         }
                         console.log("Current approve amount: " + amount);
                     }
-                    console.log(key);
                 }
-                let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - amount;
-                let newHoursEarned = parseFloat(forYouthProfile["Hours Earned"]) + amount;
-                console.log("New pending hours: " + newPendingHours)
-                console.log("New current hours: " + newHoursEarned)
+                
+                let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
+                let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
                     "Pending Hours": newPendingHours.toString(), 
                     "Hours Earned": newHoursEarned.toString()
@@ -356,7 +354,7 @@
                 this.showLoadingModal("Doing some work in the background...");
                 forYouthProfile = forYouthProfile.data();
                 
-                let newPendingHours = parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount;
+                let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount) * 100) / 100;
                 
                 let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
                     "Pending Hours": newPendingHours.toString(),
@@ -504,7 +502,7 @@
                 }
 
                 let netChange = newTotalHours - originalAmount;
-                let newPendingHours = parseFloat(profile.data()["Pending Hours"]) + netChange
+                let newPendingHours = Math.round((parseFloat(profile.data()["Pending Hours"]) + netChange)*100)/100
                 let status2 = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).update({
                     "Pending Hours": newPendingHours.toString()
                 })
