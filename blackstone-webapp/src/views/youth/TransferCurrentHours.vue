@@ -173,7 +173,8 @@
                     this.showModal("Error", "Unclear recipient, only select OR type in an ID")
                     return null;
                 }
-
+                
+                //selecting from which input it is
                 fromSelectorID ? fromID = fromSelectorID : fromID = this.fromInput;
                 toSelectorID ? toID = toSelectorID : toID = this.toInput;
 
@@ -202,6 +203,11 @@
                     let currentHours = parseFloat(fromYouthProfile["Hours Earned"]) - parseFloat(fromYouthProfile["Hours Spent"]);
                     if (currentHours >= amount) {
                         //create request for it
+
+                        //Attaching current period 
+                        let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
+                        period = period.data()["CurrentPeriod"]
+
                         db.collection("GlobalTransferHours").doc().set({
                             "From ID": fromID,
                             "To ID": toID,
@@ -210,6 +216,7 @@
                             "Amount": amount,
                             "Date": new Date().toLocaleString(),
                             "Notes": this.note,
+                            "Period": period
                         }).catch(err => {
                            window.alert("Err: " + err);
                            return null;

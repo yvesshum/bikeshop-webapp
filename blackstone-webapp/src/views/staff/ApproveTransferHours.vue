@@ -213,13 +213,15 @@
                     return null;
                 }
 
-                //TODO: Create a log collection in Global Youth Profile for these transfers
+                //Create a log collection in Global Youth Profile for these transfers
+                console.log(row);
                 let logFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
                     "Date": row["Date"],
                     "To ID": row["To ID"],
                     "To Name": row["To Name"],
                     "Amount": row["Amount"],
-                    "Notes": row["Notes"]
+                    "Notes": row["Notes"],
+                    "Period": row["Period"]
                 });
 
                 let logToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).collection("Transfer Log").doc().set({
@@ -227,7 +229,8 @@
                     "From ID": row["From ID"],
                     "From Name": row["From Name"],
                     "Amount": row["Amount"],
-                    "Notes": row["Notes"]
+                    "Notes": row["Notes"],
+                    "Period": row["Period"]
                 });
 
                 if (logFromStatus) {
@@ -241,6 +244,12 @@
 
                 this.closeLoadingModal();
                 this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"])
+
+                let deleteStatus = db.collection("GlobalTransferHours").doc(row["Document ID"]).delete();
+                if (deleteStatus == null) {
+                    window.alert("Err, unable to delete transfer from GlobalTransferHours. Transfer document ID: " + this.rejectingDocumentID)
+                    return null;
+                }
 
                 this.removeLocally(row["Document ID"]);
 
@@ -341,9 +350,6 @@
                 this.closeLoadingModal();
                 this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
-
-
-
             },
 
             editNote() {
