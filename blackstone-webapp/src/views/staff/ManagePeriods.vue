@@ -44,8 +44,7 @@
     <br />
     <br />
 
-    <!-- TODO: Use {{variable}} syntax here? -->
-    <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
+    <button v-show="selected_youth != null" v-on:click="edit_youth_periods">{{edit_button_message}}</button>
     
     <br />
     <button v-on:click="save_changes">Save Changes</button>
@@ -287,21 +286,19 @@ export default {
     this.display_current_period();
     this.display_future_period();
     this.display_past_periods();
-
-    this.$refs.edit_youth_quarters_button.style.display = "none";
   },
 
-  watch: {
-    selected_youth: async function(youth) {
-      if (youth == null) {
-        this.$refs.edit_youth_quarters_button.style.display = "none";
-      }
-      else {
-        this.$refs.sel_youth_name.innerHTML = youth.name;
-        this.$refs.edit_youth_quarters_button.style.display = "";
+  computed: {
+    edit_button_message: function() {
+      if (this.selected_youth != null) {
+        return "Edit Active Quarters for " + this.selected_youth.name;
+      } else {
+        return "No youth selected";
       };
     },
   },
+
+  watch: {},
 
   methods: {
 
@@ -749,6 +746,10 @@ export default {
       // Track changes in period_status, and update displays
       this.period_status.set_periods(this.edited_youth.full_id, checked_periods);
       this.update_active_arrays(this.edited_youth);
+
+      // Deselect youth
+      this.edited_youth = null;
+      this.selected_youth = null;
 
       // Hide the edit modal
       this.checkbox_modal_visible = false;
