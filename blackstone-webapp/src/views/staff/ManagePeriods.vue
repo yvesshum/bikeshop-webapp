@@ -4,9 +4,7 @@
     <h1>Manage Periods</h1>
     <br />
 
-    <!-- TODO: Use {{variable}} syntax to set this without explicit code -->
-    <h3>Current Quarter (<span ref="current_period_title"></span>)</h3>
-
+    <h3>Current Quarter ({{current_period}})</h3>
     <BinaryTable
       :displayTableHeaders="this.display_table_headers"
       :editTableHeaders="this.edit_table_headers"
@@ -22,7 +20,7 @@
 
     <br /><br />
 
-    <h3>Next Quarter (<span ref="future_period_title"></span>)</h3>
+    <h3>Next Quarter ({{future_period}})</h3>
     <BinaryTable
       :displayTableHeaders="this.display_table_headers"
       :editTableHeaders="this.edit_table_headers"
@@ -46,6 +44,7 @@
     <br />
     <br />
 
+    <!-- TODO: Use {{variable}} syntax here? -->
     <button v-on:click="edit_youth_periods" ref="edit_youth_quarters_button">Edit Active Quarters for <span ref="sel_youth_name"></span></button>
     
     <br />
@@ -160,7 +159,7 @@ export default {
       all_youth: null,
 
       // Misc
-      season_list: ["winter", "spring", "summer", "autumn"],
+      season_list: null,
       period_sort_map: null,
 
       pending_changes: [],
@@ -198,6 +197,7 @@ export default {
     this.past_periods_doc_name = data["PastPeriodsDoc"];
     this.never_active_youths = data["NeverActiveYouths"];
 
+    this.season_list = data["Seasons"];
     this.period_sort_map = new Object();
     this.season_list.forEach(function(element, n) {
       this.period_sort_map[element] = n;
@@ -421,6 +421,7 @@ export default {
         CurrentActiveYouths: this.current_active_youths,
         FutureActiveYouths:  this.future_active_youths,
         PastPeriodsDoc: this.past_periods_doc_name,
+        Seasons: this.season_list,
       };
     },
 
@@ -637,7 +638,6 @@ export default {
 
     // Display the current period on the page
     display_current_period: function() {
-      this.$refs.current_period_title.innerHTML = this.current_period;
 
       // Initialize arrays to store youth active and inactive in the current period
       let active = [];
@@ -677,7 +677,6 @@ export default {
 
     // Display the next period on the page
     display_future_period: function() {
-      this.$refs.future_period_title.innerHTML = this.future_period;
 
       // Initialize arrays to store youth active and inactive in the future period
       let active = [];
@@ -777,8 +776,8 @@ export default {
     // Function to determine period ordering.
     // Usage: some_period_array.sort(sort_periods)
     sort_periods: function(a, b) {
-      let a_month = a.slice(0,-2);
-      let b_month = b.slice(0,-2);
+      let a_month = a.slice(0,-2).trim();
+      let b_month = b.slice(0,-2).trim();
       let a_year = a.slice(-2);
       let b_year = b.slice(-2);
       if (a_year == b_year) {
@@ -831,28 +830,32 @@ export default {
 
       // TODO: Do something if the passed period name is not valid
       if (!this.valid_period(period)) {
-        console.log("Something went wrong");
+        console.log("Error: Trying to generate next period from invalid period name \"" + period + "\".");
       };
 
       // If period name is valid, initialize some vars
       let new_name = "";
 
-      let season = period.slice(0,-2);
+      let season = period.slice(0,-2).trim();
       let year = period.slice(-2);
       let index = this.season_list.indexOf(season);
 
       // If this is the last season of the year, loop around and increment the year
-      if (index == this.season_list.length) {
-        new_name = this.season_list[0] + (parseInt(year)+1);
+      if (index == this.season_list.length - 1) {
+        new_name = this.season_list[0] + " " + (parseInt(year)+1);
       } else {
-        new_name = this.season_list[index+1] + year;
+        new_name = this.season_list[index+1] + " " + year;
       };
+
+      if (!this.valid_period(new_name)) {
+        console.log("Error: Generated invalid period name \"" + new_name + "\" from period name \"" + period + "\".");
+      }
 
       // Return the new period name
       return new_name;
     },
 
-    // Construct a RegEx pattern from the list of months and use it to check the validity of a given period name.  Period names should be of the form "season##".
+    // Construct a RegEx pattern from the list of months and use it to check the validity of a given period name.  Period names should be of the form "Season ##".
     // Only tracks last two digits of the year, so this will start having problems a thousand years from now
     valid_period(name) {
       let len = this.season_list.length;
@@ -865,8 +868,8 @@ export default {
         regex_string += this.season_list[i] + ((i < len-1) ? "|" : "");
       }
 
-      // Match two year digits and end of string
-      regex_string += ")[0-9][0-9]$";
+      // Match space, two year digits, and end of string
+      regex_string += ") [0-9][0-9]$";
 
       // Create RegExp object
       let regex = new RegExp(regex_string, );
