@@ -777,8 +777,8 @@ export default {
     // Function to determine period ordering.
     // Usage: some_period_array.sort(sort_periods)
     sort_periods: function(a, b) {
-      let a_month = a.slice(0,6);
-      let b_month = b.slice(0,6);
+      let a_month = a.slice(0,-2);
+      let b_month = b.slice(0,-2);
       let a_year = a.slice(-2);
       let b_year = b.slice(-2);
       if (a_year == b_year) {
@@ -789,7 +789,7 @@ export default {
     },
 
     // Update to the next period
-    move_to_next_period: function(next_period_name) {
+    move_to_next_period: function() {
       this.show_modal(
         "The current active period will be changed from \"" + this.current_period + "\" to \"" + this.future_period + "\".",
         "This action should only be taken at the end of the current quarter, \"" + this.current_period + "\". Please be absolutely sure that this is desired.",
@@ -800,7 +800,7 @@ export default {
 
           var active_period_changes = {
             CurrentPeriod: this.future_period,
-            FuturePeriod:  next_period_name,
+            FuturePeriod:  gen_next_period_name(),
             PastPeriods:   updated_past_periods,
             CurrentActiveYouths: this.future_active_youths,
             FutureActiveYouths:  [],
@@ -824,33 +824,55 @@ export default {
         });
     },
 
-    gen_next_period_name: function() {
-      let new_name = "";
-      if (this.current_period.match(/^(winter|spring|summer|autumn)[0-9][0-9]$/g)) {
-        let month = this.current_period.match(/(winter|spring|summer|autumn)/g)[0];
-        let year  = this.current_period.match(/[0-9][0-9]/g)[0];
+    gen_next_period_name: function(period) {
 
-        new_name = get_next_month(month);
-        new_name += ((month == "autumn") ? (parseInt(year) + 1) : year);
-      } else {
-        // Some default name
+      // Use the future period as the default
+      if (period == null) period = this.future_period;
+
+      // TODO: Do something if the passed period name is not valid
+      if (!this.valid_period(period)) {
+        console.log("Something went wrong");
       };
-      return new_name;
 
-      function get_next_month(month) {
-        switch (month) {
-          case "winter":
-            return "spring";
-          case "spring":
-            return "summer";
-          case "summer":
-            return "autumn";
-          case "autumn":
-            return "winter"
-          default:
-            return null;
-        }
+      // If period name is valid, initialize some vars
+      let new_name = "";
+
+      let season = period.slice(0,-2);
+      let year = period.slice(-2);
+      let index = this.month_list.indexOf(season);
+
+      // If this is the last season of the year, loop around and increment the year
+      if (index == this.month_list.length) {
+        new_name = this.month_list[0] + (parseInt(year)+1);
+      } else {
+        new_name = this.month_list[index+1] + year;
+      };
+
+      // Return the new period name
+      return new_name;
+    },
+
+    // Construct a RegEx pattern from the list of months and use it to check the validity of a given period name.  Period names should be of the form "season##".
+    // Only tracks last two digits of the year, so this will start having problems a thousand years from now
+    valid_period(name) {
+      let len = this.month_list.length;
+
+      // Match beginning of string
+      let regex_string = "^(";
+
+      // Account for each season
+      for (let i = 0; i < len; i++) {
+        regex_string += this.month_list[i] + ((i < len-1) ? "|" : "");
       }
+
+      // Match two year digits and end of string
+      regex_string += ")[0-9][0-9]$";
+
+      // Create RegExp object
+      let regex = new RegExp(regex_string, );
+
+      // Try and match
+      return name.match(regex) != null;
     },
 
     select_youth: async function(row) {
