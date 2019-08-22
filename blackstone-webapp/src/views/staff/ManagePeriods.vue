@@ -216,24 +216,15 @@ export default {
   watch: {
     selected_youth: async function(youth) {
       if (youth == null) {
-        console.log("No youth selected");
         this.$refs.edit_youth_quarters_button.style.display = "none";
-        // this.$refs.selected_youth.style.display = "none";
       }
 
       else {
-        console.log("Youth selected: ", youth);
-
         let pd = await this.retrieve_youth_profile(youth.full_id);
         this.selected_youth_profile = pd.profile;
         this.selected_youth_data = pd.data;
 
-        // this.$refs.selected_youth.style.display = "";
-        // document.querySelectorAll(".sel_youth_name").forEach((element, n) => {
-        //   element.innerHTML = youth.name;
-        // });
         this.$refs.sel_youth_name.innerHTML = youth.name;
-        // this.$refs.sel_youth_id.innerHTML = youth.id;
         this.$refs.edit_youth_quarters_button.style.display = "";
       };
     },
@@ -262,7 +253,6 @@ export default {
 
     collect_all_youth: function() {
       this.all_youth = [...this.current_active_youths, ...this.future_active_youths, ...this.never_active_youths];
-      console.log(this.past_periods_doc.data());
       Object.keys(this.past_periods_doc.data()).forEach(function(period) {
         this.all_youth = [...this.all_youth, ...this.past_periods_doc.data()[period]];
       }.bind(this));
@@ -361,17 +351,17 @@ export default {
 
     update_active_arrays: function(youth, periods) {
 
+      // console.log("Updating active arrays for youth " + youth + " in periods ", periods);
+
       this.current_active_youths = toggle_youth_in_array(this.current_active_youths, this.current_period);
       this.future_active_youths  = toggle_youth_in_array(this.future_active_youths,  this.future_period);
 
       this.past_periods.forEach(function(period) {
         if (periods.includes(period)) {
-          console.log("Youth ", youth, " should be in period " + period);
           if (split_table_youth_period(this.past_table_data, period, true).length == 0) {
             add_youth_to_table(this.past_table_data, period);
           };
         } else {
-          console.log("Youth ", youth, " should NOT be in period " + period);
           this.past_table_data = split_table_youth_period(this.past_table_data, period, false);
         }
       }.bind(this));
