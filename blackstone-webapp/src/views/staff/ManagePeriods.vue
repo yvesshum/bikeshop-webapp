@@ -160,7 +160,7 @@ export default {
       all_youth: null,
 
       // Misc
-      month_list: ["winter", "spring", "summer", "autumn"],
+      season_list: ["winter", "spring", "summer", "autumn"],
       period_sort_map: null,
 
       pending_changes: [],
@@ -199,7 +199,7 @@ export default {
     this.never_active_youths = data["NeverActiveYouths"];
 
     this.period_sort_map = new Object();
-    this.month_list.forEach(function(element, n) {
+    this.season_list.forEach(function(element, n) {
       this.period_sort_map[element] = n;
     }.bind(this));
 
@@ -839,13 +839,13 @@ export default {
 
       let season = period.slice(0,-2);
       let year = period.slice(-2);
-      let index = this.month_list.indexOf(season);
+      let index = this.season_list.indexOf(season);
 
       // If this is the last season of the year, loop around and increment the year
-      if (index == this.month_list.length) {
-        new_name = this.month_list[0] + (parseInt(year)+1);
+      if (index == this.season_list.length) {
+        new_name = this.season_list[0] + (parseInt(year)+1);
       } else {
-        new_name = this.month_list[index+1] + year;
+        new_name = this.season_list[index+1] + year;
       };
 
       // Return the new period name
@@ -855,14 +855,14 @@ export default {
     // Construct a RegEx pattern from the list of months and use it to check the validity of a given period name.  Period names should be of the form "season##".
     // Only tracks last two digits of the year, so this will start having problems a thousand years from now
     valid_period(name) {
-      let len = this.month_list.length;
+      let len = this.season_list.length;
 
       // Match beginning of string
       let regex_string = "^(";
 
       // Account for each season
       for (let i = 0; i < len; i++) {
-        regex_string += this.month_list[i] + ((i < len-1) ? "|" : "");
+        regex_string += this.season_list[i] + ((i < len-1) ? "|" : "");
       }
 
       // Match two year digits and end of string
