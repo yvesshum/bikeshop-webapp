@@ -61,26 +61,30 @@
 
 
         <!-- Modals -->
-        <b-modal hide-footer v-model="checkoutModalVisible">
+        <b-modal  hide-footer v-model="checkoutModalVisible">
             <template slot="modal-title">
                 Hours since checked in: {{ totalHours }}
             </template>
-            <p >Please Enter your hours, round to the nearest 0.5 hours e.g. 0.5, 1.5, 3</p>
-            <div class ="form-group">
-                <div v-for="category in categories" :key="category">
-                    <label class="col-sm-2 col-form-label" >{{category}}</label>
-                    <div class="col-sm-10">
-                        <input type="number" class="form-control" v-model="hours[category]" placeholder="0">
-                    </div>
+            <div class ="checkout-form">
+                <h2 style="text-align: center">Fill out this form to log hours!</h2>
+                <div v-for="category in categories" :key="category" class="input-field">
+                    <p style="text-align: center; margin-bottom:3px">{{category}}</p>
+                        <VueNumericInput 
+                            v-model="hours[category]"
+                            :min="0"
+                            :step="0.5"
+                            placeholder="Hours"
+                            align="center"
+                            style="width: 20rem"
+                            :precision="2"
+                        />
                 </div>
                 <br>
-                <label class="col-sm-2 col-form-label" >Notes</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!">
-                    </div>
+                <p>Notes</p>
+                <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!" style="text-align:center">
             </div>
             <b-button class="mt-3" block @click="closeCheckoutModal" variant="danger">Cancel</b-button>
-            <b-button class="mt-3" block @click="checkOut()" variant="success">Confirm</b-button>
+            <b-button class="mt-3" block @click="checkOut()" variant="success">Confirm for staff review</b-button>
         </b-modal>
 
 
@@ -102,6 +106,9 @@ import {db} from '@/firebase.js'
 import {rb} from '../../firebase'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import moment from 'moment';
+import { setTimeout } from 'timers';
+import VueNumericInput from 'vue-numeric-input';
+
 
 export default {
     data() {
@@ -112,7 +119,6 @@ export default {
             ID: "",
             FirstName: "",
             LastName: "",
-            categoryHours: [0, 0, 0, 0, 0],
             checkoutStatus: {
                 title: '',
                 message: ''
@@ -122,6 +128,9 @@ export default {
             hours: {},
             notes: "",
             totalHours: "", 
+            date: "",
+            time: "",
+            overHours: false
 
 
         }
@@ -133,7 +142,6 @@ export default {
                 this.ID = item.split(" ")[2]
                 this.FirstName = item.split(" ")[0]
                 this.LastName = item.split(" ")[1]
-                console.log(this.FirstName, item.split(" "));
             }
             else {
                 this.selected = false;
@@ -190,15 +198,19 @@ export default {
             return Math.round(hours*2)/2;
         },
         async checkOut() {
-            //TODO: Validation of hours
+            //TODO: Validation of hours.. or maybe not
 
             this.$bvModal.hide('checkout-modal')
             let categoryHourSum = 0
             for (let category in this.hours) { 
                 categoryHourSum += this.parseHours(this.hours[category]);
+                console.log(this.hours[category])
             }
             
             //add to GlobbalPendingHours
+            let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
+            period = period.data()["CurrentPeriod"]
+
             let val = {
                 "Check In": this.checkedInUsers[this.ID]["Check In Time"],
                 "Check Out": moment().format(),
@@ -207,6 +219,7 @@ export default {
                 "Youth ID": this.ID,
                 "Notes": this.notes,
             };
+            val["Period"] = period
             val = {...val, ...this.hours};
             let status = await db.collection("GlobalPendingHours").doc().set(val);
             if (status) {
@@ -218,6 +231,9 @@ export default {
             let profile = await db.collection("GlobalYouthProfile").doc(this.ID).get();
             profile = profile.data();
             let newPendingHours = parseFloat(profile["Pending Hours"]) + categoryHourSum;
+            console.log(categoryHourSum);
+            console.log(newPendingHours);
+            console.log(profile);
 
             await db.collection("GlobalYouthProfile").doc(this.ID).update({
                 "Pending Hours": newPendingHours
@@ -247,39 +263,41 @@ export default {
                 this.totalHours = "Error"
             }
         },
+
+        updateTime() {
+            this.date = moment().format("dddd, MMM DD YYYY");
+            this.time = moment().format("hh:mm a");
+            setTimeout(this.updateTime, 1000 * 30)
+        }
     },
     computed: {
         isCheckedIn() {
             return !(this.checkedInUsers[this.ID] == null)
         },
 
-        date() {
-            return moment().format("dddd, MMM DD YYYY")
-        },
-
-        time() {
-            return moment().format("hh:mm a")
-        },
-
         userSelected() {
             return !([this.ID, this.FirstName, this.LastName].includes(""));
-        }
+        },
+
     },
+
     async mounted() {
         this.listenerRef = await rb.ref('Checked In').on("value", snapshot => { 
             if (snapshot.val() == null) this.checkedInUsers = {};
             else this.checkedInUsers = snapshot.val();          
         })
 
-        //Apron Skills Categories
-        let categories = await db.collection("ApronSkills").doc("Categories").get();
-        categories = Object.keys(categories.data());
+        //Hour Logging categories
+        let categories = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
+        categories = categories.data()["Categories"];
         this.categories = categories;
 
         //set hour logs to be 0 by default
         this.categories.forEach(category => { 
             this.hours[category] = 0;
         })
+
+        this.updateTime();
     },
 
     beforeDestroy() {
@@ -288,6 +306,7 @@ export default {
 
     components: {
         YouthIDSelector,
+        VueNumericInput
     }
 }
 </script>
@@ -302,5 +321,15 @@ export default {
 }
 .check-in-out-button:hover {
   background-color: grey;
+}
+
+.checkout-form{
+    display: flex;
+    flex-direction:column;
+    align-items: center
+}
+
+.input-field {
+    margin-bottom: 1rem
 }
 </style>
