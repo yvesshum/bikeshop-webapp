@@ -107,6 +107,13 @@
   </button>
 </a>
 
+<a href="/log-hours-for-youth">
+  <button class="page">
+    <h4>Log hours for youth</h4>
+    <p>Log hours for one or more youth</p>
+  </button>
+</a>
+
 </div>
 
 <div class="heading">

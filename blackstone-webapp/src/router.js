@@ -21,6 +21,7 @@ import ApproveHourLogs from './views/staff/ApproveHourLogs.vue'
 import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue'
 import ManagePeriods from './views/staff/ManagePeriods.vue'
 import AddSubtractHours from './views/staff/AddSubtractHours.vue'
+import LogHoursForYouth from './views/staff/LogHoursForYouth.vue'
 
 Vue.use(Router);
 
@@ -195,11 +196,16 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        {
+            path: '/log-hours-for-youth',
+            name: 'log-hours-for-youth',
+            component: LogHoursForYouth,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
         
-
-        
-
-
 
 
         // Admin Panels
