@@ -50,7 +50,7 @@
     <br />
     <button v-on:click="save_changes">Save Changes</button>
 
-    <button v-on:click="collect_all_youth">Collect All Youth!</button>
+    <button v-on:click="manually_collect_youths">Collect All Youth!</button>
 
     <br /><br />
 
@@ -160,6 +160,25 @@ class Status {
 
   is_status(period, vals) {
     return this.parse_status(vals).includes(this[period]);
+  }
+
+  conflicts(arr) {
+    let status_only = [];
+    let array_only = [];
+
+    arr.forEach(period => {
+      if (this[period] == null || this.is_status(period, status.UNUSED)) array_only.push(period);
+    });
+
+    this.filter(status.USED).forEach(period => {
+      if (!arr.includes(period)) status_only.push(period);
+    });
+
+    if (array_only.length == 0 && status_only.length == 0) {
+      return null;
+    }
+
+    return {array_only, status_only};
   }
 }
 
@@ -287,24 +306,77 @@ export default {
   methods: {
 
     manually_collect_youths: async function() {
-      this.all_youth = [];
-      this.never_active_youths = [];
 
-      // TODO: Collect all youth and compare them with their internal representation on this page
+      // Initialize vars to track results
+      let all = [];
+      let conflicts = new Object(); // Case 1
+      let inactive  = [];           // Case 2
+      let untracked = new Object(); // Case 3
 
+      // Load all the youth profiles from the database
       let youth_collection = await db.collection("GlobalYouthProfile").get();
 
+      // Separate youth profiles into lists based on which case they are
       youth_collection.forEach(doc => {
-        console.log(doc.data());
-        let full_id = doc.data()["First Name"] + " " + doc.data()["Last Name"] + " " + doc.id;
-        let active_periods = doc.data()["ActivePeriods"];
 
-        if (active_periods == null || active_periods == []) {
-          this.never_active_youths.push(full_id);
+        // Initialize vars
+        let data = doc.data();
+        let full_id = data["First Name"] + " " + data["Last Name"] + " " + doc.id;
+        let active_periods = data["ActivePeriods"];
+
+        // If profile is tracked in ActivePeriods, check for conflicts
+        if (this.period_status[full_id] != null) {
+          let c = this.period_status[full_id].conflicts(active_periods)
+
+          // CASE 0: Profile and ActivePeriods agree, we don't care about these
+          if (c == null) {
+            console.log("No conflicts in profile " + full_id + ".");
+          }
+          // CASE 1: Profile is tracked in ActivePeriods, but has conflicting information
+          else {
+            console.log("Conflicts in profile " + full_id + ": ", c);
+            conflicts[full_id] = c;
+          }
         }
-        // TODO: else clause to check existing data against their profiles?
-        this.all_youth.push(full_id);
+
+        // If profile is not tracked in ActivePeriods, check if it has any records
+        else {
+          // CASE 2: Profile is not tracked, and has no active periods
+          if (active_periods == null || active_periods.length == 0) {
+            console.log("No period records exist for profile " + full_id);
+            inactive.push(full_id);
+          }
+
+          // CASE 3: Profile is not tracked, but does have active periods listed
+          else {
+            console.log("Youth " + full_id + " is not present in ActivePeriods, but has periods: ", active_periods);
+            untracked[full_id] = active_periods;
+          }
+        };
+
+        // Put all profiles in the "all" list, regardless of case
+        all.push({full_id, active_periods});
       });
+
+      // Handle case 1: Merge conflicts
+      // Display all options side by side, and let the user choose which to keep
+
+      // Handle case 2: Inactive youth who didn't make it into the ActivePeriods doc
+      // Add these youth to the never_active_youth list
+
+      console.log("The following youths with no period records were recovered: ", inactive);
+
+      this.never_active_youths = this.never_active_youths.concat(untracked).filter((elem, n, arr) => {
+        return arr.indexOf(elem) == n;
+      });
+
+      // Handle case 3: Youth with active periods not present in the ActivePeriods doc
+      // Display which periods the profile lists, and let the user choose which to keep
+
+      console.log("The following youths have active periods listed in their profiles, but are not present in the ActivePeriods document:", untracked);
+
+      // TODO: Display results of this search with modal
+      // TODO: Save any changes made here to the database
     },
 
     // Collects all youth IDs from all listed periods and initializes period_status with them
