@@ -193,10 +193,6 @@ Emits:
                 return `${name} ${id}`;
             },
 
-            reset() { 
-                this.value = null;
-            }
-
         },
 
         watch: {
