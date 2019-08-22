@@ -30,6 +30,7 @@
 <script>
 import {rb} from '../../firebase';
 import {db} from '../../firebase';
+import moment from 'moment'
 
 let checkedInRef = rb.ref('Checked In');
 
@@ -78,10 +79,13 @@ export default {
         formatData(data){
             let ret = [];
             for (let key in data){
+                let items = data[key]
+                items["Check In Time"] = moment(items["Check In Time"]).format("MM/DD hh:mm a")
                 ret.push({...{
                     "Youth ID": key,
-                }, ...data[key]})
+                }, ...items})
             }
+            
 
             //format Check In Time to be a nicer string
 

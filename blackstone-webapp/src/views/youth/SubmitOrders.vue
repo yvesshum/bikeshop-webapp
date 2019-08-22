@@ -127,6 +127,11 @@
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
+                    //Attaching current period 
+                    let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
+                    period = period.data()["CurrentPeriod"]
+                    input["Period"] = period;
+
                     //TODO: Submit order hidden fields from realtime database 
                     await rb.ref('Submit Orders Initializers').once("value" , snapshot => { 
                         let hiddenProtectedInitializers = snapshot.val()["Protected"];
