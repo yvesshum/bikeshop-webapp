@@ -39,7 +39,7 @@ Emits:
 
 <template>
     <div class = "YouthIDSelector">
-        <multiselect v-model="value" id="multiselect" :options="options" :placeholder="this.r_placeholder" open-direction="bottom" label="name" :custom-label="nameWithID">
+        <multiselect v-model="value" id="multiselect" :options="options" :placeholder="this.r_placeholder" open-direction="bottom" label="name" :custom-label="nameWithID" :multiple="multiple" :taggable="taggable">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
                     <span class="option__name">{{ props.option.name }}</span>
@@ -66,10 +66,18 @@ Emits:
     export default {
         name: 'YouthIDSelector',
         components: { Multiselect },
-        props: [
-            "placeholder",
-            "periods",
-        ],
+        props: {
+            "placeholder": {},
+            "periods": {},
+            "multiple": {
+                type: boolean,
+                default: false
+            },
+            "taggable": {
+                type: boolean,
+                defualt: false
+            }
+        },
         data () {
             return {
                 value: '',
@@ -192,6 +200,11 @@ Emits:
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
             },
+
+            //Needed for Check In
+            reset() {
+                this.value = null;
+            }
 
         },
 
