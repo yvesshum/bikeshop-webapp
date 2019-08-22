@@ -228,12 +228,7 @@ export default {
       checkbox_modal_visible: false,
       checkbox_modal_name: null,
       // TODO: Initialize this in the code
-      checkbox_modal_form: [
-        {period:"autumn19", msg:"(Next Period)", checked:true},
-        {period:"summer19", msg:"(Current Period)", checked:false},
-        {period:"spring19", msg:"", checked:true},
-        {period:"winter19", msg:"", checked:false},
-      ],
+      checkbox_modal_form: [],
     };
   },
 
@@ -267,6 +262,8 @@ export default {
 
     this.collect_all_youth();
     console.log(this.all_youth);
+
+    this.init_checkbox_form();
 
     this.display_current_period();
     this.display_future_period();
@@ -412,6 +409,20 @@ export default {
         id: id.slice(id.lastIndexOf(" ")+1),
         is_rolling_over: rollover,
       };
+    },
+
+    // Initialize the modal checkbox form to edit a youth's active periods
+    init_checkbox_form: function() {
+      var temp = [];
+
+      temp.push({period: this.future_period,  msg: "(Next Period)",    checked:false});
+      temp.push({period: this.current_period, msg: "(Current Period)", checked:false});
+
+      this.past_periods.forEach(function(period) {
+        temp.push({period, msg:"", checked:false});
+      });
+
+      this.checkbox_modal_form = temp;
     },
 
     // TODO: Merge this, edit_youth_periods into one function
