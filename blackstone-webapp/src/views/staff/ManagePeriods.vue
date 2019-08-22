@@ -389,11 +389,24 @@ export default {
       return this.period_status[full_id].is_status(period, status.O);
     },
 
+    // Display a modal allowing the user to change which periods a given youth is active for
     edit_youth_periods: function(event) {
-      event.preventDefault();
+
+      // Store the current selected youth as the one being edited
+      // TODO: I'm not sure this is really necessary, but better safe then sorry?
       this.edited_youth = this.selected_youth;
-      this.match_form_to_youth(this.get_youth_updated_periods(this.edited_youth.full_id));
-      this.show_form();
+
+      // Get the periods for which the edited youth is active
+      let youth_periods = this.get_youth_updated_periods(this.edited_youth.full_id);
+
+      // Set the variables for the checkbox modal, initializing the form to the active periods
+      this.checkbox_modal_name = this.edited_youth.name;
+      this.checkbox_modal_form.forEach(function (element) {
+        element.checked = youth_periods.includes(element.period);
+      });
+
+      // Display the checkbox modal
+      this.checkbox_modal_visible = true;
     },
 
     unpack_id: function(id) {
@@ -423,21 +436,6 @@ export default {
       });
 
       this.checkbox_modal_form = temp;
-    },
-
-    // TODO: Merge this, edit_youth_periods into one function
-    match_form_to_youth: function(youth_periods) {
-      this.checkbox_modal_name = this.edited_youth.name;
-
-      this.checkbox_modal_form.forEach(function (element) {
-        element.checked = youth_periods.includes(element.period);
-      });
-
-      this.show_form();
-    },
-
-    show_form: function() {
-      this.checkbox_modal_visible = true;
     },
 
     // TODO: Maybe specify which arrays should be updated?
