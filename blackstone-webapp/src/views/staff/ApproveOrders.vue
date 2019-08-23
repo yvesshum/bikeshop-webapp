@@ -179,7 +179,7 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"])).toString(),
+                            "Pending Hours": (Math.round((parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"]))*100)/100).toString(),
                             // "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"])).toString()
                         }).then((err) => {
                             if (err) this.showModal("Error", "Unable to update Youth Profile's hours, this may be an internet connection problem")
@@ -213,7 +213,7 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"])).toString()
+                            "Pending Hours": Math.round(((parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"]))*100)/100).toString()
                         }).catch(err => {
                             window.alert("Error " + err);
                             return null;
@@ -324,17 +324,17 @@
                 //if rejecting document is already approved
                 if (this.items[itemIndex]["Status"] === "Approved") {
                     //decrease hours spent by item cost
-                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
+                    let newHoursSpent = (Math.round((parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100).toString();
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
-                        "Hours Spent": newHoursSpent
+                        "Hours Spent": newHoursSpent.toString()
                     }).catch(err => {
                         window.alert("Error: " + err);
                         return null;
                     })
                 }
                 else { //if rejecting document is of pending status
-                    let newHoursSpent = (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
-                    let newPendingHours = (parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])).toString();
+                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100).toString();
+                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100).toString();
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent,
                         "Pending Hours": newPendingHours

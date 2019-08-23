@@ -111,7 +111,7 @@ export default {
             let newHoursEarned = Math.round((parseFloat(profile["Hours Earned"]) + this.value) * 100) / 100
             try { 
                 await db.collection("GlobalYouthProfile").doc(this.id).update({
-                    "Hours Earned": newHoursEarned
+                    "Hours Earned": newHoursEarned.toString()
                 });
             } catch (err) {
                 window.alert("Problem adding hours: " + err)

@@ -193,6 +193,11 @@ Emits:
                 return `${name} ${id}`;
             },
 
+            //Needed for Check In
+            reset() {
+                this.value = null;
+            }
+
         },
 
         watch: {

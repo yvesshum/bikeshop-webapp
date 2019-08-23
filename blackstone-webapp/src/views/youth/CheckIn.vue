@@ -220,6 +220,7 @@ export default {
                 "Notes": this.notes,
             };
             val["Period"] = period
+
             val = {...val, ...this.hours};
             let status = await db.collection("GlobalPendingHours").doc().set(val);
             if (status) {
@@ -230,13 +231,10 @@ export default {
             // add user's pending hours
             let profile = await db.collection("GlobalYouthProfile").doc(this.ID).get();
             profile = profile.data();
-            let newPendingHours = parseFloat(profile["Pending Hours"]) + categoryHourSum;
-            console.log(categoryHourSum);
-            console.log(newPendingHours);
-            console.log(profile);
+            let newPendingHours = Math.round((parseFloat(profile["Pending Hours"]) + categoryHourSum) * 100) / 100;
 
             await db.collection("GlobalYouthProfile").doc(this.ID).update({
-                "Pending Hours": newPendingHours
+                "Pending Hours": newPendingHours.toString()
             })
 
             // check user out of realtime database
