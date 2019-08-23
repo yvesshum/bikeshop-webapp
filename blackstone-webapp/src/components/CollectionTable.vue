@@ -77,8 +77,6 @@ Emits:
 
         watch: {
             collection: async function(coll) {
-                this.loaded_groups = new Object;
-                this.groupByOptions.forEach(group => {this.loaded_groups[group] = GROUP.UNLOADED});
 
                 // No collection passed - clear the table data and stop the function
                 if (coll == null) {
@@ -86,74 +84,78 @@ Emits:
                     return;
                 }
 
+                // Init vars
+                let group_opts = this.groupByOptions != null;
+                this.loaded_groups = new Object;
+
+                // If not loading progressively, load the whole collection
+                if (!this.progressiveLoad) {
+                    let snapshot = await this.collection.get();
+                    this.addCollection(snapshot);
+                }
+
+                // If group objects are already known, set their statuses based on progressiveLoad
+                if (group_opts) {
+                    this.groupByOptions.forEach(group => {
+                        this.loaded_groups[group] = this.progressiveLoad ? GROUP.UNLOADED : GROUP.LOADED;
+                    });
+                }
+
                 // Init new object to hold options based on props
-                let options = new Object();
+                let options = {
+                    groupBy: this.groupBy,
+                    groupValues: group_opts ? [this.groupByOptions] : null,
+                    groupStartOpen: !this.progressiveLoad,
 
-                // Build the options object based on groupBy and progressiveLoad values
-                if (this.groupBy != null) {
-                    options["groupBy"] = this.groupBy;
+                    // Dynamically retrieve groups from database, if applicable
+                    groupClick: async (e, group) => {
+                        let key = group.getKey();
 
-                    // Only retrieve parts of the collection when that group is opened locally
-                    // Note that if no prop is specified, this will default to false
-                    if (this.progressiveLoad) {
-                        options["groupStartOpen"] = false;
+                        // If group has not yet been loaded, set the status to loading
+                        if (this.loaded_groups[key] == GROUP.UNLOADED) {
+                            this.loaded_groups[key] = GROUP.LOADING;
 
-                        // Function to dynamically retrieve rows from the database
-                        options["groupClick"] = async function(e, group) {
-                            let key = group.getKey();
+                            // Query the database for all docs in this group
+                            let query = await this.collection.where(this.groupBy, "==", key).get();
 
-                            // If group has not yet been loaded, set the status to loading
-                            if (this.loaded_groups[key] == GROUP.UNLOADED) {
-                                this.loaded_groups[key] = GROUP.LOADING;
+                            // Add the docs to the table, and set the status to loaded
+                            this.addCollection(query);
+                            this.loaded_groups[key] = GROUP.LOADED;
+                        };
+                    },
 
-                                // Query the database for all docs in this group
-                                let query = await this.collection.where(this.groupBy, "==", key).get();
+                    // Format the header bar for each group
+                    groupHeader: (value, count, data, group) => {
+                        return `<div style='display:inline;'>
+                            Items from <i>${value}</i>
+                        </div>
+                        <div style='display:inline;float:right;'>
+                            <span style='color:#d00;'>
+                                (${gen_msg(this.loaded_groups[value])})
+                            </span>
+                        </div>`;
 
-                                // Add the docs to the table, and set the status to loaded
-                                this.addCollection(query);
-                                this.loaded_groups[key] = GROUP.LOADED;
+                        // Generate message based on group's load status
+                        function gen_msg(val) {
+
+                            // Fixes rendering error when groupByOptions is null
+                            if (!group_opts) val = GROUP.LOADED;
+
+                            switch (val) {
+                                case GROUP.UNLOADED:
+                                    return "Click to load";
+                                    break;
+                                case GROUP.LOADING:
+                                    return "Loading...";
+                                    break;
+                                case GROUP.LOADED:
+                                    return `${count?count:"No"} item${count==1?"":"s"}`;
+                                    break;
                             };
-                        }.bind(this);
-
-                        // Set the groups manually, since the table will start with no data
-                        options["groupValues"] = [this.groupByOptions];
-
-                        // Function to display the group heaer message
-                        // Based on whether group has been loaded, and how many items it has
-                        options["groupHeader"] = function(value, count, data, group) {
-                            return `<div style='display:inline;'>
-                                Items from <i>${value}</i>
-                            </div>
-                            <div style='display:inline;float:right;'>
-                                <span style='color:#d00;'>
-                                    (${gen_msg(this.loaded_groups[value])})
-                                </span>
-                            </div>`;
-
-                            // Generate message based on group's load status
-                            function gen_msg(val) {
-                                switch (val) {
-                                    case GROUP.UNLOADED:
-                                        return "Click to load";
-                                        break;
-                                    case GROUP.LOADING:
-                                        return "Loading...";
-                                        break;
-                                    case GROUP.LOADED:
-                                        return `${count?count:"No"} item${count==1?"":"s"}`;
-                                        break;
-                                };
-                            };
-                        }.bind(this);
-                    }
-
-                    // Retrieve the full collection at the start
-                    else {
-                        options["groupStartOpen"] = true;
-                        let snapshot = await this.collection.get();
-                        this.addCollection(snapshot);
-                    };
+                        };
+                    },
                 };
+
 
                 // Initialize the new Tabulator object
                 this.table = new Tabulator(this.$refs.table, {
@@ -172,6 +174,13 @@ Emits:
                     data: this.tableData,
                     columns: this.getColumns(),
                 });
+
+                // If no groups were given, set all automatic groups to loaded
+                if (!group_opts) {
+                    this.table.getGroups().forEach(group => {
+                        this.loaded_groups[group.getKey()] = group.LOADED;
+                    });
+                }
             },
 
             // If the table headers change, replace them in the Tabulator object
