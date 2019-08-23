@@ -1,27 +1,28 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Home from './views/Home.vue'
-import {firebase} from './firebase.js'
-import Login from './views/Login.vue'
-import TestHome from './views/TestHome.vue'
-import CheckIn from './views/youth/CheckIn.vue'
-import ProfileLookup from './views/youth/ProfileLookup.vue'
-import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue'
-import YouthSubmitOrders from './views/youth/SubmitOrders.vue'
-import ApproveOrders from './views/staff/ApproveOrders.vue'
-import YouthCheckOrders from './views/youth/CheckOrders.vue'
-import ManageApronSkills from './views/staff/ManageApronSkills.vue'
-import CheckedIn from './views/staff/CheckedIn.vue'
-import StaffRegisterYouth from './views/staff/RegisterNewYouth.vue'
-import HourTransfer from './views/youth/TransferCurrentHours'
-import ApproveTransfers from './views/staff/ApproveTransferHours'
-import AdminPanel from './views/staff/AdminPanel.vue'
-import YouthOrderSettings from './views/admin/YouthOrderSettings.vue'
-import ApproveHourLogs from './views/staff/ApproveHourLogs.vue'
-import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue'
-import ManagePeriods from './views/staff/ManagePeriods.vue'
-import AddSubtractHours from './views/staff/AddSubtractHours.vue'
-import LogHoursForYouth from './views/staff/LogHoursForYouth.vue'
+import Vue from 'vue';
+import Router from 'vue-router';
+import Home from './views/Home.vue';
+import {firebase} from './firebase.js';
+import Login from './views/Login.vue';
+import TestHome from './views/TestHome.vue';
+import CheckIn from './views/youth/CheckIn.vue';
+import ProfileLookup from './views/youth/ProfileLookup.vue';
+import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue';
+import YouthSubmitOrders from './views/youth/SubmitOrders.vue';
+import ApproveOrders from './views/staff/ApproveOrders.vue';
+import YouthCheckOrders from './views/youth/CheckOrders.vue';
+import ManageApronSkills from './views/staff/ManageApronSkills.vue';
+import CheckedIn from './views/staff/CheckedIn.vue';
+import StaffRegisterYouth from './views/staff/RegisterNewYouth.vue';
+import HourTransfer from './views/youth/TransferCurrentHours';
+import ApproveTransfers from './views/staff/ApproveTransferHours';
+import AdminPanel from './views/staff/AdminPanel.vue';
+import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
+import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
+import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
+import ManagePeriods from './views/staff/ManagePeriods.vue';
+import AddSubtractHours from './views/staff/AddSubtractHours.vue';
+import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
+import Stats from './views/staff/Stats.vue';
 
 Vue.use(Router);
 
@@ -200,6 +201,15 @@ const router = new Router({
             path: '/log-hours-for-youth',
             name: 'log-hours-for-youth',
             component: LogHoursForYouth,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/stats',
+            name: 'stats',
+            component: Stats,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

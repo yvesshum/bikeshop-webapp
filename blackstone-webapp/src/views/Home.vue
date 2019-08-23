@@ -113,6 +113,12 @@
     <p>Log hours for one or more youth</p>
   </button>
 </a>
+<a href="/stats">
+  <button class="page">
+    <h4>Stats for this quarter</h4>
+    <p>View various statistics</p>
+  </button>
+</a>
 
 </div>
 
