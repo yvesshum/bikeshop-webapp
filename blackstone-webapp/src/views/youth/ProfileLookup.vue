@@ -19,7 +19,7 @@
         :collection="order_log_collection"
         groupBy="Period"
         :groupByOptions="periods"
-        progressiveLoad="true"
+        :progressiveLoad="true"
         style="width:90%;margin:auto;"
       ></CollectionTable>
 
@@ -32,7 +32,7 @@
         :collection="work_log_collection"
         groupBy="Period"
         :groupByOptions="periods"
-        progressiveLoad="true"
+        :progressiveLoad="true"
         style="width:90%;margin:auto;"
       ></CollectionTable>
     </div>

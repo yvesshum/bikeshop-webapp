@@ -8,7 +8,7 @@ Usage:
         :collection="firebase_collection"
         groupBy="FieldToGroupBy"
         :groupByOptions="list_of_groups"
-        progressiveLoad="true"
+        :progressiveLoad="true"
         @rowSelected="function_to_handle_row"
     ></CollectionTable>
 
