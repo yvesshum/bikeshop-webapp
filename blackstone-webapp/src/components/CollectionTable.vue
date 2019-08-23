@@ -68,92 +68,91 @@ Emits:
                 this.loaded_groups = new Object;
                 this.groupByOptions.forEach(group => {this.loaded_groups[group] = GROUP.UNLOADED});
 
-                if (coll != null) {
-                    // Init new object to hold options based on props
-                    let options = new Object();
-
-                    // If grouping by some field...
-                    if (this.groupBy != null) {
-                        options["groupBy"] = this.groupBy;
-                        options["groupToggleElement"] = "header";
-
-                        // Only retrieve parts of the collection when that group is opened locally
-                        // Note that if no prop is specified, this will default to false
-                        if (this.progressiveLoad) {
-                            options["groupStartOpen"] = false;
-
-                            // Function to dynamically retrieve rows from the database
-                            options["groupClick"] = async function(e, group) {
-                                let key = group.getKey();
-
-                                // If group has not yet been loaded, set the status to loading
-                                if (this.loaded_groups[key] == GROUP.UNLOADED) {
-                                    this.loaded_groups[key] = GROUP.LOADING;
-
-                                    // Query the database for all docs in this group
-                                    let query = await this.collection.where(this.groupBy, "==", key).get();
-
-                                    // Add the docs to the table, and set the status to loaded
-                                    this.addCollection(query);
-                                    this.loaded_groups[key] = GROUP.LOADED;
-                                };
-                            }.bind(this);
-
-                            // Set the groups manually, since the table will start with no data
-                            options["groupValues"] = [this.groupByOptions];
-
-                            // Function to display the group heaer message
-                            // Based on whether group has been loaded, and how many items it has
-                            options["groupHeader"] = function(value, count, data, group) {
-                                return `<div style='display:inline;'>
-                                    Items from <i>${value}</i>
-                                </div>
-                                <div style='display:inline;float:right;'>
-                                    <span style='color:#d00;'>
-                                        (${gen_msg(this.loaded_groups[value])})
-                                    </span>
-                                </div>`;
-
-                                // Generate message based on group's load status
-                                function gen_msg(val) {
-                                    switch (val) {
-                                        case GROUP.UNLOADED:
-                                            return "Click to load";
-                                            break;
-                                        case GROUP.LOADING:
-                                            return "Loading...";
-                                            break;
-                                        case GROUP.LOADED:
-                                            return `${count?count:"No"} item${count==1?"":"s"}`;
-                                            break;
-                                    };
-                                };
-                            }.bind(this);
-                        }
-
-                        // Retrieve the full collection at the start
-                        else {
-                            options["groupStartOpen"] = true;
-                            let snapshot = await this.collection.get();
-                            this.addCollection(snapshot);
-                        };
-                    };
-
-                    // Initialize the new Tabulator object
-                    this.table = new Tabulator(this.$refs.table, {
-                        ...options,
-                        data: this.tableData,
-                        layout: "fitColumns",
-                        columns: this.getColumns(),
-                        selectable:1,
-                        rowSelected: row => { this.$emit('rowSelected', row); },
-                    });
-                }
-
-                // No collection passed - clear the table data
-                else {
+                // No collection passed - clear the table data and stop the function
+                if (coll == null) {
                     this.tableData = [];
+                    return;
                 }
+
+                // Init new object to hold options based on props
+                let options = new Object();
+
+                // If grouping by some field...
+                if (this.groupBy != null) {
+                    options["groupBy"] = this.groupBy;
+                    options["groupToggleElement"] = "header";
+
+                    // Only retrieve parts of the collection when that group is opened locally
+                    // Note that if no prop is specified, this will default to false
+                    if (this.progressiveLoad) {
+                        options["groupStartOpen"] = false;
+
+                        // Function to dynamically retrieve rows from the database
+                        options["groupClick"] = async function(e, group) {
+                            let key = group.getKey();
+
+                            // If group has not yet been loaded, set the status to loading
+                            if (this.loaded_groups[key] == GROUP.UNLOADED) {
+                                this.loaded_groups[key] = GROUP.LOADING;
+
+                                // Query the database for all docs in this group
+                                let query = await this.collection.where(this.groupBy, "==", key).get();
+
+                                // Add the docs to the table, and set the status to loaded
+                                this.addCollection(query);
+                                this.loaded_groups[key] = GROUP.LOADED;
+                            };
+                        }.bind(this);
+
+                        // Set the groups manually, since the table will start with no data
+                        options["groupValues"] = [this.groupByOptions];
+
+                        // Function to display the group heaer message
+                        // Based on whether group has been loaded, and how many items it has
+                        options["groupHeader"] = function(value, count, data, group) {
+                            return `<div style='display:inline;'>
+                                Items from <i>${value}</i>
+                            </div>
+                            <div style='display:inline;float:right;'>
+                                <span style='color:#d00;'>
+                                    (${gen_msg(this.loaded_groups[value])})
+                                </span>
+                            </div>`;
+
+                            // Generate message based on group's load status
+                            function gen_msg(val) {
+                                switch (val) {
+                                    case GROUP.UNLOADED:
+                                        return "Click to load";
+                                        break;
+                                    case GROUP.LOADING:
+                                        return "Loading...";
+                                        break;
+                                    case GROUP.LOADED:
+                                        return `${count?count:"No"} item${count==1?"":"s"}`;
+                                        break;
+                                };
+                            };
+                        }.bind(this);
+                    }
+
+                    // Retrieve the full collection at the start
+                    else {
+                        options["groupStartOpen"] = true;
+                        let snapshot = await this.collection.get();
+                        this.addCollection(snapshot);
+                    };
+                };
+
+                // Initialize the new Tabulator object
+                this.table = new Tabulator(this.$refs.table, {
+                    ...options,
+                    data: this.tableData,
+                    layout: "fitColumns",
+                    columns: this.getColumns(),
+                    selectable:1,
+                    rowSelected: row => { this.$emit('rowSelected', row); },
+                });
             },
 
             // If the table headers change, replace them in the Tabulator object
