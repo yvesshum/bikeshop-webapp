@@ -3,52 +3,190 @@
 
     <CollectionTable :heading_data="['Category 1', 'Category 2', 'Category 3']" :current_profile="Profile" collection_name="Collection">
 
-    heading_data: list of headers in the order to be displayed
+    heading_data: list of heading_data in the order to be displayed
     current_profile: profile to track
     collection_name: collection within the profile to display
 -->
 
 <template>
-    <Table :headingdata="heading_data" :table_data="tableData"></Table>
+    <div ref="table"></div>
 </template>
 <script>
-    import Table from "@/components/Table.vue"
+    const Tabulator = require('tabulator-tables');
+
+    const GROUP = {
+        LOADED: "loaded",
+        LOADING: "loading",
+        UNLOADED: "unloaded",
+    };
 
     export default {
         name: 'CollectionTable',
-        props: ['heading_data', 'current_collection', 'args'],
-        components: {Table},
+        props: ['heading_data', 'collection', 'args', 'groupBy', 'groupByOptions', 'progressiveLoad'],
 
         data: function () {
             return {
-                tableData: [], // data for table to display
+                // The Tabulator table object
+                table: null,
+
+                // The actual data displayed by the table
+                tableData: [],
+
+                // Tracks which groups have loaded, which have not, & which are currently loading
+                loaded_groups: null,
             }
         },
 
         watch: {
-            current_collection: async function(coll) {
+            collection: async function(coll) {
+                this.loaded_groups = new Object;
+                this.groupByOptions.forEach(group => {this.loaded_groups[group] = GROUP.UNLOADED});
+
                 if (coll != null) {
-                    var temp = await coll.get();
-                    this.tableData = this.formatCollection(temp);
+                    // Init new object to hold options based on props
+                    let options = new Object();
+
+                    // If grouping by some field...
+                    if (this.groupBy != null) {
+                        options["groupBy"] = this.groupBy;
+                        options["groupToggleElement"] = "header";
+
+                        // Only retrieve parts of the collection when that group is opened locally
+                        // Note that if no prop is specified, this will default to false
+                        if (this.progressiveLoad) {
+                            options["groupStartOpen"] = false;
+
+                            // Function to dynamically retrieve rows from the database
+                            options["groupClick"] = async function(e, group) {
+                                let key = group.getKey();
+
+                                // If group has not yet been loaded, set the status to loading
+                                if (this.loaded_groups[key] == GROUP.UNLOADED) {
+                                    this.loaded_groups[key] = GROUP.LOADING;
+
+                                    // Query the database for all docs in this group
+                                    let query = await this.collection.where(this.groupBy, "==", key).get();
+
+                                    // Add the docs to the table, and set the status to loaded
+                                    this.addCollection(query);
+                                    this.loaded_groups[key] = GROUP.LOADED;
+                                };
+                            }.bind(this);
+
+                            // Set the groups manually, since the table will start with no data
+                            options["groupValues"] = [this.groupByOptions];
+
+                            // Function to display the group heaer message
+                            // Based on whether group has been loaded, and how many items it has
+                            options["groupHeader"] = function(value, count, data, group) {
+                                return `<div style='display:inline;'>
+                                    Items from <i>${value}</i>
+                                </div>
+                                <div style='display:inline;float:right;'>
+                                    <span style='color:#d00;'>
+                                        (${gen_msg(this.loaded_groups[value])})
+                                    </span>
+                                </div>`;
+
+                                // Generate message based on group's load status
+                                function gen_msg(val) {
+                                    switch (val) {
+                                        case GROUP.UNLOADED:
+                                            return "Click to load";
+                                            break;
+                                        case GROUP.LOADING:
+                                            return "Loading...";
+                                            break;
+                                        case GROUP.LOADED:
+                                            return `${count?count:"No"} item${count==1?"":"s"}`;
+                                            break;
+                                    };
+                                };
+                            }.bind(this);
+                        }
+
+                        // Retrieve the full collection at the start
+                        else {
+                            options["groupStartOpen"] = true;
+                            let snapshot = await this.collection.get();
+                            this.addCollection(snapshot);
+                        };
+                    };
+
+                    // Initialize the new Tabulator object
+                    this.table = new Tabulator(this.$refs.table, {
+                        ...options,
+                        data: this.tableData,
+                        layout: "fitColumns",
+                        columns: this.getColumns(),
+                        selectable:1,
+                    });
                 }
+
+                // No collection passed - clear the table data
                 else {
                     this.tableData = [];
                 }
-            }
+            },
+
+            // If the table headers change, replace them in the Tabulator object
+            heading_data: function(new_headers) {
+                if (this.table != null) this.table.setColumns(new_headers);
+            },
+
+            // If the table data changes, replace it in the Tabulator object
+            tableData: function(new_data) {
+                if (this.table != null) this.table.replaceData(new_data);
+            },
         },
 
         methods: {
-            formatCollection: function(snapshot) { //formats into array of objects
-                var ret = [];
-                snapshot.forEach(doc => {
-                    var data = doc.data();
-                    data["Order Date"] = (new Date(doc.id).toLocaleString());
-                    data["documentID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    ret.push(data);
-                });
-                return ret;
-            }
 
+            // Add a retrieved collection to the table
+            addCollection: function(snapshot) {
+                this.tableData = this.tableData.concat(this.formatCollection(snapshot));
+            },
+
+            // Format a retrieved collection for the table
+            formatCollection: function(snapshot) {
+                var ret = [];
+                snapshot.forEach(doc => { ret.push(this.format_doc(doc)) });
+                return ret;
+            },
+
+            // Format a specific doc as a row
+            format_doc: function(doc) {
+                var data = doc.data();
+                
+                // Save the doc's ID as an extra field - used for convenience in setting status
+                data["documentID"] = doc.id;
+                
+                return data;
+            },
+
+            // Convert the heading data passed by prop into Tabulator column specifiers
+            getColumns: function() {
+
+                // Init arr to hold results
+                let ret = [];
+
+                // Loop through each heading passed by prop
+                this.heading_data.forEach(heading => {
+
+                    // If the heading is a string, convert it to an object and add it
+                    if (typeof heading == "string") {
+                        ret.push( {title: heading, field: heading} );
+                    }
+
+                    // If the heading is an object, add it directly
+                    else {
+                        ret.push(heading);
+                    }
+                });
+
+                // Return results
+                return ret;
+            },
         }
     }
 </script>

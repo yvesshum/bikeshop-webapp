@@ -16,12 +16,28 @@
       <br /><br />
 
       <h2>Order Log</h2>
-      <CollectionTable ref="order_log" :heading_data="this.order_log_headers" :current_collection="order_log_collection"></CollectionTable>
+      <CollectionTable
+        ref="order_log"
+        :heading_data="order_log_headers"
+        :collection="order_log_collection"
+        groupBy="Period"
+        :groupByOptions="periods"
+        progressiveLoad="true"
+        style="width:90%;margin:auto;"
+      ></CollectionTable>
 
       <br />
 
       <h2>Work Log</h2>
-      <CollectionTable ref="work_log" :heading_data="this.work_log_headers" :current_collection="work_log_collection"></CollectionTable>
+      <CollectionTable
+        ref="work_log"
+        :heading_data="work_log_headers"
+        :collection="work_log_collection"
+        groupBy="Period"
+        :groupByOptions="periods"
+        progressiveLoad="true"
+        style="width:90%;margin:auto;"
+      ></CollectionTable>
     </div>
   </div>
 </template>
@@ -59,6 +75,10 @@ export default {
 
       order_log_headers: [],
       work_log_headers: [],
+
+      work_log_headers_omit: ["First Name", "Last Name", "Youth ID"],
+
+      periods: [],
     };
   },
 
@@ -67,7 +87,13 @@ export default {
     this.log_headers_doc = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
 
     this.order_log_headers = this.log_headers_doc.data()['Order Log Headers'];
-    this.work_log_headers = this.log_headers_doc.data()['Work Log Headers'];
+    this.work_log_headers = this.log_headers_doc.data()['Work Log Headers'].filter(header => {
+      return !this.work_log_headers_omit.includes(header);
+    });
+
+    let periods_doc = await db.collection("GlobalVariables").doc("ActivePeriods").get();
+    let periods_data = periods_doc.data();
+    this.periods = [periods_data["CurrentPeriod"], ...periods_data["PastPeriods"]];
   },
 
     methods: {
