@@ -19,6 +19,18 @@ Props:
 
     collection - The Firebase collection to display documents from.
 
+    args - Additional arguments to be passed as options to the Tabulator constructor. Note that these will not override the following options, which are used by CollectionTable:
+
+        data
+        columns
+        groupBy
+        groupStartOpen
+        groupClick
+        groupValues
+        groupHeader
+
+        In addition, certain options have default values which may be overwritten in the args object. See the Tabulator constructor below for details.
+
     groupBy - The field to group the documents by. If not specified, the documents will not be grouped.
 
     groupByOptions - A list of possible groups the documents may fall into. If not specified, creates groups to match the data. Note that if this is specified, it will not be possible to load/display documents which do not match any of the listed groups.
@@ -77,10 +89,9 @@ Emits:
                 // Init new object to hold options based on props
                 let options = new Object();
 
-                // If grouping by some field...
+                // Build the options object based on groupBy and progressiveLoad values
                 if (this.groupBy != null) {
                     options["groupBy"] = this.groupBy;
-                    options["groupToggleElement"] = "header";
 
                     // Only retrieve parts of the collection when that group is opened locally
                     // Note that if no prop is specified, this will default to false
@@ -146,12 +157,20 @@ Emits:
 
                 // Initialize the new Tabulator object
                 this.table = new Tabulator(this.$refs.table, {
-                    ...options,
-                    data: this.tableData,
+
+                    // Allow args prop to override
                     layout: "fitColumns",
-                    columns: this.getColumns(),
                     selectable:1,
                     rowSelected: row => { this.$emit('rowSelected', row); },
+                    groupToggleElement: "header",
+
+                    // Include args prop options
+                    ...this.args,
+
+                    // Override values in args prop
+                    ...options,
+                    data: this.tableData,
+                    columns: this.getColumns(),
                 });
             },
 
