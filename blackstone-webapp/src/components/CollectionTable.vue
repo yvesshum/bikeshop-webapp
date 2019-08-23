@@ -1,19 +1,45 @@
 <!--
-    Displays a Firestore collection as a Tabulator table:
+Displays a Firebase collection as a Tabulator table.
 
-    <CollectionTable :heading_data="['Category 1', 'Category 2', 'Category 3']" :current_profile="Profile" collection_name="Collection">
+Usage:
 
-    heading_data: list of heading_data in the order to be displayed
-    current_profile: profile to track
-    collection_name: collection within the profile to display
+    <CollectionTable
+        :heading_data="list_of_headers"
+        :collection="firebase_collection"
+        groupBy="FieldToGroupBy"
+        :groupByOptions="list_of_groups"
+        progressiveLoad="true"
+        @rowSelected="function_to_handle_row"
+    ></CollectionTable>
+
+
+Props:
+
+    heading_data - A list of columns to display. Each header may either be a string listing the field to display, or a header object (see Tabulator documentation). Mixing and matching is allowed.
+
+    collection - The Firebase collection to display documents from.
+
+    groupBy - The field to group the documents by. If not specified, the documents will not be grouped.
+
+    groupByOptions - A list of possible groups the documents may fall into. If not specified, creates groups to match the data. Note that if this is specified, it will not be possible to load/display documents which do not match any of the listed groups.
+
+    progressiveLoad - Whether or not to wait until the user opens a group to retreive the documents which belong in it. Note that if progressive loading is desired, the "groupByOptions" prop MUST be specified - otherwise, no documents can be retrieved.
+
+
+Emits:
+
+    rowSelected - The selected row.
+
 -->
 
 <template>
     <div ref="table"></div>
 </template>
+
 <script>
     const Tabulator = require('tabulator-tables');
 
+    // An "enum" to represent the status of a given group
     const GROUP = {
         LOADED: "loaded",
         LOADING: "loading",
@@ -120,6 +146,7 @@
                         layout: "fitColumns",
                         columns: this.getColumns(),
                         selectable:1,
+                        rowSelected: row => { this.$emit('rowSelected', row); },
                     });
                 }
 
