@@ -27,9 +27,7 @@ A Table with an editable active and inactive list, which can switch between disp
           </DoubleTable>
         </div>
 
-        <br />
-
-        <ToggleButton :onText="this.onText" :offText="this.offText" @Toggle="toggle_edit_mode"></ToggleButton>
+        <ToggleButton onVariant="success" offVariant="primary" :onText="this.onText" :offText="this.offText" @Toggle="toggle_edit_mode" block></ToggleButton>
     </div>
 </template>
 

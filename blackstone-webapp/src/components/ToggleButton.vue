@@ -5,20 +5,30 @@
 
 <template>
     <div class="toggle_button">
-        <slot><button ref="button" v-on:click="toggle"></button></slot>
+        <b-button ref="button" :variant="variant" v-on:click="toggle" :block="block"></b-button>
     </div>
 </template>
 
 <script>
     export default {
         name: 'ToggleButton',
-        props: ['onText', 'offText'],
+        props: ['onVariant', 'offVariant', 'onText', 'offText', 'block'],
         components: {},
 
         data: function () {
             return {
                 active: false,
             };
+        },
+
+        computed: {
+            variant: function() {
+                if (this.active) {
+                    return this.onVariant;
+                } else {
+                    return this.offVariant;
+                };
+            },
         },
 
         mounted: function() {
