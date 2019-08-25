@@ -1,4 +1,4 @@
-/* 
+<!--
 * Usage: <SpecialInput input="String" args="arguments" ref="specialInput1"/>
 
 * Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race, Grade, Email
@@ -19,7 +19,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
 * The ref is so that we can call the .get method for the value later on.
 `this.$refs.specialInput1.get()` This returns whatever value it is
-*/
+-->
 
 <template>
     <div v-if="ready">
