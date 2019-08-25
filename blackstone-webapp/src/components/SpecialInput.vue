@@ -49,7 +49,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- Returns a 10 digit string -->
         <div v-else-if="input === 'Phone'">
-            <b-form-input v-model="value" type="number" :state="isValidPhoneNumber()" :style="args.style"></b-form-input>
+            <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input>
         </div>
 
         <!-- Returns a string "YYYY-MM-DD"-->
@@ -170,7 +170,7 @@ export default {
         },
 
         isValidPhoneNumber() {
-            return (this.value == null) ? false : this.value.toString().length === 10;
+            return (this.value == null) ? false : (this.value.toString().length === 10 && !isNaN(this.value));
         },
 
         isValidEmail() {
