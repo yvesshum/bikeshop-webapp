@@ -89,17 +89,16 @@ class Status {
   }
 
   parse_status(vals) {
-    if (vals == STATUS.O) {
-      vals = STATUS.O_ARR;
+    let arr = ["O", "X", "N"];
+    for (var i in arr) {
+      let key = arr[i];
+      if (vals == STATUS[key]) {
+        return STATUS[key + "_ARR"];
+      }
     }
-    else if (vals == STATUS.X) {
-      vals = STATUS.X_ARR;
-    }
-    else if (vals == STATUS.N) {
-      vals = STATUS.N_ARR;
-    }
-    else if (!Array.isArray(vals)) {
-      vals = [vals];
+
+    if (!Array.isArray(vals)) {
+      return [vals];
     };
 
     return vals;
