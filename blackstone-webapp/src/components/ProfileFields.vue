@@ -206,7 +206,6 @@ export default {
   },
 
   mounted: function() {
-    this.row_status = new Object();
     if (this.allow_edits == null) {
       this.allow_edits = false;
     }
