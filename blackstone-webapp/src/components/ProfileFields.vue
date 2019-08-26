@@ -276,7 +276,7 @@ export default {
                 month:   'long',
                 year:    'numeric'
               });
-            } catch {
+            } catch (error) {
               display_string(this, key, field_p, edit_input);
             };
           }
@@ -287,7 +287,7 @@ export default {
                 month:   'long',
                 year:    'numeric'
               });
-            } catch {
+            } catch (error) {
               display_string(this, key, field_p, edit_input);
             };
           }
@@ -427,7 +427,7 @@ export default {
       this.row_status[key] = new_status;
 
       let container =      document.getElementById(key + "_container");
-      let remove_button =  document.getElementById(key + "_remove_button")
+      let remove_button =  document.getElementById(key + "_remove_button");
       let data_field =     document.getElementById(key + "_field");
       let edit_container = document.getElementById(key + "_edit_container");
       let data_title =     document.getElementById(key + "_title");
