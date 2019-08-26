@@ -65,6 +65,116 @@
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 
+const STATUS = {
+  USED: "used",
+  UNUSED: "unused",
+  ADD: "add",
+  REMOVE: "remove",
+  REQ: "required",
+  IMM: "immutable",
+  X: "x", // ["unused", "remove"],      // Unused locally
+  O: "+", // ["used", "add", "required", "immutable"],           // Used locally
+  N: "n", // ["required", "immutable"], // Status can't be changed
+  UPDATE: "update",
+  X_ARR: ["unused", "remove"],
+  O_ARR: ["used", "add", "required", "immutable"],
+  N_ARR: ["required", "immutable"],
+};
+
+class Status {
+  constructor() {}
+
+  add(field_name, start_status) {
+    this[field_name] = start_status;
+  }
+
+  parse_status(vals) {
+    if (vals == STATUS.O) {
+      vals = STATUS.O_ARR;
+    }
+    else if (vals == STATUS.X) {
+      vals = STATUS.X_ARR;
+    }
+    else if (vals == STATUS.N) {
+      vals = STATUS.N_ARR;
+    }
+    else if (!Array.isArray(vals)) {
+      vals = [vals];
+    };
+
+    return vals;
+  }
+
+  filter(vals, match) {
+    if (match == undefined) match = true;
+    let arr = Object.keys(this);
+    vals = this.parse_status(vals);
+    return arr.filter((p) => vals.includes(this[p]) == match);
+  }
+
+  unfilter(vals) {
+    let arr = Object.keys(this);
+    vals = this.parse_status(vals);
+    return arr.filter(p => !vals.includes(this[p]));
+  }
+
+  update() {
+    for (var key in this) {
+      if (this[key] == STATUS.ADD) this[key] = STATUS.USED;
+      else if (this[key] == STATUS.REMOVE) this[key] = STATUS.UNUSED;
+    };
+  }
+
+  set(key, new_status, op) {
+    let old_status = this[key];
+    if (new_status == STATUS.O) {
+      new_status = (old_status == STATUS.UNUSED) ? STATUS.ADD : STATUS.USED;
+    }
+    else if (new_status == STATUS.X) {
+      new_status = (old_status == STATUS.USED) ? STATUS.REMOVE : STATUS.UNUSED;
+    }
+    else if (new_status == STATUS.UPDATE) {
+      new_status = (old_status == STATUS.ADD) ? STATUS.USED : STATUS.UNUSED;
+    };
+
+    this[key] = new_status;
+
+    if (op != null) op(key, new_status);
+
+    return new_status;
+  }
+
+  set_safe(key, new_status, op) {
+    if (!this.is_status(key, STATUS.N)) {
+      return this.set(key, new_status, op);
+    }
+    return new_status;
+  }
+
+  is_status(key, vals) {
+    return this.parse_status(vals).includes(this[key]);
+  }
+
+  conflicts(arr) {
+    let status_only = [];
+    let array_only = [];
+
+    arr.forEach(key => {
+      if (this[key] == null || this.is_status(key, STATUS.UNUSED)) array_only.push(key);
+    });
+
+    this.filter(STATUS.USED).forEach(key => {
+      if (!arr.includes(key)) status_only.push(key);
+    });
+
+    if (array_only.length == 0 && status_only.length == 0) {
+      return null;
+    }
+
+    return {array_only, status_only};
+  }
+}
+
 export default {
   name: 'profile_fields',
   props: ["currentProfile", "header_doc", "allow_edits", "show_optional_fields", "hide_fields"],
@@ -97,6 +207,7 @@ export default {
   },
 
   mounted: function() {
+    this.row_status = new Object();
     if (this.allow_edits == null) {
       this.allow_edits = false;
     }
@@ -116,17 +227,18 @@ export default {
   watch: {
 
     header_doc: function(new_header) {
+
       let table = this.$refs.fields_table;
       let data = new_header.data();
 
-      this.row_status = new Object();
+      this.row_status = new Status();
       this.array_fields = new Object();
 
-      append_table_section(this, "Required:", data["required"], "required");
-      append_table_section(this, "",          data["hidden"],   "immutable");
+      append_table_section(this, "Required:", data["required"], STATUS.REQ);
+      append_table_section(this, "",          data["hidden"],   STATUS.IMM);
 
       if (this.show_optional_fields) {
-        append_table_section(this, "Optional:", data["optional"], "unused");
+        append_table_section(this, "Optional:", data["optional"], STATUS.UNUSED);
       };
 
       function append_table_fullrow(heading) {
@@ -143,7 +255,7 @@ export default {
       function append_table_section(self, heading, content, default_state) {
         append_table_fullrow(heading);
         content.filter((item) => !self.hidden_fields.includes(item)).forEach(function(element) {
-          if (!(default_state == "immutable" && self.specially_displayed_fields.includes(element))) {
+          if (!(default_state == STATUS.IMM && self.specially_displayed_fields.includes(element))) {
             self.append_field_container(element, default_state);
           }
           self.set_row_status(element, default_state);
@@ -166,7 +278,7 @@ export default {
         });
 
         document.querySelectorAll(".edit_input").forEach((element, n) => {
-          if (this.row_status[element.name] == "unused") {
+          if (this.row_status.is_status(element.name, STATUS.UNUSED)) {
             element.parentNode.style.display = "none";
           };
         });
@@ -195,7 +307,7 @@ export default {
         document.querySelectorAll('.edit_input').forEach((element, n) => {
           // console.log(element);
           element.value = element.defaultValue;
-          if (this.row_status[element.name] == "unused") {
+          if (this.row_status.is_status(element.name, STATUS.UNUSED)) {
             this.set_all_input_vals(element, "");
           }
         });
@@ -208,11 +320,9 @@ export default {
       clear_data();
 
       // Set the status of all non-required and non-immutable fields to "unused"
-      Object.keys(this.row_status).filter(function(key) {
-        return !["required", "immutable"].includes(this.row_status[key]);
-      }.bind(this)).forEach(function(key) {
-        this.set_row_status(key, "unused");
-      }.bind(this));
+      // TODO - move this into clear_data
+      // TODO - confirm change profile modal if unsaved changes?
+      this.row_status.unfilter(STATUS.N).forEach(key => this.row_status.set(STATUS.UNUSED));
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
@@ -240,7 +350,7 @@ export default {
           // TODO: If you have to add a table row, it should be flagged - it's nonstandard
           if (field_p == null) {
             if (!this.show_optional_fields) continue;
-            field_p = this.append_field_container(key, "unused");
+            field_p = this.append_field_container(key, STATUS.UNUSED);
             field_c = document.getElementById(key + "_container");
           }
 
@@ -263,7 +373,7 @@ export default {
             field_c.classList.remove("edit_mode_only");
           };
 
-          this.set_row_status(key, "used");
+          this.set_row_status(key, STATUS.USED);
 
           var edit_input = document.getElementById(key + "_edit");
           
@@ -408,23 +518,10 @@ export default {
 
     set_row_status: function(key, new_status) {
 
-      // TODO: Should this be the case?
-      if (this.row_status[key] == "required" || this.row_status[key] == "immutable") return;
-
-      if (new_status == "required") {
-        this.row_status[key] = new_status;
-        return;
-      };
-
-      if (new_status == "×") new_status = "X";
-
-      // If special X or + is entered, determine which new status to use based on current status
-      let old_status = this.row_status[key];
-      if (new_status == "X") new_status = ((old_status == "used") ? "remove" : "unused");
-      if (new_status == "+") new_status = ((old_status == "unused") ? "add" : "used");
-
-      // Update the status
-      this.row_status[key] = new_status;
+      // TODO: Would just .set() work?
+      new_status = this.row_status.set_safe(key, new_status, (key, new_status) => {
+        console.log("Key \"" + key + "\" has been set to \"" + new_status + "\".");
+      });
 
       let container =      document.getElementById(key + "_container");
       let remove_button =  document.getElementById(key + "_remove_button");
@@ -436,42 +533,45 @@ export default {
       // Perform any extra operations
       switch (new_status) {
 
-        case "immutable":
+        case STATUS.IMM:
           if (container != null) container.classList.add("display_mode_only");
           break;
 
         // Field is currently being used in the profile
-        case "used":
-          if (container != null) container.classList.remove("edit_mode_only");
-          if (remove_button != null) remove_button.innerHTML = "&times;";
+        case STATUS.USED:
+          do_safe(container,     c => c.classList.remove("edit_mode_only"));
+          do_safe(remove_button, r => r.innerHTML = "&times;");
+
           if (this.edit_mode) {
-            edit_container.style.display = "";
+            do_safe(edit_container, e => e.style.display = "");
             data_field.style.display = "none";
           } else {
             data_field.style.display = "";
             if (this.specially_displayed_fields.includes(key)) {
-              edit_container.style.display = "";
-              if (container != null) container.classList.add("edit_mode_only");
+              do_safe(edit_container, e => e.style.display = "");
+              do_safe(container,      c => c.classList.add("edit_mode_only"));
             }
           };
 
           data_field.classList.remove("to_be_removed");
-          data_title.classList.remove("to_be_removed_title");
-          data_title.classList.remove("to_be_added_title");
+          do_safe(data_title, t => {
+            t.classList.remove("to_be_removed_title");
+            t.classList.remove("to_be_added_title");
+          });
           
           break;
 
         // Field is to be added to the profile (edit mode only)
-        case "add":
-          if (remove_button != null) remove_button.innerHTML = "&times;";
-          edit_container.style.display = "";
+        case STATUS.ADD:
+          do_safe(remove_button, r => r.innerHTML = "&times;");
+          do_safe(edit_container, e => e.style.display = "");
           data_field.style.display = "none";
           data_title.classList.add("to_be_added_title");
           break;
 
 
         // Field is not currently being used in the profile
-        case "unused":
+        case STATUS.UNUSED:
           if (container != null) container.classList.add("edit_mode_only");
           if (remove_button != null) remove_button.innerHTML = "+";
           edit_container.style.display = "none";
@@ -482,7 +582,7 @@ export default {
           break;
 
         // Field is to be removed from the profile (edit mode only)
-        case "remove":
+        case STATUS.REMOVE:
           if (remove_button != null) remove_button.innerHTML = "+";
           edit_container.style.display = "none";
           data_field.style.display = "";
@@ -490,12 +590,16 @@ export default {
           data_title.classList.add("to_be_removed_title");
           break;
 
-        case "required":
+        case STATUS.REQ:
           break;
 
         default:
           console.log("Error: Row cannot be set to status \"" + new_status + "\".");
       };
+
+      function do_safe(field, op) {
+        if (field != null) op(field);
+      }
     },
 
     set_all_input_vals: function(input, val) {
@@ -512,7 +616,7 @@ export default {
 
     create_field_container: function(key, row_index, default_state) {
 
-      if (!["unused", "immutable", "required"].includes(default_state)) {
+      if (![STATUS.UNUSED, STATUS.IMM, STATUS.REQ].includes(default_state)) {
         console.log("The default state of key ", key, " cannot be ", default_state);
       };
 
@@ -549,7 +653,7 @@ export default {
       // TODO: Collect which fields are dates into an array on profile switch?
 
       // Only create an edit bar if the field can be changed
-      if (default_state != "immutable") {
+      if (default_state != STATUS.IMM) {
         let edit_input = document.createElement("input");
         if (key == "DOB") {
           edit_input.type = "date";
@@ -577,19 +681,20 @@ export default {
       };
 
       // Only create a remove button if the field can be removed
-      if (default_state == "unused") {
+      if (default_state == STATUS.UNUSED) {
         let remove_button = document.createElement("button");
         remove_button.id = key + "_remove_button";
         remove_button.innerHTML = "+";
         let self = this;
         remove_button.onclick = function () {
-          self.set_row_status(key, this.innerHTML);
+          let new_status = (this.innerHTML == "+") ? STATUS.O : STATUS.X;
+          self.set_row_status(key, new_status);
         };
         remove_button_container.appendChild(remove_button);
       };
 
       // Only create a reset button if the field can be edited
-      if (default_state != "immutable") {
+      if (default_state != STATUS.IMM) {
         let reset_button = document.createElement("button");
         reset_button.innerHTML = "Reset";
         reset_button.onclick = function() {
@@ -623,30 +728,33 @@ export default {
       var c = false;
 
       // Check for any fields to be added/removed
-      Object.keys(this.row_status).forEach(function(element) {
-        if ((this.row_status[element] == "add" || this.row_status[element] == "remove")) {
-          c = true;
-        };
-      }.bind(this));
+      if (this.row_status.filter([STATUS.ADD, STATUS.REMOVE]).length > 0) {
+        console.log(this.row_status.filter([STATUS.ADD, STATUS.REMOVE]));
+        c = true;
+      }
 
       // If no fields to be added/removed, check existing fields for edits
-      if (!c) {
-        var el = form.length;
-        // console.log(el);  // Displays the number of fields in edit form
-        for (var e = 0; e < el; e++) {
-          n = form[e];
-          
-          // Don't bother checking immutable or unused fields for changes
-          if (["immutable", "unused"].includes(this.row_status[n.name])) continue;
-
-          if (this.array_fields[n.name] != null) {
-            c = c || (JSON.stringify(this.array_fields[n.name]) !== JSON.stringify(this.get_changes_as_array(n.name)));
-          } else {
-            // console.log(n);  // Displays the form elements
-            c = c || (n.value != n.defaultValue);
-          };
-        }
+      else {
+        let poss = this.row_status.filter([STATUS.USED, STATUS.REQ]);
+        let len = poss.length;
+        for (var n = 0; n < len; n++) {
+          let input = document.getElementById(poss[n] + "_edit");
+          console.log("Checking key " + poss[n] + " input: ", input);
+          if (input.value != input.defaultValue) {
+            c = true;
+            break;
+          }
+        };
       };
+
+      // TODO: Do we need to check for array inputs?
+
+      //     if (this.array_fields[n.name] != null) {
+      //       c = c || (JSON.stringify(this.array_fields[n.name]) !== JSON.stringify(this.get_changes_as_array(n.name)));
+      //     } else {
+      //       // console.log(n);  // Displays the form elements
+      //       c = c || (n.value != n.defaultValue);
+      //     };
 
       if (c) {
         this.create_confirm_modal();
@@ -665,19 +773,19 @@ export default {
 
         switch(this.row_status[key]) {
           // If field is unused or immutable, it won't have any changes to report
-          case "unused":
-          case "immutable":
+          case STATUS.UNUSED:
+          case STATUS.IMM:
             break;
 
-          case "remove":
+          case STATUS.REMOVE:
             this.changes_list[input_field.name] = {
               message: "removed",
               new_val: "",
             };
             break;
 
-          case "required":
-          case "used":
+          case STATUS.REQ:
+          case STATUS.USED:
             if (input_field.defaultValue != input_field.value) {
               let temp1 = "";
               if (this.array_fields[key] != null) {
@@ -693,7 +801,7 @@ export default {
             break;
 
           // Data field is being added: Save its value to the new profile
-          case "add":
+          case STATUS.ADD:
             if (input_field.defaultValue != input_field.value) {
               let temp2 = "";
               if (this.array_fields[key] != null) {
@@ -733,12 +841,11 @@ export default {
         let data_field = document.getElementById(input_field.name + "_field");
         switch(this.row_status[key]) {
           // Data field is not used by this profile: Do nothing
-          case "unused":
+          case STATUS.UNUSED:
             break;
 
           // Data field is being removed: Set it do unused and do nothing w the data
-          case "remove":
-            this.set_row_status(key, "unused");
+          case STATUS.REMOVE:
             break;
 
           // Data field is used: Save its updated value to the new profile and to the page
@@ -748,9 +855,9 @@ export default {
 
           // TODO: Save dates as dates!
           // TODO: If name field is changed, update ActivePeriods doc
-          case "required":
-          case "immutable":
-          case "used":
+          case STATUS.REQ:
+          case STATUS.IMM:
+          case STATUS.USED:
             if (this.array_fields[key] != null) {
               changes[input_field.name] = this.get_changes_as_array(key);
             } else {
@@ -759,9 +866,8 @@ export default {
             break;
 
           // Data field is being added: Save its value to the new profile
-          case "add":
+          case STATUS.ADD:
             changes[input_field.name] = input_field.value;
-            this.set_row_status(key, "used");
             break;
 
           // Catchall case
@@ -769,6 +875,8 @@ export default {
             console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
         };
       }.bind(this));
+
+      this.row_status.update();
 
       // Remove bolding from edited field titles
       // TODO: Make this a CSS class
