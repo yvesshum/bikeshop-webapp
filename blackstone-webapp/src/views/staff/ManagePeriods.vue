@@ -355,17 +355,17 @@ export default {
 
     //TODO: remove "get_youth" from these function names
     // Get the youth's active periods with all the local edits accounted for
-    get_youth_updated_periods: function(full_id) {
+    updated_periods: function(full_id) {
       return this.period_status[full_id].filter(STATUS.O);
     },
 
     // Get the youth's original active periods without any local edits
-    get_youth_original_periods: function(full_id) {
+    original_periods: function(full_id) {
       return this.period_status[full_id].filter([STATUS.USED, STATUS.REMOVE]);
     },
 
     // Get the periods in which the youth's status is being changed locally
-    get_youth_changing_periods: function(full_id) {
+    changing_periods: function(full_id) {
       return this.period_status[full_id].filter([STATUS.ADD, STATUS.REMOVE]);
     },
 
@@ -381,7 +381,7 @@ export default {
       this.edited_youth = this.selected_youth;
 
       // Get the periods for which the edited youth is active
-      let youth_periods = this.get_youth_updated_periods(this.edited_youth.full_id);
+      let youth_periods = this.updated_periods(this.edited_youth.full_id);
 
       // Set the variables for the checkbox modal, initializing the form to the active periods
       this.checkbox_modal_name = this.edited_youth.name;
@@ -490,7 +490,7 @@ export default {
       let def = this.get_active_changes();
 
       for (var key in this.period_status) {
-        let changing_periods = this.period_status[key].filter([STATUS.ADD, STATUS.REMOVE])
+        let changing_periods = this.changing_periods(key);
         if (changing_periods.length) {
           youth.push(key);
           periods = periods.concat(changing_periods);
