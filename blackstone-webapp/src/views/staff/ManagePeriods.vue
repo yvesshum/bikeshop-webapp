@@ -177,8 +177,6 @@ export default {
     this.past_periods_db = db.collection("GlobalVariables").doc(data["PastPeriodsDoc"]);
     this.past_periods_doc = await this.past_periods_db.get();
 
-    this.cached_youth_data     = new Object();
-    this.cached_youth_profiles = new Object();
 
     this.current_period = data["CurrentPeriod"];
     this.future_period  = data["FuturePeriod"];
