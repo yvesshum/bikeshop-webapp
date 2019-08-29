@@ -4,37 +4,23 @@
     <h1>Manage Periods</h1>
     <br />
 
-    <h3>Current Quarter ({{current_period}})</h3>
-    <BinaryTable
-      :displayTableHeaders="this.display_table_headers"
-      :editTableHeaders="this.edit_table_headers"
-      :tableData="active_table_data"
+    <div v-for="item in binary_tables">
+      <h3>{{item.Name}} ({{item.Period}})</h3>
+      <BinaryTable
+        :displayTableHeaders="display_table_headers"
+        :editTableHeaders="edit_table_headers"
+        :tableData="item.Data"
 
-      :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
-      onText="Update Table"
-      offText="Edit Currently Active Youth"
+        :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
+        onText="Update Table"
+        :offText="'Edit ' + item.Name"
 
-      @AcceptEdits="this.accept_current_edits"
-      @selectedRow="this.select_youth"
-    ></BinaryTable>
+        @AcceptEdits="item.AcceptEdits"
+        @selectedRow="select_youth"
+      ></BinaryTable>
 
-    <br /><br />
-
-    <h3>Next Quarter ({{future_period}})</h3>
-    <BinaryTable
-      :displayTableHeaders="this.display_table_headers"
-      :editTableHeaders="this.edit_table_headers"
-      :tableData="future_table_data"
-
-      :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
-      onText="Update Table"
-      offText="Edit Future Active Youth"
-
-      @AcceptEdits="this.accept_future_edits"
-      @selectedRow="this.select_youth"
-    ></BinaryTable>
-
-    <br />
+      <br /><br />
+    </div>
 
     <h3>Past Quarters</h3>
     <!-- <Table :headingdata="['test', 'test2']" :table_data="[{'test': 'hi', 'test2': 'bye', 
@@ -140,8 +126,7 @@ export default {
         {title:"Name", field:"name"},
         {title:"ID",   field:"id"},
       ],
-      active_table_data: [],
-      future_table_data: [],
+      binary_tables: [],
 
       past_table: null,
       past_table_data: [],
@@ -199,10 +184,12 @@ export default {
     this.collect_all_youth();
     console.log(this.all_youth);
 
+    this.construct_bin_table("Current Period", this.current_period);
+    this.construct_bin_table("Next Period",    this.future_period);
+
     this.init_checkbox_form();
 
-    this.display_current_period();
-    this.display_future_period();
+    this.display_binary_tables();
     this.display_past_periods();
   },
 
@@ -219,6 +206,15 @@ export default {
   watch: {},
 
   methods: {
+
+    construct_bin_table: function(name, period) {
+      this.binary_tables.push({
+        Name: name,
+        Period: period,
+        Data: [],
+        AcceptEdits: edits => this.accept_period_edits(edits, period),
+      });
+    },
 
     manually_collect_youths: async function() {
 
@@ -444,8 +440,7 @@ export default {
         }
       }.bind(this));
 
-      this.display_current_period();
-      this.display_future_period();
+      this.display_binary_tables();
       this.past_table.replaceData(this.past_table_data);
 
       // If match is true, returns all table elements matching current youth and given period
@@ -674,85 +669,52 @@ export default {
       this.checkbox_modal_visible = false;
     },
 
-    // Display the current period on the page
-    display_current_period: function() {
+    display_binary_tables: function() {
+      this.binary_tables.forEach(table => {
 
-      // Initialize arrays to store youth active and inactive in the current period
-      let active = [];
-      let inactive = [];
+        // Initialize arrays to store youth active and inactive in the current period
+        let active = [];
+        let inactive = [];
 
-      // Sort all youth into either active this period or inactive this period
-      for (var n in this.all_youth) {
+        // Create a message for youth not rolling over, based on which table this is
+        let no_return_msg = (table.Period == this.current_period) ? "Not Returning" : "New";
 
-        // Create the new row from the preexisting youth object, plus a status
-        let youth = this.unpack_id(this.all_youth[n]);
-        youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "Not Returning";
+        // Sort all youth into either active this period or inactive this period
+        this.all_youth.forEach(full_id => {
 
-        // Put the row in the appropriate array
-        if (this.youth_is_active(youth.full_id, this.current_period)) {
-          active.push(youth);
-        } else {
-          inactive.push(youth);
-        }
-      };
+          // Create the new row from the preexisting youth object, plus a status
+          let youth = this.unpack_id(full_id);
+          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : no_return_msg;
 
-      // Set the table data prop
-      this.active_table_data = {active, inactive};
+          // Put the row in the appropriate array
+          if (this.youth_is_active(youth.full_id, table.Period)) {
+            active.push(youth);
+          } else {
+            inactive.push(youth);
+          }
+        });
+
+        // Update the current table's data
+        table.Data = {active, inactive};
+      });
     },
 
-    accept_current_edits: function(edits) {
-      edits.active.forEach(function(youth) {
-        this.period_status[youth.full_id].set(this.current_period, STATUS.O);
-      }.bind(this));
+    accept_period_edits: function(edits, period) {
+      // Set active youth in given period
+      edits.active.forEach(youth => {
+        this.period_status[youth.full_id].set(period, STATUS.O);
+      });
 
-      edits.inactive.forEach(function(youth) {
-        this.period_status[youth.full_id].set(this.current_period, STATUS.X);
-      }.bind(this));
+      // Set inactive youth in given period
+      edits.inactive.forEach(youth => {
+        this.period_status[youth.full_id].set(period, STATUS.X);
+      });
 
+      // Update the displays
       // TODO: Single function to update the arrays all at once?
-      Object.keys(this.period_status).forEach(function(youth) {
+      Object.keys(this.period_status).forEach(youth => {
         this.update_active_arrays(this.unpack_id(youth));
-      }.bind(this));
-    },
-
-    // Display the next period on the page
-    display_future_period: function() {
-
-      // Initialize arrays to store youth active and inactive in the future period
-      let active = [];
-      let inactive = [];
-
-      // Sort all youth into either active this period or inactive next period
-      for (var n in this.all_youth) {
-
-        // Create the new row from the preexisting youth object, plus a status
-        let youth = this.unpack_id(this.all_youth[n]);
-        youth.status = (youth.is_rolling_over()) ? "Rolling Over" : "New";
-
-        // Put the row in the appropriate array
-        if (this.youth_is_active(youth.full_id, this.future_period)) {
-          active.push(youth);
-        } else {
-          inactive.push(youth);
-        }
-      };
-
-      // Set the table data prop
-      this.future_table_data = {active, inactive};
-    },
-
-    accept_future_edits: function(edits) {
-      edits.active.forEach(function(youth) {
-        this.period_status[youth.full_id].set(this.future_period, STATUS.O);
-      }.bind(this));
-
-      edits.inactive.forEach(function(youth) {
-        this.period_status[youth.full_id].set(this.future_period, STATUS.X);
-      }.bind(this));
-
-      Object.keys(this.period_status).forEach(function(youth) {
-        this.update_active_arrays(this.unpack_id(youth));
-      }.bind(this));
+      });
     },
 
     // Display the previous periods on the page
