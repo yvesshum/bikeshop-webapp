@@ -104,6 +104,7 @@
 <script>
 import {db} from '@/firebase.js'
 import {rb} from '../../firebase'
+import {Timestamp} from '@/firebase.js'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import moment from 'moment';
 import { setTimeout } from 'timers';
@@ -210,16 +211,16 @@ export default {
             //add to GlobbalPendingHours
             let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
             period = period.data()["CurrentPeriod"]
-
+            
             let val = {
-                "Check In": this.checkedInUsers[this.ID]["Check In Time"],
-                "Check Out": moment().format(),
                 "First Name": this.FirstName,
                 "Last Name": this.LastName,
                 "Youth ID": this.ID,
                 "Notes": this.notes,
             };
             val["Period"] = period
+            val["Check In"] = Timestamp.fromDate(moment(this.checkedInUsers[this.ID]["Check In Time"]).toDate());
+            val["Check Out"] = Timestamp.fromDate(moment().toDate());
 
             val = {...val, ...this.hours};
             let status = await db.collection("GlobalPendingHours").doc().set(val);
