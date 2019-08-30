@@ -1,10 +1,16 @@
 <template>
     <div class = "NavBar">
-        <b-navbar type="dark" variant="info" fill>
+        <!-- <b-navbar type="dark" variant="info" fill>
             <div class ="NavBarContents">
             <b-navbar-brand href="/" style="align-self: center">Dashboard</b-navbar-brand>
             <img alt="experimental_station_logo" src = "../assets/experimental_station_logo.png" width = "20%" @click="imageUrl">
             <b-button pill @click="logout" style="align-self: center">{{buttonText}}</b-button>
+            </div>
+        </b-navbar> -->
+        <b-navbar class="navbar navbar-light navbar-expand-md shadow-sm navigation-clean-button" style="background-color: #16a2b8;">
+            <div class="container">
+              <a class="navbar-brand" href="/" style="font-family: Cabin, sans-serif;">Dashboard</a>
+              <a class="btn btn-light text-left bg-info border rounded border-info action-button" role="button" @click="logout">Log out</a>
             </div>
         </b-navbar>
     </div>

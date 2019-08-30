@@ -121,6 +121,7 @@
     import YouthIDSelector from '../../components/YouthIDSelector';
     import VueNumericInput from 'vue-numeric-input';
     import {db} from '../../firebase';
+    import {Timestamp} from '@/firebase.js'
     export default {
         name: 'HourTransfer',
         components: {
@@ -214,7 +215,7 @@
                             "From Name": fromYouthProfile["First Name"] + " " +  fromYouthProfile["Last Name"],
                             "To Name": toYouthProfile["First Name"] + " " + toYouthProfile["Last Name"],
                             "Amount": amount,
-                            "Date": new Date().toLocaleString(),
+                            "Date": Timestamp.fromDate(new Date()),
                             "Notes": this.note,
                             "Period": period
                         }).catch(err => {

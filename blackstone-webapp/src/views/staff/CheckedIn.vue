@@ -64,7 +64,7 @@ export default {
             headers = headers.data().fields;
             let fields = [];
             for (let i = 0; i < headers.length; i++) {
-                fields.push({key: headers[i], sortable: true});
+                fields.push({key: Object.keys(headers[i])[0], sortable: true});
             }
             this.fields = fields;
         },

@@ -93,6 +93,8 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import moment from 'moment'
+    import {Timestamp} from '@/firebase.js'
     export default {
         name: 'ApproveTransfers',
         components: {
@@ -132,13 +134,13 @@
                     window.alert("Error, unable to get fields 'Hour Transfers' from 'GlobalFieldsCollection'");
                     return null;
                 }
-
                 headers = headers.data().fields;
                 let fields = [];
                 for (let i = 0; i < headers.length; i++) {
-                    fields.push({key: headers[i], sortable: true});
+                    fields.push({key: Object.keys(headers[i])[0], sortable: true});
                 }
                 this.fields = fields;
+
             },
 
             async getTData() {
@@ -151,6 +153,7 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Date"] = moment(data["Date"].toDate()).format("YYYY-MM-DD hh:mm a");
                     ret.push(data);
                 });
                 return ret;
@@ -216,19 +219,19 @@
                 //Create a log collection in Global Youth Profile for these transfers
                 console.log(row);
                 let logFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
-                    "Date": row["Date"],
+                    "Date": Timestamp.fromDate(moment(row["Date"], "YYYY-MM-DD hh:mm a").toDate()),
                     "To ID": row["To ID"],
                     "To Name": row["To Name"],
-                    "Amount": row["Amount"],
+                    "Amount": parseFloat(row["Amount"]),
                     "Notes": row["Notes"],
                     "Period": row["Period"]
                 });
 
                 let logToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).collection("Transfer Log").doc().set({
-                    "Date": row["Date"],
+                    "Date": Timestamp.fromDate(moment(row["Date"], "YYYY-MM-DD hh:mm a").toDate()),
                     "From ID": row["From ID"],
                     "From Name": row["From Name"],
-                    "Amount": row["Amount"],
+                    "Amount": praseFloat(row["Amount"]),
                     "Notes": row["Notes"],
                     "Period": row["Period"]
                 });
