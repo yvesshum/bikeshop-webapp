@@ -885,27 +885,33 @@ export default {
     select_youth: function(source_table, row) {
       let data = row.getData();
 
-      if (source_table != "Past") this.deselect_youth(source_table);
-      else if (source_table != "Inactive") this.inactive_table.deselectRow();
+      // Since the Inactive table and the Past/Present/Future tables are mutually exclusive (that is, a youth may only be in one of them), we have to clear whichever group we're not picking from
+      if (source_table == "Inactive") this.deselect_youth(source_table);
+      else this.inactive_table.deselectRow();
 
+      // Filter out the matching rows from the past table, then select each of them individually
       this.past_table.getRows()
         .filter(r => r.getData().full_id == data.full_id)
         .forEach(r => this.past_table.selectRow(r));
 
+      // Select the appropriate row in the current and future tables
       this.binary_tables.forEach( table => table.Table.selectRow(data.id) );
 
+      // Set the selected youth var
       this.selected_youth = this.unpack_id(data.full_id);
     },
 
     deselect_youth: function(source_table) {
+      // Clear the past_table selection regardless, since it may have more than one row selected
       this.past_table.deselectRow();
 
+      // Clear all tables except the one specified source_table, to guard against infinite loops
       if (source_table != "Inactive") this.inactive_table.deselectRow();
-
       this.binary_tables.forEach(table => {
         if (source_table != table.period) table.Table.deselectRow();
       });
 
+      // Clear the selected youth var
       this.selected_youth = null;
     },
   }
