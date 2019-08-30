@@ -12,7 +12,10 @@
         :tableData="item.Data"
         :displayOptions="{selectableRangeMode: null}"
 
-        :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
+        :placeholders="{
+          left: 'No youth are inactive during ' + item.Period,
+          right: 'No youth are active during '  + item.Period
+        }"
         onText="Update Table"
         :offText="'Edit ' + item.Name"
 
@@ -38,6 +41,7 @@
       :headingdata="edit_table_headers"
       :table_data="inactive_youth_data"
       :args="{selectableRangeMode: null}"
+      placeholder="No youth found without an active period."
       @selectedRow="row => select_youth('Inactive', row)"
       @deselectedRow="row => deselect_youth('Inactive')"
       @Table="t => inactive_table = t"

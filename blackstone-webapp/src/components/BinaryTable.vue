@@ -10,6 +10,7 @@ A Table with an editable active and inactive list, which can switch between disp
                 :headingdata="this.displayTableHeaders"
                 :table_data="this.active_data"
                 :args="displayOptions"
+                :placeholder="placeholders.right"
                 @selectedRow="this.row_selected"
                 @deselectedRow="this.row_deselected"
                 @Table="emit_table"
