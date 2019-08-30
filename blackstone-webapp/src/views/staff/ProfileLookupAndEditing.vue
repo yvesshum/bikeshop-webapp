@@ -10,7 +10,7 @@
     <!-- <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
 
     <div ref="body_fields" style="display: none;">
-      <ProfileFields :current-profile="currentProfile" :header_doc="this.header_doc" :allow_edits="true" :show_optional_fields="true" />
+      <ProfileFields :profile="currentProfile" :headerDoc="header_doc" edit showOptionalFields />
       <!-- <ApronBar /> -->
 
       <br /><br />

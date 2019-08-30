@@ -6,7 +6,7 @@
     <YouthIDSelector @selected="selectedID"/>
 
     <div ref="body_fields" style="display: none;">
-      <ProfileFields :current-profile="currentProfile" :header_doc="this.header_doc" :allow_edits="false" :show_optional_fields="false" :hide_fields="hidden_fields" />
+      <ProfileFields :profile="currentProfile" :headerDoc="header_doc" :hideFields="hidden_fields" />
 
       <!-- <ApronBar /> -->
 

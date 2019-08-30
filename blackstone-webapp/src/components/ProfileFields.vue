@@ -69,7 +69,7 @@ import {Status} from '@/components/Status.js';
 
 export default {
   name: 'profile_fields',
-  props: ["currentProfile", "header_doc", "allow_edits", "show_optional_fields", "hide_fields"],
+  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields"],
   components: {
     
   },
@@ -98,26 +98,40 @@ export default {
     }
   },
 
-  mounted: function() {
-    if (this.allow_edits == null) {
-      this.allow_edits = false;
-    }
-    else if (typeof this.allow_edits != "boolean") {
-      throw "Var \"allow_edits\" of ProfileFields component must be a boolean value, not \"" + this.allow_edits + "\".";
-    };
+  computed: {
+    // Allow "edits" to be passed in as just a tag, or with a bound value
+    allow_edits: function() {
+      if (typeof this.edit == "string") {
+        return true;
+      } else {
+        return !!this.edit;
+      }
+    },
 
+    // Allow "showOptionalFields" to be passed in as just a tag, or with a bound value
+    show_optional_fields: function() {
+      if (typeof this.showOptionalFields == "string") {
+        return true;
+      } else {
+        return !!this.showOptionalFields;
+      }
+    },
+  },
+
+  mounted: function() {
     if (!this.allow_edits) {
       this.$refs.edit_profile.style.display = "none";
     };
 
-    if (this.hide_fields != null) {
-      this.hidden_fields = [...this.hidden_fields, ...this.hide_fields];
+    // TODO: Make a computed value to allow dynamic field hiding?
+    if (this.hideFields != null) {
+      this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
     };
   },
 
   watch: {
 
-    header_doc: function(new_header) {
+    headerDoc: function(new_header) {
 
       let table = this.$refs.fields_table;
       let data = new_header.data();
@@ -205,7 +219,7 @@ export default {
       };
     },
 
-    currentProfile: function(doc) {
+    profile: function(doc) {
 
       // Clear the old data from the screen
       clear_data();
