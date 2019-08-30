@@ -48,15 +48,13 @@ export class Status {
 
   filter(vals, match) {
     if (match == undefined) match = true;
-    let arr = Object.keys(this);
     vals = this.parse_status(vals);
-    return arr.filter((p) => vals.includes(this[p]) == match);
+    return this.keys().filter((p) => vals.includes(this[p]) == match);
   }
 
   unfilter(vals) {
-    let arr = Object.keys(this);
     vals = this.parse_status(vals);
-    return arr.filter(p => !vals.includes(this[p]));
+    return this.keys().filter(p => !vals.includes(this[p]));
   }
 
   update() {
@@ -98,7 +96,7 @@ export class Status {
   }
 
   set_all(new_status) {
-    Object.keys(this).forEach( key => this.set(key, new_status) );
+    this.keys().forEach( key => this.set(key, new_status) );
   }
 
   set_all_safe(new_status) {
