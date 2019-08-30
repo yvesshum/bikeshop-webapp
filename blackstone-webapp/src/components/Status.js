@@ -66,7 +66,7 @@ export class Status {
     };
   }
 
-  set(key, new_status, op) {
+  set(key, new_status) {
     let old_status = this[key];
     if (new_status == STATUS.O) {
       if (this.is_status(key, STATUS.O)) {
@@ -87,14 +87,12 @@ export class Status {
 
     this[key] = new_status;
 
-    if (op != null) op(key, new_status);
-
     return new_status;
   }
 
-  set_safe(key, new_status, op) {
+  set_safe(key, new_status) {
     if (!this.is_status(key, STATUS.N)) {
-      return this.set(key, new_status, op);
+      return this.set(key, new_status);
     }
     return new_status;
   }

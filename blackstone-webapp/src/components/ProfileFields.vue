@@ -409,10 +409,7 @@ export default {
 
     set_row_status: function(key, new_status) {
 
-      // TODO: Would just .set() work?
-      new_status = this.row_status.set_safe(key, new_status, (key, new_status) => {
-        console.log("Key \"" + key + "\" has been set to \"" + new_status + "\".");
-      });
+      new_status = this.row_status.set_safe(key, new_status);
 
       let container =      document.getElementById(key + "_container");
       let remove_button =  document.getElementById(key + "_remove_button");
