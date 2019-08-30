@@ -10,13 +10,16 @@
         :displayTableHeaders="display_table_headers"
         :editTableHeaders="edit_table_headers"
         :tableData="item.Data"
+        :displayOptions="{selectableRangeMode: null}"
 
         :placeholders="{left:'No youth inactive this quarter', right:'No youth active this quarter'}"
         onText="Update Table"
         :offText="'Edit ' + item.Name"
 
         @AcceptEdits="item.AcceptEdits"
-        @selectedRow="select_youth"
+        @selectedRow="row => select_youth(item.Table, row)"
+        @deselectedRow="row => deselect_youth(item.Table)"
+        @Table="t => item.Table = t"
       ></BinaryTable>
 
       <br /><br />
@@ -34,6 +37,10 @@
     <Table
       :headingdata="edit_table_headers"
       :table_data="inactive_youth_data"
+      :args="{selectableRangeMode: null}"
+      @selectedRow="row => select_youth('Inactive', row)"
+      @deselectedRow="row => deselect_youth('Inactive')"
+      @Table="t => inactive_table = t"
     ></Table>
 
     <button v-show="selected_youth != null" v-on:click="edit_youth_periods">{{edit_button_message}}</button>
@@ -136,6 +143,10 @@ export default {
 
       past_table: null,
       past_table_data: [],
+      present_table: null,
+      future_table: null,
+      inactive_table: null,
+
       inactive_youth_data: [],
 
       // Modal variables
@@ -743,14 +754,11 @@ export default {
     display_past_periods: function() {
       let data = this.past_periods_doc.data();
 
-      this.past_periods.forEach(function(period) {
-        data[period].forEach(function (full_id) {
-          this.past_table_data.push({
-            ...this.unpack_id(full_id),
-            quarter: period
-          });
-        }.bind(this));
-      }.bind(this));
+      this.past_periods.forEach(quarter => {
+        data[quarter].forEach(full_id => {
+          this.past_table_data.push({ ...this.unpack_id(full_id), quarter });
+        });
+      });
 
       this.past_table = new Tabulator("#past-quarters-table", {
         data:this.past_table_data,
@@ -764,13 +772,8 @@ export default {
           {title:"ID", field:"id"},
         ],
         selectable:1,
-        rowSelected:function(row){
-          this.past_table.selectRow(row.getIndex());
-          this.selected_youth = this.unpack_id(row.getData().full_id);
-        }.bind(this),
-        rowDeselected:function(row){
-          this.past_table.deselectRow();
-        }.bind(this),
+        rowSelected:   row => this.select_youth("Past", row),
+        rowDeselected: row => this.deselect_youth("Past"),
       });
     },
 
@@ -879,8 +882,31 @@ export default {
       return name.match(regex) != null;
     },
 
-    select_youth: async function(row) {
-      this.selected_youth = this.unpack_id(row.getData().full_id);
+    select_youth: function(source_table, row) {
+      let data = row.getData();
+
+      if (source_table != "Past") this.deselect_youth(source_table);
+      else if (source_table != "Inactive") this.inactive_table.deselectRow();
+
+      this.past_table.getRows()
+        .filter(r => r.getData().full_id == data.full_id)
+        .forEach(r => this.past_table.selectRow(r));
+
+      this.binary_tables.forEach( table => table.Table.selectRow(data.id) );
+
+      this.selected_youth = this.unpack_id(data.full_id);
+    },
+
+    deselect_youth: function(source_table) {
+      this.past_table.deselectRow();
+
+      if (source_table != "Inactive") this.inactive_table.deselectRow();
+
+      this.binary_tables.forEach(table => {
+        if (source_table != table.period) table.Table.deselectRow();
+      });
+
+      this.selected_youth = null;
     },
   }
 }
