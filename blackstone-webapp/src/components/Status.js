@@ -22,6 +22,14 @@ export class Status {
     this[field_name] = start_status;
   }
 
+  keys() {
+    return Object.keys(this);
+  }
+
+  forEach(op) {
+    this.keys().forEach(op);
+  }
+
   parse_status(vals) {
     let arr = ["O", "X", "N"];
     for (var i in arr) {
@@ -61,14 +69,21 @@ export class Status {
   set(key, new_status, op) {
     let old_status = this[key];
     if (new_status == STATUS.O) {
-      new_status = (old_status == STATUS.UNUSED) ? STATUS.ADD : STATUS.USED;
+      if (this.is_status(key, STATUS.O)) {
+        new_status = this[key];
+      }
+      else {
+        new_status = (old_status == STATUS.UNUSED) ? STATUS.ADD : STATUS.USED;
+      }
     }
     else if (new_status == STATUS.X) {
-      new_status = (old_status == STATUS.USED) ? STATUS.REMOVE : STATUS.UNUSED;
+      if (this.is_status(key, STATUS.X)) {
+        new_status = this[key];
+      }
+      else {
+        new_status = (old_status == STATUS.USED) ? STATUS.REMOVE : STATUS.UNUSED;
+      }
     }
-    else if (new_status == STATUS.UPDATE) {
-      new_status = (old_status == STATUS.ADD) ? STATUS.USED : STATUS.UNUSED;
-    };
 
     this[key] = new_status;
 
@@ -82,6 +97,14 @@ export class Status {
       return this.set(key, new_status, op);
     }
     return new_status;
+  }
+
+  set_all(new_status) {
+    Object.keys(this).forEach( key => this.set(key, new_status) );
+  }
+
+  set_all_safe(new_status) {
+    this.unfilter(STATUS.N).forEach( key => this.set(key, new_status) );
   }
 
   is_status(key, vals) {

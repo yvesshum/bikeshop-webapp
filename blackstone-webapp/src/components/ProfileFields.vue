@@ -213,7 +213,7 @@ export default {
       // Set the status of all non-required and non-immutable fields to "unused"
       // TODO - move this into clear_data
       // TODO - confirm change profile modal if unsaved changes?
-      this.row_status.unfilter(STATUS.N).forEach(key => this.row_status.set(STATUS.UNUSED));
+      this.row_status.set_all_safe(STATUS.UNUSED);
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
@@ -658,7 +658,7 @@ export default {
     create_confirm_modal: function() {
       this.changes_list = new Object();
 
-      Object.keys(this.row_status).forEach(function(key) {
+      this.row_status.forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
         if (input_field == null) return;
 
@@ -725,7 +725,7 @@ export default {
       let youth_id = document.getElementById("ID_field").innerHTML;
 
       // Cycle through each potential field and use the data accordingly
-      Object.keys(this.row_status).forEach(function(key) {
+      this.row_status.forEach(function(key) {
         let input_field = document.getElementById(key + "_edit");
         if (input_field == null) return;
 
