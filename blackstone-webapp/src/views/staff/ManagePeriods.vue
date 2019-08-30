@@ -30,6 +30,12 @@
     <br />
     <br />
 
+    <h3>Youth with No Active Period</h3>
+    <Table
+      :headingdata="edit_table_headers"
+      :table_data="inactive_youth_data"
+    ></Table>
+
     <button v-show="selected_youth != null" v-on:click="edit_youth_periods">{{edit_button_message}}</button>
     
     <br />
@@ -130,6 +136,7 @@ export default {
 
       past_table: null,
       past_table_data: [],
+      inactive_youth_data: [],
 
       // Modal variables
       confirm_modal_visible: false,
@@ -347,6 +354,12 @@ export default {
         },
       });
 
+      let temp = [];
+      this.never_active_youths.forEach(full_id => {
+        temp.push(this.unpack_id(full_id));
+      });
+      this.inactive_youth_data = temp;
+
       // Helper function - Initialize period fields in the new Status object
       function set_status(stat, youth, period, array) {
         stat.add(period, (array.includes(youth) ? STATUS.USED : STATUS.UNUSED));
@@ -440,8 +453,16 @@ export default {
         }
       }.bind(this));
 
+      let new_inactive = [];
+      Object.keys(this.period_status).filter(full_id => {
+        return this.period_status[full_id].filter(STATUS.O).length == 0;
+      }).forEach(full_id => {
+        new_inactive.push(this.unpack_id(full_id));
+      });
+
       this.display_binary_tables();
       this.past_table.replaceData(this.past_table_data);
+      this.inactive_youth_data = new_inactive;
 
       // If match is true, returns all table elements matching current youth and given period
       // If match is false, returns all table elements NOT matching above criteria
@@ -461,6 +482,7 @@ export default {
         CurrentActiveYouths: this.current_active_youths,
         FutureActiveYouths:  this.future_active_youths,
         PastPeriodsDoc: this.past_periods_doc_name,
+        NeverActiveYouths: this.never_active_youths,
         Seasons: this.season_list,
       };
     },
