@@ -39,14 +39,16 @@
                             selectableRangeMode:"click",
                             pagination: "local",
                             paginationSize: "20",
-                            rowSelected: row => {
-                                console.log(row);
-                                this.$emit('selectedRow', row);
-                            }
+
+                            // If a row is (de)selected, let the parent handle it
+                            rowSelected:   row => this.$emit('selectedRow',   row),
+                            rowDeselected: row => this.$emit('deselectedRow', row),
             };
 
             this.tabulator = new Tabulator(this.$refs.table, {...defaultArgs, ...this.args});
             this.tableData = this.table_data;
+
+            this.$emit("Table", this.tabulator);
         },
     //     [
     //     {title: 'Name', field: 'name', sorter: 'string', width: 200, editor: true},

@@ -9,7 +9,11 @@ A Table with an editable active and inactive list, which can switch between disp
             <Table ref="display_table"
                 :headingdata="this.displayTableHeaders"
                 :table_data="this.active_data"
-                @selectedRow="this.row_selected">
+                :args="displayOptions"
+                @selectedRow="this.row_selected"
+                @deselectedRow="this.row_deselected"
+                @Table="emit_table"
+            >
             </Table>
         </div>
 
@@ -146,6 +150,14 @@ A Table with an editable active and inactive list, which can switch between disp
 
             row_selected: function(row) {
                 this.$emit("selectedRow", row);
+            },
+
+            row_deselected: function(row) {
+                this.$emit("deselectedRow", row);
+            },
+
+            emit_table: function(table) {
+                this.$emit("Table", table);
             },
         }
     }
