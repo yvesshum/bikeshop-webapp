@@ -1,14 +1,14 @@
 <template>
   <div class="profile_fields">
 
-    <div id="name_div" style="display: none;">
+    <div id="name_div" v-show="profile!=null">
       <div class="full_name"><span id="First Name_field"></span>&nbsp;<span id="Last Name_field"></span></div>
       <span class="id_parens">(ID:&nbsp;<span id="ID_field"></span>)</span>
     </div>
 
     <br />
 
-    <div id="stats_div" style="display:none;">
+    <div id="stats_div" v-show="profile!=null">
       <table style="margin:auto;">
         <tr>
           <td><h3 id="Hours Earned_field"></h3></td>
@@ -29,7 +29,7 @@
 
     <br />
 
-    <table id="fields_table" ref="fields_table" style="display: none;">
+    <table id="fields_table" ref="fields_table" v-show="profile!=null">
       <!-- <tr id="DOB_container" class="field_container">
         <td>Date of Birth:</td>
         <td id="DOB_field" class="field_entry"></td>
@@ -232,11 +232,6 @@ export default {
       // If a profile was passed, display it to the screen
       if (doc != null) {
 
-        // Show the name and table of fields
-        document.getElementById("name_div").style.display = "";
-        document.getElementById("stats_div").style.display = "";
-        document.getElementById("fields_table").style.display = "";
-
         // Init vars
         var data = doc.data();
 
@@ -352,10 +347,6 @@ export default {
         while (temp_containers[0]) {
           temp_containers[0].parentNode.removeChild(temp_containers[0]);
         };
-
-        // Hide the containers
-        document.getElementById("name_div").style.display = "none";
-        document.getElementById("fields_table").style.display = "none";
       }
     }
   },
