@@ -131,6 +131,10 @@ export default {
       // console.log(this.name + " => ", this.defaultValue, ", ", this.edit_value);
     },
 
+    is_blank: function() {
+      return this.edit_value == null || this.edit_value == "";
+    },
+
 
     // set_all_input_vals: function(input, val) {
     //   if (input != null) {

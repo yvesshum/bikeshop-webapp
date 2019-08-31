@@ -267,15 +267,18 @@ export default {
             // TODO: Handle non-standard field - Maybe STATUS.TEMP and STATUS.TEMP_REMOVE?
           }
 
-          this.local_values[key] = data[key];
-          this.set_row_status(key, STATUS.USED);
+          // Empty string means unused field
+          if (field_used(data[key])) {
+            this.local_values[key] = data[key];
+            this.set_row_status(key, STATUS.USED);
+          }
         };
-
-        // this.row_status.keys().filter(k => !Object.keys(data).includes(k)).forEach(key => {
-        //   console.log("Key " + key + " found in row_status but not data.");
-        //   console.log(this.local_values[key]);
-        // });
       }
+
+      function field_used(field) {
+        // TODO: This might have to be more sophisticated for different data types
+        return field != "";
+      };
     }
   },
 
@@ -300,6 +303,7 @@ export default {
       }
     },
 
+    // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
     format_hours: function(field, dp) {
       if (this.local_values == null) return "";
       let hours = this.local_values[field];
@@ -362,15 +366,17 @@ export default {
     },
 
     //FUNCTION to check if form changes with edit
-    //Parameters: called upon form submission
-    check_edits: function(event) {
-      
-      var n;
+    check_edits: function() {
+
+      // Track whether at least one change is found - we don't care how many there are just yet, only whether there is at least one
       var c = false;
 
-      // Check for any fields to be added/removed
-      if (this.row_status.filter([STATUS.ADD, STATUS.REMOVE]).length > 0) {
-        console.log(this.row_status.filter([STATUS.ADD, STATUS.REMOVE]));
+      // Check for fields being added/removed which are not empty
+      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE]).filter(key => {
+        return !this.input_fields[key].is_blank();
+      });
+
+      if (add_rem.length > 0) {
         c = true;
       }
 
@@ -378,8 +384,9 @@ export default {
       else {
         let poss = this.row_status.filter([STATUS.USED, STATUS.REQ]);
         let len = poss.length;
+
+        // Use a for loop to break as soon as a change is found
         for (var n = 0; n < len; n++) {
-          // console.log("Checking key " + poss[n] + " input: ", input);
           if (this.is_changed(poss[n])) {
             c = true;
             break;
@@ -387,6 +394,7 @@ export default {
         };
       };
 
+      // Check for user input based on results
       if (c) {
         this.create_confirm_modal();
         this.confirmModalVisible = true;
@@ -426,7 +434,7 @@ export default {
 
           // Data field is being added: Save its value to the new profile
           case STATUS.ADD:
-            if (input_field.changed) {
+            if (!input_field.is_blank()) {
               this.changes_list[key] = {
                 message: "created and set to ",
                 new_val: input_field.get_edit_value(),
@@ -450,15 +458,19 @@ export default {
       // creates an object to store edited values
       var changes = new Object();
 
-      // Add all used fields to the changes object
-      this.row_status.filter(STATUS.O).forEach(key => {
+      // Don't bother with immutable fields, since we're using Firebase update()
+      this.row_status.unfilter(STATUS.IMM).forEach(key => {
         let input_field = this.input_fields[key];
-        changes[key] = input_field.get_edit_value();
-      });
 
-      // Add all unused fields as empty strings
-      this.row_status.filter(STATUS.X).forEach(key => {
-        changes[key] = "";
+        // If field is being used, save its value to the new changes object
+        if (this.row_status.is_status(key, STATUS.O) && !input_field.is_blank()) {
+          changes[key] = input_field.get_edit_value();
+        }
+
+        // If not, save an empty string
+        else {
+          changes[key] = "";
+        }
       });
 
       console.log("New profile:", changes);
@@ -471,17 +483,31 @@ export default {
 
       // If no error updating database, change the field data on the page
       for (var key in changes) {
-        // TODO: Just store these in an object when they're created, or something
         // TODO: Use v-model to link local_values to the input?
-        let input_field = this.input_fields[key];
-        this.local_values[key] = input_field.get_edit_value();
+        this.local_values[key] = this.input_fields[key].get_edit_value();
       };
 
+      this.discard_empty_fields();
       this.row_status.update();
     },
 
 
+    discard_empty_fields: function() {
+      this.row_status.filter([STATUS.ADD, STATUS.USED]).forEach(key => {
+        if (this.input_fields[key].is_blank()) {
+          this.set_row_status(key, STATUS.X);
+        };
+      });
+    },
+
     discard_changes: function() {
+      // Reset any local fields
+      this.reset_changes();
+
+      // Remove any empty fields
+      this.discard_empty_fields();
+
+      // Switch out of edit mode
       this.edit_mode = !this.edit_mode;
     },
 
