@@ -310,36 +310,23 @@ export default {
       return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
     },
 
-    set_row_status: function(key, new_status) {
+    // Set the status of a given field in the Status object and make appropriate changes
+    set_row_status: function(field, new_status) {
 
+      // Optionally parse boolean values into status values for easier usage in Vue HTML
       if (new_status == true) new_status = STATUS.O;
       if (new_status == false) new_status = STATUS.X;
 
-      new_status = this.row_status.set_safe(key, new_status);
+      // Set the status in the Status object, ignoring required and immutable fields
+      new_status = this.row_status.set_safe(field, new_status);
 
-      let remove_button = this.remove_buttons[key];
-
-      // Perform any extra operations
-      switch (new_status) {
-
-        case STATUS.REQ:
-        case STATUS.IMM:
-          break;
-
-        // Field is currently being used in the profile
-        case STATUS.USED:
-        case STATUS.ADD:
-          remove_button.set_active(true);
-          break;
-
-        // Field is not currently being used in the profile
-        case STATUS.UNUSED:
-        case STATUS.REMOVE:
-          remove_button.set_active(false);
-          break;
-
-        default:
-          console.log("Error: Row cannot be set to status \"" + new_status + "\".");
+      // Update remove_button to match field status
+      let remove_button = this.remove_buttons[field];
+      if (new_status == STATUS.USED || new_status == STATUS.ADD) {
+        remove_button.set_active(true);
+      }
+      else if (new_status == STATUS.UNUSED || new_status == STATUS.REMOVE) {
+        remove_button.set_active(false);
       };
     },
 
