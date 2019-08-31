@@ -31,6 +31,7 @@
             <ToggleButton
               onVariant="outline-danger" offVariant="outline-success" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
+              @Mounted="b => remove_buttons[field] = b"
               v-show="section.Name != 'Required'"
               :id="field+'_remove_button'" :ref="field+'_remove_button'"
             ></ToggleButton>
@@ -44,6 +45,7 @@
               v-show="is_used(field)"
               :defaultValue="local_values[field]"
               :editMode="edit_mode"
+              @Mounted="i => input_fields[field] = i"
             ></InputDisplayToggle>
           </td>
 
@@ -122,6 +124,9 @@ export default {
       changes_list: null,
 
       local_values: {},
+
+      remove_buttons: {},
+      input_fields: {},
     }
   },
 
@@ -308,7 +313,7 @@ export default {
 
       new_status = this.row_status.set_safe(key, new_status);
 
-      let remove_button =  this.$refs[key + "_remove_button"][0];
+      let remove_button = this.remove_buttons[key];
 
       // Perform any extra operations
       switch (new_status) {
@@ -348,9 +353,8 @@ export default {
     },
 
     is_changed: function(field) {
-      let temp = this.$refs[field + "_field"];
-      if (temp == null) return false;
-      return temp[0].changed;
+      let input_field = this.input_fields[field];
+      return (input_field == null) ? false : input_field.changed;
     },
 
     get_input_type: function(field) {
@@ -395,7 +399,7 @@ export default {
       this.changes_list = new Object();
 
       this.row_status.forEach(function(key) {
-        let input_field = this.$refs[key + "_field"][0];
+        let input_field = this.input_fields[key];
 
         switch(this.row_status[key]) {
           // If field is unused or immutable, it won't have any changes to report
@@ -448,7 +452,7 @@ export default {
 
       // Add all used fields to the changes object
       this.row_status.filter(STATUS.O).forEach(key => {
-        let input_field = this.$refs[key + "_field"][0];
+        let input_field = this.input_fields[key];
         changes[key] = input_field.get_edit_value();
       });
 
@@ -469,7 +473,7 @@ export default {
       for (var key in changes) {
         // TODO: Just store these in an object when they're created, or something
         // TODO: Use v-model to link local_values to the input?
-        let input_field = this.$refs[key + "_field"][0];
+        let input_field = this.input_fields[key];
         this.local_values[key] = input_field.get_edit_value();
       };
 
@@ -484,8 +488,8 @@ export default {
     reset_changes: function() {
       this.row_status.reset();
       this.row_status.forEach(field => {
-        this.$refs[field + "_field"][0].reset();
-        this.$refs[field+'_remove_button'][0].set_active(this.row_status.is_status(field, STATUS.O));
+        this.input_fields[field].reset();
+        this.remove_buttons[field].set_active(this.row_status.is_status(field, STATUS.O));
       });
     },
 

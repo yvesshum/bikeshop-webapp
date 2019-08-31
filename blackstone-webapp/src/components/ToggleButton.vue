@@ -75,6 +75,10 @@ Slot Mode:
             };
         },
 
+        mounted: function() {
+            this.$emit("Mounted", this);
+        },
+
         computed: {
             // The current b-button variant to use
             variant: function() {

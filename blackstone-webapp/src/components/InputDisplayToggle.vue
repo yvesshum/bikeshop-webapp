@@ -32,6 +32,10 @@ export default {
     }
   },
 
+  mounted: function() {
+    this.$emit("Mounted", this);
+  },
+
   computed: {
     reset_variant: function() {
       return (this.changed) ? "outline-danger" : "outline-secondary";
