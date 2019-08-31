@@ -68,6 +68,13 @@ export class Status {
     };
   }
 
+  reset() {
+    for (var key in this) {
+      if (this[key] == STATUS.ADD) this[key] = STATUS.UNUSED;
+      else if (this[key] == STATUS.REMOVE) this[key] = STATUS.USED;
+    };
+  }
+
   set(key, new_status) {
     let old_status = this[key];
     if (new_status == STATUS.O) {
