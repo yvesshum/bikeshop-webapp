@@ -65,13 +65,13 @@ Slot Mode:
 <script>
     export default {
         name: 'ToggleButton',
-        props: ['onVariant', 'offVariant', 'onText', 'offText', 'slots', 'block'],
+        props: ['onVariant', 'offVariant', 'onText', 'offText', 'slots', 'block', 'start'],
         components: {},
 
         data: function () {
             return {
                 // The state of the button
-                active: false,
+                active: this.start_active,
             };
         },
 
@@ -85,6 +85,10 @@ Slot Mode:
             text: function() {
                 return (this.active) ? this.onText : this.offText;
             },
+
+            start_active: function() {
+                return (this.start == null || this.start == undefined) ? false : true;
+            },
         },
 
         methods: {
@@ -92,7 +96,11 @@ Slot Mode:
             toggle: function() {
                 this.active = !this.active;
                 this.$emit("Toggle", this.active);
-            }
+            },
+
+            set_active: function(new_val) {
+                this.active = new_val;
+            },
         },
     }
 </script>
