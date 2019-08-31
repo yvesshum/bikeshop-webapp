@@ -56,7 +56,11 @@
       </tbody>
     </table>
 
-    <button ref="edit_profile" v-on:click="toggle_edit_mode()">Edit!</button>
+    <ToggleButton
+      onVariant="success" offVariant="primary" v-show="allow_edits"
+      onText="Submit Edits" offText="Edit Profile Information"
+      @Mounted="b => edit_button = b" @Toggle="toggle_edit_mode"
+    ></ToggleButton>
     <button ref="discard_changes" v-on:click="discard_changes()" v-show="edit_mode">
       Discard Changes
     </button>
@@ -103,6 +107,8 @@ export default {
   data: function() {
     return {
       edit_mode: false,
+      edit_button: null,
+
       specially_displayed_fields: [
         "First Name",
         "Last Name",
@@ -229,22 +235,6 @@ export default {
       });
     },
 
-    
-    edit_mode: function(val) {
-
-      if (!this.allow_edits) return;
-
-      // Go into edit mode
-      if (this.edit_mode) {
-        this.$refs.edit_profile.innerHTML = "Submit Edits!";
-      }
-
-      // Reset to display mode
-      else {
-        this.$refs.edit_profile.innerHTML = "Edit!";
-      };
-    },
-
     profile: function(doc) {
 
       // Clear the old data from the screen
@@ -330,12 +320,18 @@ export default {
       };
     },
 
+    set_edit_mode: function(val) {
+      this.edit_mode = val;
+      this.edit_button.set_active(val);
+    },
+
     // Toggles between edit mode and display mode
-    toggle_edit_mode: function() {
-      if (this.edit_mode) {
-        this.check_edits();
+    toggle_edit_mode: function(new_val) {
+      if (new_val) {
+        this.edit_mode = new_val;
       } else {
-        this.edit_mode = !this.edit_mode;
+        this.edit_button.set_active(true);
+        this.check_edits();
       };
     },
 
@@ -495,7 +491,7 @@ export default {
       this.discard_empty_fields();
 
       // Switch out of edit mode
-      this.edit_mode = !this.edit_mode;
+      this.set_edit_mode(false);
     },
 
     reset_changes: function() {
@@ -509,7 +505,7 @@ export default {
     acceptConfirmModal: function() {
       this.confirmModalVisible = false;
       this.save_edits();
-      this.edit_mode = false;
+      this.set_edit_mode(false);
     },
 
     cancelConfirmModal: function() {
