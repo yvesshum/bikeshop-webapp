@@ -150,6 +150,13 @@ export default {
             ]
         }
     },
+
+    watch: {
+        value: function() {
+            this.$emit("Value", this.value)
+        },
+    },
+
     methods: {
         get() {
             return this.value;
@@ -158,7 +165,11 @@ export default {
 
         },
 
-        setValue() {
+        setValue(val) {
+            if (val != null) {
+                this.value = val;
+                return;
+            }
             switch(this.input) {
                 case 'Integer':
                     this.value = 0
@@ -187,8 +198,8 @@ export default {
 
     mounted() {
         this.sanitizeArgs();
-        this.setValue();
         this.args = this.arguments;
+        this.setValue(this.args.value);
         this.ready = true;
     },
 
