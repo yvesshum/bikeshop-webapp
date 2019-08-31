@@ -336,10 +336,10 @@ export default {
         let stat = new Status();
 
         // Initialize the status of each period based on whether the youth is in that period
-        set_status(stat, youth, this.current_period, this.current_active_youths);
-        set_status(stat, youth, this.future_period, this.future_active_youths);
-        this.past_periods.forEach(function (period) {
-          set_status(stat, youth, period, past_data[period]);
+        set_status(this, stat, youth, this.current_period, this.current_active_youths);
+        set_status(this, stat, youth, this.future_period, this.future_active_youths);
+        this.past_periods.forEach(period => {
+          set_status(this, stat, youth, period, past_data[period]);
         });
 
         // Save the new object to period_status
@@ -376,8 +376,8 @@ export default {
       this.inactive_youth_data = temp;
 
       // Helper function - Initialize period fields in the new Status object
-      function set_status(stat, youth, period, array) {
-        stat.add(period, (array.includes(youth) ? STATUS.USED : STATUS.UNUSED));
+      function set_status(self, stat, youth, period, array) {
+        stat.add_vue(self, period, (array.includes(youth) ? STATUS.USED : STATUS.UNUSED));
       };
     },
 

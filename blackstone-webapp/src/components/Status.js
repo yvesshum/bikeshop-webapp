@@ -22,6 +22,10 @@ export class Status {
     this[field_name] = start_status;
   }
 
+  add_vue(component, field_name, start_status) {
+    component.$set(this, field_name, start_status);
+  }
+
   keys() {
     return Object.keys(this);
   }
