@@ -1,14 +1,14 @@
 <template>
   <div class="profile_fields">
 
-    <div id="name_div" v-show="profile!=null">
+    <div ref="name_div" v-show="profile!=null">
       <div class="full_name">{{youth_name}}</div>
       <div class="id_parens">(ID: {{youth_id}})</div>
     </div>
 
     <br />
 
-    <div id="stats_div" v-show="profile!=null" style="margin:auto;">
+    <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
       <div class="hours_div" v-for="item in hour_fields">
         <p class="hours_num">
           <span class="hours_whole">{{item.Whole}}</span>
@@ -26,26 +26,24 @@
 
         <caption v-show="edit_mode"> {{section.Name}}: </caption>
 
-        <tr v-for="field in section.Data" v-show="show_container(field)" :id="field+'_container'">
-          <td :id="field+'_remove_button_container'" v-show="edit_mode">
+        <tr v-for="field in section.Data" v-show="show_container(field)">
+          <td v-show="edit_mode">
             <ToggleButton
               onVariant="outline-danger" offVariant="outline-success" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
               @Mounted="b => remove_buttons[field] = b"
               v-show="section.Name != 'Required'"
-              :id="field+'_remove_button'" :ref="field+'_remove_button'"
             ></ToggleButton>
           </td>
 
-          <td :id="field+'_title'" :class="{changed_title: edit_mode && is_changed(field)}">{{field}}:</td>
+          <td :class="{changed_title: edit_mode && is_changed(field)}">{{field}}:</td>
 
-          <td :id="field+'_display_container'">
+          <td>
             <InputDisplayToggle
-              :id="field+'_field'" :ref="field+'_field'" :name="field"
               v-show="is_used(field)"
               :defaultValue="local_values[field]"
               :editMode="edit_mode"
-              :type="field_types[field]"
+              :name="field" :type="field_types[field]"
               @Mounted="i => input_fields[field] = i"
             ></InputDisplayToggle>
           </td>
@@ -236,10 +234,6 @@ export default {
   },
 
   mounted: function() {
-    if (!this.allow_edits) {
-      this.$refs.edit_profile.style.display = "none";
-    };
-
     // TODO: Make a computed value to allow dynamic field hiding?
     if (this.hideFields != null) {
       this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
