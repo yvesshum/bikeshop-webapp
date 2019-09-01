@@ -58,10 +58,12 @@
     </table>
 
     <ToggleButton
-      onVariant="success" offVariant="primary" v-show="allow_edits"
+      v-show="allow_edits" v-model="edit_mode"
+      onVariant="success" offVariant="primary"
       onText="Submit Edits" offText="Edit Profile Information"
-      @Mounted="b => edit_button = b" @Toggle="toggle_edit_mode"
+      :switchOff="confirm_save_edits"
     ></ToggleButton>
+    
     <button ref="discard_changes" v-on:click="discard_changes()" v-show="edit_mode">
       Discard Changes
     </button>
@@ -109,7 +111,6 @@ export default {
   data: function() {
     return {
       edit_mode: false,
-      edit_button: null,
 
       specially_displayed_fields: [
         "First Name",
@@ -351,17 +352,6 @@ export default {
 
     set_edit_mode: function(val) {
       this.edit_mode = val;
-      this.edit_button.set_active(val);
-    },
-
-    // Toggles between edit mode and display mode
-    toggle_edit_mode: function(new_val) {
-      if (new_val) {
-        this.edit_mode = new_val;
-      } else {
-        this.edit_button.set_active(true);
-        this.check_edits();
-      };
     },
 
     is_used: function(field) {
@@ -377,11 +367,29 @@ export default {
       return 'text';
     },
 
+    // Checks if changes have been made, then looks for user input accordingly
+    // If changes, ask to save them; if not, alert user and stay in edit mode 
+    // Run by the edit ToggleButton when clicked off edit mode
+    confirm_save_edits: function() {
+      // Check if edits have been made
+      let changed = this.check_edits();
+
+      // Check for user input based on results
+      if (changed) {
+        this.create_confirm_modal();
+        this.confirmModalVisible = true;
+      }
+      else {
+        alert("No edits have been made.");
+      }
+
+      // Return false to prevent the edit ToggleButton from switching off edit mode just yet
+      // If the confirm modal is accepted, it will manually change edit mode instead
+      return false;
+    },
+
     //FUNCTION to check if form changes with edit
     check_edits: function() {
-
-      // Track whether at least one change is found - we don't care how many there are just yet, only whether there is at least one
-      var c = false;
 
       // Check for fields being added/removed which are not empty
       let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE]).filter(key => {
@@ -389,7 +397,7 @@ export default {
       });
 
       if (add_rem.length > 0) {
-        c = true;
+        return true;
       }
 
       // If no fields to be added/removed, check existing fields for edits
@@ -400,19 +408,13 @@ export default {
         // Use a for loop to break as soon as a change is found
         for (var n = 0; n < len; n++) {
           if (this.is_changed(poss[n])) {
-            c = true;
-            break;
+            return true;
           }
         };
       };
 
-      // Check for user input based on results
-      if (c) {
-        this.create_confirm_modal();
-        this.confirmModalVisible = true;
-      } else {
-        alert("No edits have been made");
-      }
+      // If we made it this far, there must not be any changes
+      return false;
     },
 
     create_confirm_modal: function() {
