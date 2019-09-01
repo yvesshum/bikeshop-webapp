@@ -153,7 +153,7 @@ export default {
 
     watch: {
         value: function() {
-            this.$emit("Value", this.value)
+            this.$emit("input", this.value)
         },
     },
 
