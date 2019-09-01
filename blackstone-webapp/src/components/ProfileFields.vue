@@ -441,7 +441,7 @@ export default {
             if (input_field.changed) {
               this.changes_list[key] = {
                 message: "set to ",
-                new_val: input_field.get_edit_value(),
+                new_val: input_field.get_changed_string(),
               };
             };
             break;
@@ -451,7 +451,7 @@ export default {
             if (!input_field.is_blank()) {
               this.changes_list[key] = {
                 message: "created and set to ",
-                new_val: input_field.get_edit_value(),
+                new_val: input_field.get_changed_string(),
               };
             };
             break;
@@ -478,7 +478,7 @@ export default {
 
         // If field is being used, save its value to the new changes object
         if (this.row_status.is_status(key, STATUS.O) && !input_field.is_blank()) {
-          changes[key] = input_field.get_edit_value();
+          changes[key] = input_field.get_changed_value();
         }
 
         // If not, save an empty string
@@ -498,7 +498,7 @@ export default {
       // If no error updating database, change the field data on the page
       for (var key in changes) {
         // TODO: Use v-model to link local_values to the input?
-        this.local_values[key] = this.input_fields[key].get_edit_value();
+        this.local_values[key] = this.input_fields[key].get_changed_value();
       };
 
       this.discard_empty_fields();

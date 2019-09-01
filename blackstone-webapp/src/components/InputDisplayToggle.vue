@@ -2,11 +2,22 @@
   <div class="input_display_toggle">
 
     <div ref="display" v-if="!editMode">
-      {{display_value}}
+
+      <!-- Display each item in an array -->
+      <div v-if="type === 'Array'">
+        <div v-for="item in get_original_value()" class="field_list_element">
+          {{ item }}
+        </div>
+      </div>
+
+      <!-- Display the string version of the value -->
+      <div v-else>
+        {{ get_original_string() }}
+      </div>
     </div>
 
     <div ref="edit_container" v-else>
-      <SpecialInput ref="edit_input" :input="type" :arguments="input_args" @Value="edit_change">
+      <SpecialInput ref="edit_input" :input="type" :arguments="input_args" v-model="edit_value">
       </SpecialInput>
       <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()">
         Reset
@@ -18,6 +29,8 @@
 
 <script>
 import SpecialInput from '@/components/SpecialInput';
+
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default {
   name: 'input_display_toggle',
@@ -54,53 +67,6 @@ export default {
         value: this.defaultValue,
       };
     },
-
-    display_value: function() {
-      // TODO: Use type and v-if, v-for, etc to display objects in HTML
-      return this.defaultValue;
-
-      //   // Set the data, with special formatting for the dates
-      //   if (key == "Last Sign In") {
-      //     try {
-      //       display_date(this, key, field_p, edit_input, 19, {
-      //         weekday: 'long',
-      //         day:     'numeric',
-      //         month:   'long',
-      //         year:    'numeric'
-      //       });
-      //     } catch (error) {
-      //       display_string(this, key, field_p, edit_input);
-      //     };
-      //   }
-      //   else if (key == "DOB") {
-      //     try {
-      //       display_date(this, key, field_p, edit_input, 10, {
-      //         day:     'numeric',
-      //         month:   'long',
-      //         year:    'numeric'
-      //       });
-      //     } catch (error) {
-      //       display_string(this, key, field_p, edit_input);
-      //     };
-      //   }
-      //   else if (Array.isArray(data[key])) {
-      //     this.create_fields_array(key, data[key]);
-      //   }
-      //   else {
-      //     display_string(this, key, field_p, edit_input);
-      //   }
-
-      // function display_date(self, key, field_p, edit_input, slice_range, display_options) {
-      //   let temp_date = data[key].toDate();
-      //   field_p.innerHTML = temp_date.toLocaleDateString(undefined, display_options);
-      //   self.set_all_input_vals(edit_input, temp_date.toJSON().slice(0, slice_range));
-      // }
-
-      // function display_string(self, key, field_p, edit_input) {
-      //   field_p.innerHTML = data[key];
-      //   self.set_all_input_vals(edit_input, data[key]);
-      // }
-    },
   },
 
   methods: {
@@ -118,21 +84,82 @@ export default {
       this.$emit("Changed", this.changed);
     },
 
-    get_display_value: function() {
+    get_original_value: function() {
       return this.defaultValue;
     },
-    
-    get_edit_value: function() {
+
+    get_changed_value: function() {
       return this.edit_value;
     },
 
-    edit_change: function(new_val) {
-      this.edit_value = new_val;
-      // console.log(this.name + " => ", this.defaultValue, ", ", this.edit_value);
+    get_original_string: function() {
+      return this.get_value_string(this.get_original_value());
+    },
+
+    get_changed_string: function() {
+      return this.get_value_string(this.get_changed_value());
+    },
+
+    get_value_string: function(val) {
+
+      // Display a null value as an empty string
+      if (val == null) return "";
+
+      // Display non-null values according to their type
+      switch (this.type) {
+
+        // Display a boolean as "Yes" or "No"
+        case "Boolean":
+          return val ? "Yes" : "No";
+          break;
+
+        // Display a phone number in (___) ___-____ format, complete with underscores
+        case "Phone":
+          let num = val + "";
+          num += "__________".substring(num.length);
+          return `(${num.substring(0,3)}) ${num.substring(3,6)}-${num.substring(6,10)}`;
+
+        // Display an array as a list with commas
+        case "Array":
+          let arr = "";
+          val.forEach(item => arr += item + ", ");
+          return arr;
+
+        // Display a time in 12h format (as opposed to 24h)
+        case "Time":
+          let time = val.split(":");
+          let hh = Number(time[0]);
+          let pm = hh > 12;
+          let h = pm ? (hh - 12) : (hh == 0 ? 12 : hh);
+
+          return `${h}:${time[1]} ${pm ? "PM" : "AM"}`;
+
+        // Display a date in "Month DD, YYYY" format
+        // TODO: Native js Date() is setting one day behind, for some reason
+        case "Date":
+          // let d = new Date(val);
+          // console.log("Date val: ", val);
+          // console.log("Date: ", d);
+          // return d.toLocaleDateString(undefined, {
+          //   day:     'numeric',
+          //   month:   'long',
+          //   year:    'numeric'
+          // });
+          let date = {
+            year: val.substring(0, val.indexOf("-")),
+            month: Number(val.substring(val.indexOf("-")+1, val.lastIndexOf("-")))-1,
+            day: val.substring(val.lastIndexOf("-")+1),
+          };
+          return `${months[date.month]} ${date.day}, ${date.year}`;
+
+        // Everything else is fine as is
+        default:
+          return val;
+      }
     },
 
     is_blank: function() {
-      return this.edit_value == null || this.edit_value == "";
+      return this.edit_value === null || this.edit_value === "";
     },
 
 
@@ -143,78 +170,16 @@ export default {
     //     input.defaultValue = val;
     //   };
     // },
-
-
-
-    // create_fields_array: function(key, arr) {
-    //   let display_dest = document.getElementById(key + "_field");
-    //   display_dest.innerHTML = "";
-
-    //   let edit_dest = document.getElementById(key + "_edit_container");
-
-    //   let checkbox_options = document.getElementById(key + "_array_edit_container");
-    //   if (checkbox_options == null) {
-    //     checkbox_options = document.createElement("div");
-    //     checkbox_options.id = key + "_array_edit_container";
-    //     edit_dest.insertBefore(checkbox_options, edit_dest.childNodes[edit_dest.childNodes.length-1]);
-    //   }
-    //   else {
-    //     checkbox_options.innerHTML = "";
-    //   }
-      
-
-    //   arr.forEach(function(element) {
-    //     let new_div = document.createElement("div");
-    //     new_div.innerHTML = element;
-    //     new_div.classList.add("field_list_element");
-    //     display_dest.appendChild(new_div);
-
-    //     let new_option = document.createElement("input");
-    //     new_option.type = "checkbox";
-    //     new_option.checked = true;
-    //     new_option.name = element;
-    //     new_option.value = element;
-
-    //     let new_option_name = document.createElement("div");
-    //     new_option_name.innerHTML = element;
-    //     new_option_name.style.display = "inline";
-
-    //     checkbox_options.appendChild(new_option);
-    //     checkbox_options.appendChild(new_option_name);
-    //     checkbox_options.appendChild(document.createElement("br"));
-    //   });
-
-    //   this.array_fields[key] = arr;
-    // },
-
-    // get_changes_as_array: function(key) {
-    //   var form = document.getElementById(key + "_array_edit_container").childNodes;
-    //   var len = form.length;
-
-    //   var list = [];
-
-    //   for (var i = 0; i < len; i += 3) {
-    //     let input = form[i];
-    //     let title = form[i+1];
-
-    //     if (input.checked) {
-    //       list.push(title.innerHTML);
-    //     }
-    //   };
-
-    //   return list;
-    // },
-
   },
 }
 </script>
 
 <style>
-  /*.field_list_element {
+  .field_list_element {
     border-radius: 10px;
     border: 2px solid green;
     background-color: lightgreen;
     text-align: center;
-  }*/
+  }
 </style>
 
