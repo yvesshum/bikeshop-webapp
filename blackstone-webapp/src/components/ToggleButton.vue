@@ -7,7 +7,7 @@ Usage:
         onVariant="success" offVariant="primary"
         :onText="this.onText" :offText="this.offText"
         @Toggle="toggle_edit_mode"
-        slots block
+        block
     ></ToggleButton>
 
 
@@ -20,13 +20,6 @@ Props:
     onText - The message to display when the button is active, if not using slots (see below).
 
     offText - The message to display when the button is inactive, if not using slots (see below).
-
-    slots - Whether to display the button in slot mode:
-
-        To use slot mode, simply include "slots" in the tag:
-        <ToggleButton [...] slots></ToggleButton>
-
-        If "slots" is not included, slot mode will not be used.
 
     block - Whether to display the b-button in block mode. To use, simply include "block" in the tag, as you would for a regular b-button.
 
@@ -50,14 +43,16 @@ Emits:
 
 Slot Mode:
 
-    When displaying in slot mode, the active/inactive content should instead be passed using two Vue slots named "onText" and "offText", eg:
+    To display the active and/or inactive content with slots rather than string props, simply use Vue slots with the names "onText" or "offText", eg:
 
-    <ToggleButton ... slots>
+    <ToggleButton>
         <template slot="onText">Some content to display when the button is active.</template>
         <template slot="offText">This content can be <em>formatted</em>.</template>
     </ToggleButton>
 
     Slot mode allows much more customization of the button content, since the button can render HTML objects instead of just plain text.
+
+    Note that slots may be used to render both the active and inactive content, or just one (with the other provided in the "onText" or "offText" prop).
 
 
 Switch Functions:
@@ -74,13 +69,8 @@ Switch Functions:
 <template>
     <div class="toggle_button">
         <b-button ref="button" :variant="variant" v-on:click="toggle" :block="block">
-            <div v-if="slots">
-                <slot name="onText" v-if="value"></slot>
-                <slot name="offText" v-else></slot>
-            </div>
-            <div v-else>
-                {{text}}
-            </div>
+            <slot name="onText" v-if="value">{{text}}</slot>
+            <slot name="offText" v-else>{{text}}</slot>
         </b-button>
     </div>
 </template>
@@ -93,9 +83,6 @@ Switch Functions:
             offVariant: String,
             onText: String,
             offText: String,
-            slots: {
-                default: false,
-            },
             block: {
                 default: false,
             },
