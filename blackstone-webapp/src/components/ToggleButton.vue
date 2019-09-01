@@ -4,9 +4,10 @@ A b-button component which handles toggling between active and inactive automati
 Usage:
 
     <ToggleButton
+        v-model="var_to_toggle"
         onVariant="success" offVariant="primary"
         :onText="this.onText" :offText="this.offText"
-        @Toggle="toggle_edit_mode"
+        :switchOn="this.on_function" :switchOff="this.off_function"
         block
     ></ToggleButton>
 
@@ -123,6 +124,7 @@ Switch Functions:
         },
 
         watch: {
+            // If tracking a v-model value, keep active up to date with it
             value: function(new_val) {
                 this.active = new_val;
             },
