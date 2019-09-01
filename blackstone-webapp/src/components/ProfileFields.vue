@@ -24,7 +24,9 @@
 
       <tbody v-for="section in table_sections" v-show="show_section(section.Name)">
 
-        <caption v-show="edit_mode"> {{section.Name}}: </caption>
+        <tr v-show="edit_mode">
+          <td class="section_name" colspan="2"> {{section.Name}}: </td>
+        </tr>
 
         <tr v-for="field in section.Data" v-show="show_container(field)">
           <td v-show="edit_mode">
@@ -594,5 +596,11 @@ export default {
   /* The name labelling the hour number */
   .hours_name {
 
+  }
+
+  .section_name {
+    font-size: 150%;
+    font-weight: bold;
+    text-align: center;
   }
 </style>
