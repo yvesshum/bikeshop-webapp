@@ -45,6 +45,7 @@
               v-show="is_used(field)"
               :defaultValue="local_values[field]"
               :editMode="edit_mode"
+              :type="field_types[field]"
               @Mounted="i => input_fields[field] = i"
             ></InputDisplayToggle>
           </td>
@@ -93,6 +94,7 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import {STATUS} from '@/components/Status.js';
 import {Status} from '@/components/Status.js';
+import {forKeyVal} from '@/components/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
 import InputDisplayToggle from '@/components/InputDisplayToggle';
 
@@ -117,7 +119,7 @@ export default {
         "Pending Hours",
       ],
       hidden_fields: [
-        "Apron Level",
+        "Apron Color",
         "Work Log",
         "Transfer Log",
         "Order Log",
@@ -172,8 +174,37 @@ export default {
       return temp;
 
       function make_section(Name, section) {
-        temp.push({ Name, Data: data[section].filter( k => !hidden_fields.includes(k) )} );
+
+        // Temp var to store all fields in this section
+        let Data = [];
+
+        // Loop through name/val pairs in this section
+        forKeyVal(data[section], (name, val) => {
+          if (!hidden_fields.includes(name)) {
+            Data.push(name);
+          }
+        });
+
+        // Add fields to array of sections
+        temp.push({Name, Data});
       };
+    },
+
+    field_types: function() {
+      if (this.headerDoc == null) return {};
+
+      let temp = new Object();
+      let data = this.headerDoc.data();
+
+      Object.keys(data).forEach(section => {
+        forKeyVal(data[section], (name, val) => {
+          if (!this.hidden_fields.includes(name)) {
+            temp[name] = val;
+          }
+        });
+      });
+
+      return temp;
     },
 
     hour_fields: function() {
@@ -275,9 +306,11 @@ export default {
   methods: {
 
     init_row_status(data, field, stat) {
-      data[field]
-        .filter( k => !this.hidden_fields.includes(k) )
-        .forEach(key => this.row_status.add_vue(this, key, stat));
+      forKeyVal(data[field], (name, val) => {
+        if (!this.hidden_fields.includes(name)) {
+          this.row_status.add_vue(this, name, stat);
+        }
+      });
     },
 
     show_section: function(section) {
