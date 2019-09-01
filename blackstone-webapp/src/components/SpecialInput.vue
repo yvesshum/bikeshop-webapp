@@ -166,6 +166,11 @@ export default {
         },
 
         setValue(val) {
+            this.value = val;
+            return;
+        },
+
+        initValue(val) {
             if (val != null) {
                 this.value = val;
                 return;
