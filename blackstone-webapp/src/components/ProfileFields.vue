@@ -105,6 +105,14 @@
       <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
     </b-modal>
 
+    <b-modal v-model="noEditsModalVisible" hide-footer>
+      <template slot="modal-title">
+        No changes have been made.
+      </template>
+      <b-button class="mt-3" block @click="cancelNoEditsModal" variant="primary">Continue Editing</b-button>
+      <b-button class="mt-3" block @click="acceptNoEditsModal" variant="primary">Return to Display</b-button>
+    </b-modal>
+
   </div>
 </template>
 
@@ -148,6 +156,7 @@ export default {
 
       row_status: null,
       confirmModalVisible: false,
+      noEditsModalVisible: false,
       changes_list: null,
 
       local_values: {},
@@ -392,7 +401,7 @@ export default {
         this.confirmModalVisible = true;
       }
       else {
-        alert("No edits have been made.");
+        this.noEditsModalVisible = true;
       }
 
       // Return false to prevent the edit ToggleButton from switching off edit mode just yet
@@ -548,6 +557,15 @@ export default {
     cancelConfirmModal: function() {
       this.confirmModalVisible = false;
     },
+
+    cancelNoEditsModal: function() {
+      this.noEditsModalVisible = false;
+    },
+
+    acceptNoEditsModal: function() {
+      this.discard_changes();
+      this.noEditsModalVisible = false;
+    }
   }
 }
 </script>
