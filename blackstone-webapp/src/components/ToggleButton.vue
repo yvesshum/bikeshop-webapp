@@ -68,12 +68,10 @@ Switch Functions:
 -->
 
 <template>
-    <div class="toggle_button">
-        <b-button ref="button" :variant="variant" v-on:click="toggle" :block="block">
-            <slot name="onText" v-if="value">{{text}}</slot>
-            <slot name="offText" v-else>{{text}}</slot>
-        </b-button>
-    </div>
+    <b-button ref="button" :variant="variant" v-on:click="toggle" :block="block">
+        <slot name="onText" v-if="value">{{text}}</slot>
+        <slot name="offText" v-else>{{text}}</slot>
+    </b-button>
 </template>
 
 <script>
