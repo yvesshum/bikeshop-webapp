@@ -438,56 +438,39 @@ export default {
 
       this.row_status.forEach(function(key) {
         let input_field = this.input_fields[key];
+        let message = null;
 
+        // TODO: There's definitely a more space-efficient way to write this
         switch(this.row_status[key]) {
-          // If field is unused or immutable, it won't have any changes to report
           case STATUS.UNUSED:
           case STATUS.IMM:
             break;
 
           case STATUS.REMOVE:
-            this.changes_list[input_field.name] = {
-              message: "removed",
-              new_val: "",
-              old_val: input_field.get_original_string(),
-            };
+            message = "removed";
             break;
 
           case STATUS.REQ:
           case STATUS.USED:
             if (input_field.changed) {
-              this.changes_list[key] = {
-                message: "changed",
-                new_val: input_field.get_changed_string(),
-                old_val: input_field.get_original_string(),
-              };
+              message = "changed";
             }
             else if (input_field.is_blank()) {
-              this.changes_list[key] = {
-                message: "left blank",
-                new_val: "",
-                old_val: input_field.get_original_string(),
-              };
+              message = "left blank";
             }
             break;
 
-          // Data field is being added: Save its value to the new profile
           case STATUS.ADD:
-            if (!input_field.is_blank()) {
-              this.changes_list[key] = {
-                message: "created",
-                new_val: input_field.get_changed_string(),
-                old_val: input_field.get_original_string(),
-              };
-            }
-            else {
-              this.changes_list[key] = {
-                message: "left blank",
-                new_val: "",
-                old_val: input_field.get_original_string(),
-              };
-            }
+            message = (input_field.is_blank()) ? "left blank" : "created";
             break;
+        };
+
+        if (message != null) {
+          this.changes_list[key] = {
+              message,
+              new_val: input_field.get_changed_string(),
+              old_val: input_field.get_original_string(),
+          };
         };
       }.bind(this));
     },
