@@ -199,11 +199,7 @@ Emits:
 
         watch: {
             value: function() {
-                if (this.value == null) {
-                    this.$emit('selected', null);
-                } else {
-                    this.$emit('selected', this.value);
-                };
+                this.$emit('selected', this.value);
             },
 
             periods: async function() {
