@@ -185,9 +185,12 @@ Emits:
                 };
             },
 
-            // Reformat separated name/id into single string
-            nameWithID ({ name, id }) {
-                return `${name} ${id}`;
+            // Package name and ID into a searchable string
+            // Includes name as-is and name with accents removed, for searching purposes
+            nameWithID (youth) {
+                let full_str = `${youth["First Name"]} ${youth["Last Name"]} ${youth["ID"]}`;
+                return full_str + " " + full_str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
             },
 
             //Needed for Check In
