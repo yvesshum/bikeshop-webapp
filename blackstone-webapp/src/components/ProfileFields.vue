@@ -434,37 +434,34 @@ export default {
     },
 
     create_confirm_modal: function() {
+
+      // (Re)initialize the changes_list object
       this.changes_list = new Object();
 
-      this.row_status.forEach(function(key) {
+      // Filter through all fields which might have been changed
+      this.row_status.unfilter([STATUS.IMM, STATUS.UNUSED]).forEach(key => {
+
+        // Initialize vars
         let input_field = this.input_fields[key];
+        let stat = this.row_status[key];
         let message = null;
 
-        // TODO: There's definitely a more space-efficient way to write this
-        switch(this.row_status[key]) {
-          case STATUS.UNUSED:
-          case STATUS.IMM:
-            break;
+        // Mark each field based on how it has been changed (if at all)
+        // Order does matter here - blank must supercede ADD and changed
+        if (stat == STATUS.REMOVE) {
+          message = "removed";
+        }
+        else if (input_field.is_blank()) {
+          message = "left blank";
+        }
+        else if (stat == STATUS.ADD) {
+          message = "created";
+        }
+        else if (input_field.changed) {
+          message = "changed";
+        }
 
-          case STATUS.REMOVE:
-            message = "removed";
-            break;
-
-          case STATUS.REQ:
-          case STATUS.USED:
-            if (input_field.changed) {
-              message = "changed";
-            }
-            else if (input_field.is_blank()) {
-              message = "left blank";
-            }
-            break;
-
-          case STATUS.ADD:
-            message = (input_field.is_blank()) ? "left blank" : "created";
-            break;
-        };
-
+        // If message has been set, then a change has been made to this field
         if (message != null) {
           this.changes_list[key] = {
               message,
@@ -472,7 +469,7 @@ export default {
               old_val: input_field.get_original_string(),
           };
         };
-      }.bind(this));
+      });
     },
 
 
