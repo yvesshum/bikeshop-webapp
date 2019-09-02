@@ -73,15 +73,31 @@
 
     <br />
 
-    <b-modal v-model="confirmModalVisible" hide-footer lazy>
+    <b-modal size="lg" v-model="confirmModalVisible" hide-footer lazy>
       <template slot="modal-title">
           Please Confirm the Following Changes
       </template>
       <div class="d-block text-center">
           <h3>The following changes will be saved:</h3>
-          <p v-for="(change, field) in this.changes_list">
-            The field <code>{{field}}</code> has been {{changes_list[field].message}}<code>{{changes_list[field].new_val}}</code>.
-          </p>
+          <br />
+          <table style="margin: auto;">
+            <tr>
+              <th></th>
+              <th class="change_modal_header">Original Value</th>
+              <th class="change_modal_header">New Value</th>
+            </tr>
+            <tr v-for="(change, field) in changes_list">
+              <td class="change_modal_cell_title">
+                The field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
+              </td>
+              <td class="change_modal_cell_remove">
+                <div v-if="change.message !== 'created'">{{change.old_val}}</div>
+              </td>
+              <td class="change_modal_cell_add">
+                <div v-if="change.message !== 'removed'">{{change.new_val}}</div>
+              </td>
+            </tr>
+          </table>
       </div>
       <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
       <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
@@ -433,6 +449,7 @@ export default {
             this.changes_list[input_field.name] = {
               message: "removed",
               new_val: "",
+              old_val: input_field.get_original_string(),
             };
             break;
 
@@ -440,25 +457,37 @@ export default {
           case STATUS.USED:
             if (input_field.changed) {
               this.changes_list[key] = {
-                message: "set to ",
+                message: "changed",
                 new_val: input_field.get_changed_string(),
+                old_val: input_field.get_original_string(),
               };
-            };
+            }
+            else if (input_field.is_blank()) {
+              this.changes_list[key] = {
+                message: "left blank",
+                new_val: "",
+                old_val: input_field.get_original_string(),
+              };
+            }
             break;
 
           // Data field is being added: Save its value to the new profile
           case STATUS.ADD:
             if (!input_field.is_blank()) {
               this.changes_list[key] = {
-                message: "created and set to ",
+                message: "created",
                 new_val: input_field.get_changed_string(),
+                old_val: input_field.get_original_string(),
               };
-            };
+            }
+            else {
+              this.changes_list[key] = {
+                message: "left blank",
+                new_val: "",
+                old_val: input_field.get_original_string(),
+              };
+            }
             break;
-
-          // Catchall case
-          default:
-            console.log("Unknown status \"" + this.row_status[key] + "\" for key \"" + key + "\"");
         };
       }.bind(this));
     },
@@ -604,5 +633,34 @@ export default {
     font-size: 150%;
     font-weight: bold;
     text-align: center;
+  }
+
+  .change_modal_header {
+    border-bottom: 2px solid #000;
+  }
+
+  .change_modal_field {
+    font-family: "Courier New", Courier, monospace;
+    color: fuchsia;
+    font-weight: bold;
+  }
+
+  .change_modal_cell_title {
+    text-align: left;
+    width: 50%;
+  }
+
+  .change_modal_cell_remove {
+    border-top: 1px solid #000;
+    width: 25%;
+    background-color: #FADBD8;
+    color:#7B241C;
+  }
+
+  .change_modal_cell_add {
+    border-top: 1px solid #000;
+    width: 25%;
+    background-color: #D5F5E3;
+    color:#1D8348;
   }
 </style>
