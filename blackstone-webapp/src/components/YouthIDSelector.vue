@@ -42,16 +42,24 @@ Emits:
         <multiselect v-model="value" id="multiselect" :options="options" :placeholder="this.r_placeholder" open-direction="bottom" label="name" :custom-label="nameWithID">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
-                    <span class="option__name">{{ props.option.name }}</span>
+                    <span class="option__name">
+                        {{ props.option['First Name'] }} {{ props.option['Last Name'] }}
+                    </span>
                     <br />
-                    <small class="option__id">ID: {{ props.option.id}}</small>
+                    <small class="option__id">
+                        ID: {{ props.option['ID'] }}
+                    </small>
                 </span>
             </template>
             <template slot="option" slot-scope="props">
                 <div class="option__desc">
-                    <span class="option__name">{{ props.option.name }}</span>
+                    <span class="option__name">
+                        {{ props.option['First Name'] }} {{ props.option['Last Name'] }}
+                    </span>
                     <br>
-                    <small class="option__id">ID: {{ props.option.id }}</small>
+                    <small class="option__id">
+                        ID: {{ props.option['ID'] }}
+                    </small>
                 </div>
             </template>
         </multiselect>
@@ -181,9 +189,7 @@ Emits:
             getOptions(data) {
                 var id_list = [];
                 data.forEach(function(item, index) {
-                    let name = item.slice(0, item.lastIndexOf(' ')  );
-                    let id   = item.slice(   item.lastIndexOf(' ')+1);
-                    id_list.push({name, id});
+                    id_list.push(item);
                 });
                 return id_list;
             },
@@ -205,7 +211,7 @@ Emits:
                 if (this.value == null) {
                     this.$emit('selected', null);
                 } else {
-                    this.$emit('selected', this.nameWithID(this.value));
+                    this.$emit('selected', this.value);
                 };
             },
 
