@@ -38,7 +38,9 @@
             ></ToggleButton>
           </td>
 
-          <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">{{field}}:</td>
+          <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">
+            {{field}}{{field_types[field] === "Boolean" ? "?" : ":"}}
+          </td>
 
           <td>
             <InputDisplayToggle
