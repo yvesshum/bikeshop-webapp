@@ -185,15 +185,6 @@ Emits:
                 };
             },
 
-            // Format list of ID strings "FirstName LastName ID" into list of objects
-            getOptions(data) {
-                var id_list = [];
-                data.forEach(function(item, index) {
-                    id_list.push(item);
-                });
-                return id_list;
-            },
-
             // Reformat separated name/id into single string
             nameWithID ({ name, id }) {
                 return `${name} ${id}`;
@@ -216,8 +207,7 @@ Emits:
             },
 
             periods: async function() {
-                let data = await this.getData();
-                this.options = this.getOptions(data);
+                this.options = await this.getData();
                 this.$emit("ready", this.options);
             },
 
@@ -231,10 +221,7 @@ Emits:
             this.r_placeholder = (this.placeholder == null) ? this.def_placeholder : this.placeholder;
 
             // Load the list of youths
-            let data = await this.getData();
-
-            // Create list of IDs from returned youths
-            this.options = this.getOptions(data);
+            this.options = await this.getData();
 
             // Emit the ready message
             this.$emit("ready", this.options);
