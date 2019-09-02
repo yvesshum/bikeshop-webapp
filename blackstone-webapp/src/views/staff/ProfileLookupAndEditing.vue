@@ -4,7 +4,7 @@
     <p>This is the staff view of the youth profile lookup page</p>
 
     <!-- Replaced selector bar with static buttons to test without spamming firebase -->
-    <YouthIDSelector @selected="selectedID"/>
+    <YouthIDSelector @selected="load_youth"/>
     <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button> -->
     <!-- <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button> -->
     <!-- <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
@@ -98,10 +98,10 @@ export default {
 
     methods: {
 
-      selectedID: async function(id) {
+      load_youth: async function(youth) {
 
         // No id returned - clear the page
-        if (id == null) {
+        if (youth == null) {
           this.load_none();
         }
 
@@ -109,8 +109,7 @@ export default {
         else {
           this.$refs.body_fields.style.display = "";
 
-          id = id.slice(id.lastIndexOf(' ')+1);
-          let snapshot = db.collection("GlobalYouthProfile").doc(id);
+          let snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
 
           this.currentProfile = await snapshot.get();
           this.order_log_collection = snapshot.collection("Order Log");
