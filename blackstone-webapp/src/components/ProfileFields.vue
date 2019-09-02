@@ -33,12 +33,12 @@
             <ToggleButton
               onVariant="outline-danger" offVariant="outline-success" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
-              @Mounted="b => remove_buttons[field] = b"
+              v-model="fields_used[field]"
               v-show="section.Name != 'Required'"
             ></ToggleButton>
           </td>
 
-          <td :class="{changed_title: edit_mode && is_changed(field)}">{{field}}:</td>
+          <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">{{field}}:</td>
 
           <td>
             <InputDisplayToggle
@@ -150,8 +150,9 @@ export default {
 
       local_values: {},
 
-      remove_buttons: {},
       input_fields: {},
+
+      fields_used: {},
     }
   },
 
@@ -276,6 +277,7 @@ export default {
       // Have to use Vue.$set to make the new properties reactive (dynamic updates)
       this.row_status.keys().forEach(key => {
         this.$set(this.local_values, key, null);
+        this.$set(this.fields_used, key, false);
       });
     },
 
@@ -305,6 +307,7 @@ export default {
           if (field_used(data[key])) {
             this.local_values[key] = data[key];
             this.set_row_status(key, STATUS.USED);
+            this.fields_used[key] = true;
           }
         };
       }
@@ -355,15 +358,6 @@ export default {
 
       // Set the status in the Status object, ignoring required and immutable fields
       new_status = this.row_status.set_safe(field, new_status);
-
-      // Update remove_button to match field status
-      let remove_button = this.remove_buttons[field];
-      if (new_status == STATUS.USED || new_status == STATUS.ADD) {
-        remove_button.set_active(true);
-      }
-      else if (new_status == STATUS.UNUSED || new_status == STATUS.REMOVE) {
-        remove_button.set_active(false);
-      };
     },
 
     set_edit_mode: function(val) {
@@ -371,7 +365,7 @@ export default {
     },
 
     is_used: function(field) {
-      return this.row_status.is_status(field, STATUS.O);
+      return this.fields_used[field];
     },
 
     is_changed: function(field) {
@@ -519,6 +513,7 @@ export default {
       this.row_status.filter([STATUS.ADD, STATUS.USED]).forEach(key => {
         if (this.input_fields[key].is_blank()) {
           this.set_row_status(key, STATUS.X);
+          this.fields_used[key] = false;
         };
       });
     },
@@ -538,7 +533,7 @@ export default {
       this.row_status.reset();
       this.row_status.forEach(field => {
         this.input_fields[field].reset();
-        this.remove_buttons[field].set_active(this.row_status.is_status(field, STATUS.O));
+        this.fields_used[field] = this.row_status.is_status(field, STATUS.O);
       });
     },
 
