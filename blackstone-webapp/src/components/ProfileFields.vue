@@ -31,7 +31,7 @@
         <tr v-for="field in section.Data" v-show="show_container(field)">
           <td v-show="edit_mode">
             <ToggleButton
-              onVariant="outline-danger" offVariant="outline-success" onText="×" offText="+"
+              onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
               v-model="fields_used[field]"
               v-show="section.Name != 'Required'"
