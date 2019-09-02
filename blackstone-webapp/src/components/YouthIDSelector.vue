@@ -31,7 +31,7 @@ Props:
 
 Emits:
 
-    selected - The selected youth ID, in the format "FirstName LastName YouthID". Emits "null" when no ID selected
+    selected - The selected youth ID, as an object with the fields "First Name", "Last Name", and "ID". Emits "null" when no ID selected
 
     ready - The list of loaded youth profiles, emitted once the mounting/reloading process completes
 
