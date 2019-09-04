@@ -133,22 +133,16 @@ export default {
       past_periods_doc_name: null,
       never_active_youths: [],
 
-      // Data for the current and future display/edit tables
-      display_table_headers: [
-        {title:"Name",   field:"name"},
-        {title:"ID",     field:"id"},
-        {title:"Status", field:"status"},
-      ],
+      display_table_headers: ["First Name", "Last Name", "ID", "Status"],
       edit_table_headers: [
-        {title:"Name", field:"name"},
-        {title:"ID",   field:"id"},
+        {title:"First Name", field:"First Name"},
+        {title:"Last Name",  field:"Last Name"},
+        {title:"ID",         field:"ID"},
       ],
       binary_tables: [],
 
       past_table: null,
       past_table_data: [],
-      present_table: null,
-      future_table: null,
       inactive_table: null,
 
       inactive_youth_data: [],
@@ -216,9 +210,17 @@ export default {
   },
 
   computed: {
+    youth_name: function() {
+      if (this.selected_youth != null) {
+        return `${this.selected_youth["First Name"]} ${this.selected_youth["Last Name"]}`;
+      } else {
+        return ""
+      };
+    },
+
     edit_button_message: function() {
       if (this.selected_youth != null) {
-        return "Edit Active Quarters for " + this.selected_youth.name;
+        return `Edit Active Quarters for ${this.youth_name}`;
       } else {
         return "No youth selected";
       };
@@ -325,25 +327,26 @@ export default {
       }.bind(this));
 
       // Filter duplicates out of all_youth
+      let id_list = this.all_youth.map(({ID}) => ID);
       this.all_youth = this.all_youth.filter(function(element, n, arr) {
-        return arr.indexOf(element) == n;
+        return id_list.indexOf(element.ID) == n;
       });
 
       // Initialize a Status object for each unique youth, tracked in period_status
-      this.all_youth.forEach(function(youth) {
+      this.all_youth.forEach(function({ID: youth_id}) {
 
         // Init new Status object (see class declaration above)
         let stat = new Status();
 
         // Initialize the status of each period based on whether the youth is in that period
-        set_status(this, stat, youth, this.current_period, this.current_active_youths);
-        set_status(this, stat, youth, this.future_period, this.future_active_youths);
+        set_status(this, stat, youth_id, this.current_period, this.current_active_youths);
+        set_status(this, stat, youth_id, this.future_period, this.future_active_youths);
         this.past_periods.forEach(period => {
-          set_status(this, stat, youth, period, past_data[period]);
+          set_status(this, stat, youth_id, period, past_data[period]);
         });
 
         // Save the new object to period_status
-        this.period_status[youth] = stat;
+        this.period_status[youth_id] = stat;
       }.bind(this));
 
       // Create the period_status.filter(period, status) function
@@ -370,35 +373,36 @@ export default {
       });
 
       let temp = [];
-      this.never_active_youths.forEach(full_id => {
-        temp.push(this.unpack_id(full_id));
+      this.never_active_youths.forEach(youth => {
+        temp.push(youth);
       });
       this.inactive_youth_data = temp;
 
       // Helper function - Initialize period fields in the new Status object
-      function set_status(self, stat, youth, period, array) {
-        stat.add_vue(self, period, (array.includes(youth) ? STATUS.USED : STATUS.UNUSED));
+      function set_status(self, stat, youth_id, period, array) {
+        let active = array.map(({ID}) => ID).includes(youth_id);
+        stat.add_vue(self, period, (active ? STATUS.USED : STATUS.UNUSED));
       };
     },
 
     //TODO: remove "get_youth" from these function names
     // Get the youth's active periods with all the local edits accounted for
-    updated_periods: function(full_id) {
-      return this.period_status[full_id].filter(STATUS.O);
+    updated_periods: function(id) {
+      return this.period_status[id].filter(STATUS.O);
     },
 
     // Get the youth's original active periods without any local edits
-    original_periods: function(full_id) {
-      return this.period_status[full_id].filter([STATUS.USED, STATUS.REMOVE]);
+    original_periods: function(id) {
+      return this.period_status[id].filter([STATUS.USED, STATUS.REMOVE]);
     },
 
     // Get the periods in which the youth's status is being changed locally
-    changing_periods: function(full_id) {
-      return this.period_status[full_id].filter([STATUS.ADD, STATUS.REMOVE]);
+    changing_periods: function(id) {
+      return this.period_status[id].filter([STATUS.ADD, STATUS.REMOVE]);
     },
 
-    youth_is_active: function(full_id, period) {
-      return this.period_status[full_id].is_status(period, STATUS.O);
+    youth_is_active: function(id, period) {
+      return this.period_status[id].is_status(period, STATUS.O);
     },
 
     // Display a modal allowing the user to change which periods a given youth is active for
@@ -409,10 +413,9 @@ export default {
       this.edited_youth = this.selected_youth;
 
       // Get the periods for which the edited youth is active
-      let youth_periods = this.updated_periods(this.edited_youth.full_id);
+      let youth_periods = this.updated_periods(this.edited_youth.ID);
 
       // Set the variables for the checkbox modal, initializing the form to the active periods
-      this.checkbox_modal_name = this.edited_youth.name;
       this.checkbox_modal_form.forEach(function (element) {
         element.checked = youth_periods.includes(element.period);
       });
@@ -421,19 +424,11 @@ export default {
       this.checkbox_modal_visible = true;
     },
 
-    unpack_id: function(id) {
-      let rollover = function() {
-        return (
-          this.period_status[id].is_status(this.current_period, STATUS.O) &&
-          this.period_status[id].is_status(this.future_period,  STATUS.O)
-        );
-      }.bind(this);
-      return {
-        full_id: id,
-        name: id.slice(0, id.lastIndexOf(" ")),
-        id: id.slice(id.lastIndexOf(" ")+1),
-        is_rolling_over: rollover,
-      };
+    is_rolling_over: function(id) {
+      return (
+        this.period_status[id].is_status(this.current_period, STATUS.O) &&
+        this.period_status[id].is_status(this.future_period,  STATUS.O)
+      );
     },
 
     // Initialize the modal checkbox form to edit a youth's active periods
@@ -459,7 +454,7 @@ export default {
       this.future_active_youths  = this.period_status.filter(this.future_period,  STATUS.O);
 
       this.past_periods.forEach(function(period) {
-        if (this.youth_is_active(youth.full_id, period)) {
+        if (this.youth_is_active(youth.ID, period)) {
           if (split_table_youth_period(this.past_table_data, period, true).length == 0) {
             this.past_table_data.push({...youth, quarter: period});
           };
@@ -469,10 +464,10 @@ export default {
       }.bind(this));
 
       let new_inactive = [];
-      Object.keys(this.period_status).filter(full_id => {
-        return this.period_status[full_id].filter(STATUS.O).length == 0;
-      }).forEach(full_id => {
-        new_inactive.push(this.unpack_id(full_id));
+      this.all_youth.filter(youth => {
+        return this.period_status[youth.ID].filter(STATUS.O).length == 0;
+      }).forEach(youth => {
+        new_inactive.push(youth);
       });
 
       this.display_binary_tables();
@@ -483,7 +478,7 @@ export default {
       // If match is false, returns all table elements NOT matching above criteria
       function split_table_youth_period(table_data, period, match) {
         return table_data.filter(function(element) {
-          let temp = ((element.quarter == period) && (element.full_id == youth.full_id));
+          let temp = ((element.quarter == period) && (element.ID == youth.ID));
           return (match ? temp : !temp);
         });
       };
@@ -695,7 +690,7 @@ export default {
       });
 
       // Track changes in period_status, and update displays
-      this.period_status.set_periods(this.edited_youth.full_id, checked_periods);
+      this.period_status.set_periods(this.edited_youth.ID, checked_periods);
       this.update_active_arrays(this.edited_youth);
 
       // Deselect youth
@@ -714,17 +709,17 @@ export default {
         let inactive = [];
 
         // Create a message for youth not rolling over, based on which table this is
+        // TODO: Extract this to binary table specifiers
         let no_return_msg = (table.Period == this.current_period) ? "Not Returning" : "New";
 
         // Sort all youth into either active this period or inactive this period
-        this.all_youth.forEach(full_id => {
+        this.all_youth.forEach(youth => {
 
           // Create the new row from the preexisting youth object, plus a status
-          let youth = this.unpack_id(full_id);
-          youth.status = (youth.is_rolling_over()) ? "Rolling Over" : no_return_msg;
+          youth.Status = (this.is_rolling_over(youth.ID)) ? "Rolling Over" : no_return_msg;
 
           // Put the row in the appropriate array
-          if (this.youth_is_active(youth.full_id, table.Period)) {
+          if (this.youth_is_active(youth.ID, table.Period)) {
             active.push(youth);
           } else {
             inactive.push(youth);
@@ -739,18 +734,18 @@ export default {
     accept_period_edits: function(edits, period) {
       // Set active youth in given period
       edits.active.forEach(youth => {
-        this.period_status[youth.full_id].set(period, STATUS.O);
+        this.period_status[youth.ID].set(period, STATUS.O);
       });
 
       // Set inactive youth in given period
       edits.inactive.forEach(youth => {
-        this.period_status[youth.full_id].set(period, STATUS.X);
+        this.period_status[youth.ID].set(period, STATUS.X);
       });
 
       // Update the displays
       // TODO: Single function to update the arrays all at once?
-      Object.keys(this.period_status).forEach(youth => {
-        this.update_active_arrays(this.unpack_id(youth));
+      this.all_youth.forEach(youth => {
+        this.update_active_arrays(youth);
       });
     },
 
@@ -759,8 +754,8 @@ export default {
       let data = this.past_periods_doc.data();
 
       this.past_periods.forEach(quarter => {
-        data[quarter].forEach(full_id => {
-          this.past_table_data.push({ ...this.unpack_id(full_id), quarter });
+        data[quarter].forEach(youth => {
+          this.past_table_data.push({ ...youth, quarter });
         });
       });
 
@@ -772,8 +767,9 @@ export default {
         groupStartOpen:false,
         groupToggleElement:"header",
         columns:[
-          {title:"Name", field:"name", width:200},
-          {title:"ID", field:"id"},
+          {title: "First Name", field:"First Name"},
+          {title: "Last Name", field:"Last Name"},
+          {title: "ID", field:"ID"},
         ],
         selectable:1,
         rowSelected:   row => this.select_youth("Past", row),
@@ -895,14 +891,14 @@ export default {
 
       // Filter out the matching rows from the past table, then select each of them individually
       this.past_table.getRows()
-        .filter(r => r.getData().full_id == data.full_id)
+        .filter(r => r.getData().ID == data.ID)
         .forEach(r => this.past_table.selectRow(r));
 
       // Select the appropriate row in the current and future tables
-      this.binary_tables.forEach( table => table.Table.selectRow(data.id) );
+      this.binary_tables.forEach( table => table.Table.selectRow(data.ID) );
 
       // Set the selected youth var
-      this.selected_youth = this.unpack_id(data.full_id);
+      this.selected_youth = data;
     },
 
     deselect_youth: function(source_table) {
