@@ -34,7 +34,7 @@ export class Status {
     this.keys().forEach(op);
   }
 
-  parse_status(vals) {
+  static parse_status(vals) {
     let arr = ["O", "X", "N"];
     for (var i in arr) {
       let key = arr[i];
@@ -52,12 +52,12 @@ export class Status {
 
   filter(vals, match) {
     if (match == undefined) match = true;
-    vals = this.parse_status(vals);
+    vals = Status.parse_status(vals);
     return this.keys().filter((p) => vals.includes(this[p]) == match);
   }
 
   unfilter(vals) {
-    vals = this.parse_status(vals);
+    vals = Status.parse_status(vals);
     return this.keys().filter(p => !vals.includes(this[p]));
   }
 
@@ -115,7 +115,7 @@ export class Status {
   }
 
   is_status(key, vals) {
-    return this.parse_status(vals).includes(this[key]);
+    return Status.parse_status(vals).includes(this[key]);
   }
 
   conflicts(arr) {

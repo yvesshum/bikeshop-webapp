@@ -354,10 +354,7 @@ export default {
       Object.defineProperty(this.period_status, "filter", {
         value: function(period, filter_status) {
           return Object.keys(this).filter(function(youth) {
-            if      (filter_status == STATUS.O) filter_status = [STATUS.USED,   STATUS.ADD];
-            else if (filter_status == STATUS.X) filter_status = [STATUS.UNUSED, STATUS.REMOVE];
-            else if (!Array.isArray(filter_status)) filter_status = [filter_status];
-            return filter_status.includes(this[youth][period]);
+            return Status.parse_status(filter_status).includes(this[youth][period]);
           }.bind(this));
         },
       });
