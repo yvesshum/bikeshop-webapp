@@ -140,7 +140,6 @@
 </template>
 <script>
     import {db} from '../../firebase';
-    import moment from 'moment'
     export default {
         name: 'ApproveHourLogs',
         components: {
@@ -207,8 +206,9 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
-                    data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+                    console.log(data["Check In"].toDate());
+                    data["Check In"] = data["Check In"].toDate();
+                    data["Check Out"] = data["Check Out"].toDate();
                     ret.push(data);
                 });
                 return ret;
