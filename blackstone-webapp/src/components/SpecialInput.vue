@@ -39,7 +39,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="radio-sub-component">
+                <b-form-radio-group  v-model="value" name="Boolean">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -71,7 +71,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="radio-sub-component">
+                <b-form-radio-group  v-model="value" name="Gender">
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
