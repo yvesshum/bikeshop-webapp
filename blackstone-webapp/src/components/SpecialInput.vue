@@ -62,6 +62,12 @@ Style argument is just for the specific <b-form> components instead of the entir
             <b-form-input v-model="value" type="time" :style="args.style"></b-form-input>   
         </div>
 
+        <!-- Returns a ISO string-->
+        <div v-else-if="input === 'Datetime'">
+             <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
+             <!-- In progress, none of the packages seem to work so far -->
+        </div>
+
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
@@ -94,6 +100,19 @@ Style argument is just for the specific <b-form> components instead of the entir
             <b-form-input v-model="value" type="email" :state="isValidEmail()" :style="args.style"></b-form-input> 
         </div>
 
+        <!-- Returns a positive integer -->
+        <div v-else-if="input === 'Hours'">
+            <VueNumericInput
+                v-model="value"
+                :step="0.5"
+                :placeholder="args.placeholder"
+                :align="args.align"
+                :precision="args.precision"
+                :style="args.style"
+                :min="0"
+            />
+        </div>
+
         <div v-else>
             <b-form-input v-model="value" type="text" :style="args.style"></b-form-input> 
         </div>
@@ -103,7 +122,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 </template>
 <script>
 import VueNumericInput from 'vue-numeric-input';
-
+// import datetime from 'vuejs-datetimepicker';
 
 export default {
     name: 'SpecialInput',
@@ -145,9 +164,8 @@ export default {
                 { value: "9", text: '9' },
                 { value: "10", text: '10' },
                 { value: "11", text: '11' },
-                { value: "12", text: '12    ' },
-
-            ]
+                { value: "12", text: '12' },
+            ],
         }
     },
 
@@ -210,7 +228,7 @@ export default {
 
     components: {
         VueNumericInput,
-
+        // datetime
     }
 
 }

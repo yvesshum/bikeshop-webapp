@@ -5,10 +5,17 @@
             <b-row><b-col><h1>Stats</h1></b-col></b-row>
             <b-row><b-col><h3>Attendance By Day</h3></b-col></b-row>
             <b-row>
-                <b-col><DatePicker :lang="lang" v-model="date"/></b-col>
-                <b-col><b-button @click="handleSearchButtonClicked">Search</b-button></b-col>
+                <b-col><DatePicker :lang="lang" v-model="datePicker_date"/></b-col>
+                <b-col><b-button @click="lookupDailyAttendance">See attendance</b-button></b-col>
             </b-row>
+            <br>
+            <b-row><b-col>
+                <p v-if="this.dailyAttendanceTableItems.length === 0">No Entries found</p>
+                <b-table per-page="3" hover :items="dailyAttendanceTableItems"></b-table>
+            </b-col></b-row>
+                
         </b-container>
+    
 
     </div>
     
@@ -17,6 +24,7 @@
 <script>
 import DatePicker from 'vue2-datepicker'
 import moment from 'moment'
+import { db } from '@/firebase.js'
 
 
 export default {
@@ -36,19 +44,42 @@ export default {
                     dateRange: 'Select Date Range'
                 }
             },
-            date: '',
+            datePicker_date: '',
+            dailyAttendanceTableItems: [],
         }
     },
     methods: {
-        handleSearchButtonClicked() {
-            this.getAttendanceByDay()
+        async lookupDailyAttendance() {
+            let unprocessed_profiles = await this.getDailyAttendace();
+            this.dailyAttendanceTableItems = unprocessed_profiles;
+            this.dailyAttendanceTableItems.forEach(entry => {
+                entry["Check In"] = entry["Check In"].toDate();
+                entry["Check Out"] = entry["Check Out"].toDate();
+            })
+            
         },
 
-
-        getAttendanceByDay() {
-            let date = moment(this.date).format();
-            
+        // Private method
+        async getDailyAttendace() {
+            let start_Datetime = this.datePicker_date;
+            let end_Datetime = moment(start_Datetime).add(1, 'days').toDate();
+            let queryResult = {};
+            try {
+                queryResult = await db.collectionGroup("Work Log")
+                    .where("Check In", '>' , start_Datetime)
+                    .where("Check In", '<', end_Datetime)
+                    .get();
+            } catch (err) {
+                console.log(err);
+                window.alert(err)
+            }
+            let res = [];
+            queryResult.forEach(doc => {
+                res.push(doc.data())
+            });
+            return res;
         }
+
     },
 
     mounted() {
