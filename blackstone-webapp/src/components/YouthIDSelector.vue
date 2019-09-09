@@ -41,12 +41,9 @@ Emits:
     <div class = "YouthIDSelector">
         <multiselect
             v-model="value"
-            id="multiselect"
             :options="filtered_options"
             :placeholder="placeholder"
             open-direction="bottom"
-            label="name"
-            :custom-label="nameWithID"
             :internal-search="false"
             @search-change="val => search_term = val"
         >
