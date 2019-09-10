@@ -152,7 +152,7 @@ Emits:
                 // Split search string into individual lowercase terms
                 var terms = this.search_term.split(' ')
                     .filter(s => s.length > 0)
-                    .map(s => this.normalize(s.toLowerCase()));
+                    .map(s => s.toLowerCase());
                 var num_terms = terms.length;
 
                 // Variable to hold the options list
@@ -210,18 +210,17 @@ Emits:
                             // Get the name in lowercase as-is
                             let lower = field.toLowerCase();
 
-                            // Get the text with accents separated into their own characters
-                            let normal = this.normalize(lower);
+                            // Get the name with all accents and special characters removed
+                            let plain = this.parse_text(lower, {accents: "none", special: false});
 
-                            // Get the name with all accents removed
-                            let plain = this.plaintext(lower);
-
-                            // Get the indices the term can be found at in each
-                            let normal_i = indices(normal, term);
-                            let plain_i  = indices(plain,  term);
+                            // Get the indices the term can be found at in the field
+                            //   lower: match special chars in term to special chars in field
+                            //   plain: match regular chars in term to special chars in field
+                            let lower_i = indices(lower, term);
+                            let plain_i = indices(plain, term);
 
                             // Merge these into one array, discarding duplicate values
-                            return combine_unique(normal_i, plain_i);
+                            return combine_unique(lower_i, plain_i);
                         });
 
                         // Calculate how many of the fields are matched by at least one term
@@ -476,14 +475,64 @@ Emits:
                 this.value = null;
             },
 
-            normalize(str) {
-                return str.normalize("NFD");
-            },
+            // Format special characters in a string based on options:
+            //   - accents:
+            //      "none"      - No accents
+            //      "separated" - Accents are separate characters
+            //      "all"       - Accents included
+            //   - special:
+            //      true  - Keep special characters
+            //      false - Replace special characters with keyboard equivalents
+            //   - case:
+            //      "lower" - Make the result lowercase
+            //      "upper" - Make the result uppercase
+            //      "keep"  - Don't change case
+            parse_text(str, options) {
+                var ret = str.slice();
 
-            // Get a name string in plaintext (accents removed, etc)
-            // Source: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
-            plaintext(str) {
-                return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                let defaults = {
+                    accents: "none",
+                    special: false,
+                    case: "keep",
+                };
+
+                let opts = {...defaults, ...options};
+
+                switch (opts.accents) {
+                    case "none":
+                        // Source: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
+                        ret = normalize(ret).replace(/[\u0300-\u036f]/g, "");
+                        break;
+                    case "separate":
+                        ret = normalize(ret);
+                        break;
+                    default:
+                        break;
+                };
+
+                if (!opts.special) {
+                    ret = ret
+                        .replace(/\u00f0/g, "d")
+                        .replace(/\u00e6/g, "a")
+                        .replace(/\u00fe/g, "t");
+                }
+
+                switch (opts.case) {
+                    case "lower":
+                        ret = ret.toLowerCase();
+                        break;
+                    case "upper":
+                        ret = ret.toUpperCase();
+                        break;
+                    default:
+                        break;
+                }
+
+                return ret;
+
+                function normalize(str) {
+                    return str.normalize("NFD").replace(/\u0111/g, "d\u0335");
+                };
             },
 
             sort_options(a, b) {
@@ -493,8 +542,8 @@ Emits:
             // Split a string into array of strings with all accents grouped with their respective base characters
             split_special_chars(str) {
                 var i = 0, j = 0;
-                let plain = this.plaintext(str);
-                let normal = this.normalize(str);//str.normalize("NFD");
+                let plain = this.parse_text(str, {accents: "none", special: true});
+                let normal = this.parse_text(str, {accents: "separate", special: true});
                 let arr = [];
 
                 while (i < normal.length) {
