@@ -147,85 +147,97 @@ Emits:
                     .map(s => s.toLowerCase());
                 var num_terms = terms.length;
 
+                // Variable to hold the options list
+                var options;
+
                 // Special case: If the search term is blank, match everything
                 if (num_terms === 0) {
 
                     // Create the Real and Display fields for each option
                     // Since there is no search, the Display fields will all be singleton arrays where the one element is an unmarked segment representing the whole string.
-                    return this.options.map(opt => {
+                    options = this.options.map(opt => {
                         let temp = {};
                         Object.keys(opt).forEach(key => {
                             temp[key] = [{seg: opt[key], mark: false}];
                         });
                         return {Real: opt, Display: temp};
-                    }).sort(this.sort_options);
+                    });
                 }
 
                 // Filter the options
-                return this.options.map(opt => {
+                else {
 
-                    // Split object fields into individual terms, and keep track of which new string came from which fielt with the fields array.
-                    // This will catch name fields with multiple names, such as middle names.
-                    // For example, the following profile object:
-                    //
-                    //      {First Name: "John Smith", Last Name: "Jones"}
-                    //
-                    // ...produces:
-                    //
-                    //      fields:     ["John",       "Smith",      "Jones"]
-                    //      obj_fields: ["First Name", "First Name", "Last Name"]
-                    //
-                    var fields = [];
-                    var obj_fields = [];
-                    Object.keys(opt).forEach(key => {
-                        opt[key].split(' ').filter(s => s.length > 0).forEach(s => {
-                            fields.push(s);
-                            obj_fields.push(key);
+                    options = this.options.map(opt => {
+
+                        // Split object fields into individual terms, and keep track of which new string came from which fielt with the fields array.
+                        // This will catch name fields with multiple names, such as middle names.
+                        // For example, the following profile object:
+                        //
+                        //      {First Name: "John Smith", Last Name: "Jones"}
+                        //
+                        // ...produces:
+                        //
+                        //      fields:     ["John",       "Smith",      "Jones"]
+                        //      obj_fields: ["First Name", "First Name", "Last Name"]
+                        //
+                        var fields = [];
+                        var obj_fields = [];
+                        Object.keys(opt).forEach(key => {
+                            opt[key].split(' ').filter(s => s.length > 0).forEach(s => {
+                                fields.push(s);
+                                obj_fields.push(key);
+                            });
                         });
-                    });
 
-                    // If the number of terms exceeds the number of fields, no match
-                    if (num_terms > fields.length) {
-                        return null;
-                    };
+                        // If the number of terms exceeds the number of fields, no match
+                        if (num_terms > fields.length) {
+                            return null;
+                        };
 
-                    // Create a matrix of arrays representing which the indices at which each term can be found in each field.
-                    // If the term and field don't match, the default value is an empty array.
-                    // Rows are fields, columns are terms
-                    let matched_fields = match_matrix(fields, terms, (field, term) => {
+                        // Create a matrix of arrays representing which the indices at which each term can be found in each field.
+                        // If the term and field don't match, the default value is an empty array.
+                        // Rows are fields, columns are terms
+                        let matched_fields = match_matrix(fields, terms, (field, term) => {
 
-                        // Get the name in lowercase as-is
-                        let normal = field.toLowerCase();
+                            // Get the name in lowercase as-is
+                            let normal = field.toLowerCase();
 
-                        // Get the name with all accents removed
-                        let plain = this.plaintext(normal);
+                            // Get the name with all accents removed
+                            let plain = this.plaintext(normal);
 
-                        // Get the indices the term can be found at in each
-                        let normal_i = indices(normal, term);
-                        let plain_i  = indices(plain,  term);
+                            // Get the indices the term can be found at in each
+                            let normal_i = indices(normal, term);
+                            let plain_i  = indices(plain,  term);
 
-                        // Merge these into one array, discarding duplicate values
-                        return combine_unique(normal_i, plain_i);
-                    });
+                            // Merge these into one array, discarding duplicate values
+                            return combine_unique(normal_i, plain_i);
+                        });
 
-                    // Calculate how many of the fields are matched by at least one term
-                    let num_fields_matched = matched_fields.reduce(
-                        // Increment the accumulator for each matrix row that has at least one non-empty array
-                        // The 0 on the end starts the accumulator from 0 - this is important
-                        (acc, curr) => acc + (concat_all(curr).length ? 1 : 0), 0
-                    );
+                        // Calculate how many of the fields are matched by at least one term
+                        let num_fields_matched = matched_fields.reduce(
+                            // Increment the accumulator for each matrix row that has at least one non-empty array
+                            // The 0 on the end starts the accumulator from 0 - this is important
+                            (acc, curr) => acc + (concat_all(curr).length ? 1 : 0), 0
+                        );
 
-                    // Create an array of terms which don't match any field
-                    let unmatched_terms = terms.filter((term, n) => {
-                        // Grab each matrix row's value at the current term's index (i.e. the indices where the term can be found in the row's field) and combine all these values with OR (such that if any value in this term's column is non-empty, the result will be true). Then, return it inverted for filter.
-                        // Equivalent to "false || matched_fields[0][n] || matched_fields[1][n] || ..."
-                        return !matched_fields.reduce((acc, curr) => acc || curr[n].length, false);
-                    });
+                        // Create an array of terms which don't match any field
+                        let unmatched_terms = terms.filter((term, n) => {
+                            // Grab each matrix row's value at the current term's index (i.e. the indices where the term can be found in the row's field) and combine all these values with OR (such that if any value in this term's column is non-empty, the result will be true). Then, return it inverted for filter.
+                            // Equivalent to "false || matched_fields[0][n] || matched_fields[1][n] || ..."
+                            return !matched_fields.reduce((acc, curr) => acc || curr[n].length, false);
+                        });
 
-                    // The current option should match the search if:
-                    //  - There are no terms which don't match any field
-                    //  - The total number of terms is not greater than than the number of fields with a matching term. If it were greater, then two terms would have to match the same field.
-                    if ((unmatched_terms.length === 0) && (num_fields_matched >= num_terms)) {
+                        // The current option should match the search if:
+                        //
+                        //  - There are no terms which don't match any field
+                        //  - The total number of terms is not greater than than the number of fields with a matching term. If it were greater, then two terms would have to match the same field.
+                        //
+                        // If either of these conditions is not met, return null (to be removed at a later step).
+                        if ((unmatched_terms.length !== 0) || (num_fields_matched < num_terms)) {
+                            return null;
+                        };
+
+                        // All options past this point do match the search.
 
                         // Initialize a new object to store the display version of the option
                         // The display version will be broken up to indicate where the matches are, so they can be highlighted
@@ -304,11 +316,16 @@ Emits:
 
                         // Return the new option, consisting of the Real and Display fields
                         return {Real: opt, Display: opt_display};
-                    }
 
-                    // If the criteria above were not met, return null -> option did not meet search
-                    return null;
-                }).filter(k => k != null).sort(this.sort_options);
+                    // Remove any null elements (options which didn't match the search)
+                    }).filter(k => k != null);
+                }
+
+                // Sort and return the new options
+                return options.sort(this.sort_options);
+
+
+                // =-= Helper Functions =-=-=
 
                 // Convert two arrays (rows, cols) into a matrix of booleans, where each cell represents whether the given row value and column value match according to some specified matching function (match).
                 function match_matrix(rows, cols, match) {
