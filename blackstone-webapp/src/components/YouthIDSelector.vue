@@ -5,7 +5,10 @@ Usage:
     <YouthIDSelector
         placeholder="Some placeholder text"
         :periods="['summer19']"
+        sortBy="First Name"
     ></YouthIDSelector>
+
+    <YouthIDSelector periods="all" />
 
 Props:
 
@@ -28,6 +31,8 @@ Props:
         Will draw from all periods
         (Note the lack of : in the first, and extra '' in the second - both are viable options)
         (See https://github.com/shentao/vue-multiselect/issues/24 for more info)
+
+    sortBy - The field to sort the options by. Must be one of "First Name", "Last Name", or "ID".
 
 Emits:
 
@@ -105,6 +110,9 @@ Emits:
             sortBy: {
                 type: String,
                 default: "ID",
+                validator: function(value) {
+                    return ["First Name", "Last Name", "ID"].indexOf(value) !== -1;
+                },
             },
         },
         data () {
