@@ -247,7 +247,7 @@ Emits:
                         obj_fields.forEach((key, n) => {
 
                             // Set field to the value of this key
-                            let field = opt[key];
+                            let field = fields[n];
                             let new_str = [];
 
                             // Filter out duplicate terms
@@ -304,7 +304,15 @@ Emits:
                             }
 
                             // Set display value for this field to the cumulative new_str array.
-                            opt_display[key] = new_str;
+                            if (opt_display[key] == null) {
+                                opt_display[key] = new_str;
+                            }
+                            else {
+
+                                opt_display[key] = opt_display[key]
+                                    .concat({seg: " ", mark: false})
+                                    .concat(new_str);
+                            }
 
                             // Helper function to take a substring of the field and mark it accordingly. Note that if the substring is blank, nothing needs to be added.
                             function add_segment(start, end, mark) {
