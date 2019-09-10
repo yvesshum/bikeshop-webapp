@@ -144,7 +144,7 @@ Emits:
                 // Split search string into individual lowercase terms
                 var terms = this.search_term.split(' ')
                     .filter(s => s.length > 0)
-                    .map(s => s.toLowerCase());
+                    .map(s => this.normalize(s.toLowerCase()));
                 var num_terms = terms.length;
 
                 // Variable to hold the options list
@@ -200,10 +200,13 @@ Emits:
                         let matched_fields = match_matrix(fields, terms, (field, term) => {
 
                             // Get the name in lowercase as-is
-                            let normal = field.toLowerCase();
+                            let lower = field.toLowerCase();
+
+                            // Get the text with accents separated into their own characters
+                            let normal = this.normalize(lower);
 
                             // Get the name with all accents removed
-                            let plain = this.plaintext(normal);
+                            let plain = this.plaintext(lower);
 
                             // Get the indices the term can be found at in each
                             let normal_i = indices(normal, term);
@@ -246,8 +249,8 @@ Emits:
                         // Cycle through each key in the option - First Name, Last Name, ID
                         obj_fields.forEach((key, n) => {
 
-                            // Set field to the value of this key
-                            let field = fields[n];
+                            // Grab the nth field term and split it into an array of characters with the accents attached
+                            let field = this.split_special_chars(fields[n]);
                             let new_str = [];
 
                             // Filter out duplicate terms
@@ -258,9 +261,11 @@ Emits:
                             //
                             //      [[start, term_length], [start, term_length] ...]
                             //
+                            // Note that length is of the term with accents removed - number of base characters. These will be used to break apart the "field" variable later, so this makes the lengths match.
+                            //
                             let all_indices = concat_all(
                                 unique_terms.map((term, m) => {
-                                    let len = term.length;
+                                    let len = this.plaintext(term).length;
                                     return matched_fields[n][m].map(i => [i,len]);
                                 })
                             );
@@ -314,10 +319,10 @@ Emits:
                                     .concat(new_str);
                             }
 
-                            // Helper function to take a substring of the field and mark it accordingly. Note that if the substring is blank, nothing needs to be added.
+                            // Helper function to take a slice of the field (which is the string version broken into individual accented characters) and mark it accordingly. Note that if the slice is blank, nothing needs to be added.
                             function add_segment(start, end, mark) {
                                 if (end - start > 0) {
-                                    new_str.push({seg: field.substring(start, end), mark});
+                                    new_str.push({seg: field.slice(start, end).join(""), mark});
                                 }
                             };
                         });
@@ -458,6 +463,10 @@ Emits:
                 this.value = null;
             },
 
+            normalize(str) {
+                return str.normalize("NFD");
+            },
+
             // Get a name string in plaintext (accents removed, etc)
             // Source: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
             plaintext(str) {
@@ -466,6 +475,28 @@ Emits:
 
             sort_options(a, b) {
                 return a.Real[this.sortBy].localeCompare(b.Real[this.sortBy]);
+            },
+
+            // Split a string into array of strings with all accents grouped with their respective base characters
+            split_special_chars(str) {
+                var i = 0, j = 0;
+                let plain = this.plaintext(str);
+                let normal = this.normalize(str);//str.normalize("NFD");
+                let arr = [];
+
+                while (i < normal.length) {
+                    let t = i;
+                    j++;
+                    let comp = plain.charAt(j);
+
+                    while (normal.charAt(i) != comp) {
+                        i++;
+                    }
+
+                    arr.push(normal.substring(t, i));
+                }
+
+                return arr;
             },
         },
 
