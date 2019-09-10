@@ -402,7 +402,7 @@ Emits:
                         return item;
                     });
 
-                    this.using_past = periods.length > 0;
+                    this.using_past = periods.filter(item => item != ap && item != fp).length > 0;
                 };
 
                 // Load data from the past periods doc, only if necessary (as determined above)
