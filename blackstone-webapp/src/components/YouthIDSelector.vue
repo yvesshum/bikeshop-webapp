@@ -502,7 +502,7 @@ Emits:
 
         watch: {
             value: function() {
-                this.$emit('selected', this.value.Real);
+                this.$emit('selected', (this.value == null) ? null : this.value.Real);
             },
 
             periods: async function() {
