@@ -254,16 +254,21 @@ Emits:
                         // The display version will be broken up to indicate where the matches are, so they can be highlighted
                         var opt_display = {};
 
+                        // Sort the terms and filter out duplicates
+                        // Result will be all unique search terms in backwards order with their original index stored in "col" for accessing the matched_fields matrix.
+                        // Sorting this way fixes some bugs when one term is a substring of another
+                        // We already know from the if statement above that the mapping from terms to fields is one-to-one, so for the code below we only want to have each unique term once.
+                        var unique_terms = terms
+                            .map((term, col, a) => (a.indexOf(term) == col) ? {term,col} : null)
+                            .filter(t => t != null)
+                            .sort((a, b) => b.term.localeCompare(a.term));
+
                         // Cycle through each key in the option - First Name, Last Name, ID
                         obj_fields.forEach((key, n) => {
 
                             // Grab the nth field term and split it into an array of characters with the accents attached
                             let field = this.split_special_chars(fields[n]);
                             let new_str = [];
-
-                            // Filter out duplicate terms
-                            // We already know from the if statement above that the mapping from terms to fields is one-to-one, so for the code below we only want to have each unique term once.
-                            let unique_terms = terms.filter((t, m, arr) => arr.indexOf(t) == m);
 
                             // Create an array of all the indices which match some term, along with the length of the term they match. Will have the form:
                             //
@@ -272,9 +277,9 @@ Emits:
                             // Note that length is of the term with accents removed - number of base characters. These will be used to break apart the "field" variable later, so this makes the lengths match.
                             //
                             let all_indices = concat_all(
-                                unique_terms.map((term, m) => {
-                                    let len = this.plaintext(term).length;
-                                    return matched_fields[n][m].map(i => [i,len]);
+                                unique_terms.map(( {term, col} ) => {
+                                    let len = this.parse_text(term, {}).length;
+                                    return matched_fields[n][col].map(i => [i,len]);
                                 })
                             );
 
