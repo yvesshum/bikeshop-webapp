@@ -52,6 +52,10 @@ Emits:
             open-direction="bottom"
             :internal-search="false"
             @search-change="val => search_term = val"
+            :show-labels="false"
+            :block-keys="['Tab', 'Enter']"
+            :preserveSearch="true"
+            :loading="is_busy"
         >
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
@@ -159,6 +163,8 @@ Emits:
                 past_periods_doc: null,
 
                 using_past: false,
+
+                is_busy: false,
             }
         },
 
@@ -212,6 +218,9 @@ Emits:
 
              */
             filtered_options: function() {
+
+                // Start the loading icon
+                this.is_busy = true;
 
                 // Split search string into individual lowercase terms
                 var terms = this.search_term.split(' ')
@@ -426,6 +435,9 @@ Emits:
                     }).filter(k => k != null);
                 }
 
+                // Stop the loading icon
+                this.is_busy = false;
+
                 // Sort and return the new options
                 return options.sort(this.sort_options);
 
@@ -461,6 +473,9 @@ Emits:
         methods: {
             // Retrieve all youth from the specified periods from the database
             async getData() {
+
+                // Start the loading icon
+                this.is_busy = true;
 
                 // Load active periods from the database
                 // TODO: Attach as a listener? If not, only load the one time?
@@ -532,6 +547,9 @@ Emits:
 
                 // Remove duplicates and sort
                 youth_arr = unique(youth_arr).sort();
+
+                // Stop the loading icon
+                this.is_busy = false;
 
                 // Return the final result
                 return youth_arr;
