@@ -44,6 +44,7 @@ Emits:
 
 <template>
     <div class = "YouthIDSelector">
+        <div class="multiselect_container">
         <multiselect
             v-model="value"
             :options="filtered_options"
@@ -87,6 +88,9 @@ Emits:
                 </div>
             </template>
         </multiselect>
+        </div>
+
+        <b-button v-b-tooltip.hover.html="tooltip_data" variant="info" squared>?</b-button>
     </div>
 </template>
 
@@ -159,6 +163,37 @@ Emits:
         },
 
         computed: {
+
+            // Creates the message displayed in the help tooltip
+            tooltip_data: function() {
+                let ret = `Characters with diacritics, such as ${str_list(["é","ñ","ç","ł"])}, may be entered plain (i.e. as ${str_list(["e","n","c","l"])}). `;
+
+                ret += "In addition, the following substitutions may be made:<br />";
+
+                SPECIAL_CHARS.forEach((char_obj) => {
+                    let c = char_obj.special;
+                    let r = char_obj.regular;
+                    let caps = char_obj.show_caps;
+
+                    if (char_obj.display) {
+                        ret += `${ (caps) ? c.toUpperCase() : "" }${c} ⇒ ${ r.bold() }<br />`;
+                    }
+                });
+
+                ret += "(The above list is not exhaustive)";
+
+                return ret;
+
+                function str_list(chars) {
+                    let str = "";
+                    for (var i = 0; i < chars.length-1; i++) {
+                        str += chars[i].bold().italics() + ", ";
+                    }
+                    str += "and " + chars[chars.length-1].bold().italics();
+                    return str;
+                };
+            },
+
             /* Search algorithm:
 
              A profile is considered to match the current search if there is a unique mapping from terms in the search (strings separated by spaces) to fields in the profile (First Name, Last Name, and ID).  That is, we want:
@@ -635,10 +670,16 @@ Emits:
 
 <style scoped>
     .YouthIDSelector {
-        width: 70%;
+        width: 100%;
         position: relative;
-        left: 15%;
-        right: 15%;
+        /*left: 15%;*/
+        /*right: 15%;*/
+        /*display: block;*/
+    }
+
+    .multiselect_container {
+        width: 80%;
+        display: inline-block;
     }
 
     .search_highlight {
