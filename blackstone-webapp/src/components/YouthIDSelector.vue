@@ -95,6 +95,35 @@ Emits:
     import {firebase} from '../firebase'
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
+
+    const SPECIAL_CHARS = [
+        // Reasonable Vowels
+        {special: "æ", regular: "ae", display: true,  show_caps: true},
+        {special: "œ", regular: "oe", display: true,  show_caps: true},
+        {special: "ø", regular: "o",  display: false, show_caps: true},
+
+        // Reasonable Consonants
+        {special: "ð", regular: "d",  display: true,  show_caps: true},
+        {special: "ɖ", regular: "d",  display: false, show_caps: true},
+        {special: "þ", regular: "th", display: true,  show_caps: true},
+        {special: "ß", regular: "ss", display: true,  show_caps: false},
+
+        // Letters with strokes - Not caught by diacritic filter
+        {special: "ł", regular: "l",  display: false, show_caps: true},
+        {special: "ħ", regular: "h",  display: false, show_caps: true},
+        {special: "đ", regular: "d",  display: false, show_caps: true},
+        {special: "ŧ", regular: "t",  display: false, show_caps: true},
+
+        // Questionable Letters - Probably overkill, but why not?
+        {special: "ı", regular: "i",  display: false, show_caps: false},
+        {special: "ĳ", regular: "ij", display: false, show_caps: true},
+        {special: "ŋ", regular: "ng", display: false, show_caps: true},
+        {special: "ĸ", regular: "k",  display: false, show_caps: false},
+        {special: "ſ", regular: "s",  display: false, show_caps: false},
+    ].sort(
+        (a, b) => a.regular.localeCompare(b.regular)
+    );
+
     export default {
         name: 'YouthIDSelector',
         components: { Multiselect },
@@ -126,32 +155,6 @@ Emits:
                 past_periods_doc: null,
 
                 using_past: false,
-
-                special_chars: [
-                    // Reasonable Vowels
-                    {special: "æ", regular: "ae", display: true,  show_caps: true},
-                    {special: "œ", regular: "oe", display: true,  show_caps: true},
-                    {special: "ø", regular: "o",  display: false, show_caps: true},
-
-                    // Reasonable Consonants
-                    {special: "ð", regular: "d",  display: true,  show_caps: true},
-                    {special: "ɖ", regular: "d",  display: false, show_caps: true},
-                    {special: "þ", regular: "th", display: true,  show_caps: true},
-                    {special: "ß", regular: "ss", display: true,  show_caps: false},
-
-                    // Letters with strokes - Not caught by diacritic filter
-                    {special: "ł", regular: "l",  display: false, show_caps: true},
-                    {special: "ħ", regular: "h",  display: false, show_caps: true},
-                    {special: "đ", regular: "d",  display: false, show_caps: true},
-                    {special: "ŧ", regular: "t",  display: false, show_caps: true},
-
-                    // Questionable Letters - Probably overkill, but why not?
-                    {special: "ı", regular: "i",  display: false, show_caps: false},
-                    {special: "ĳ", regular: "ij", display: false, show_caps: true},
-                    {special: "ŋ", regular: "ng", display: false, show_caps: true},
-                    {special: "ĸ", regular: "k",  display: false, show_caps: false},
-                    {special: "ſ", regular: "s",  display: false, show_caps: false},
-                ],
             }
         },
 
@@ -553,7 +556,7 @@ Emits:
                 };
 
                 if (!opts.special) {
-                    this.special_chars.forEach(obj => {
+                    SPECIAL_CHARS.forEach(obj => {
                         ret = ret.replace(new RegExp(obj.special, "g"), obj.regular);
                     })
                 }
