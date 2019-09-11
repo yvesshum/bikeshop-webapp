@@ -126,6 +126,32 @@ Emits:
                 past_periods_doc: null,
 
                 using_past: false,
+
+                special_chars: [
+                    // Reasonable Vowels
+                    {special: "æ", regular: "ae", display: true,  show_caps: true},
+                    {special: "œ", regular: "oe", display: true,  show_caps: true},
+                    {special: "ø", regular: "o",  display: false, show_caps: true},
+
+                    // Reasonable Consonants
+                    {special: "ð", regular: "d",  display: true,  show_caps: true},
+                    {special: "ɖ", regular: "d",  display: false, show_caps: true},
+                    {special: "þ", regular: "th", display: true,  show_caps: true},
+                    {special: "ß", regular: "ss", display: true,  show_caps: false},
+
+                    // Letters with strokes - Not caught by diacritic filter
+                    {special: "ł", regular: "l",  display: false, show_caps: true},
+                    {special: "ħ", regular: "h",  display: false, show_caps: true},
+                    {special: "đ", regular: "d",  display: false, show_caps: true},
+                    {special: "ŧ", regular: "t",  display: false, show_caps: true},
+
+                    // Questionable Letters - Probably overkill, but why not?
+                    {special: "ı", regular: "i",  display: false, show_caps: false},
+                    {special: "ĳ", regular: "ij", display: false, show_caps: true},
+                    {special: "ŋ", regular: "ng", display: false, show_caps: true},
+                    {special: "ĸ", regular: "k",  display: false, show_caps: false},
+                    {special: "ſ", regular: "s",  display: false, show_caps: false},
+                ],
             }
         },
 
@@ -265,8 +291,13 @@ Emits:
                         // Cycle through each key in the option - First Name, Last Name, ID
                         obj_fields.forEach((key, n) => {
 
-                            // Grab the nth field term and split it into an array of characters with the accents attached
-                            let field = this.split_special_chars(fields[n]);
+                            // Grab the nth field term and split it into an array of characters with the accents attached, along with their lengths.
+                            // Note that lengths is used later in the local function calc_length
+                            let split = this.split_special_chars(fields[n]);
+                            let field = split.arr;
+                            let lengths = split.lengths;
+
+                            // Initialize an array to store the marked field string
                             let new_str = [];
 
                             // Create an array of all the indices which match some term, along with the length of the term they match. Will have the form:
@@ -312,7 +343,7 @@ Emits:
                                 // Note that because of the filtering above, we don't have to worry about the end of the marked region being larger than the current index.
                                 else {
                                     let prev_index = indices[i-1][0];
-                                    let curr_index = prev_index + indices[i-1][1];
+                                    let curr_index = prev_index +  calc_length(indices[i-1]);
                                     let next_index = indices[i][0];
 
                                     add_segment(prev_index, curr_index, true);
@@ -337,6 +368,17 @@ Emits:
                                     new_str.push({seg: field.slice(start, end).join(""), mark});
                                 }
                             };
+
+                            // Helper function to calculate the real length of a marked region in terms of the field string which will actually be displayed (that is, the string with all accents and special characters included).
+                            function calc_length(start_index) {
+                                var len = 0;
+                                // Roughly, l is how many characters are left to include in the marked segment, and len is how many special characters to include.
+                                // Len still increments even if l ends up below 0, which means that a partially matching character will be highlighted. That is, the full character "ae" will be highlighted if the search term ends in "a" or in "ae".
+                                for (var l = start_index[1]; l > 0; len++) {
+                                    l -= lengths[start_index[0] + len];
+                                }
+                                return len;
+                            }
                         });
 
                         // Return the new option, consisting of the Real and Display fields
@@ -511,10 +553,9 @@ Emits:
                 };
 
                 if (!opts.special) {
-                    ret = ret
-                        .replace(/\u00f0/g, "d")
-                        .replace(/\u00e6/g, "a")
-                        .replace(/\u00fe/g, "t");
+                    this.special_chars.forEach(obj => {
+                        ret = ret.replace(new RegExp(obj.special, "g"), obj.regular);
+                    })
                 }
 
                 switch (opts.case) {
@@ -531,7 +572,7 @@ Emits:
                 return ret;
 
                 function normalize(str) {
-                    return str.normalize("NFD").replace(/\u0111/g, "d\u0335");
+                    return str.normalize("NFD");
                 };
             },
 
@@ -558,7 +599,11 @@ Emits:
                     arr.push(normal.substring(t, i));
                 }
 
-                return arr;
+                let lengths = arr.map(c => {
+                    return this.parse_text(c.toLowerCase(), {accents: "none", special: false}).length;
+                });
+
+                return {arr, lengths};
             },
         },
 
