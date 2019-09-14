@@ -47,7 +47,7 @@ Emits:
         <div class="multiselect_container">
         <multiselect
             v-model="value"
-            :options="filtered_options"
+            :options="filtered.options"
             :placeholder="placeholder"
             open-direction="bottom"
             :internal-search="false"
@@ -72,15 +72,15 @@ Emits:
             <template slot="option" slot-scope="props">
                 <div class="option__desc">
                     <span class="option__name">
-                        <span v-for="s in name_displays[props.option['ID']]['First Name']">
+                        <span v-for="s in filtered.displays[props.option['ID']]['First Name']">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
-                        </span>&nbsp;<span v-for="s in name_displays[props.option['ID']]['Last Name']">
+                        </span>&nbsp;<span v-for="s in filtered.displays[props.option['ID']]['Last Name']">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </span>
                     <br />
                     <small class="option__id">
-                        ID: <span v-for="s in name_displays[props.option['ID']]['ID']">
+                        ID: <span v-for="s in filtered.displays[props.option['ID']]['ID']">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </small>
@@ -152,7 +152,6 @@ Emits:
                 value: '',
                 options: [],
                 search_term: "",
-                name_displays: {}, //Set in the filtered_options computed value
 
                 vars_coll: db.collection("GlobalVariables"),
                 active_periods_doc: null,
@@ -211,7 +210,7 @@ Emits:
              NOTE that this function has the side effect of altering the name_displays variable, which holds information on how to display each option given the current search.
 
              */
-            filtered_options: function() {
+            filtered: function() {
 
                 // Start the loading icon
                 this.is_busy = true;
@@ -222,26 +221,22 @@ Emits:
                     .map(s => s.toLowerCase());
                 var num_terms = terms.length;
 
-                // Variable to hold the options list
+                // Variables to hold the options list and the corresponding display strings
                 var options;
-
-                // Clear all the profile display arrays
-                this.name_displays = {};
+                var displays = new Object();
 
                 // Special case: If the search term is blank, match everything
                 if (num_terms === 0) {
 
                     // Create the unmarked displays for each option, and return all options
                     // Since there is no search, the Display fields will all be singleton arrays where the one element is an unmarked segment representing the whole string.
-                    let t = {};
                     this.options.forEach(opt => {
                         let temp = {};
                         Object.keys(opt).forEach(key => {
                             temp[key] = [{seg: opt[key], mark: false}];
                         });
-                        t[opt["ID"]] = temp;
+                        displays[opt["ID"]] = temp;
                     });
-                    this.name_displays = t;
 
                     options = this.options;
                 }
@@ -402,15 +397,15 @@ Emits:
                             // Set display value for this field to the cumulative new_str array.
                             let id = opt["ID"];
 
-                            if (this.name_displays[id] == null) {
-                                this.name_displays[id] = {};
+                            if (displays[id] == null) {
+                                displays[id] = {};
                             }
 
-                            if (this.name_displays[id][key] == null) {
-                                this.name_displays[id][key] = new_str;
+                            if (displays[id][key] == null) {
+                                displays[id][key] = new_str;
                             }
                             else {
-                                this.name_displays[id][key] = this.name_displays[id][key]
+                                displays[id][key] = displays[id][key]
                                     .concat({seg: " ", mark: false})
                                     .concat(new_str);
                             }
@@ -439,11 +434,14 @@ Emits:
                     });
                 }
 
+                // Sort the new options
+                options = options.sort(this.sort_options);
+
                 // Stop the loading icon
                 this.is_busy = false;
 
-                // Sort and return the new options
-                return options.sort(this.sort_options);
+                // Return the options and displays as one object
+                return {options, displays};
 
 
                 // =-= Helper Functions =-=-=
