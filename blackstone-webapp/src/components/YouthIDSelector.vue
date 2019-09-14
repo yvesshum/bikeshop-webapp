@@ -5,7 +5,7 @@ Usage:
     <YouthIDSelector
         placeholder="Some placeholder text"
         :periods="['summer19']"
-        sortBy="First Name"
+        sortBy="ID"
     ></YouthIDSelector>
 
     <YouthIDSelector periods="all" />
@@ -32,7 +32,17 @@ Props:
         (Note the lack of : in the first, and extra '' in the second - both are viable options)
         (See https://github.com/shentao/vue-multiselect/issues/24 for more info)
 
-    sortBy - The field to sort the options by. Must be one of "First Name", "Last Name", or "ID".
+    sortBy - The field(s) to sort the options by. May be a string or an array, where each string must be one of "First Name", "Last Name", or "ID".
+
+        By default, uses the order: First Name, Last Name, ID
+
+        Any terms passed in to this prop will be moved to the front of this order; e.g., for the following prop values, the options will be sorted by fields in the following order:
+
+            ["Last Name"]       => Last Name, First Name, ID
+
+            ["ID"]              => ID, First Name, Last Name
+
+            ["ID", "Last Name"] => ID, Last Name, First Name
 
 Emits:
 
@@ -127,6 +137,8 @@ Emits:
         (a, b) => a.regular.localeCompare(b.regular)
     );
 
+    const FIELDS = ["First Name", "Last Name", "ID"];
+
     export default {
         name: 'YouthIDSelector',
         components: { Multiselect },
@@ -140,10 +152,13 @@ Emits:
                 default: "current"
             },
             sortBy: {
-                type: String,
-                default: "ID",
+                type: [String, Array],
+                default: () => FIELDS,
                 validator: function(value) {
-                    return ["First Name", "Last Name", "ID"].indexOf(value) !== -1;
+                    // Get value as singleton array if passed as string
+                    let s = (Array.isArray(value)) ? value : [value];
+                    // Reduce array with && to ensure all values are in FIELDS array
+                    return s.reduce((a,c) => a && FIELDS.indexOf(c) !== -1, true)
                 },
             },
         },
@@ -238,7 +253,7 @@ Emits:
                         displays[opt["ID"]] = temp;
                     });
 
-                    options = this.options;
+                    options = this.options.sort(this.sort_options());
                 }
 
                 // Filter the options
@@ -432,10 +447,9 @@ Emits:
                         // Return the new option, consisting of the Real and Display fields
                         return true;
                     });
-                }
 
-                // Sort the new options
-                options = options.sort(this.sort_options);
+                    options = options.sort(this.sort_options(displays));
+                }
 
                 // Stop the loading icon
                 this.is_busy = false;
@@ -469,6 +483,21 @@ Emits:
                         return acc + (n * sub.length);
                     });
                 };
+            },
+
+            // Get a filled out array of fields from the sortBy prop
+            // Pads the end of the sortBy array with any missing values from FIELDS in their default order. This ensures that all fields are considered in a sort, and allows the parent to only pass the fields it cares about sorting by, falling back on the other fields in a predefined way.
+            sort_by: function() {
+                // If sortBy is a string, convert it to a singleton array
+                let arr = get_as_arr(this.sortBy);
+
+                // Combine values in arr and remaining values in FIELDS which are not in arr
+                return [...arr, ...FIELDS.filter(k => !arr.includes(k))];
+
+                // Convert a non-array value to a singleton array
+                function get_as_arr(val) {
+                    return (Array.isArray(val)) ? val : [val];
+                }
             }
         },
 
@@ -634,8 +663,60 @@ Emits:
                 };
             },
 
-            sort_options(a, b) {
-                return a[this.sortBy].localeCompare(b[this.sortBy]);
+            // Create a function to sort options by relevance
+            // Sort Order:
+            //   - By relevance to search(number of marked segments in display)
+            //   - By field (alphabetically by name, numerically by ID)
+            // NOTE: Use displays = null to mean no search - if so, just order by field
+            //       This can also be accomplished by calling the function with no args.
+            // NOTE: The order to check fields in is contained in "sort_by" array
+            // USE: This is run once to construct a sorting function based on the current display values of each profile, and the resulting function is then run by .sort()
+            sort_options(displays) {
+
+                // Create a sort function based on the values in the displays variable
+                return (a, b) => {
+
+                    // If there is a search term, sort by relevance first
+                    if (displays != null) {
+
+                        // Calculate whether either value has more marked segments
+                        let weights = weight(b) - weight(a);
+
+                        // If there is a difference between the weights, sort by it
+                        if (weights) return weights;
+                    }
+
+                    // If the weights are the same or there is no search term in the first place, sort by fields in the order given by the sort_by prop
+                    for (var i in this.sort_by) {
+                        let diff;
+                        let field = this.sort_by[i];
+
+                        // Sort numeric IDs numerically
+                        if (field == "ID" && !isNaN(a[field]) && !isNaN(b[field])) {
+                            diff = Number(a[field]) - Number(b[field]);
+                        }
+
+                        // Sort string values stringily
+                        else {
+                            diff = a[field].localeCompare(b[field]);
+                        }
+
+                        // If there is a difference between the fields, sort by it
+                        if (diff) return diff;
+                    }
+
+                    // If we've made it to this point, all of the fields in the profile are identical
+                    // TODO: Error handling for this case
+                    console.log("WARNING: Identical profiles found: ", a, b);
+                    return 0;
+                };
+
+                // Helper function to get the number of marked segments in an option
+                function weight(v) {
+                    return Object.keys(displays[v.ID]).reduce(
+                        (acc, curr) => acc + displays[v.ID][curr].filter(s => s.mark).length, 0
+                    );
+                }
             },
 
             // Split a string into array of strings with all accents grouped with their respective base characters
