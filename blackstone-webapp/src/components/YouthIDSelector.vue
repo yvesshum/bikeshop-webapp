@@ -60,32 +60,27 @@ Emits:
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
                     <span class="option__name">
-                        <span v-for="s in props.option.Display['First Name']">
-                            <span>{{s.seg}}</span>
-                        </span>&nbsp;<span v-for="s in props.option.Display['Last Name']">
-                            <span>{{s.seg}}</span>
+                        {{props.option["First Name"]}} {{props.option["Last Name"]}}
+                    </span>
+                    <br />
+                    <small class="option__id">
+                        ID: {{props.option["ID"]}}
+                    </small>
+                </span>
+            </template>
+
+            <template slot="option" slot-scope="props">
+                <div class="option__desc">
+                    <span class="option__name">
+                        <span v-for="s in name_displays[props.option['ID']]['First Name']">
+                            <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
+                        </span>&nbsp;<span v-for="s in name_displays[props.option['ID']]['Last Name']">
+                            <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </span>
                     <br />
                     <small class="option__id">
-                        ID: <span v-for="s in props.option.Display['ID']">
-                            <span>{{s.seg}}</span>
-                        </span>
-                    </small>
-                </span>
-            </template>
-            <template slot="option" slot-scope="props">
-                <div class="option__desc">
-                    <span class="option__name">
-                        <span v-for="s in props.option.Display['First Name']">
-                            <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
-                        </span>&nbsp;<span v-for="s in props.option.Display['Last Name']">
-                            <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
-                        </span>
-                    </span>
-                    <br>
-                    <small class="option__id">
-                        ID: <span v-for="s in props.option.Display['ID']">
+                        ID: <span v-for="s in name_displays[props.option['ID']]['ID']">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </small>
@@ -157,6 +152,7 @@ Emits:
                 value: '',
                 options: [],
                 search_term: "",
+                name_displays: {}, //Set in the filtered_options computed value
 
                 vars_coll: db.collection("GlobalVariables"),
                 active_periods_doc: null,
@@ -210,11 +206,9 @@ Emits:
 
              Special case: A blank search term is the same as no search term, not a search for an empty string (which, in fairness, would technically match everything).
 
-             Objects in the resulting array will have the following fields:
+             The resulting array will simply be a filtered version of the options variable. This is important - it keeps the option objects consistent across different search terms, so the current selection isn't cleared every time the search changes, as it would be if the object were to change.
 
-                Real: The actual profile object represented.
-
-                Display: A marked version of the profile object split into marked and unmarked substrings, used to highlight regions which match the current search.
+             NOTE that this function has the side effect of altering the name_displays variable, which holds information on how to display each option given the current search.
 
              */
             filtered_options: function() {
@@ -231,24 +225,31 @@ Emits:
                 // Variable to hold the options list
                 var options;
 
+                // Clear all the profile display arrays
+                this.name_displays = {};
+
                 // Special case: If the search term is blank, match everything
                 if (num_terms === 0) {
 
-                    // Create the Real and Display fields for each option
+                    // Create the unmarked displays for each option, and return all options
                     // Since there is no search, the Display fields will all be singleton arrays where the one element is an unmarked segment representing the whole string.
-                    options = this.options.map(opt => {
+                    let t = {};
+                    this.options.forEach(opt => {
                         let temp = {};
                         Object.keys(opt).forEach(key => {
                             temp[key] = [{seg: opt[key], mark: false}];
                         });
-                        return {Real: opt, Display: temp};
+                        t[opt["ID"]] = temp;
                     });
+                    this.name_displays = t;
+
+                    options = this.options;
                 }
 
                 // Filter the options
                 else {
 
-                    options = this.options.map(opt => {
+                    options = this.options.filter(opt => {
 
                         // Split object fields into individual terms, and keep track of which new string came from which fielt with the fields array.
                         // This will catch name fields with multiple names, such as middle names.
@@ -315,9 +316,9 @@ Emits:
                         //  - There are no terms which don't match any field
                         //  - The total number of terms is not greater than than the number of fields with a matching term. If it were greater, then two terms would have to match the same field.
                         //
-                        // If either of these conditions is not met, return null (to be removed at a later step).
+                        // If either of these conditions is not met, filter this option out.
                         if ((unmatched_terms.length !== 0) || (num_fields_matched < num_terms)) {
-                            return null;
+                            return false;
                         };
 
                         // All options past this point do match the search.
@@ -399,12 +400,17 @@ Emits:
                             }
 
                             // Set display value for this field to the cumulative new_str array.
-                            if (opt_display[key] == null) {
-                                opt_display[key] = new_str;
+                            let id = opt["ID"];
+
+                            if (this.name_displays[id] == null) {
+                                this.name_displays[id] = {};
+                            }
+
+                            if (this.name_displays[id][key] == null) {
+                                this.name_displays[id][key] = new_str;
                             }
                             else {
-
-                                opt_display[key] = opt_display[key]
+                                this.name_displays[id][key] = this.name_displays[id][key]
                                     .concat({seg: " ", mark: false})
                                     .concat(new_str);
                             }
@@ -429,10 +435,8 @@ Emits:
                         });
 
                         // Return the new option, consisting of the Real and Display fields
-                        return {Real: opt, Display: opt_display};
-
-                    // Remove any null elements (options which didn't match the search)
-                    }).filter(k => k != null);
+                        return true;
+                    });
                 }
 
                 // Stop the loading icon
@@ -633,7 +637,7 @@ Emits:
             },
 
             sort_options(a, b) {
-                return a.Real[this.sortBy].localeCompare(b.Real[this.sortBy]);
+                return a[this.sortBy].localeCompare(b[this.sortBy]);
             },
 
             // Split a string into array of strings with all accents grouped with their respective base characters
@@ -665,7 +669,7 @@ Emits:
 
         watch: {
             value: function() {
-                this.$emit('selected', (this.value == null) ? null : this.value.Real);
+                this.$emit('selected', this.value);
             },
 
             periods: async function() {
