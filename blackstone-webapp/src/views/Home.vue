@@ -65,10 +65,17 @@
       </button>
   </a>
 
-<a href="/register-new-youth">
+<!-- <a href="/register-new-youth">
   <button class="page">
     <h4>Register New Youth</h4>
     <p>Register a new youth volunteer</p>
+  </button>
+</a> -->
+
+<a href="/approve-new-youth">
+  <button class="page">
+    <h4>Approve Youth Registration</h4>
+    <p>Approve, edit, or reject a new youth</p>
   </button>
 </a>
 

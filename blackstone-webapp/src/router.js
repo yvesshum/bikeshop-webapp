@@ -12,7 +12,8 @@ import ApproveOrders from './views/staff/ApproveOrders.vue';
 import YouthCheckOrders from './views/youth/CheckOrders.vue';
 import ManageApronSkills from './views/staff/ManageApronSkills.vue';
 import CheckedIn from './views/staff/CheckedIn.vue';
-import StaffRegisterYouth from './views/staff/RegisterNewYouth.vue';
+import RegisterYouth from './views/staff/RegisterNewYouth.vue';
+import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
 import HourTransfer from './views/youth/TransferCurrentHours';
 import ApproveTransfers from './views/staff/ApproveTransferHours';
 import AdminPanel from './views/staff/AdminPanel.vue';
@@ -155,16 +156,25 @@ const router = new Router({
         {
             path: '/register-new-youth',
             name: 'register-new-youth',
-            component: StaffRegisterYouth,
+            component: RegisterYouth,
+            // meta: {
+            //     requiresAuth: true,
+            //     requiresStaff: true
+            // }
+        },
+        {
+            path: '/approve-hours',
+            name: 'approve-hours',
+            component: ApproveHourLogs,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true
             }
         },
         {
-            path: '/approve-hours',
-            name: 'approve-hours',
-            component: ApproveHourLogs,
+            path: '/approve-new-youth',
+            name: 'approve-new-youth',
+            component: ApproveNewYouth,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

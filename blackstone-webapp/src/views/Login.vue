@@ -4,6 +4,13 @@
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
         <input type = "password" v-model = "password" placeholder = "Password"><br>
         <button @click="login">Login!</button>
+        </br></br>
+        <div>
+          <a href="/register-new-youth">
+              Or register a new youth
+          </a>
+        </div>
+
         <p>If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</p>
     </div>
 </template>

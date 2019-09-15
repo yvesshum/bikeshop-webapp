@@ -1,5 +1,5 @@
 <template>
-    <div class = "StaffRegisterYouth">
+    <div class = "RegisterYouth">
         <top-bar/>
         <h3 style="margin: 20px">Register a new Youth here!</h3>
 
@@ -57,9 +57,9 @@
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
-    let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
+    // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
-        name: 'StaffRegisterYouth',
+        name: 'RegisterYouth',
         components: {
         
         },
@@ -81,10 +81,10 @@
                 let f = await fieldsRef.get();
                 return f.data();
             },
-            async getQuarter() {
-                let f = await quarterRef.get();
-                return f.data();
-            },
+            // async getQuarter() {
+            //     let f = await quarterRef.get();
+            //     return f.data();
+            // },
             selectedID(value) {
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
@@ -113,8 +113,8 @@
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    let quarter = await this.getQuarter()
-                    input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
+                    // let quarter = await this.getQuarter()
+                    // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                 
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
@@ -125,7 +125,9 @@
                     for (let i = 0; i < data.length; i ++) {
                         input[data[i]["name"]] = data[i]["value"];
                     }
-                    let submitRef = db.collection("GlobalYouthProfile").doc();
+                    
+                    console.log();
+                    let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
                     rb.ref('Youth Profile Initializers').off("value", listener);
@@ -133,19 +135,22 @@
                     submitRef.set(input).then(response => {
                         // console.log("Document written with ID: ", submitRef.id);
                         this.newID = submitRef.id;
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
-                            // Creates placeholder
-                        });
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Order log").add({
-                            // Creates placeholder
-                        });
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Transfer log").add({
-                            // Creates placeholder
-                        });
-                        let variableID = input["First Name"] + ' ' + input["Last Name"] + ' ' + submitRef.id;
-                        db.collection("GlobalVariables").doc("CurrentActiveYouths").update({
-                            IDs: firebase.firestore.FieldValue.arrayUnion(variableID)
-                        });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
+                        //     // Creates placeholder
+                        // });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Order log").add({
+                        //     // Creates placeholder
+                        // });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Transfer log").add({
+                        //     // Creates placeholder
+                        // });
+                        // let variableID = input["First Name"] + ' ' + input["Last Name"] + ' ' + submitRef.id;
+                        // db.collection("GlobalVariables").doc("CurrentActiveYouths").update({
+                        //     IDs: firebase.firestore.FieldValue.arrayUnion(variableID)
+                        // });
+                        
+                        
+                        
                         // var textareas = this.$el.querySelector(".each_field")
                         // for(let i = 0; i < textareas.length; i ++){
                         //     console.log(textareas[i].value)
@@ -226,18 +231,18 @@
                 };
 
                 // Update the database with the (potentially) changed arrays
-                db.collection("GlobalVariables").doc("ActivePeriods").update({
-                    CurrentActiveYouths: current_active_youth,
-                    FutureActiveYouths:  future_active_youth
-                }).then(
-                    // TODO: This function will be run on a successful update
-                    function() {},
-                    // TODO: This function will be run if the update fails
-                    function(err) {
-                        window.alert("Error updating Active Periods document: " + err);
-                        return err;
-                    }
-                );
+                // db.collection("GlobalVariables").doc("ActivePeriods").update({
+                //     CurrentActiveYouths: current_active_youth,
+                //     FutureActiveYouths:  future_active_youth
+                // }).then(
+                //     // TODO: This function will be run on a successful update
+                //     function() {},
+                //     // TODO: This function will be run if the update fails
+                //     function(err) {
+                //         window.alert("Error updating Active Periods document: " + err);
+                //         return err;
+                //     }
+                // );
 
                 // Return the ActivePeriods variable for the youth represented by youth_id
                 return activePeriods;
@@ -248,6 +253,8 @@
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 this.placeholders = snapshot.val();
             })
+            
+            console.log("Placeholders: " + this.placeholders);
 
             if (this.placeholders === {}) { 
                 window.alert("Error on getting placeholder text values");

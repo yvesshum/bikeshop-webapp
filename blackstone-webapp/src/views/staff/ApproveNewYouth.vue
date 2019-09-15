@@ -1,7 +1,7 @@
 <template>
-    <div class = ApproveHourLogs>
+    <div class = ApproveNewYouth>
         <top-bar/>
-        <h1>Approve Hours Dashboard</h1>
+        <h1>Approve New Youth Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar justify>
 
@@ -10,14 +10,11 @@
                 </b-button-group>
                 
                 <b-button-group>
-                    <b-button variant="info" @click="editHours">Edit Hours</b-button>
+                    <b-button variant="info" @click="editHours">Inspect Youth</b-button>
                 </b-button-group>
-
+                
                 <b-button-group>
-                    <b-button variant="info" @click="editNote">Edit note</b-button>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Log</b-button>
+                    <b-button variant="danger" @click="reject">Reject/Cancel</b-button>
                 </b-button-group>
 
                 <b-button-group>
@@ -142,7 +139,7 @@
     import {db} from '../../firebase';
     import moment from 'moment'
     export default {
-        name: 'ApproveHourLogs',
+        name: 'ApproveNewYouth',
         components: {
         },
         data() {
@@ -177,28 +174,28 @@
             },
 
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
                 if (headers.data() == null) {
-                    window.alert("Error, unable to get fields 'Log Table Headers' from 'GlobalFieldsCollection'");
+                    window.alert("Error, unable to get fields 'YouthProfile' from 'GlobalFieldsCollection'");
                     return null;
                 }
 
-                headers = headers.data()["Work Log Headers"];
+                headers = headers.data()["required"];
                 let fields = [];
                 for (let i = 0; i < headers.length; i++) {
                     fields.push({key: headers[i], sortable: true});
                 }
                 
-                let categories = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
-                categories = categories.data();
-                for (let i = 0; i <categories["Categories"].length; i ++) {
-                    fields.push({key: categories["Categories"][i], sortable: true, editor:"input"});
-                }
+                // let categories = await db.collection("ApronSkills").doc("Categories").get();
+                // categories = categories.data();
+                // for(var category in categories) {
+                //     fields.push({key: category, sortable: true, editor:"input"});
+                // }
                 this.fields = fields;
             },
 
             async getTData() {
-                let snapshot = await db.collection("GlobalPendingHours").get();
+                let snapshot = await db.collection("GlobalPendingRegistration").get();
                 this.items = this.formatCollection(snapshot);
             },
 
@@ -245,7 +242,7 @@
                 forYouthProfile = forYouthProfile.data();
                 var amount = 0;
                 for(var key in this.selected[0]){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         let addAmount = parseFloat(this.selected[0][key]);
                         if(!isNaN(addAmount)){
                             amount += addAmount;
@@ -324,7 +321,7 @@
                 this.rejectingID = curRow["Youth ID"];
                 var amount = 0;
                 for(var key in curRow){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         let addAmount = parseFloat(curRow[key]);
                         if(!isNaN(addAmount)){
                             amount += addAmount;
@@ -405,7 +402,7 @@
                 }
                 var editSelectedHours = [];
                 for(var key in curRow){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         editSelectedHours.push({
                             "Category" : key,
                             "Hours" : curRow[key]
@@ -470,9 +467,9 @@
                     let hours = this.editSelectedHours[i]["Hours"];
                     newTotalHours += parseFloat(hours);
                     if(i == this.editSelectedHours.length - 1){
-                        newHours += '"' + category + '": ' + hours
+                        newHours += '"' + category + '": "' + hours + '"'
                     }else{
-                        newHours += '"' + category + '": ' + hours + ','
+                        newHours += '"' + category + '": "' + hours + '",'
                     }
                 }
                 newHours += '}';
@@ -493,7 +490,7 @@
                 //find amount to change for pending hours 
                 var originalAmount = 0;
                 for(var key in this.selected[0]){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         let addAmount = parseFloat(this.selected[0][key]);
                         if(!isNaN(addAmount)){
                             originalAmount += addAmount;
