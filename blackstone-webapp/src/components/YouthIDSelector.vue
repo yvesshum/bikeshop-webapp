@@ -281,6 +281,12 @@ Emits:
                             });
                         });
 
+                        // Split each field into an array of characters, both with and without accents & special characters
+                        // Resulting objects have the fields:
+                        //   char: The character as-is
+                        //   norm: The plaintext version of the character
+                        var split = fields.map(f => this.split_special_chars(f));
+
                         // If the number of terms exceeds the number of fields, no match
                         if (num_terms > fields.length) {
                             return null;
@@ -289,22 +295,21 @@ Emits:
                         // Create a matrix of arrays representing which the indices at which each term can be found in each field.
                         // If the term and field don't match, the default value is an empty array.
                         // Rows are fields, columns are terms
-                        let matched_fields = match_matrix(fields, terms, (field, term) => {
+                        // TODO: This will not match mixed special and plaintext characters
+                        let matched_fields = match_matrix(split, terms, (field, term) => {
 
-                            // Get the name in lowercase as-is
-                            let lower = field.toLowerCase();
+                            // Get indices of the search term in the plaintext version of the field
+                            let norm = field.map(f => f.norm);
+                            let norm_i = arr_indices(norm, term);
 
-                            // Get the name with all accents and special characters removed
-                            let plain = this.parse_text(lower, {accents: "none", special: false});
-
-                            // Get the indices the term can be found at in the field
-                            //   lower: match special chars in term to special chars in field
-                            //   plain: match regular chars in term to special chars in field
-                            let lower_i = indices(lower, term);
-                            let plain_i = indices(plain, term);
+                            // Get indices of the search term in the field with special characters and accents included
+                            let char = field.map(f => f.char);
+                            let char_i = arr_indices(char, term);
 
                             // Merge these into one array, discarding duplicate values
-                            return combine_unique(lower_i, plain_i);
+                            // Using both allows both plaintext characters and special characters in the search term to match special characters in the field, whereas special characters in the search term do not match plaintext characters in the field.
+                            // That is, searching for "e" should return accented "e"s as well as plain "e"s, but searching for an accented "e" should only match instances of "e" with the same accent.
+                            return combine_unique_i(norm_i, char_i);
                         });
 
                         // Calculate how many of the fields are matched by at least one term
@@ -337,39 +342,14 @@ Emits:
                         // The display version will be broken up to indicate where the matches are, so they can be highlighted
                         var opt_display = {};
 
-                        // Sort the terms and filter out duplicates
-                        // Result will be all unique search terms in backwards order with their original index stored in "col" for accessing the matched_fields matrix.
-                        // Sorting this way fixes some bugs when one term is a substring of another
-                        // We already know from the if statement above that the mapping from terms to fields is one-to-one, so for the code below we only want to have each unique term once.
-                        var unique_terms = terms
-                            .map((term, col, a) => (a.indexOf(term) == col) ? {term,col} : null)
-                            .filter(t => t != null)
-                            .sort((a, b) => b.term.localeCompare(a.term));
-
                         // Cycle through each key in the option - First Name, Last Name, ID
                         obj_fields.forEach((key, n) => {
-
-                            // Grab the nth field term and split it into an array of characters with the accents attached, along with their lengths.
-                            // Note that lengths is used later in the local function calc_length
-                            let split = this.split_special_chars(fields[n]);
-                            let field = split.arr;
-                            let lengths = split.lengths;
 
                             // Initialize an array to store the marked field string
                             let new_str = [];
 
-                            // Create an array of all the indices which match some term, along with the length of the term they match. Will have the form:
-                            //
-                            //      [[start, term_length], [start, term_length] ...]
-                            //
-                            // Note that length is of the term with accents removed - number of base characters. These will be used to break apart the "field" variable later, so this makes the lengths match.
-                            //
-                            let all_indices = concat_all(
-                                unique_terms.map(( {term, col} ) => {
-                                    let len = this.parse_text(term, {}).length;
-                                    return matched_fields[n][col].map(i => [i,len]);
-                                })
-                            );
+                            // Combine all the match indices for the current term, removing duplicates
+                            let all_indices = unique_i(concat_all(matched_fields[n]));
 
                             // Strap in ladies and gents, this one is gonna be wild
                             // Process the indices so they are in ascending order with no overlap.
@@ -387,7 +367,7 @@ Emits:
                                     return (curr[0] - prev[0] >= prev[1]);
                                 })
                                 // Add the final index with highlight length 0
-                                .concat([[field.length,0]]);
+                                .concat([[split[n].length,0]]);
 
                             // Use indices to cut the field into marked and unmarked substrings.
                             for (var i in indices) {
@@ -401,7 +381,7 @@ Emits:
                                 // Note that because of the filtering above, we don't have to worry about the end of the marked region being larger than the current index.
                                 else {
                                     let prev_index = indices[i-1][0];
-                                    let curr_index = prev_index +  calc_length(indices[i-1]);
+                                    let curr_index = prev_index + indices[i-1][1];
                                     let next_index = indices[i][0];
 
                                     add_segment(prev_index, curr_index, true);
@@ -426,22 +406,15 @@ Emits:
                             }
 
                             // Helper function to take a slice of the field (which is the string version broken into individual accented characters) and mark it accordingly. Note that if the slice is blank, nothing needs to be added.
+                            // TODO: Write this more cleanly
                             function add_segment(start, end, mark) {
                                 if (end - start > 0) {
-                                    new_str.push({seg: field.slice(start, end).join(""), mark});
+                                    new_str.push({
+                                        seg: split[n].slice(start,end).map(c => c.char).join(""),
+                                        mark
+                                    });
                                 }
                             };
-
-                            // Helper function to calculate the real length of a marked region in terms of the field string which will actually be displayed (that is, the string with all accents and special characters included).
-                            function calc_length(start_index) {
-                                var len = 0;
-                                // Roughly, l is how many characters are left to include in the marked segment, and len is how many special characters to include.
-                                // Len still increments even if l ends up below 0, which means that a partially matching character will be highlighted. That is, the full character "ae" will be highlighted if the search term ends in "a" or in "ae".
-                                for (var l = start_index[1]; l > 0; len++) {
-                                    l -= lengths[start_index[0] + len];
-                                }
-                                return len;
-                            }
                         });
 
                         // Return the new option, consisting of the Real and Display fields
@@ -465,9 +438,26 @@ Emits:
                     return rows.map(row => cols.map(col => match(row, col)));
                 };
 
-                // Combine and sort two arrays
-                function combine_unique(arr1, arr2) {
-                    return [...arr1, ...arr2].sort().filter((e, n, arr) => arr.indexOf(e) === n);
+                // Combine and sort two arrays, removing duplicate values
+                // TODO: Allow variable number of arrays (merge with unique_i)
+                function combine_unique_i(arr1, arr2) {
+                    return unique_i( [...arr1, ...arr2].sort() );
+                };
+
+                // Given an array of arrays each of the form [start_index, length], returns a new array where all duplicate start indices are replaced with a single entry containing the greatest length that index had been paired with.
+                // That is, removes duplicates, and in case of conflicting lengths, chooses the longest.
+                function unique_i(arr) {
+
+                    // Init a new object which will store the max length for each index
+                    let indices = {};
+
+                    // For each entry in the array, add it to the object if it doesn't already exist, or if it does, replace its length value if applicable.
+                    arr.forEach(([i, len]) => {
+                        indices[i] = (indices[i] == null) ? len : Math.max(indices[i], len);
+                    });
+
+                    // Map each key/value pair in the object (index/length) to an array
+                    return Object.keys(indices).map(k => [Number(k), indices[k]]);
                 };
 
                 // Flatten an array of arrays into a single array with all elements
@@ -475,14 +465,48 @@ Emits:
                     return arr.reduce( (acc, curr) => acc.concat(curr) );
                 };
 
-                // Get all indices of a given substring "sub" in a source string "str"
-                function indices(str, sub) {
-                    let acc = 0;
-                    return str.split(sub).slice(0,-1).map((s, n) => {
-                        acc += s.length;
-                        return acc + (n * sub.length);
+                // Find all indices of a substring in a search string broken down into an array of substrings
+                // Takes an array (arr) of strings which represents a list of segments of some full search string.
+                // Returns all indices in the array where substring begins, along with the number of segments it crosses through.
+                function arr_indices(arr, sub) {
+                    let indices = [];
+                    let arr_str = arr.join("");
+                    let search_len = arr_str.length - sub.length + 1;
+
+                    let arr_indices = [];
+                    arr.forEach((item, n) => {
+                        for (var i = 0; i < item.length; i++) {
+                            arr_indices.push(n);
+                        }
                     });
-                };
+
+                    for (var start = 0; start < search_len; start++) {
+                        let i = 0;
+                        let match = true;
+
+                        while (i < sub.length) {
+                            if (sub[i].toLowerCase() != arr_str[start+i].toLowerCase()) {
+                                match = false;
+                                break;
+                            }
+                            i++;
+                        }
+                        if (match) {
+                            var len;
+                            let end = start + i - 1;
+
+                            if (end == arr_indices.length) {
+                                len = arr.length - arr_indices[start] + 1;
+                            } else {
+                                len = arr_indices[end] - arr_indices[start] + 1;
+                            }
+
+                            indices.push( [arr_indices[start], len] );
+                        }
+                    }
+
+                    return indices;
+                }
             },
 
             // Get a filled out array of fields from the sortBy prop
@@ -719,30 +743,35 @@ Emits:
                 }
             },
 
-            // Split a string into array of strings with all accents grouped with their respective base characters
+            // Split a string into characters stored as objects, where each object contains:
+            //   char: The character as-is, along with all accents
+            //   norm: The lowercase plaintext version of the character
             split_special_chars(str) {
-                var i = 0, j = 0;
-                let plain = this.parse_text(str, {accents: "none", special: true});
-                let normal = this.parse_text(str, {accents: "separate", special: true});
-                let arr = [];
 
-                while (i < normal.length) {
-                    let t = i;
-                    j++;
-                    let comp = plain.charAt(j);
+                // Initialize the return array
+                let ret = [];
 
-                    while (normal.charAt(i) != comp) {
-                        i++;
+                // Split the input string into an array of characters, and loop through each
+                Array.from(str).forEach(char => {
+
+                    // If the current character is an accent, include it in the previous char
+                    // This catches accents which are separated from the base character for some reason, as well as characters with multiple accents, such as those in the Vietnamese alphabet
+                    if (char.match(/[\u0300-\u036f]/)) {
+                        ret[ret.length-1].char += char;
                     }
 
-                    arr.push(normal.substring(t, i));
-                }
-
-                let lengths = arr.map(c => {
-                    return this.parse_text(c.toLowerCase(), {accents: "none", special: false}).length;
+                    // Otherwise, add the character in plaintext and as-is
+                    else {
+                        let norm = this.parse_text(char.toLowerCase(), {
+                            accents: "none",
+                            special: false
+                        });
+                        ret.push({char, norm});
+                    }
                 });
 
-                return {arr, lengths};
+                // Return the return array
+                return ret;
             },
         },
 
