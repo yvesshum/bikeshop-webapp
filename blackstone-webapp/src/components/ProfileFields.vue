@@ -60,18 +60,19 @@
     </table>
 
     <ToggleButton
-      v-show="allow_edits" v-model="edit_mode"
-      onVariant="success" offVariant="primary"
+      v-show="allow_edits" v-model="edit_mode" class="profile_buttons"
+      :onVariant="submit_edits_variant" offVariant="primary"
       onText="Submit Edits" offText="Edit Profile Information"
       :switchOff="confirm_save_edits"
     ></ToggleButton>
-    
-    <button ref="discard_changes" v-on:click="discard_changes()" v-show="edit_mode">
+
+    <b-button @click="discard_changes()" v-show="edit_mode" class="profile_buttons" :variant="discard_changes_variant">
       Discard Changes
-    </button>
-    <button ref="reset_changes" v-on:click="reset_changes()" v-show="edit_mode">
+    </b-button>
+
+    <b-button @click="reset_changes()" v-show="edit_mode" class="profile_buttons" :variant="reset_changes_variant">
       Reset All Changes
-    </button>
+    </b-button>
 
     <br />
 
@@ -262,6 +263,39 @@ export default {
       if (this.profile == null) return "";
       return this.profile.id;
     },
+
+    submit_edits_variant: function() {
+      if (this.edit_mode) {
+        if (this.has_changes_strict) {
+          return 'success';
+        }
+        return 'outline-success';
+      }
+      return 'outline-secondary';
+      // return (this.edit_mode && this.has_changes_strict) ? 'success' : 'outline-secondary';
+    },
+
+    discard_changes_variant: function() {
+      if (this.edit_mode) {
+        if (this.has_changes) {
+          return 'danger';
+        }
+        return 'outline-danger';
+      }
+      return 'outline-secondary';
+    },
+
+    reset_changes_variant: function() {
+      return (this.edit_mode && this.has_changes) ? 'warning' : 'outline-warning';
+    },
+
+    has_changes: function() {
+      return this.check_edits(false);
+    },
+
+    has_changes_strict: function() {
+      return this.check_edits(true);
+    },
   },
 
   mounted: function() {
@@ -393,7 +427,7 @@ export default {
     // Run by the edit ToggleButton when clicked off edit mode
     confirm_save_edits: function() {
       // Check if edits have been made
-      let changed = this.check_edits();
+      let changed = this.check_edits(true);
 
       // Check for user input based on results
       if (changed) {
@@ -410,12 +444,18 @@ export default {
     },
 
     //FUNCTION to check if form changes with edit
-    check_edits: function() {
+    check_edits: function(strict) {
+
+      if (this.row_status == null) return false;
 
       // Check for fields being added/removed which are not empty
-      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE]).filter(key => {
-        return !this.input_fields[key].is_blank();
-      });
+      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE]);
+
+      if (strict) {
+        add_rem = add_rem.filter(key => {
+          return !this.input_fields[key].is_blank();
+        });
+      }
 
       if (add_rem.length > 0) {
         return true;
@@ -628,6 +668,12 @@ export default {
     font-size: 150%;
     font-weight: bold;
     text-align: center;
+  }
+
+  .profile_buttons {
+    display: inline-block;
+    margin: 0px 5px;
+    /*outline: 5px solid black;*/
   }
 
   .change_modal_header {
