@@ -1,4 +1,4 @@
-/* 
+<!--
 * Usage: <SpecialInput input="String" args="arguments" ref="specialInput1"/>
 
 * Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race, Grade, Email
@@ -19,7 +19,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
 * The ref is so that we can call the .get method for the value later on.
 `this.$refs.specialInput1.get()` This returns whatever value it is
-*/
+-->
 
 <template>
     <div v-if="ready">
@@ -39,7 +39,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="radio-sub-component">
+                <b-form-radio-group  v-model="value" name="Boolean">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -49,7 +49,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- Returns a 10 digit string -->
         <div v-else-if="input === 'Phone'">
-            <b-form-input v-model="value" type="number" :state="isValidPhoneNumber()" :style="args.style"></b-form-input>
+            <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input>
         </div>
 
         <!-- Returns a string "YYYY-MM-DD"-->
@@ -62,10 +62,16 @@ Style argument is just for the specific <b-form> components instead of the entir
             <b-form-input v-model="value" type="time" :style="args.style"></b-form-input>   
         </div>
 
+        <!-- Returns a ISO string-->
+        <div v-else-if="input === 'Datetime'">
+             <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
+             <!-- In progress, none of the packages seem to work so far -->
+        </div>
+
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="radio-sub-component">
+                <b-form-radio-group  v-model="value" name="Gender">
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -94,6 +100,19 @@ Style argument is just for the specific <b-form> components instead of the entir
             <b-form-input v-model="value" type="email" :state="isValidEmail()" :style="args.style"></b-form-input> 
         </div>
 
+        <!-- Returns a positive integer -->
+        <div v-else-if="input === 'Hours'">
+            <VueNumericInput
+                v-model="value"
+                :step="0.5"
+                :placeholder="args.placeholder"
+                :align="args.align"
+                :precision="args.precision"
+                :style="args.style"
+                :min="0"
+            />
+        </div>
+
         <div v-else>
             <b-form-input v-model="value" type="text" :style="args.style"></b-form-input> 
         </div>
@@ -103,7 +122,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 </template>
 <script>
 import VueNumericInput from 'vue-numeric-input';
-
+// import datetime from 'vuejs-datetimepicker';
 
 export default {
     name: 'SpecialInput',
@@ -145,11 +164,17 @@ export default {
                 { value: "9", text: '9' },
                 { value: "10", text: '10' },
                 { value: "11", text: '11' },
-                { value: "12", text: '12    ' },
-
-            ]
+                { value: "12", text: '12' },
+            ],
         }
     },
+
+    watch: {
+        value: function() {
+            this.$emit("input", this.value)
+        },
+    },
+
     methods: {
         get() {
             return this.value;
@@ -158,7 +183,16 @@ export default {
 
         },
 
-        setValue() {
+        setValue(val) {
+            this.value = val;
+            return;
+        },
+
+        initValue(val) {
+            if (val != null) {
+                this.value = val;
+                return;
+            }
             switch(this.input) {
                 case 'Integer':
                     this.value = 0
@@ -170,7 +204,7 @@ export default {
         },
 
         isValidPhoneNumber() {
-            return (this.value == null) ? false : this.value.toString().length === 10;
+            return (this.value == null) ? false : (this.value.toString().length === 10 && !isNaN(this.value));
         },
 
         isValidEmail() {
@@ -187,14 +221,14 @@ export default {
 
     mounted() {
         this.sanitizeArgs();
-        this.setValue();
         this.args = this.arguments;
+        this.setValue(this.args.value);
         this.ready = true;
     },
 
     components: {
         VueNumericInput,
-
+        // datetime
     }
 
 }

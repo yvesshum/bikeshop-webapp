@@ -1,7 +1,7 @@
-// Usage: 
+// Usage:
 // e.g. <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
 //  <fieldEditor v-if="boolean" ftype="string name of field array" :elements="array of strings" doc="string, name of doc in collection" collection="String, name of collection that houses the doc"/>
-<template> 
+<template>
     <div>
         <!-- Content -->
         <b-button-group style="margin-bottom:10px">
@@ -10,10 +10,10 @@
         </b-button-group>
 
         <draggable v-model="fields" @start="drag=true" @end="drag=false">
-            <FieldCard 
-                v-for="element in fields" 
-                :key="element.name" 
-                :field="element.name" 
+            <FieldCard
+                v-for="element in fields"
+                :key="element.name"
+                :field="element.name"
                 :isProtected="element.isProtected"
                 v-on:editClicked="editButtonClicked"
                 v-on:deleteClicked="deleteButtonClicked"
@@ -115,7 +115,7 @@ import {db} from '@/firebase.js'
 
 export default {
     name: 'fieldEditor',
-    components: { 
+    components: {
         FieldCard,
         draggable
     },
@@ -125,7 +125,7 @@ export default {
         doc: String,
         collection: String
     },
-    computed: { 
+    computed: {
         isValidFieldName: function() {
             return !this.fields.some(f => {return Object.values(f).indexOf(this.addFieldName) > -1}) && this.addFieldName.length > 0
         }
@@ -149,16 +149,16 @@ export default {
             addFieldInitializer: "",
         }
     },
-    mounted() { 
+    mounted() {
         this.fields = this.elements;
         this.initialFields = this.parse(this.fields);
     },
-    methods: { 
-        parse(item) { 
+    methods: {
+        parse(item) {
             return JSON.parse(JSON.stringify(item));
         },
 
-        resetOrdering() { 
+        resetOrdering() {
             this.fields = this.initialFields;
         },
 
@@ -171,11 +171,11 @@ export default {
 
             let updateVal = {};
             updateVal[this.ftype] = res;
-        
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateVal)
+
+            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateVal)
 
             if(updateStatus) {
-                window.alert("Error on updating GlobalFieldsCollectionm doc: " + doc);
+                window.alert("Error on updating Global Fields Collection doc: " + doc);
                 return null;
             }
 
@@ -193,14 +193,14 @@ export default {
 
         names(obj) {
             let res = [];
-            obj.forEach(f => { 
+            obj.forEach(f => {
                 res.push(f["name"])
             })
             return res;
         },
 
-        alreadyExists(fieldName) { 
-            return this.names(this.initialFields).map(i => { 
+        alreadyExists(fieldName) {
+            return this.names(this.initialFields).map(i => {
                 return i.toLowerCase();
             }).includes(fieldName.toLowerCase());
         },
@@ -214,7 +214,7 @@ export default {
                 this.closeLoadingModal();
                 this.msg_showModal("Error", "Field already exists!")
             }
-            else { 
+            else {
                 let fieldNames = this.names(this.initialFields);
                 for (let i = 0; i < fieldNames.length ; i++) {
                     if (fieldNames[i] === this.oldFieldName) {
@@ -223,8 +223,8 @@ export default {
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-                        if (updateStatus) { 
+                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+                        if (updateStatus) {
                             window.alert("Error on updating Global Fields Collection. Field: " + ftype + ", doc: " + doc);
                             return null;
                         }
@@ -232,7 +232,7 @@ export default {
                         // update the records -> Global Pending Orders & Global Youth Profile
                         let query = await db.collection(this.collection).get();
                         let initialField = this.oldFieldName;
-                        query.forEach(doc => { 
+                        query.forEach(doc => {
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[initialField];
@@ -240,18 +240,18 @@ export default {
                             db.collection(this.collection).doc(id).set(data);
                         })
 
-                        // update locally 
+                        // update locally
                         this.initialFields[i]["name"] = newFieldName;
 
                         //A user may have moved the fields, but editing a field name should not also save the ordering
                         //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) { 
+                        for (let j = 0; j < this.fields.length; j ++) {
                             if (this.fields[j]["name"] === this.oldFieldName) {
                                 this.fields[j]["name"] = newFieldName;
                             }
                         }
 
-                        // once completed, reset (just to be safe)                            
+                        // once completed, reset (just to be safe)
                         this.oldFieldName = "";
 
                         this.closeLoadingModal()
@@ -260,8 +260,8 @@ export default {
                         break;
                     }
                 }
-               
-                
+
+
             }
         },
 
@@ -283,8 +283,8 @@ export default {
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-                        if (updateStatus) { 
+                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+                        if (updateStatus) {
                             window.alert("Error on removing a field Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                             return null;
                         }
@@ -292,25 +292,25 @@ export default {
                         // update the records -> Global Pending Orders & Global Youth Profile
                         let query = await db.collection(this.collection).get();
                         let deletingFieldName = this.deletingField;
-                        query.forEach(doc => { 
+                        query.forEach(doc => {
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             delete data[deletingFieldName];
                             db.collection(this.collection).doc(id).set(data);
                         })
 
-                        // update locally 
+                        // update locally
                         this.initialFields.splice(i, 1);
 
                         //A user may have moved the fields, but editing a field name should not also save the ordering
                         //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) { 
+                        for (let j = 0; j < this.fields.length; j ++) {
                             if (this.fields[j]["name"] === this.deletingField) {
                                 this.fields.splice(j, 1);
                             }
                         }
 
-                        // once completed, reset (just to be safe)                            
+                        // once completed, reset (just to be safe)
                         this.deletingField = "";
 
                         this.closeLoadingModal();
@@ -338,8 +338,8 @@ export default {
             let updateValue = {};
             updateValue[this.ftype] = arr;
 
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-            if (updateStatus) { 
+            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+            if (updateStatus) {
                 window.alert("Error on removing a field in Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                 return null;
             }
@@ -347,7 +347,7 @@ export default {
             // update the records -> Global Pending Orders & Global Youth Profile
             let query = await db.collection(this.collection).get();
             let newFieldName = this.addFieldName;
-            query.forEach(doc => { 
+            query.forEach(doc => {
                 let id = doc.id;
                 let data = this.parse(doc.data());
                 data[newFieldName] = this.addFieldInitializer;
@@ -355,7 +355,7 @@ export default {
                 db.collection(this.collection).doc(id).set(data);
             })
 
-            // update locally 
+            // update locally
             this.initialFields.push({
                 "name": this.addFieldName,
                 "isProtected": false
@@ -366,7 +366,7 @@ export default {
                 "isProtected": false
             })
 
-            // once completed, reset (just to be safe)                            
+            // once completed, reset (just to be safe)
             this.addFieldName = "";
             this.addFieldInitializer = "";
 

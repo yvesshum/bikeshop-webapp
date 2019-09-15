@@ -1,13 +1,18 @@
 <!--Usage:-->
 <!--<Table :headingdata="['test', 'test2']" :table_data="[{'test': 'hi', 'test2': 'bye'}]" @rowSelected="someMethod"/>-->
 <template>
-    <div ref="table"></div>
+    <div class="table">
+        <div ref="table"></div>
+        <div ref="placeholder" class="tabulator-placeholder" style="text-align:center;">
+            <span class="tabulator-placeholder">{{placeholder}}</span>
+        </div>
+    </div>
 </template>
 <script>
     const Tabulator = require('tabulator-tables');
     export default {
         name: 'Table',
-        props:['headingdata', 'table_data', 'args'],
+        props:['headingdata', 'table_data', 'args', "placeholder"],
         data: function () {
             return {
                 tabulator: null, // variable to hold your table
@@ -39,14 +44,17 @@
                             selectableRangeMode:"click",
                             pagination: "local",
                             paginationSize: "20",
-                            rowSelected: row => {
-                                console.log(row);
-                                this.$emit('selectedRow', row);
-                            }
+                            placeholder: this.$refs.placeholder,
+
+                            // If a row is (de)selected, let the parent handle it
+                            rowSelected:   row => this.$emit('selectedRow',   row),
+                            rowDeselected: row => this.$emit('deselectedRow', row),
             };
 
             this.tabulator = new Tabulator(this.$refs.table, {...defaultArgs, ...this.args});
             this.tableData = this.table_data;
+
+            this.$emit("Table", this.tabulator);
         },
     //     [
     //     {title: 'Name', field: 'name', sorter: 'string', width: 200, editor: true},

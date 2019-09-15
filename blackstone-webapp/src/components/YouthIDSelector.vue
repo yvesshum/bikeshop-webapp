@@ -31,7 +31,7 @@ Props:
 
 Emits:
 
-    selected - The selected youth ID, in the format "FirstName LastName YouthID". Emits "null" when no ID selected
+    selected - The selected youth ID, as an object with the fields "First Name", "Last Name", and "ID". Emits "null" when no ID selected
 
     ready - The list of loaded youth profiles, emitted once the mounting/reloading process completes
 
@@ -39,19 +39,27 @@ Emits:
 
 <template>
     <div class = "YouthIDSelector">
-        <multiselect v-model="value" id="multiselect" :options="options" :placeholder="this.r_placeholder" open-direction="bottom" label="name" :custom-label="nameWithID">
+        <multiselect v-model="value" id="multiselect" :options="options" :placeholder="placeholder" open-direction="bottom" label="name" :custom-label="nameWithID">
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
-                    <span class="option__name">{{ props.option.name }}</span>
+                    <span class="option__name">
+                        {{ props.option['First Name'] }} {{ props.option['Last Name'] }}
+                    </span>
                     <br />
-                    <small class="option__id">ID: {{ props.option.id}}</small>
+                    <small class="option__id">
+                        ID: {{ props.option['ID'] }}
+                    </small>
                 </span>
             </template>
             <template slot="option" slot-scope="props">
                 <div class="option__desc">
-                    <span class="option__name">{{ props.option.name }}</span>
+                    <span class="option__name">
+                        {{ props.option['First Name'] }} {{ props.option['Last Name'] }}
+                    </span>
                     <br>
-                    <small class="option__id">ID: {{ props.option.id }}</small>
+                    <small class="option__id">
+                        ID: {{ props.option['ID'] }}
+                    </small>
                 </div>
             </template>
         </multiselect>
@@ -66,10 +74,16 @@ Emits:
     export default {
         name: 'YouthIDSelector',
         components: { Multiselect },
-        props: [
-            "placeholder",
-            "periods",
-        ],
+        props: {
+            placeholder: {
+                type: String,
+                default: "Select an ID",
+            },
+            periods: {
+                type: [String, Array],
+                default: "current"
+            },
+        },
         data () {
             return {
                 value: '',
@@ -80,9 +94,6 @@ Emits:
                 past_periods_doc: null,
 
                 using_past: false,
-
-                r_placeholder: null,
-                def_placeholder: "Select an ID", //Select your ID if you are currently active
 
                 id_list: null,
             }
@@ -111,27 +122,24 @@ Emits:
 
                 // Parent set prop to "all" - wants all youth
                 if (this.periods == "all") {
-                    periods = [ap].concat(fp).concat(data["PastPeriods"]).concat("none");
+                    periods = [ap, fp, "none", ...data["PastPeriods"]];
                     this.using_past = true;
-                }
-
-                // Parent didn't set prop - use current by default
-                else if (this.periods == null) {
-                    periods = [ap];
-                    this.using_past = false;
                 }
 
                 // Replace instances of "current" and "next" with the appropriate names
                 else {
-                    var use_curr = this.periods.includes(ap) || this.periods.includes("current");
-                    var use_next = this.periods.includes(fp) || this.periods.includes("next");
-                    periods = this.periods.filter((n) => {
-                        n != ap && n != "current" && n != fp && n != "next"
+                    let temp = (Array.isArray(this.periods)) ? this.periods : [this.periods];
+                    periods = temp.map((item) => {
+                        if (item == "current") {
+                            return ap;
+                        }
+                        if (item == "next") {
+                            return fp;
+                        }
+                        return item;
                     });
 
                     this.using_past = periods.length > 0;
-                    if (use_curr) periods.push(ap);
-                    if (use_next) periods.push(fp);
                 };
 
                 // Load data from the past periods doc, only if necessary (as determined above)
@@ -177,20 +185,12 @@ Emits:
                 };
             },
 
-            // Format list of ID strings "FirstName LastName ID" into list of objects
-            getOptions(data) {
-                var id_list = [];
-                data.forEach(function(item, index) {
-                    let name = item.slice(0, item.lastIndexOf(' ')  );
-                    let id   = item.slice(   item.lastIndexOf(' ')+1);
-                    id_list.push({name, id});
-                });
-                return id_list;
-            },
-
-            // Reformat separated name/id into single string
-            nameWithID ({ name, id }) {
-                return `${name} ${id}`;
+            // Package name and ID into a searchable string
+            // Includes name as-is and name with accents removed, for searching purposes
+            nameWithID (youth) {
+                let full_str = `${youth["First Name"]} ${youth["Last Name"]} ${youth["ID"]}`;
+                return full_str + " " + full_str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                // https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
             },
 
             //Needed for Check In
@@ -202,33 +202,18 @@ Emits:
 
         watch: {
             value: function() {
-                if (this.value == null) {
-                    this.$emit('selected', null);
-                } else {
-                    this.$emit('selected', this.nameWithID(this.value));
-                };
+                this.$emit('selected', this.value);
             },
 
             periods: async function() {
-                let data = await this.getData();
-                this.options = this.getOptions(data);
+                this.options = await this.getData();
                 this.$emit("ready", this.options);
-            },
-
-            placeholder: function() {
-                this.r_placeholder = (this.placeholder == null) ? this.def_placeholder : this.placeholder;
             },
         },
 
         async mounted() {
-            // Set placeholder to passed or default value
-            this.r_placeholder = (this.placeholder == null) ? this.def_placeholder : this.placeholder;
-
             // Load the list of youths
-            let data = await this.getData();
-
-            // Create list of IDs from returned youths
-            this.options = this.getOptions(data);
+            this.options = await this.getData();
 
             // Emit the ready message
             this.$emit("ready", this.options);

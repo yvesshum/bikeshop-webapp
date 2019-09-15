@@ -5,15 +5,20 @@ A Table with an editable active and inactive list, which can switch between disp
 
 <template>
     <div class="binary_table">
-        <div ref="display_table_container">
+        <div v-if="!edit_mode">
             <Table ref="display_table"
                 :headingdata="this.displayTableHeaders"
                 :table_data="this.active_data"
-                @selectedRow="this.row_selected">
+                :args="displayOptions"
+                :placeholder="placeholders.right"
+                @selectedRow="this.row_selected"
+                @deselectedRow="this.row_deselected"
+                @Table="emit_table"
+            >
             </Table>
         </div>
 
-        <div ref="edit_table_container" style="display:none;">
+        <div v-else>
           <DoubleTable
             :headers="this.editTableHeaders"
             :data="this.edit_table_data"
@@ -27,9 +32,7 @@ A Table with an editable active and inactive list, which can switch between disp
           </DoubleTable>
         </div>
 
-        <br />
-
-        <ToggleButton :onText="this.onText" :offText="this.offText" @Toggle="toggle_edit_mode"></ToggleButton>
+        <ToggleButton onVariant="success" offVariant="primary" :onText="this.onText" :offText="this.offText" v-model="edit_mode" :switchOff="accept_edits" block></ToggleButton>
     </div>
 </template>
 
@@ -73,6 +76,9 @@ A Table with an editable active and inactive list, which can switch between disp
 
                 // The most recent configuration of the DoubleTable
                 edit_pending: null,
+
+                // Whether the table is in edit mode
+                edit_mode: false,
             };
         },
 
@@ -94,16 +100,6 @@ A Table with an editable active and inactive list, which can switch between disp
 
         methods: {
 
-            show_display_table: function() {
-                this.$refs.edit_table_container.style.display = "none";
-                this.$refs.display_table_container.style.display = "";
-            },
-
-            show_edit_table: function() {
-                this.$refs.edit_table_container.style.display = "";
-                this.$refs.display_table_container.style.display = "none";
-            },
-
             set_edit_table: function() {
               this.edit_table_data = {
                 left: this.inactive_data,
@@ -119,6 +115,8 @@ A Table with an editable active and inactive list, which can switch between disp
                 this.active_data   = active;
                 this.inactive_data = inactive;
                 this.$emit("AcceptEdits", {active, inactive});
+
+                return true;
             },
 
             get_child_safe: function(parent, child, default_value) {
@@ -148,6 +146,14 @@ A Table with an editable active and inactive list, which can switch between disp
 
             row_selected: function(row) {
                 this.$emit("selectedRow", row);
+            },
+
+            row_deselected: function(row) {
+                this.$emit("deselectedRow", row);
+            },
+
+            emit_table: function(table) {
+                this.$emit("Table", table);
             },
         }
     }
