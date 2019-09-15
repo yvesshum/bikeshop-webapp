@@ -22,7 +22,7 @@
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null">
 
-      <tbody v-for="section in table_sections" v-show="show_section(section.Name)">
+      <tbody v-for="section in table_sections"><tbody v-if="show_section(section.Name)">
 
         <tr v-show="edit_mode">
           <td class="section_name" colspan="2"> {{section.Name}}: </td>
@@ -56,7 +56,7 @@
 
         <tr><td>&nbsp;</td></tr>
 
-      </tbody>
+      </tbody></tbody>
     </table>
 
     <ToggleButton
@@ -542,7 +542,7 @@ export default {
 
     reset_changes: function() {
       this.row_status.reset();
-      this.row_status.forEach(field => {
+      this.row_status.unfilter(STATUS.IMM).forEach(field => {
         this.input_fields[field].reset();
         this.fields_used[field] = this.row_status.is_status(field, STATUS.O);
       });
