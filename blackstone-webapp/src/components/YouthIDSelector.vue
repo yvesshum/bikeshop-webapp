@@ -309,7 +309,7 @@ Emits:
                             // Merge these into one array, discarding duplicate values
                             // Using both allows both plaintext characters and special characters in the search term to match special characters in the field, whereas special characters in the search term do not match plaintext characters in the field.
                             // That is, searching for "e" should return accented "e"s as well as plain "e"s, but searching for an accented "e" should only match instances of "e" with the same accent.
-                            return combine_unique_i(norm_i, char_i);
+                            return unique_i(norm_i, char_i);
                         });
 
                         // Calculate how many of the fields are matched by at least one term
@@ -438,26 +438,24 @@ Emits:
                     return rows.map(row => cols.map(col => match(row, col)));
                 };
 
-                // Combine and sort two arrays, removing duplicate values
-                // TODO: Allow variable number of arrays (merge with unique_i)
-                function combine_unique_i(arr1, arr2) {
-                    return unique_i( [...arr1, ...arr2].sort() );
-                };
-
-                // Given an array of arrays each of the form [start_index, length], returns a new array where all duplicate start indices are replaced with a single entry containing the greatest length that index had been paired with.
-                // That is, removes duplicates, and in case of conflicting lengths, chooses the longest.
-                function unique_i(arr) {
+                // Given some number of arrays, each storing arrays of the form [start_index, length], returns a new array where all duplicate start indices are replaced with a single entry containing the greatest length that index had been paired with.
+                // That is, merges arrays and removes duplicates, and in case of conflicting lengths, chooses the longest.
+                function unique_i(...arrs) {
 
                     // Init a new object which will store the max length for each index
-                    let indices = {};
+                    let inds = {};
 
-                    // For each entry in the array, add it to the object if it doesn't already exist, or if it does, replace its length value if applicable.
-                    arr.forEach(([i, len]) => {
-                        indices[i] = (indices[i] == null) ? len : Math.max(indices[i], len);
+                    // Loop through each input
+                    arrs.forEach(arr => {
+
+                        // For each entry in the array, add it to the object if it doesn't already exist, or if it does, replace its length value if applicable.
+                        arr.forEach(([i, len]) => {
+                            inds[i] = (inds[i] == null) ? len : Math.max(inds[i], len);
+                        });
                     });
 
                     // Map each key/value pair in the object (index/length) to an array
-                    return Object.keys(indices).map(k => [Number(k), indices[k]]);
+                    return Object.keys(inds).map(k => [Number(k), inds[k]]).sort();
                 };
 
                 // Flatten an array of arrays into a single array with all elements
