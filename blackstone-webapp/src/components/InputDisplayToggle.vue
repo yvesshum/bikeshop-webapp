@@ -69,8 +69,8 @@ export default {
         return {};
       }
       return {
-        placeholder: this.defaultValue,
         value: this.defaultValue,
+        align: "center",
       };
     },
   },
