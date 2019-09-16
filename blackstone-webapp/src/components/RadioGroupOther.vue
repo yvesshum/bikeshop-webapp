@@ -39,7 +39,7 @@ NOTE: The null option is assigned a value "undefined" so that when the component
         <b-form-group style="text-align: left;">
             <b-form-radio-group v-model="choice" name="name" :options="options" stacked>
 
-                <b-form-radio value="other" :style="args.style">
+                <b-form-radio :value="other_string" :style="args.style">
                     {{otherOption}}:<br />
                     <b-form-input v-model="other_value" value="" type="text"></b-form-input>
                 </b-form-radio>
@@ -88,12 +88,12 @@ export default {
             other_value: "",
             choice: null,
 
-            use_other: false,
-            use_null: false,
+            other_string: "",
         }
     },
 
     mounted() {
+        this.other_string = this.gen_other_string();
         this.set_value(this.value);
     },
 
@@ -129,7 +129,7 @@ export default {
 
     methods: {
         emit_value() {
-            if (this.choice == "other") {
+            if (this.choice == this.other_string) {
                 this.$emit("input", this.other_value);
             }
             else {
@@ -145,10 +145,19 @@ export default {
                 this.choice = new_val;
             }
             else {
-                this.choice = "other";
+                this.choice = this.other_string;
                 this.other_val = new_val;
             }
-        }
+        },
+
+        // TODO: Maybe something a bit more sophisticated then just brute forcing underscores onto the end until it works? Granted, I can't imagine a situation where the user would want a bunch of radio options that are just "Other" with increasing numbers of underscores, but this still feels... *dirty* somehow
+        gen_other_string() {
+            let str = "Other";
+            while (this.options.includes(str)) {
+                str += "_";
+            }
+            return str;
+        },
     },
 }
 </script>
