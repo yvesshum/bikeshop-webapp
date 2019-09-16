@@ -1,7 +1,8 @@
-// Usage: 
+// Usage:
 // e.g. <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
 //  <fieldEditor v-if="boolean" ftype="string name of field array" :elements="array of strings" doc="string, name of doc in collection" collection="String, name of collection that houses the doc"/>
-<template> 
+// The paths in fieldEditor was meant for GlobalFieldsCollection
+<template>
     <div>
         <!-- Content -->
         <b-button-group style="margin-bottom:10px">
@@ -10,10 +11,10 @@
         </b-button-group>
 
         <draggable v-model="fields" @start="drag=true" @end="drag=false">
-            <FieldCard 
-                v-for="element in fields" 
-                :key="element.name" 
-                :field="element.name" 
+            <FieldCard
+                v-for="element in fields"
+                :key="element.name"
+                :field="element.name"
                 :isProtected="element.isProtected"
                 v-on:editClicked="editButtonClicked"
                 v-on:deleteClicked="deleteButtonClicked"
@@ -115,25 +116,25 @@ import {db} from '@/firebase.js'
 
 export default {
     name: 'fieldEditor',
-    components: { 
+    components: {
         FieldCard,
         draggable
     },
     props: {
-        ftype: String,
-        elements: Array,
-        doc: String,
-        collection: String
+        ftype: String, //required, optional, hidden
+        elements: Array, //Actual data 
+        doc: String, //name of doc of where the fields are from 
+        collection: String //name of collection of where the fields are from 
     },
-    computed: { 
+    computed: {
         isValidFieldName: function() {
             return !this.fields.some(f => {return Object.values(f).indexOf(this.addFieldName) > -1}) && this.addFieldName.length > 0
         }
     },
     data() {
         return {
-            fields: [],
-            initialFields: [],
+            fields: [], 
+            initialFields: [], //an initial copy for reset to work
             msg_modal_title: "",
             msg_modal_text: "",
             msg_modalVisible: false,
@@ -141,7 +142,7 @@ export default {
             loading_modalHeader: "",
             editMsg: "",
             edit_modalVisible: false,
-            oldFieldName: "",
+            oldFieldName: "", 
             deletingField: "",
             delete_modalVisible: false,
             add_modalVisible: false,
@@ -149,16 +150,19 @@ export default {
             addFieldInitializer: "",
         }
     },
-    mounted() { 
+    mounted() {
+        // Create 2 copies of the props
         this.fields = this.elements;
-        this.initialFields = this.parse(this.fields);
+        this.initialFields = this.parse(this.fields); //this.parse cleans the data
     },
-    methods: { 
-        parse(item) { 
+    methods: {
+        parse(item) {
+            // Sometimes, a piece of data is of type Observer, which is used by vue
+            // To get rid of this, and turn the data into a regular object we can parse it like the following
             return JSON.parse(JSON.stringify(item));
         },
 
-        resetOrdering() { 
+        resetOrdering() {
             this.fields = this.initialFields;
         },
 
@@ -171,11 +175,11 @@ export default {
 
             let updateVal = {};
             updateVal[this.ftype] = res;
-        
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateVal)
+
+            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateVal)
 
             if(updateStatus) {
-                window.alert("Error on updating GlobalFieldsCollectionm doc: " + doc);
+                window.alert("Error on updating Global Fields Collection doc: " + doc);
                 return null;
             }
 
@@ -186,21 +190,23 @@ export default {
         },
 
         editButtonClicked(field) {
-            this.oldFieldName = field;
+            this.oldFieldName = field; //quick save
             this.editMsg = field;
             this.edit_modalVisible = true;
         },
 
+        // Returns an array of just the 'names' of the Object
         names(obj) {
             let res = [];
-            obj.forEach(f => { 
+            obj.forEach(f => {
                 res.push(f["name"])
             })
             return res;
         },
 
-        alreadyExists(fieldName) { 
-            return this.names(this.initialFields).map(i => { 
+        //This checks if the fieldName has been used before in this.initialFields
+        alreadyExists(fieldName) {
+            return this.names(this.initialFields).map(i => {
                 return i.toLowerCase();
             }).includes(fieldName.toLowerCase());
         },
@@ -214,25 +220,27 @@ export default {
                 this.closeLoadingModal();
                 this.msg_showModal("Error", "Field already exists!")
             }
-            else { 
-                let fieldNames = this.names(this.initialFields);
+            else {
+                let fieldNames = this.names(this.initialFields); 
                 for (let i = 0; i < fieldNames.length ; i++) {
-                    if (fieldNames[i] === this.oldFieldName) {
+                    if (fieldNames[i] === this.oldFieldName) { // Finding which field corresponds to the one we're trying to edit
                         let arr = fieldNames;
-                        arr[i] = newFieldName;
+                        arr[i] = newFieldName; //changing it at the same index
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-                        if (updateStatus) { 
+                        // Updating it remotely
+                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+                        if (updateStatus) {
                             window.alert("Error on updating Global Fields Collection. Field: " + ftype + ", doc: " + doc);
                             return null;
                         }
 
-                        // update the records -> Global Pending Orders & Global Youth Profile
+                        // This is a bug, this doesn't quite work yet.
+                        // Though what it should do is update any collection that has been affected by this new change
                         let query = await db.collection(this.collection).get();
                         let initialField = this.oldFieldName;
-                        query.forEach(doc => { 
+                        query.forEach(doc => {
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[initialField];
@@ -240,18 +248,18 @@ export default {
                             db.collection(this.collection).doc(id).set(data);
                         })
 
-                        // update locally 
+                        // update locally
                         this.initialFields[i]["name"] = newFieldName;
 
                         //A user may have moved the fields, but editing a field name should not also save the ordering
                         //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) { 
+                        for (let j = 0; j < this.fields.length; j ++) {
                             if (this.fields[j]["name"] === this.oldFieldName) {
                                 this.fields[j]["name"] = newFieldName;
                             }
                         }
 
-                        // once completed, reset (just to be safe)                            
+                        // once completed, reset (just to be safe)
                         this.oldFieldName = "";
 
                         this.closeLoadingModal()
@@ -260,8 +268,8 @@ export default {
                         break;
                     }
                 }
-               
-                
+
+
             }
         },
 
@@ -278,39 +286,40 @@ export default {
                 for (let i = 0; i < fieldNames.length ; i++) {
                     if (fieldNames[i] === this.deletingField) {
                         let arr = fieldNames;
-                        arr.splice(i, 1);
+                        arr.splice(i, 1); 
 
                         let updateValue = {};
                         updateValue[this.ftype] = arr;
 
-                        let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-                        if (updateStatus) { 
+                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+                        if (updateStatus) {
                             window.alert("Error on removing a field Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                             return null;
                         }
 
-                        // update the records -> Global Pending Orders & Global Youth Profile
+                        // This is a bug, this doesn't quite work yet. I'll fix this in the next version
+                        // But what it should do is update any collection that is affected by this new fieldname change
                         let query = await db.collection(this.collection).get();
                         let deletingFieldName = this.deletingField;
-                        query.forEach(doc => { 
+                        query.forEach(doc => {
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             delete data[deletingFieldName];
                             db.collection(this.collection).doc(id).set(data);
                         })
 
-                        // update locally 
+                        // update locally
                         this.initialFields.splice(i, 1);
 
                         //A user may have moved the fields, but editing a field name should not also save the ordering
                         //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) { 
+                        for (let j = 0; j < this.fields.length; j ++) {
                             if (this.fields[j]["name"] === this.deletingField) {
                                 this.fields.splice(j, 1);
                             }
                         }
 
-                        // once completed, reset (just to be safe)                            
+                        // once completed, reset (just to be safe)
                         this.deletingField = "";
 
                         this.closeLoadingModal();
@@ -332,22 +341,23 @@ export default {
             this.add_closeModal();
             this.showLoadingModal();
 
+            // Appending the input of this.addFieldName to the Update Values
             let fieldNames = this.names(this.initialFields);
             let arr = fieldNames;
             arr.push(this.addFieldName);
             let updateValue = {};
             updateValue[this.ftype] = arr;
 
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.doc).update(updateValue);
-            if (updateStatus) { 
+            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+            if (updateStatus) {
                 window.alert("Error on removing a field in Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
                 return null;
             }
 
-            // update the records -> Global Pending Orders & Global Youth Profile
+            // Again there's a bug here. Will fix.
             let query = await db.collection(this.collection).get();
             let newFieldName = this.addFieldName;
-            query.forEach(doc => { 
+            query.forEach(doc => {
                 let id = doc.id;
                 let data = this.parse(doc.data());
                 data[newFieldName] = this.addFieldInitializer;
@@ -355,7 +365,7 @@ export default {
                 db.collection(this.collection).doc(id).set(data);
             })
 
-            // update locally 
+            // update locally
             this.initialFields.push({
                 "name": this.addFieldName,
                 "isProtected": false
@@ -366,7 +376,7 @@ export default {
                 "isProtected": false
             })
 
-            // once completed, reset (just to be safe)                            
+            // once completed, reset (just to be safe)
             this.addFieldName = "";
             this.addFieldInitializer = "";
 

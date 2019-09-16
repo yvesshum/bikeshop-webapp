@@ -1,9 +1,9 @@
-// List of settings we need to have: 
-// Changing Submit Orders placeholders 
-// Changing Youth Profile fields 
+// List of settings we need to have:
+// Changing Submit Orders placeholders
+// Changing Youth Profile fields
 // Youth Order Form
-// Hour Transfers 
-// Current active quarter 
+// Hour Transfers
+// Current active quarter
 <template>
     <div class="home">
         <top-bar/>
@@ -23,6 +23,18 @@
                     <button class="page">
                     <h4>Youth Profile Staff View</h4>
                     <p>Change Youth Order staff view's settings</p>
+                    </button>
+                </a>
+                <a href="/hour-logging-categories-settings">
+                    <button class="page">
+                    <h4>Hour Logging Categories</h4>
+                    <p>Change Hour Logging Category settings</p>
+                    </button>
+                </a>
+                <a href="/apron-colors-settings">
+                    <button class="page">
+                    <h4>Apron Colors</h4>
+                    <p>Change apron colors for youth skill levels</p>
                     </button>
                 </a>
             </div>

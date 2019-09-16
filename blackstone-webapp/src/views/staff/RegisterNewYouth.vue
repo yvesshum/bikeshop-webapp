@@ -1,5 +1,5 @@
 <template>
-    <div class = "StaffRegisterYouth">
+    <div class = "RegisterYouth">
         <top-bar/>
         <h3 style="margin: 20px">Register a new Youth here!</h3>
 
@@ -8,7 +8,8 @@
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
+                <input v-if="field.type != 'radio'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
+                <input v-if="field.type == 'radio'" size="35" v-for="label in field.labels" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -17,7 +18,14 @@
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
+                <input v-if="field.type != 'radio'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
+                <div v-if="field.type == 'radio'" style="width: 50%; margin-left: auto; margin-right: auto; border: 1px solid black;">
+                    <div v-for="id in field.id">
+                        <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder" :id="id" :value="id">
+                        <label for="id">&nbsp;&nbsp;{{ id }}&nbsp;&nbsp;</label>
+                        <input v-if="id == 'Other'" type="text" />
+                    </div>
+                </div></br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -56,10 +64,11 @@
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
+    import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
-    let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
+    // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
-        name: 'StaffRegisterYouth',
+        name: 'RegisterYouth',
         components: {
         
         },
@@ -81,10 +90,10 @@
                 let f = await fieldsRef.get();
                 return f.data();
             },
-            async getQuarter() {
-                let f = await quarterRef.get();
-                return f.data();
-            },
+            // async getQuarter() {
+            //     let f = await quarterRef.get();
+            //     return f.data();
+            // },
             selectedID(value) {
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let curName = this.requiredFields[i]["name"];
@@ -113,8 +122,8 @@
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    let quarter = await this.getQuarter()
-                    input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
+                    // let quarter = await this.getQuarter()
+                    // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                 
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
@@ -123,9 +132,13 @@
                     
                     data = this.parse(this.optionalFields);
                     for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
+                        if(input[data[i]["name"]] != undefined){
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
                     }
-                    let submitRef = db.collection("GlobalYouthProfile").doc();
+                    
+                    console.log(input);
+                    let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
                     rb.ref('Youth Profile Initializers').off("value", listener);
@@ -133,19 +146,22 @@
                     submitRef.set(input).then(response => {
                         // console.log("Document written with ID: ", submitRef.id);
                         this.newID = submitRef.id;
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
-                            // Creates placeholder
-                        });
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Order log").add({
-                            // Creates placeholder
-                        });
-                        db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Transfer log").add({
-                            // Creates placeholder
-                        });
-                        let variableID = input["First Name"] + ' ' + input["Last Name"] + ' ' + submitRef.id;
-                        db.collection("GlobalVariables").doc("CurrentActiveYouths").update({
-                            IDs: firebase.firestore.FieldValue.arrayUnion(variableID)
-                        });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
+                        //     // Creates placeholder
+                        // });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Order log").add({
+                        //     // Creates placeholder
+                        // });
+                        // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Transfer log").add({
+                        //     // Creates placeholder
+                        // });
+                        // let variableID = input["First Name"] + ' ' + input["Last Name"] + ' ' + submitRef.id;
+                        // db.collection("GlobalVariables").doc("CurrentActiveYouths").update({
+                        //     IDs: firebase.firestore.FieldValue.arrayUnion(variableID)
+                        // });
+                        
+                        
+                        
                         // var textareas = this.$el.querySelector(".each_field")
                         // for(let i = 0; i < textareas.length; i ++){
                         //     console.log(textareas[i].value)
@@ -226,18 +242,18 @@
                 };
 
                 // Update the database with the (potentially) changed arrays
-                db.collection("GlobalVariables").doc("ActivePeriods").update({
-                    CurrentActiveYouths: current_active_youth,
-                    FutureActiveYouths:  future_active_youth
-                }).then(
-                    // TODO: This function will be run on a successful update
-                    function() {},
-                    // TODO: This function will be run if the update fails
-                    function(err) {
-                        window.alert("Error updating Active Periods document: " + err);
-                        return err;
-                    }
-                );
+                // db.collection("GlobalVariables").doc("ActivePeriods").update({
+                //     CurrentActiveYouths: current_active_youth,
+                //     FutureActiveYouths:  future_active_youth
+                // }).then(
+                //     // TODO: This function will be run on a successful update
+                //     function() {},
+                //     // TODO: This function will be run if the update fails
+                //     function(err) {
+                //         window.alert("Error updating Active Periods document: " + err);
+                //         return err;
+                //     }
+                // );
 
                 // Return the ActivePeriods variable for the youth represented by youth_id
                 return activePeriods;
@@ -248,53 +264,115 @@
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 this.placeholders = snapshot.val();
             })
+            
+            console.log("Placeholders: " + this.placeholders);
 
             if (this.placeholders === {}) { 
                 window.alert("Error on getting placeholder text values");
                 return null;
             }
-            
-            for (let i = 0; i < fields["required"].length; i ++) {
-                if(fields["required"][i] != "DOB"){
+            var getType = function (val) {
+                var type = "";
+                if (val == "String"){
+                    type = "textarea";
+                } else if (val == "Boolean"){
+                    type = "radio";
+                } else if (val == "Grade"){
+                    type = "number";
+                } else if (val == "Date"){
+                    type = "date";
+                } else if (val == "Gender"){
+                    type = "radio";
+                } else if (val == "Phone"){
+                    type = "textarea";
+                } else if (val == "Race"){
+                    type = "radio";
+                } else {
+                    type = "textarea";
+                }
+                return type;
+            };
+            var getLabels = function (val) {
+                var labels = null;
+                if (val == "Boolean"){
+                    labels = ["Yes", "No"];
+                }
+                if (val == "Race"){
+                    labels = ["Caucasian", "Hispanic", "Asian", "African American", "Prefer not to answer", "Other"];
+                }
+                else if (val == "Gender"){
+                    labels = ["Male", "Female", "Prefer not to answer", "Other"];
+                }
+                return labels;
+            };
+            var req_keys = [];
+            var req_types = [];
+            var req_labels = [];
+            forKeyVal(fields["required"], function(name, val, n) {
+                console.log(`${n}: ${name},  ${val}`);
+                var type = getType(val);
+                var labels = getLabels(val);
+                req_keys.push(name);
+                req_types.push(type);
+                req_labels.push(labels)
+            });
+            for (let i = 0; i < req_keys.length; i ++) {
+                if(req_labels[i] == null){
                     this.requiredFields.push({
-                        name: fields["required"][i],
+                        name: req_keys[i],
                         value: "",
-                        type: "textarea",
-                        placeholder: this.placeholders[fields["required"][i]]
-                    })
+                        type: req_types[i],
+                        placeholder: this.placeholders[req_keys[i]]
+                    });
                 } else {
-                  this.requiredFields.push({
-                      name: fields["required"][i],
+                    for (let j = 0; j < req_labels[i].length; j ++){
+                        this.requiredFields.push({
+                            name: req_keys[i],
+                            value: req_labels[i][j],
+                            id: req_labels[i][j],
+                            type: req_types[i]
+                        });
+                    }
+                }
+                
+            }
+            var opt_keys = [];
+            var opt_types = [];
+            var opt_labels = [];
+            forKeyVal(fields["optional"], function(name, val, n) {
+                console.log(`${n}: ${name},  ${val}`);
+                var type = getType(val);
+                var labels = getLabels(val);
+                opt_keys.push(name);
+                opt_types.push(type);
+                opt_labels.push(labels)
+            });
+            for (let i = 0; i < opt_keys.length; i ++) {
+                if(opt_labels[i] == null){
+                  this.optionalFields.push({
+                      name: opt_keys[i],
                       value: "",
-                      type: "date"
-                  })
-                }
-            }
-            for (let i = 0; i < fields["optional"].length; i ++) {
-                if(fields["optional"][i] == "Current Grade"){
-                    this.optionalFields.push({
-                        name: fields["optional"][i],
-                        value: "",
-                        type: "number"
-                    })
-                } else if(fields["optional"][i] == "Qualified for free/reduced lunch?"){
-                    this.optionalFields.push({
-                        name: fields["optional"][i],
-                        value: "",
-                        type: "checkbox"
-                    })
+                      type: opt_types[i],
+                      placeholder: this.placeholders[opt_keys[i]]
+                  });
                 } else {
                     this.optionalFields.push({
-                        name: fields["optional"][i],
-                        value: "",
-                        type: "textarea",
-                        placeholder: this.placeholders[fields["optional"][i]]
-                    })
+                        name: opt_keys[i],
+                        values: opt_labels[i],
+                        id: opt_labels[i],
+                        type: opt_types[i]
+                    });
                 }
             }
-            for (let i = 0; i <fields["hidden"].length; i ++) {
+            var hidden_keys = [];
+            forKeyVal(fields["hidden"], function(name, val, n) {
+                console.log(`${n}: ${name},  ${val}`);
+                var type = getType(val);
+                hidden_keys.push(name);
+            });
+            for (let i = 0; i <hidden_keys.length; i ++) {
                 this.hiddenFields.push({
-                    name: fields["hidden"][i],
+                    name: hidden_keys[i],
                     value: ""
                 })
             }

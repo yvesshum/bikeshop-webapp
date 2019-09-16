@@ -1,3 +1,4 @@
+// TODO: Remove Manual Entry, configure YouthIDSelector to draw from all 
 <template>
     <div id = "TransferHours">
         <top-bar/>
@@ -19,37 +20,13 @@
             <b-row>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px"/>
+                        <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px" periods="all"/>
                         <br>
                     </b-row>
                 </b-col>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px"/>
-                    </b-row>
-                </b-col>
-            </b-row>
-            <b-row>
-                <b-col>
-                    <b-row>
-                        <b-form-textarea v-model="fromInput"
-                                         placeholder="Or manually enter an ID for inactive youth"
-                                         rows="3"
-                                         max-rows="6"
-                                         size="sm"
-                                         style="text-align: center"
-                        />
-                    </b-row>
-                </b-col>
-                <b-col>
-                    <b-row>
-                        <b-form-textarea v-model="toInput"
-                                         placeholder="Or manually enter an ID for inactive youth"
-                                         rows="3"
-                                         max-rows="6"
-                                         size="sm"
-                                         style="text-align: center"
-                        />
+                        <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px" periods="all"/>
                     </b-row>
                 </b-col>
             </b-row>
@@ -135,14 +112,14 @@
                 modalVisible: false,
                 modalHeader: "",
                 modalMsg: "",
-                toSelector: "",
-                fromSelector: "",
+                toSelector: {},
+                fromSelector: {},
                 value: 1,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
                 note: "",
-                fromInput: "",
-                toInput: "",
+                // fromInput: "",
+                // toInput: "",
                 submitMsg: "Submit order for staff review!",
             }
         },
@@ -159,25 +136,13 @@
             },
 
             async submit() {
-                let fromSelectorID = this.fromSelector.split(" ")[2];
-                let toSelectorID = this.toSelector.split(" ")[2];
                 let amount = this.value;
                 let fromID;
                 let toID;
 
-                //check if the user has 2 inputs
-                if (fromSelectorID && this.fromInput) {
-                    this.showModal("Error", "Unclear sender, only select OR type in an ID")
-                    return null;
-                }
-                if (toSelectorID && this.toInput) {
-                    this.showModal("Error", "Unclear recipient, only select OR type in an ID")
-                    return null;
-                }
-                
                 //selecting from which input it is
-                fromSelectorID ? fromID = fromSelectorID : fromID = this.fromInput;
-                toSelectorID ? toID = toSelectorID : toID = this.toInput;
+                fromID = this.fromSelector["ID"]
+                toID   = this.toSelector["ID"]
 
                 if (fromID == "" && toID == "") {
                     this.showModal("Error", "Please select/enter an ID for both 'To' and 'From'");

@@ -1,7 +1,7 @@
 <template>
-    <div class = ApproveHourLogs>
+    <div class = ApproveNewYouth>
         <top-bar/>
-        <h1>Approve Hours Dashboard</h1>
+        <h1>Approve New Youth Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar justify>
 
@@ -10,14 +10,11 @@
                 </b-button-group>
                 
                 <b-button-group>
-                    <b-button variant="info" @click="editHours">Edit Hours</b-button>
+                    <b-button variant="info" @click="editHours">Inspect Youth</b-button>
                 </b-button-group>
-
+                
                 <b-button-group>
-                    <b-button variant="info" @click="editNote">Edit note</b-button>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Log</b-button>
+                    <b-button variant="danger" @click="reject">Reject/Cancel</b-button>
                 </b-button-group>
 
                 <b-button-group>
@@ -91,7 +88,7 @@
         
         <b-modal v-model = "hoursModalVisible" hide-footer lazy>
             <template slot = "modal-title">
-                Editing hours
+                Editing Registration
             </template>
             <!-- <div class="d-block text-center">
                 <h3>Edit the following message:</h3>
@@ -140,8 +137,11 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import {rb} from '../../firebase';
+    import moment from 'moment'
+    import { forKeyVal } from '../../components/ParseDB.js';
     export default {
-        name: 'ApproveHourLogs',
+        name: 'ApproveNewYouth',
         components: {
         },
         data() {
@@ -176,28 +176,22 @@
             },
 
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
                 if (headers.data() == null) {
-                    window.alert("Error, unable to get fields 'Log Table Headers' from 'GlobalFieldsCollection'");
+                    window.alert("Error, unable to get fields 'YouthProfile' from 'GlobalFieldsCollection'");
                     return null;
                 }
 
-                headers = headers.data()["Work Log Headers"];
+                headers = headers.data()["required"];
                 let fields = [];
-                for (let i = 0; i < headers.length; i++) {
-                    fields.push({key: headers[i], sortable: true});
-                }
-                
-                let categories = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
-                categories = categories.data();
-                for (let i = 0; i <categories["Categories"].length; i ++) {
-                    fields.push({key: categories["Categories"][i], sortable: true, editor:"input"});
-                }
+                forKeyVal(headers, function(name, val, n) {
+                    fields.push({key: name, sortable: true});
+                });
                 this.fields = fields;
             },
 
             async getTData() {
-                let snapshot = await db.collection("GlobalPendingHours").get();
+                let snapshot = await db.collection("GlobalPendingRegistrations").get();
                 this.items = this.formatCollection(snapshot);
             },
 
@@ -206,9 +200,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    console.log(data["Check In"].toDate());
-                    data["Check In"] = data["Check In"].toDate();
-                    data["Check Out"] = data["Check Out"].toDate();
+                    // data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+                    // data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
                     ret.push(data);
                 });
                 return ret;
@@ -233,62 +226,43 @@
 
             async accept() {
                 let row = this.selected[0];
-                //change remotely
-                let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).get();
-                console.log(forYouthProfile.data());
-                if (forYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + row["Youth ID"]);
-                    return null;
-                }
 
                 this.showLoadingModal("Doing some work in the background...");
-                forYouthProfile = forYouthProfile.data();
-                var amount = 0;
-                for(var key in this.selected[0]){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
-                        let addAmount = parseFloat(this.selected[0][key]);
-                        if(!isNaN(addAmount)){
-                            amount += addAmount;
-                        }
-                        console.log("Current approve amount: " + amount);
-                    }
-                }
                 
-                let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
-                let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
-                let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
-                    "Pending Hours": newPendingHours.toString(), 
-                    "Hours Earned": newHoursEarned.toString()
-                });
-
-                if (acceptStatus) {
-                    window.alert("Error, unable to change sender's profile hours")
-                }
-
-                this.removeLocally(row["Document ID"]);
+                var newIDs = []
                 
-                let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
-                if (status3 == null) {
-                    window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
-                    return null;
-                }
+                let listener = await rb.ref('Youth ID Number').on("value", snapshot => { 
+                    console.log("Snapshot value: " + snapshot.val())
+                    newIDs.push(snapshot.val());
+                })
                 
-                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set({
-                    "Check In": row["Check In"],
-                    "Check Out": row["Check Out"],
-                    "Youth ID": row["Youth ID"],
-                    "First Name": row["First Name"],
-                    "Last Name": row["Last Name"],
-                    "Amount": amount.toString(),
-                    "Notes": row["Notes"]
-                });
+                console.log("New ID: " + newIDs[0])
+                
+                let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
+                
+                let input = row
+                
+                let logStatus = await submitRef.set(input);
 
                 if (logStatus) {
-                    window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
+                    window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                     return null;
                 }
                 
+                // let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
+                // 
+                // if (status) {
+                //     window.alert("Error on deleting youth registration: " + row["Document ID"]);
+                //     return null;
+                // }
+                
+                this.removeLocally(row["Document ID"]);
+                
                 this.closeLoadingModal();
+                newIDs[0] += 1;
+                // rb.ref('Youth ID Number').set({value: newIDs[0]});
+                // var newPostKey = firebase.database().ref().child('posts').push().key;
+                rb.ref('Youth ID Number').off("value", listener);
                 this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
 
             },
@@ -322,20 +296,8 @@
                 let curRow = this.selected[0];
                 this.rejectingDocumentID = curRow["Document ID"];
                 this.rejectingID = curRow["Youth ID"];
-                var amount = 0;
-                for(var key in curRow){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
-                        let addAmount = parseFloat(curRow[key]);
-                        if(!isNaN(addAmount)){
-                            amount += addAmount;
-                        }
-                        console.log("Current delete amount: " + amount);
-                    }
-                }
-                console.log("Delete Amount: " + amount)
-                this.deleteAmount = amount
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                    + curRow["First Name"] + " " + curRow["Last Name"] + "'s log for " + this.deleteAmount);
+                    + curRow["First Name"] + " " + curRow["Last Name"] + "'s youth registration");
             },
 
             async confirmedDelete() {
@@ -344,30 +306,11 @@
                 this.showLoadingModal("Deleting...");
                 let curRow = this.selected[0];
                 
-                let forYouthProfile = await db.collection("GlobalYouthProfile").doc(curRow["Youth ID"]).get();
-                console.log(forYouthProfile.data());
-                if (forYouthProfile.data() == null) {
-                    window.alert("Error, unable to retrieve Youth Profile data on id " + curRow["Youth ID"]);
-                    return null;
-                }
-                
                 this.showLoadingModal("Doing some work in the background...");
-                forYouthProfile = forYouthProfile.data();
-                
-                let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount) * 100) / 100;
-                
-                let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
-                    "Pending Hours": newPendingHours.toString(),
-                });
-                
-                if (rejectingStatus == null) {
-                    window.alert("Err, unable to update " + this.rejectingID + " " + forYouthProfile["First Name"] + "'s profile")
-                    return null;
-                }
 
-                let status3 = db.collection("GlobalPendingHours").doc(this.rejectingDocumentID).delete();
-                if (status3 == null) {
-                    window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + this.rejectingDocumentID)
+                let status = db.collection("GlobalPendingRegistrations").doc(this.rejectingDocumentID).delete();
+                if (status == null) {
+                    window.alert("Err, unable to delete youth registration ID: " + this.rejectingDocumentID)
                     return null;
                 }
 
@@ -384,10 +327,8 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted registration", "successfully deleted registration with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
-
-
 
             },
 
@@ -405,7 +346,7 @@
                 }
                 var editSelectedHours = [];
                 for(var key in curRow){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         editSelectedHours.push({
                             "Category" : key,
                             "Hours" : curRow[key]
@@ -470,9 +411,9 @@
                     let hours = this.editSelectedHours[i]["Hours"];
                     newTotalHours += parseFloat(hours);
                     if(i == this.editSelectedHours.length - 1){
-                        newHours += '"' + category + '": ' + hours
+                        newHours += '"' + category + '": "' + hours + '"'
                     }else{
-                        newHours += '"' + category + '": ' + hours + ','
+                        newHours += '"' + category + '": "' + hours + '",'
                     }
                 }
                 newHours += '}';
@@ -493,7 +434,7 @@
                 //find amount to change for pending hours 
                 var originalAmount = 0;
                 for(var key in this.selected[0]){
-                    if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
+                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
                         let addAmount = parseFloat(this.selected[0][key]);
                         if(!isNaN(addAmount)){
                             originalAmount += addAmount;
@@ -547,7 +488,7 @@
             await this.getHeaders();
             await this.getTData();
             this.toggleBusy();
-
+            
         },
     }
 </script>
