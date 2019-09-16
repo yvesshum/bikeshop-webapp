@@ -27,11 +27,11 @@ export const STATUS = {
 
 // Arrays corresponding to value groups
 const STATUS_ARRS = {
-  [STATUS.X]: ["unused", "remove", "remove_temp"],
-  [STATUS.O]: ["used", "add", "required", "immutable", "used_temp", "add_temp"],
-  [STATUS.N]: ["required", "immutable"],
-  [STATUS.T]: ["used_temp", "add_temp", "remove_temp"],
-  [STATUS.C]: ["add", "remove", "add_temp", "remove_temp"],
+  [STATUS.X]: [STATUS.NOT, STATUS.REM, STATUS.REM_T],
+  [STATUS.O]: [STATUS.USE, STATUS.ADD, STATUS.REQ, STATUS.IMM, STATUS.USE_T, STATUS.ADD_T],
+  [STATUS.N]: [STATUS.REQ, STATUS.IMM],
+  [STATUS.T]: [STATUS.USE_T, STATUS.ADD_T, STATUS.REM_T],
+  [STATUS.C]: [STATUS.ADD, STATUS.REM, STATUS.ADD_T, STATUS.REM_T],
 
   includes: function(key) {
     return Object.keys(this).includes(key);
