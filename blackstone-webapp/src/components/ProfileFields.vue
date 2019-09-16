@@ -355,7 +355,7 @@ export default {
       this.init_row_status(data, "required", STATUS.REQ);
       this.init_row_status(data, "hidden",   STATUS.IMM);
       if (this.show_optional_fields) {
-        this.init_row_status(data, "optional", STATUS.UNUSED);
+        this.init_row_status(data, "optional", STATUS.NOT);
       }
 
       // Have to use Vue.$set to make the new properties reactive (dynamic updates)
@@ -369,7 +369,7 @@ export default {
 
       // Clear the old data from the screen
       // TODO - confirm change profile modal if unsaved changes?
-      this.row_status.set_all_safe(STATUS.UNUSED);
+      this.row_status.set_all_safe(STATUS.NOT);
       Object.keys(this.local_values).forEach(key => {
         this.local_values[key] = null;
       });
@@ -386,12 +386,12 @@ export default {
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
               this.temp_fields.push(key);
-              this.row_status.add_vue(this, key, STATUS.USED_T);
+              this.row_status.add_vue(this, key, STATUS.USE_T);
             }
 
             // Empty string means unused field
             else {
-              this.set_row_status(key, STATUS.USED);
+              this.set_row_status(key, STATUS.USE);
             }
 
             this.local_values[key] = data[key];
@@ -507,7 +507,7 @@ export default {
 
       // If no fields to be added/removed, check existing fields for edits
       else {
-        let poss = this.row_status.filter([STATUS.USED, STATUS.REQ, STATUS.USED_T]);
+        let poss = this.row_status.filter([STATUS.USE, STATUS.REQ, STATUS.USE_T]);
         let len = poss.length;
 
         // Use a for loop to break as soon as a change is found
@@ -528,7 +528,7 @@ export default {
       this.changes_list = new Object();
 
       // Filter through all fields which might have been changed
-      this.row_status.unfilter([STATUS.IMM, STATUS.UNUSED]).forEach(key => {
+      this.row_status.unfilter([STATUS.IMM, STATUS.NOT]).forEach(key => {
 
         // Initialize vars
         let input_field = this.input_fields[key];
@@ -537,7 +537,7 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if (stat == STATUS.REMOVE || stat == STATUS.REMOVE_T) {
+        if (stat == STATUS.REM || stat == STATUS.REM_T) {
           message = "removed";
         }
         else if (input_field.is_blank()) {
@@ -597,7 +597,7 @@ export default {
       for (var key in changes) {
 
         // If any non-standard field is being removed, delete it from the page
-        if (this.row_status.is_status(key, STATUS.REMOVE_T)) {
+        if (this.row_status.is_status(key, STATUS.REM_T)) {
           this.temp_fields = this.temp_fields.filter(k => k != key);
           delete this.local_values[key];
         }
@@ -615,7 +615,7 @@ export default {
 
 
     discard_empty_fields: function() {
-      this.row_status.filter([STATUS.ADD, STATUS.USED]).forEach(key => {
+      this.row_status.filter([STATUS.ADD, STATUS.USE]).forEach(key => {
         if (this.input_fields[key].is_blank()) {
           this.set_row_status(key, STATUS.X);
           this.fields_used[key] = false;

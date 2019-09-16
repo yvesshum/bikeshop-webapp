@@ -1,27 +1,27 @@
 export const STATUS = {
 
   // Standard values
-  USED: "used",
-  UNUSED: "unused",
+  USE: "used",
+  NOT: "unused",
   ADD: "add",
-  REMOVE: "remove",
+  REM: "remove",
   REQ: "required",
   IMM: "immutable",
 
   // Special temporary/non-standard values
-  USED_T: "used_temp",
+  USE_T: "used_temp",
   ADD_T: "add_temp",
-  REMOVE_T: "remove_temp",
+  REM_T: "remove_temp",
 
   // Special values
   UPDATE: "update",
   RESET: "reset",
 
   // Special groupings of values
-  X: "x", // Unused locally
-  O: "+", // Used locally
-  N: "n", // Status can't be changed
-  T: "temp",
+  X: "x",      // Unused locally
+  O: "+",      // Used locally
+  N: "n",      // Status can't be changed
+  T: "temp",   // Temporary or nonstandard value
   C: "change", // Status is being changed
 };
 
@@ -40,30 +40,30 @@ const STATUS_ARRS = {
 
 const STATUS_MAPS = {
   [STATUS.UPDATE]: {
-    [STATUS.ADD]: STATUS.USED,
-    [STATUS.REMOVE]: STATUS.UNUSED,
-    [STATUS.ADD_T]: STATUS.USED_T,
-    [STATUS.REMOVE_T]: undefined,
+    [STATUS.ADD]: STATUS.USE,
+    [STATUS.REM]: STATUS.NOT,
+    [STATUS.ADD_T]: STATUS.USE_T,
+    [STATUS.REM_T]: undefined,
   },
 
   [STATUS.RESET]: {
-    [STATUS.ADD]: STATUS.UNUSED,
-    [STATUS.REMOVE]: STATUS.USED,
+    [STATUS.ADD]: STATUS.NOT,
+    [STATUS.REM]: STATUS.USE,
     [STATUS.ADD_T]: undefined,
-    [STATUS.REMOVE_T]: STATUS.USED_T,
+    [STATUS.REM_T]: STATUS.USE_T,
   },
 
   [STATUS.X]: {
-    [STATUS.ADD]: STATUS.UNUSED,
+    [STATUS.ADD]: STATUS.NOT,
     [STATUS.ADD_T]: undefined,
-    [STATUS.USED]: STATUS.REMOVE,
-    [STATUS.USED_T]: STATUS.REMOVE_T, 
+    [STATUS.USE]: STATUS.REM,
+    [STATUS.USE_T]: STATUS.REM_T,
   },
 
   [STATUS.O]: {
-    [STATUS.UNUSED]: STATUS.ADD,
-    [STATUS.REMOVE]: STATUS.USED,
-    [STATUS.REMOVE_T]: STATUS.USED_T, 
+    [STATUS.NOT]: STATUS.ADD,
+    [STATUS.REM]: STATUS.USE,
+    [STATUS.REM_T]: STATUS.USE_T,
   },
 
   mapped_value: function(key, type) {
@@ -169,10 +169,10 @@ export class Status {
     let array_only = [];
 
     arr.forEach(key => {
-      if (this[key] == null || this.is_status(key, STATUS.UNUSED)) array_only.push(key);
+      if (this[key] == null || this.is_status(key, STATUS.NOT)) array_only.push(key);
     });
 
-    this.filter(STATUS.USED).forEach(key => {
+    this.filter(STATUS.USE).forEach(key => {
       if (!arr.includes(key)) status_only.push(key);
     });
 

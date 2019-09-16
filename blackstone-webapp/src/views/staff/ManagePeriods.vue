@@ -378,7 +378,7 @@ export default {
       // Helper function - Initialize period fields in the new Status object
       function set_status(self, stat, youth_id, period, array) {
         let active = array.map(({ID}) => ID).includes(youth_id);
-        stat.add_vue(self, period, (active ? STATUS.USED : STATUS.UNUSED));
+        stat.add_vue(self, period, (active ? STATUS.USE : STATUS.NOT));
       };
     },
 
@@ -390,12 +390,12 @@ export default {
 
     // Get the youth's original active periods without any local edits
     original_periods: function(id) {
-      return this.period_status[id].filter([STATUS.USED, STATUS.REMOVE]);
+      return this.period_status[id].filter([STATUS.USE, STATUS.REM]);
     },
 
     // Get the periods in which the youth's status is being changed locally
     changing_periods: function(id) {
-      return this.period_status[id].filter([STATUS.ADD, STATUS.REMOVE]);
+      return this.period_status[id].filter([STATUS.ADD, STATUS.REM]);
     },
 
     youth_is_active: function(id, period) {
@@ -600,7 +600,7 @@ export default {
         }.bind(this)).forEach(function(period) {
 
           let to_remove = changes.youth.filter(function(youth) {
-            this.period_status[youth][period] == STATUS.REMOVE;
+            this.period_status[youth][period] == STATUS.REM;
           });
 
           let to_add = changes.youth.filter(function(youth) {
