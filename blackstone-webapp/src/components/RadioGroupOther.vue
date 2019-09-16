@@ -3,7 +3,7 @@ Radio group style form component with a custom "other" option.
 
 Usage:
 
-    <RadioGroupOther v-model="value_variable" :options="['A', 'B', 'C']">
+    <RadioGroupOther v-model="value_variable" :options="['A', 'B', 'C']" nullOption>
     </RadioGroupOther>
 
 Props:
@@ -13,6 +13,21 @@ Props:
     args: Arguments to be passed to the radio group.
 
     options: The list of radio options, not including "Other".
+
+    name: The name of the b form radio group.
+
+    nullOption: Control the null option:
+
+        If this prop is omitted, there will be no null option.
+        <RadioGroupOther></RadioGroupOther>
+
+        If this prop is included but not assigned a value (or assigned an empty string), there will be a null option with the default text, "Prefer not to say".
+        <RadioGroupOther nullOption></RadioGroupOther>
+
+        If this prop is assigned a value, there will be a null option with the provided text.
+        <RadioGroupOther nullOption="None of the above."></RadioGroupOther>
+
+    otherOption: The text to display for the custom option. Defaults to "Other".
 
 Use with v-model to track the value of this form component.
 
