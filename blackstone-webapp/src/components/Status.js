@@ -89,6 +89,16 @@ export class Status {
     return Status.parse_status(vals).includes(this[key]);
   }
 
+  has_status(vals) {
+    let parsed_vals = Status.parse_status(vals);
+    for (key in this) {
+      if (parsed_vals.includes(this[key])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   conflicts(arr) {
     let status_only = [];
     let array_only = [];
