@@ -150,7 +150,6 @@
 // @ is an alias to /src
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
-import {STATUS} from '@/components/Status.js';
 import {Status} from '@/components/Status.js';
 import {forKeyVal} from '@/components/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
@@ -352,10 +351,10 @@ export default {
 
       this.row_status = new Status();
 
-      this.init_row_status(data, "required", STATUS.REQ);
-      this.init_row_status(data, "hidden",   STATUS.IMM);
+      this.init_row_status(data, "required", Status.REQ);
+      this.init_row_status(data, "hidden",   Status.IMM);
       if (this.show_optional_fields) {
-        this.init_row_status(data, "optional", STATUS.NOT);
+        this.init_row_status(data, "optional", Status.NOT);
       }
 
       // Have to use Vue.$set to make the new properties reactive (dynamic updates)
@@ -369,7 +368,7 @@ export default {
 
       // Clear the old data from the screen
       // TODO - confirm change profile modal if unsaved changes?
-      this.row_status.set_all_safe(STATUS.NOT);
+      this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
         this.local_values[key] = null;
       });
@@ -386,12 +385,12 @@ export default {
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
               this.temp_fields.push(key);
-              this.row_status.add_vue(this, key, STATUS.USE_T);
+              this.row_status.add_vue(this, key, Status.USE_T);
             }
 
             // Empty string means unused field
             else {
-              this.set_row_status(key, STATUS.USE);
+              this.set_row_status(key, Status.USE);
             }
 
             this.local_values[key] = data[key];
@@ -427,7 +426,7 @@ export default {
         return true;
       }
       else {
-        return (this.row_status.is_status(key, STATUS.O) && !this.specially_displayed_fields.includes(key));
+        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
       }
     },
 
@@ -442,8 +441,8 @@ export default {
     set_row_status: function(field, new_status) {
 
       // Optionally parse boolean values into status values for easier usage in Vue HTML
-      if (new_status == true) new_status = STATUS.O;
-      if (new_status == false) new_status = STATUS.X;
+      if (new_status == true) new_status = Status.O;
+      if (new_status == false) new_status = Status.X;
 
       // Set the status in the Status object, ignoring required and immutable fields
       new_status = this.row_status.set_safe(field, new_status);
@@ -493,7 +492,7 @@ export default {
       if (this.row_status == null) return false;
 
       // Check for fields being added/removed which are not empty
-      let add_rem = this.row_status.filter(STATUS.C);
+      let add_rem = this.row_status.filter(Status.C);
 
       if (strict) {
         add_rem = add_rem.filter(key => {
@@ -507,7 +506,7 @@ export default {
 
       // If no fields to be added/removed, check existing fields for edits
       else {
-        let poss = this.row_status.filter([STATUS.USE, STATUS.REQ, STATUS.USE_T]);
+        let poss = this.row_status.filter([Status.USE, Status.REQ, Status.USE_T]);
         let len = poss.length;
 
         // Use a for loop to break as soon as a change is found
@@ -528,7 +527,7 @@ export default {
       this.changes_list = new Object();
 
       // Filter through all fields which might have been changed
-      this.row_status.unfilter([STATUS.IMM, STATUS.NOT]).forEach(key => {
+      this.row_status.unfilter([Status.IMM, Status.NOT]).forEach(key => {
 
         // Initialize vars
         let input_field = this.input_fields[key];
@@ -537,13 +536,13 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if (stat == STATUS.REM || stat == STATUS.REM_T) {
+        if (stat == Status.REM || stat == Status.REM_T) {
           message = "removed";
         }
         else if (input_field.is_blank()) {
           message = "left blank";
         }
-        else if (stat == STATUS.ADD) {
+        else if (stat == Status.ADD) {
           message = "created";
         }
         else if (input_field.changed) {
@@ -571,11 +570,11 @@ export default {
       var changes = new Object();
 
       // Don't bother with immutable fields, since we're using Firebase update()
-      this.row_status.unfilter(STATUS.IMM).forEach(key => {
+      this.row_status.unfilter(Status.IMM).forEach(key => {
         let input_field = this.input_fields[key];
 
         // If field is being used, save its value to the new changes object
-        if (this.row_status.is_status(key, STATUS.O) && !input_field.is_blank()) {
+        if (this.row_status.is_status(key, Status.O) && !input_field.is_blank()) {
           changes[key] = input_field.get_changed_value();
         }
 
@@ -597,7 +596,7 @@ export default {
       for (var key in changes) {
 
         // If any non-standard field is being removed, delete it from the page
-        if (this.row_status.is_status(key, STATUS.REM_T)) {
+        if (this.row_status.is_status(key, Status.REM_T)) {
           this.temp_fields = this.temp_fields.filter(k => k != key);
           delete this.local_values[key];
         }
@@ -615,9 +614,9 @@ export default {
 
 
     discard_empty_fields: function() {
-      this.row_status.filter([STATUS.ADD, STATUS.USE]).forEach(key => {
+      this.row_status.filter([Status.ADD, Status.USE]).forEach(key => {
         if (this.input_fields[key].is_blank()) {
-          this.set_row_status(key, STATUS.X);
+          this.set_row_status(key, Status.X);
           this.fields_used[key] = false;
         };
       });
@@ -636,9 +635,9 @@ export default {
 
     reset_changes: function() {
       this.row_status.reset();
-      this.row_status.unfilter(STATUS.IMM).forEach(field => {
+      this.row_status.unfilter(Status.IMM).forEach(field => {
         this.input_fields[field].reset();
-        this.fields_used[field] = this.row_status.is_status(field, STATUS.O);
+        this.fields_used[field] = this.row_status.is_status(field, Status.O);
       });
     },
 

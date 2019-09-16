@@ -99,7 +99,6 @@ import Table from '@/components/Table';
 import DoubleTable from '@/components/DoubleTable';
 import ToggleButton from '@/components/ToggleButton';
 import BinaryTable from '@/components/BinaryTable';
-import {STATUS} from '@/components/Status.js';
 import {Status} from '@/components/Status.js';
 
 const Tabulator = require('tabulator-tables');
@@ -364,7 +363,7 @@ export default {
       Object.defineProperty(this.period_status, "set_periods", {
         value: function(youth, periods) {
           Object.keys(this[youth]).forEach(function(period) {
-            this[youth].set(period, periods.includes(period) ? STATUS.O : STATUS.X);
+            this[youth].set(period, periods.includes(period) ? Status.O : Status.X);
           }.bind(this));
         },
       });
@@ -378,28 +377,28 @@ export default {
       // Helper function - Initialize period fields in the new Status object
       function set_status(self, stat, youth_id, period, array) {
         let active = array.map(({ID}) => ID).includes(youth_id);
-        stat.add_vue(self, period, (active ? STATUS.USE : STATUS.NOT));
+        stat.add_vue(self, period, (active ? Status.USE : Status.NOT));
       };
     },
 
     //TODO: remove "get_youth" from these function names
     // Get the youth's active periods with all the local edits accounted for
     updated_periods: function(id) {
-      return this.period_status[id].filter(STATUS.O);
+      return this.period_status[id].filter(Status.O);
     },
 
     // Get the youth's original active periods without any local edits
     original_periods: function(id) {
-      return this.period_status[id].filter([STATUS.USE, STATUS.REM]);
+      return this.period_status[id].filter([Status.USE, Status.REM]);
     },
 
     // Get the periods in which the youth's status is being changed locally
     changing_periods: function(id) {
-      return this.period_status[id].filter([STATUS.ADD, STATUS.REM]);
+      return this.period_status[id].filter([Status.ADD, Status.REM]);
     },
 
     youth_is_active: function(id, period) {
-      return this.period_status[id].is_status(period, STATUS.O);
+      return this.period_status[id].is_status(period, Status.O);
     },
 
     // Display a modal allowing the user to change which periods a given youth is active for
@@ -423,8 +422,8 @@ export default {
 
     is_rolling_over: function(id) {
       return (
-        this.period_status[id].is_status(this.current_period, STATUS.O) &&
-        this.period_status[id].is_status(this.future_period,  STATUS.O)
+        this.period_status[id].is_status(this.current_period, Status.O) &&
+        this.period_status[id].is_status(this.future_period,  Status.O)
       );
     },
 
@@ -447,8 +446,8 @@ export default {
 
       // console.log("Updating active arrays for youth " + youth + " in periods ", periods);
 
-      this.current_active_youths = this.period_status.filter(this.current_period, STATUS.O);
-      this.future_active_youths  = this.period_status.filter(this.future_period,  STATUS.O);
+      this.current_active_youths = this.period_status.filter(this.current_period, Status.O);
+      this.future_active_youths  = this.period_status.filter(this.future_period,  Status.O);
 
       this.past_periods.forEach(function(period) {
         if (this.youth_is_active(youth.ID, period)) {
@@ -462,7 +461,7 @@ export default {
 
       let new_inactive = [];
       this.all_youth.filter(youth => {
-        return this.period_status[youth.ID].filter(STATUS.O).length == 0;
+        return this.period_status[youth.ID].filter(Status.O).length == 0;
       }).forEach(youth => {
         new_inactive.push(youth);
       });
@@ -600,11 +599,11 @@ export default {
         }.bind(this)).forEach(function(period) {
 
           let to_remove = changes.youth.filter(function(youth) {
-            this.period_status[youth][period] == STATUS.REM;
+            this.period_status[youth][period] == Status.REM;
           });
 
           let to_add = changes.youth.filter(function(youth) {
-            this.period_status[youth][period] == STATUS.ADD;
+            this.period_status[youth][period] == Status.ADD;
           });
 
           // Add the updated version of this period to the new object
@@ -630,7 +629,7 @@ export default {
       changes.youth.forEach(function(full_id) {
         let temp_youth = this.unpack_id(full_id);
         db.collection("GlobalYouthProfile").doc(temp_youth.id).update({
-          ActivePeriods: this.period_status[temp_youth.full_id].filter(STATUS.O)
+          ActivePeriods: this.period_status[temp_youth.full_id].filter(Status.O)
         }).then(
           // Success
           function() {},
@@ -731,12 +730,12 @@ export default {
     accept_period_edits: function(edits, period) {
       // Set active youth in given period
       edits.active.forEach(youth => {
-        this.period_status[youth.ID].set(period, STATUS.O);
+        this.period_status[youth.ID].set(period, Status.O);
       });
 
       // Set inactive youth in given period
       edits.inactive.forEach(youth => {
-        this.period_status[youth.ID].set(period, STATUS.X);
+        this.period_status[youth.ID].set(period, Status.X);
       });
 
       // Update the displays

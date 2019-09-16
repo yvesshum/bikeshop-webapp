@@ -1,83 +1,3 @@
-export const STATUS = {
-
-  // Standard values
-  USE: "used",
-  NOT: "unused",
-  ADD: "add",
-  REM: "remove",
-  REQ: "required",
-  IMM: "immutable",
-
-  // Special temporary/non-standard values
-  USE_T: "used_temp",
-  ADD_T: "add_temp",
-  REM_T: "remove_temp",
-
-  // Special values
-  UPDATE: "update",
-  RESET: "reset",
-
-  // Special groupings of values
-  X: "x",      // Unused locally
-  O: "+",      // Used locally
-  N: "n",      // Status can't be changed
-  T: "temp",   // Temporary or nonstandard value
-  C: "change", // Status is being changed
-};
-
-// Arrays corresponding to value groups
-const STATUS_ARRS = {
-  [STATUS.X]: [STATUS.NOT, STATUS.REM, STATUS.REM_T],
-  [STATUS.O]: [STATUS.USE, STATUS.ADD, STATUS.REQ, STATUS.IMM, STATUS.USE_T, STATUS.ADD_T],
-  [STATUS.N]: [STATUS.REQ, STATUS.IMM],
-  [STATUS.T]: [STATUS.USE_T, STATUS.ADD_T, STATUS.REM_T],
-  [STATUS.C]: [STATUS.ADD, STATUS.REM, STATUS.ADD_T, STATUS.REM_T],
-
-  includes: function(key) {
-    return Object.keys(this).includes(key);
-  },
-};
-
-const STATUS_MAPS = {
-  [STATUS.UPDATE]: {
-    [STATUS.ADD]: STATUS.USE,
-    [STATUS.REM]: STATUS.NOT,
-    [STATUS.ADD_T]: STATUS.USE_T,
-    [STATUS.REM_T]: undefined,
-  },
-
-  [STATUS.RESET]: {
-    [STATUS.ADD]: STATUS.NOT,
-    [STATUS.REM]: STATUS.USE,
-    [STATUS.ADD_T]: undefined,
-    [STATUS.REM_T]: STATUS.USE_T,
-  },
-
-  [STATUS.X]: {
-    [STATUS.ADD]: STATUS.NOT,
-    [STATUS.ADD_T]: undefined,
-    [STATUS.USE]: STATUS.REM,
-    [STATUS.USE_T]: STATUS.REM_T,
-  },
-
-  [STATUS.O]: {
-    [STATUS.NOT]: STATUS.ADD,
-    [STATUS.REM]: STATUS.USE,
-    [STATUS.REM_T]: STATUS.USE_T,
-  },
-
-  mapped_value: function(key, type) {
-    if (Object.keys(this[type]).includes(key)) {
-      return this[type][key];
-    }
-    return key;
-  },
-
-  includes: function(key) {
-    return Object.keys(this).includes(key);
-  },
-};
-
 export class Status {
   constructor() {}
 
@@ -122,11 +42,11 @@ export class Status {
   }
 
   update() {
-    this.set_all(STATUS.UPDATE);
+    this.set_all(Status.UPDATE);
   }
 
   reset() {
-    this.set_all(STATUS.RESET);
+    this.set_all(Status.RESET);
   }
 
   set(key, new_status) {
@@ -146,7 +66,7 @@ export class Status {
   }
 
   set_safe(key, new_status) {
-    if (!this.is_status(key, STATUS.N)) {
+    if (!this.is_status(key, Status.N)) {
       return this.set(key, new_status);
     }
     return new_status;
@@ -157,7 +77,7 @@ export class Status {
   }
 
   set_all_safe(new_status) {
-    this.unfilter(STATUS.N).forEach( key => this.set(key, new_status) );
+    this.unfilter(Status.N).forEach( key => this.set(key, new_status) );
   }
 
   is_status(key, vals) {
@@ -169,10 +89,10 @@ export class Status {
     let array_only = [];
 
     arr.forEach(key => {
-      if (this[key] == null || this.is_status(key, STATUS.NOT)) array_only.push(key);
+      if (this[key] == null || this.is_status(key, Status.NOT)) array_only.push(key);
     });
 
-    this.filter(STATUS.USE).forEach(key => {
+    this.filter(Status.USE).forEach(key => {
       if (!arr.includes(key)) status_only.push(key);
     });
 
@@ -183,3 +103,91 @@ export class Status {
     return {array_only, status_only};
   }
 }
+
+var status_fields = [
+  // Standard values
+  "USE", "NOT", "ADD", "REM",
+  // Special restricted values
+  "REQ", "IMM",
+  // Special temporary/non-standard values
+  "USE_T", "ADD_T", "REM_T",
+  // Special update values
+  "UPDATE", "RESET",
+  // Special groupings of values
+  "X", "O", "N", "T", "C"
+];
+
+status_fields.forEach(k => {
+  Object.defineProperty(Status, k, {
+    value: k.toLowerCase(),
+    writable: false,
+    enumerable: false,
+    configurable: false,
+  });
+});
+
+// Arrays corresponding to value groups
+const STATUS_ARRS = {
+  // Unused locally
+  [Status.X]: [Status.NOT, Status.REM, Status.REM_T],
+
+  // Used locally
+  [Status.O]: [Status.USE, Status.ADD, Status.REQ, Status.IMM, Status.USE_T, Status.ADD_T],
+
+  // Status can't be changed
+  [Status.N]: [Status.REQ, Status.IMM],
+
+  // Temporary or nonstandard value
+  [Status.T]: [Status.USE_T, Status.ADD_T, Status.REM_T],
+
+  // Status is being changed
+  [Status.C]: [Status.ADD, Status.REM, Status.ADD_T, Status.REM_T],
+
+  includes: function(key) {
+    return Object.keys(this).includes(key);
+  },
+};
+
+const STATUS_MAPS = {
+  // Accept status changes
+  [Status.UPDATE]: {
+    [Status.ADD]: Status.USE,
+    [Status.REM]: Status.NOT,
+    [Status.ADD_T]: Status.USE_T,
+    [Status.REM_T]: undefined,
+  },
+
+  // Reset status changes
+  [Status.RESET]: {
+    [Status.ADD]: Status.NOT,
+    [Status.REM]: Status.USE,
+    [Status.ADD_T]: undefined,
+    [Status.REM_T]: Status.USE_T,
+  },
+
+  // Deactivate status
+  [Status.X]: {
+    [Status.ADD]: Status.NOT,
+    [Status.ADD_T]: undefined,
+    [Status.USE]: Status.REM,
+    [Status.USE_T]: Status.REM_T,
+  },
+
+  // Activate status
+  [Status.O]: {
+    [Status.NOT]: Status.ADD,
+    [Status.REM]: Status.USE,
+    [Status.REM_T]: Status.USE_T,
+  },
+
+  mapped_value: function(key, type) {
+    if (Object.keys(this[type]).includes(key)) {
+      return this[type][key];
+    }
+    return key;
+  },
+
+  includes: function(key) {
+    return Object.keys(this).includes(key);
+  },
+};
