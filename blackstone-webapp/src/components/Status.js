@@ -14,7 +14,12 @@ export class Status {
   }
 
   forEach(op) {
-    this.keys().forEach(op);
+    if (op.length == 1)
+      this.keys().forEach(op);
+    else if (op.length == 2)
+      this.keys().forEach(key => op(key, this[key]));
+    else if (op.length == 3)
+      this.keys().forEach((key,n,arr) => op(key, this[key], arr));
   }
 
   static parse_status(vals) {
