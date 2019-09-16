@@ -1,5 +1,7 @@
 // TODO: Add pagination
-// Notes: Make sure that Hour Logging Categories are consistent throughout documents
+// Notes: 
+// TODO: https://bootstrap-vue.js.org/docs/components/table/ Use show details for hours
+// TODO: Grab peridos from `GlobalVariables` -> Seasons
 <template>
     <div>
         <top-bar/>
