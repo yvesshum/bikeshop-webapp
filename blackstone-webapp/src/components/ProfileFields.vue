@@ -464,10 +464,6 @@ export default {
       return (input_field == null) ? false : input_field.changed;
     },
 
-    get_input_type: function(field) {
-      return 'text';
-    },
-
     // Checks if changes have been made, then looks for user input accordingly
     // If changes, ask to save them; if not, alert user and stay in edit mode 
     // Run by the edit ToggleButton when clicked off edit mode
