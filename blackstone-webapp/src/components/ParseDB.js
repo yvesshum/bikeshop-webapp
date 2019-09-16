@@ -25,6 +25,12 @@
 		import {forKeyVal} from '@/components/ParseDB.js';
 */
 export function forKeyVal(arr, op) {
+	if (arr == null) {
+		return;
+	}
+	if (!Array.isArray(arr)) {
+		throw TypeError(`Expected array, got ${typeof arr} with value "${arr}".`);
+	}
 	arr.forEach((obj, n) => {
 		Object.keys(obj).forEach(key => { 
 			if (op.length == 2) {
