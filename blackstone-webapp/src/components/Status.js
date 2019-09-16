@@ -13,8 +13,9 @@ export const STATUS = {
   ADD_T: "add_temp",
   REMOVE_T: "remove_temp",
 
-  // Special value
+  // Special values
   UPDATE: "update",
+  RESET: "reset",
 
   // Special groupings of values
   X: "x", // Unused locally
@@ -22,13 +23,59 @@ export const STATUS = {
   N: "n", // Status can't be changed
   T: "temp",
   C: "change", // Status is being changed
+};
 
-  // Arrays corresponding to value groups
-  X_ARR: ["unused", "remove", "remove_temp"],
-  O_ARR: ["used", "add", "required", "immutable", "used_temp", "add_temp"],
-  N_ARR: ["required", "immutable"],
-  T_ARR: ["used_temp", "add_temp", "remove_temp"],
-  C_ARR: ["add", "remove", "add_temp", "remove_temp"],
+// Arrays corresponding to value groups
+const STATUS_ARRS = {
+  [STATUS.X]: ["unused", "remove", "remove_temp"],
+  [STATUS.O]: ["used", "add", "required", "immutable", "used_temp", "add_temp"],
+  [STATUS.N]: ["required", "immutable"],
+  [STATUS.T]: ["used_temp", "add_temp", "remove_temp"],
+  [STATUS.C]: ["add", "remove", "add_temp", "remove_temp"],
+
+  includes: function(key) {
+    return Object.keys(this).includes(key);
+  },
+};
+
+const STATUS_MAPS = {
+  [STATUS.UPDATE]: {
+    [STATUS.ADD]: STATUS.USED,
+    [STATUS.REMOVE]: STATUS.UNUSED,
+    [STATUS.ADD_T]: STATUS.USED_T,
+    [STATUS.REMOVE_T]: undefined,
+  },
+
+  [STATUS.RESET]: {
+    [STATUS.ADD]: STATUS.UNUSED,
+    [STATUS.REMOVE]: STATUS.USED,
+    [STATUS.ADD_T]: undefined,
+    [STATUS.REMOVE_T]: STATUS.USED_T,
+  },
+
+  [STATUS.X]: {
+    [STATUS.ADD]: STATUS.UNUSED,
+    [STATUS.ADD_T]: undefined,
+    [STATUS.USED]: STATUS.REMOVE,
+    [STATUS.USED_T]: STATUS.REMOVE_T, 
+  },
+
+  [STATUS.O]: {
+    [STATUS.UNUSED]: STATUS.ADD,
+    [STATUS.REMOVE]: STATUS.USED,
+    [STATUS.REMOVE_T]: STATUS.USED_T, 
+  },
+
+  mapped_value: function(key, type) {
+    if (Object.keys(this[type]).includes(key)) {
+      return this[type][key];
+    }
+    return key;
+  },
+
+  includes: function(key) {
+    return Object.keys(this).includes(key);
+  },
 };
 
 export class Status {
@@ -51,12 +98,9 @@ export class Status {
   }
 
   static parse_status(vals) {
-    let arr = ["O", "X", "N", "T", "C"];
-    for (var i in arr) {
-      let key = arr[i];
-      if (vals == STATUS[key]) {
-        return STATUS[key + "_ARR"];
-      }
+
+    if (STATUS_ARRS.includes(vals)) {
+      return STATUS_ARRS[vals];
     }
 
     if (!Array.isArray(vals)) {
@@ -78,57 +122,27 @@ export class Status {
   }
 
   update() {
-    for (var key in this) {
-      if (this[key] == STATUS.ADD) this[key] = STATUS.USED;
-      else if (this[key] == STATUS.REMOVE) this[key] = STATUS.UNUSED;
-      else if (this[key] == STATUS.ADD_T) this[key] = STATUS.USED_T;
-      else if (this[key] == STATUS.REMOVE_T) delete this[key];
-    };
+    this.set_all(STATUS.UPDATE);
   }
 
   reset() {
-    for (var key in this) {
-      if (this[key] == STATUS.ADD) this[key] = STATUS.UNUSED;
-      else if (this[key] == STATUS.REMOVE) this[key] = STATUS.USED;
-    };
+    this.set_all(STATUS.RESET);
   }
 
   set(key, new_status) {
-    let old_status = this[key];
-    if (new_status == STATUS.O) {
-      switch (old_status) {
-        case STATUS.UNUSED:
-          new_status = STATUS.ADD;
-          break;
-        case STATUS.REMOVE:
-          new_status = STATUS.USED;
-          break;
-        case STATUS.REMOVE_T:
-          new_status = STATUS.USED_T;
-          break;
-        default:
-          new_status = old_status;
-      }
+    if (STATUS_MAPS.includes(new_status)) {
+      this[key] = STATUS_MAPS.mapped_value(this[key], new_status);
     }
-    else if (new_status == STATUS.X) {
-      switch (old_status) {
-        case STATUS.ADD:
-          new_status = STATUS.UNUSED;
-          break;
-        case STATUS.USED:
-          new_status = STATUS.REMOVE;
-          break;
-        case STATUS.USED_T:
-          new_status = STATUS.REMOVE_T;
-          break;
-        default:
-          new_status = old_status;
-      }
+    else {
+      this[key] = new_status;
     }
 
-    this[key] = new_status;
+    if (this[key] == undefined) {
+      delete this[key];
+      return undefined;
+    }
 
-    return new_status;
+    return this[key];
   }
 
   set_safe(key, new_status) {
