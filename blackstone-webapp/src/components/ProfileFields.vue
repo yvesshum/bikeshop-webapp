@@ -366,6 +366,9 @@ export default {
 
     profile: function(doc) {
 
+      // If for some reason the row_status hasn't been initialized yet, do so now
+      if (this.row_status == null) this.row_status = new Status();
+
       // Clear the old data from the screen
       // TODO - confirm change profile modal if unsaved changes?
       this.row_status.set_all_safe(Status.NOT);
