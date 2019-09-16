@@ -493,7 +493,7 @@ export default {
       if (this.row_status == null) return false;
 
       // Check for fields being added/removed which are not empty
-      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE, STATUS.ADD_T, STATUS.REMOVE_T]);
+      let add_rem = this.row_status.filter(STATUS.C);
 
       if (strict) {
         add_rem = add_rem.filter(key => {

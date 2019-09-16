@@ -21,12 +21,14 @@ export const STATUS = {
   O: "+", // Used locally
   N: "n", // Status can't be changed
   T: "temp",
+  C: "change", // Status is being changed
 
   // Arrays corresponding to value groups
   X_ARR: ["unused", "remove", "remove_temp"],
   O_ARR: ["used", "add", "required", "immutable", "used_temp", "add_temp"],
   N_ARR: ["required", "immutable"],
   T_ARR: ["used_temp", "add_temp", "remove_temp"],
+  C_ARR: ["add", "remove", "add_temp", "remove_temp"],
 };
 
 export class Status {
@@ -49,7 +51,7 @@ export class Status {
   }
 
   static parse_status(vals) {
-    let arr = ["O", "X", "N"];
+    let arr = ["O", "X", "N", "T", "C"];
     for (var i in arr) {
       let key = arr[i];
       if (vals == STATUS[key]) {
