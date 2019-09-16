@@ -20,7 +20,13 @@
       <SpecialInput ref="edit_input" :input="type" :arguments="input_args" v-model="edit_value">
       </SpecialInput>
       <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()">
-        Reset
+        <div v-if="changed">
+          <span v-if="get_original_string().length > 0">
+            Reset to {{get_original_string()}}
+          </span>
+          <span v-else>Clear</span>
+        </div>
+        <div v-else>Reset</div>
       </b-button>
     </div>
 
@@ -51,7 +57,7 @@ export default {
 
   computed: {
     reset_variant: function() {
-      return (this.changed) ? "outline-danger" : "outline-secondary";
+      return (this.changed) ? "danger" : "outline-secondary";
     },
 
     changed: function() {
