@@ -1,18 +1,32 @@
 export const STATUS = {
+
+  // Standard values
   USED: "used",
   UNUSED: "unused",
   ADD: "add",
   REMOVE: "remove",
   REQ: "required",
   IMM: "immutable",
-  X: "x", // ["unused", "remove"],      // Unused locally
-  O: "+", // ["used", "add", "required", "immutable"],           // Used locally
-  N: "n", // ["required", "immutable"], // Status can't be changed
-  // TODO: C for changed (add, remove)? 
+
+  // Special temporary/non-standard values
+  USED_T: "used_temp",
+  ADD_T: "add_temp",
+  REMOVE_T: "remove_temp",
+
+  // Special value
   UPDATE: "update",
-  X_ARR: ["unused", "remove"],
-  O_ARR: ["used", "add", "required", "immutable"],
+
+  // Special groupings of values
+  X: "x", // Unused locally
+  O: "+", // Used locally
+  N: "n", // Status can't be changed
+  T: "temp",
+
+  // Arrays corresponding to value groups
+  X_ARR: ["unused", "remove", "remove_temp"],
+  O_ARR: ["used", "add", "required", "immutable", "used_temp", "add_temp"],
   N_ARR: ["required", "immutable"],
+  T_ARR: ["used_temp", "add_temp", "remove_temp"],
 };
 
 export class Status {
@@ -65,6 +79,8 @@ export class Status {
     for (var key in this) {
       if (this[key] == STATUS.ADD) this[key] = STATUS.USED;
       else if (this[key] == STATUS.REMOVE) this[key] = STATUS.UNUSED;
+      else if (this[key] == STATUS.ADD_T) this[key] = STATUS.USED_T;
+      else if (this[key] == STATUS.REMOVE_T) delete this[key];
     };
   }
 
@@ -78,19 +94,33 @@ export class Status {
   set(key, new_status) {
     let old_status = this[key];
     if (new_status == STATUS.O) {
-      if (this.is_status(key, STATUS.O)) {
-        new_status = this[key];
-      }
-      else {
-        new_status = (old_status == STATUS.UNUSED) ? STATUS.ADD : STATUS.USED;
+      switch (old_status) {
+        case STATUS.UNUSED:
+          new_status = STATUS.ADD;
+          break;
+        case STATUS.REMOVE:
+          new_status = STATUS.USED;
+          break;
+        case STATUS.REMOVE_T:
+          new_status = STATUS.USED_T;
+          break;
+        default:
+          new_status = old_status;
       }
     }
     else if (new_status == STATUS.X) {
-      if (this.is_status(key, STATUS.X)) {
-        new_status = this[key];
-      }
-      else {
-        new_status = (old_status == STATUS.USED) ? STATUS.REMOVE : STATUS.UNUSED;
+      switch (old_status) {
+        case STATUS.ADD:
+          new_status = STATUS.UNUSED;
+          break;
+        case STATUS.USED:
+          new_status = STATUS.REMOVE;
+          break;
+        case STATUS.USED_T:
+          new_status = STATUS.REMOVE_T;
+          break;
+        default:
+          new_status = old_status;
       }
     }
 

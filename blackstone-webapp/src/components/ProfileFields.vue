@@ -91,7 +91,7 @@
             </tr>
             <tr v-for="(change, field) in changes_list">
               <td class="change_modal_cell_title">
-                The field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
+                The {{temp_fields.includes(field) ? "non-standard " : ""}}field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
               </td>
               <td class="change_modal_cell_remove">
                 <div v-if="change.message !== 'created'">{{change.old_val}}</div>
@@ -101,6 +101,35 @@
               </td>
             </tr>
           </table>
+          <br />
+          <div v-if="temp_fields.length > 0">
+            <h3>Warning: Non-Standard Fields</h3>
+            <p >Please note that non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
+
+            <div v-if="unremoved_temp_fields.length > 0">
+              This profile contains the following non-standard fields:</p>
+              <table style="margin: auto; text-align: center; min-width: 80%">
+                <tr>
+                  <th class="change_modal_header" style="border-right: 1px solid #000">
+                    Field Name
+                  </th>
+                  <th class="change_modal_header" style="">Field Value</th>
+                </tr>
+                <tr v-for="field in unremoved_temp_fields">
+                  <td style="border-right: 1px solid #000">{{field}}</td>
+                  <td>
+                    {{
+                      (changes_list != null && Object.keys(changes_list).includes(field))
+                        ? changes_list[field].new_val
+                        : local_values[field]
+                    }}
+                  </td>
+                </tr>
+              </table>
+              <br />
+              <p>Please consider merging the information in the above fields into standard fields.</p>
+            </div>
+          </div>
       </div>
       <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
       <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
@@ -154,6 +183,7 @@ export default {
         "Last Sign In",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
+      temp_fields: [],
 
       row_status: null,
       confirmModalVisible: false,
@@ -201,6 +231,8 @@ export default {
         make_section("Optional", "optional");
       }
 
+      temp.push({Name: "Non-Standard", Data: this.temp_fields});
+
       return temp;
 
       function make_section(Name, section) {
@@ -218,6 +250,13 @@ export default {
         // Add fields to array of sections
         temp.push({Name, Data});
       };
+    },
+
+    unremoved_temp_fields: function() {
+      if (this.changes_list == null) return [];
+      return this.temp_fields.filter(k =>
+        this.changes_list[k] == null || this.changes_list[k].message != 'removed'
+      );
     },
 
     field_types: function() {
@@ -344,14 +383,18 @@ export default {
         for (var key in data) {
           if (this.hidden_fields.includes(key)) continue;
 
-          if (this.row_status[key] == null) {
-            // TODO: Handle non-standard field - Maybe STATUS.TEMP and STATUS.TEMP_REMOVE?
-          }
-
-          // Empty string means unused field
           if (field_used(data[key])) {
+            if (this.row_status[key] == null) {
+              this.temp_fields.push(key);
+              this.row_status.add_vue(this, key, STATUS.USED_T);
+            }
+
+            // Empty string means unused field
+            else {
+              this.set_row_status(key, STATUS.USED);
+            }
+
             this.local_values[key] = data[key];
-            this.set_row_status(key, STATUS.USED);
             this.fields_used[key] = true;
           }
         };
@@ -375,6 +418,7 @@ export default {
     },
 
     show_section: function(section) {
+      if (section == "Non-Standard") return this.temp_fields.length > 0;
       return !(this.edit_mode && section == '');
     },
 
@@ -449,7 +493,7 @@ export default {
       if (this.row_status == null) return false;
 
       // Check for fields being added/removed which are not empty
-      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE]);
+      let add_rem = this.row_status.filter([STATUS.ADD, STATUS.REMOVE, STATUS.ADD_T, STATUS.REMOVE_T]);
 
       if (strict) {
         add_rem = add_rem.filter(key => {
@@ -463,7 +507,7 @@ export default {
 
       // If no fields to be added/removed, check existing fields for edits
       else {
-        let poss = this.row_status.filter([STATUS.USED, STATUS.REQ]);
+        let poss = this.row_status.filter([STATUS.USED, STATUS.REQ, STATUS.USED_T]);
         let len = poss.length;
 
         // Use a for loop to break as soon as a change is found
@@ -493,7 +537,7 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if (stat == STATUS.REMOVE) {
+        if (stat == STATUS.REMOVE || stat == STATUS.REMOVE_T) {
           message = "removed";
         }
         else if (input_field.is_blank()) {
@@ -551,10 +595,20 @@ export default {
 
       // If no error updating database, change the field data on the page
       for (var key in changes) {
-        // TODO: Use v-model to link local_values to the input?
-        this.local_values[key] = this.input_fields[key].get_changed_value();
+
+        // If any non-standard field is being removed, delete it from the page
+        if (this.row_status.is_status(key, STATUS.REMOVE_T)) {
+          this.temp_fields = this.temp_fields.filter(k => k != key);
+          delete this.local_values[key];
+        }
+
+        // For all other fields, simply update their local values
+        else {
+          this.local_values[key] = this.input_fields[key].get_changed_value();
+        }
       };
 
+      // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
       this.row_status.update();
     },
@@ -678,6 +732,7 @@ export default {
 
   .change_modal_header {
     border-bottom: 2px solid #000;
+    padding: 3pt;
   }
 
   .change_modal_field {
