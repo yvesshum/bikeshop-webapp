@@ -1,73 +1,71 @@
 <template>
-    <div >
-        <top-bar/>
+  <div >
+  <top-bar/>
+  <br>
+    <b-container>
+      <b-row>
+        <b-col>
+          <h1>Add or take away hours for Youth</h1>   
+          <p>Note: This changes Hours Earned and does not show up as a record</p> 
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <YouthIDSelector @selected="handleSelect" @ready="idSelectorReady"/>
+        </b-col>
+      </b-row>
+      <br>
+      <b-row><b-col>
+        <div>
+          <br>
+          <p>Hours (Only up to 2 d.p. will be accepted)</p>
+          <div >
+            <VueNumericInput
+              v-model="value"
+              :min="0"
+              :step="1.00"
+              placeholder="0.00"
+              align="center"
+              style="width: 20rem"
+            />
+          </div>
+        </div>
         <br>
-        <b-container>
-            <b-row><b-col>
-                <h1>Add or take away hours for Youth</h1>   
-                <p>Note: This changes Hours Earned and does not show up as a record</p> 
-            </b-col></b-row>
-            <b-row><b-col>
-                <YouthIDSelector @selected="selectedID" @ready="idSelectorReady"/>
-            </b-col></b-row>
-            <br>
-            <b-row><b-col>
-                <div>
-                    <p>Or Type in an ID</p>
-                    <div>
-                        <input  type="string" :value="id" id="example-number-input" style="text-align:center; width: 20rem">
-                    </div>
-                    <br>
-                    <p>Hours (Only up to 2 d.p. will be accepted)</p>
-                    <div >
-                        <VueNumericInput
-                            v-model="value"
-                            :min="0"
-                            :step="1.00"
-                            placeholder="0.00"
-                            align="center"
-                            style="width: 20rem"
-                        />
-                    </div>
-                </div>
-                <br>
-            </b-col></b-row>
-            <b-row>
-                <b-col>
-                    <b-button variant="success" @click="addButtonClicked">Add Hours</b-button>
-                </b-col>
-                <b-col>
-                    <b-button variant="danger" @click="subtractButtonClicked">Subtract Hours</b-button>
-                </b-col>
-            </b-row>
-        </b-container>
-       
+      </b-col></b-row>
+      <b-row>
+        <b-col>
+          <b-button variant="success" @click="addButtonClicked">Add Hours</b-button>
+        </b-col>
+        <b-col>
+          <b-button variant="danger" @click="subtractButtonClicked">Subtract Hours</b-button>
+        </b-col>
+      </b-row>
+    </b-container>
+      
 
-        <!-- Modals -->
-        <b-modal v-model = "modalVisible" hide-footer lazy>
-            <template slot="modal-title">
-                {{modal_title}}
-            </template>
-            <div class="d-block text-center">
-                <h3>{{modal_msg}}</h3>
-            </div>
-            <b-button class="mt-3" block @click="closeModal" variant="primary">Ok!</b-button>
-        </b-modal>
+      <!-- Modals -->
+    <b-modal v-model = "modalVisible" hide-footer lazy>
+      <template slot="modal-title">
+        {{modal_title}}
+      </template>
+      <div class="d-block text-center">
+        <h3>{{modal_msg}}</h3>
+      </div>
+      <b-button class="mt-3" block @click="closeModal" variant="primary">Ok!</b-button>
+    </b-modal>
 
-        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
-            <template slot="modal-title">
-                {{loadingModalHeader}}
-            </template>
-            <div class="d-block text-center">
-                <div slot="table-busy" class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                    <strong> Loading...</strong>
-                </div>
-            </div>
-        </b-modal>
-
-    </div>
-    
+    <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+      <template slot="modal-title">
+        {{loadingModalHeader}}
+      </template>
+      <div class="d-block text-center">
+        <div slot="table-busy" class="text-center text-danger my-2">
+          <b-spinner class="align-middle"></b-spinner>
+          <strong> Loading...</strong>
+        </div>
+      </div>
+    </b-modal>
+  </div>  
 </template>
 
 <script>
@@ -96,8 +94,12 @@ export default {
 
     },
     methods: {
-        selectedID(input) {
-            this.id = input.split(" ")[2]
+        handleSelect(item) {
+          if (item !== null && item !== undefined) {
+            this.id = item['ID']
+          } else {
+            this.id = ""
+          }
         },
         async addButtonClicked() {
             this.loadingModalHeader = "Hold on...";

@@ -117,7 +117,6 @@ export default {
     },
     methods: {
         handleSelect(item) {
-          console.log('item:', item)
           if (item !== null && item !== undefined) {
             this.selected = true
             this.ID = item['ID']
