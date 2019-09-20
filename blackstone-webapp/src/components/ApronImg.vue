@@ -1,6 +1,6 @@
 <template>
 	<div class="apron_img">
-		<canvas ref="canvas" :width="size" :height="size"></canvas>
+		<canvas ref="canvas"></canvas>
 	</div>
 </template>
 
@@ -38,6 +38,11 @@ export default {
 		// When each image loads, update its respective boolean tracker
 		this.apron_image.onload = () => { this.apron_image_loaded = true; };
 		this.apron_empty.onload = () => { this.apron_empty_loaded = true; };
+
+		// Manually set the size of the canvas (see note in Watcher function for size)
+		let canvas = this.$refs.canvas;
+		canvas.height = this.size;
+		canvas.width  = this.size;
 	},
 
 	watch: {
@@ -53,6 +58,19 @@ export default {
 
 		// If the color changes, re-render the image
 		color: function() {
+			this.draw_image();
+		},
+
+		// If the size changes, re-scale the canvas appropriately
+		size: function() {
+
+			// Change the canvas size manually
+			// If we try to change it implicitly by passing this.size as a prop to the canvas, the apron image isn't redrawn properly (or at all, really)
+			var canvas = this.$refs.canvas;
+			canvas.height = this.size;
+			canvas.width  = this.size;
+
+			// Re-draw the current image to the canvas
 			this.draw_image();
 		},
 	},
