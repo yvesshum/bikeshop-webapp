@@ -50,6 +50,11 @@ export default {
 		active: function() {
 			this.draw_image();
 		},
+
+		// If the color changes, re-render the image
+		color: function() {
+			this.draw_image();
+		},
 	},
 
 	computed: {
