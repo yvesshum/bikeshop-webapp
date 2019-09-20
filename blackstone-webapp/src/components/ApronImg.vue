@@ -80,6 +80,11 @@ export default {
 		loaded: function() {
 			return this.apron_image_loaded && this.apron_empty_loaded;
 		},
+
+		// Return the apron image currently being used (the active one or the inactive one)
+		current_image: function() {
+			return (this.active ? this.apron_image : this.apron_empty);
+		},
 	},
 
 	methods: {
@@ -92,7 +97,7 @@ export default {
 
 			// Clear the previous image and draw the new one
 			ctx.clearRect(0, 0, this.size, this.size);
-			ctx.drawImage((this.active ? this.apron_image : this.apron_empty), 0, 0, this.size, this.size);
+			ctx.drawImage(this.current_image, 0, 0, this.size, this.size);
 
 			// Recolor the new image
 			this.recolor_apron(this.color);
