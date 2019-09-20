@@ -68,8 +68,8 @@ export default {
 			let ctx = this.$refs.canvas.getContext("2d");
 
 			// Clear the previous image and draw the new one
-			ctx.clearRect(0, 0, 64, 64);
-			ctx.drawImage((this.active ? this.apron_image : this.apron_empty), 0, 0);
+			ctx.clearRect(0, 0, this.size, this.size);
+			ctx.drawImage((this.active ? this.apron_image : this.apron_empty), 0, 0, this.size, this.size);
 
 			// Recolor the new image
 			this.recolor_apron(this.color);
