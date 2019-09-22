@@ -1,11 +1,14 @@
 <template>
   <div class="apron_bar">
 
-    <div style="margin: 0px 10px;">
-      <h3 style="display: inline-block; margin: auto; padding: 5px; float: left;">Apron Level: {{apron_color}}</h3>
+    <div class="title_container">
+      <h3 class="apron_color_title">Apron Color: {{apron_color}}</h3>
 
-      <div style="display: inline-block; padding: 5px; float: right;">
-        <ApronProgressBar style="display: inline-block;" :colors="apron_colors" :size="32" :level="apron_level" />
+      <div class="progress_bar_container">
+        <ApronProgressBar
+          style="display: inline-block; float: center"
+          :colors="apron_colors" :size="32" :level="apron_level"
+        />
       </div>
     </div>
 
@@ -104,3 +107,23 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+  .title_container {
+    margin: 0px 10px;
+  }
+
+  .apron_color_title {
+    display: inline-block;
+    margin: auto;
+    padding: 5px;
+    float: left;
+  }
+
+  .progress_bar_container {
+    display: inline-block;
+    padding: 5px;
+    float: right;
+  }
+</style>
