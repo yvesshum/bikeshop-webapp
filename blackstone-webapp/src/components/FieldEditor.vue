@@ -1,113 +1,84 @@
-// Usage:
-// e.g. <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
-//  <fieldEditor v-if="boolean" ftype="string name of field array" :elements="array of strings" doc="string, name of doc in collection" collection="String, name of collection that houses the doc"/>
-// The paths in fieldEditor was meant for GlobalFieldsCollection
-<template>
-    <div>
-        <!-- Content -->
-        <b-button-group style="margin-bottom:10px">
-            <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
-            <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
-        </b-button-group>
+<template><div>
+    <b-button-group style="margin-bottom:10px">
+        <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
+        <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
+    </b-button-group>
 
-        <draggable v-model="fields" @start="drag=true" @end="drag=false">
-            <FieldCard
-                v-for="element in fields"
-                :key="element.name"
-                :field="element.name"
-                :isProtected="element.isProtected"
-                v-on:editClicked="editButtonClicked"
-                v-on:deleteClicked="deleteButtonClicked"
-                />
-        </draggable>
-        <p v-if="fields.length === 0">No Fields Found </p>
+    <draggable v-model="field_data" @start="drag=true" @end="drag=false">
+        <FieldCard
+            v-for="item in field_data"
+            :key="Object.keys(item.data)[0]"
+            :field="Object.keys(item.data)[0]"
+            :type="Object.values(item.data)[0]"
+            :isProtected="item.isProtected"
+            v-on:editClicked="editButtonClicked"
+            v-on:deleteClicked="deleteButtonClicked"
+        />
+    </draggable>
+    <p v-if="field_data.length === 0">No Fields Found </p>
+    <br>
+    <!-- <b-button-group>
+        <b-button variant="info" @click="addButtonClicked">
+            Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
+        </b-button>
+    </b-button-group> -->
+    
+    
+
+    <!-- Modals -->
+    <b-modal v-model = "modal.msg.visible" hide-footer lazy>
+        <template slot="modal-title">
+            {{modal.msg.title}}
+        </template>
+        <div class="d-block text-center">
+            <h3>{{modal.msg.text}}</h3>
+        </div>
+        <b-button class="mt-3" block @click="closeMsgModal" variant = "primary">ok!</b-button>
+    </b-modal>
+
+    <b-modal v-model = "modal.loading.visible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+        <template slot="modal-title">
+            {{modal.loading.title}}
+        </template>
+        <div class="d-block text-center">
+            <div slot="table-busy" class="text-center text-danger my-2">
+                <b-spinner class="align-middle"></b-spinner>
+                <strong> Loading...</strong>
+            </div>
+        </div>
+    </b-modal>
+
+    <b-modal v-model = "modal.edit.visible" hide-footer lazy>
+        <template slot = "modal-title">
+            Editing Field
+        </template>
+        <p>Field Name:</p>
+        <b-form-textarea
+                id="textarea"
+                v-model="modal.edit.field_name"
+                placeholder="Edit here.."
+                rows="1"
+                max-rows="3"
+        ></b-form-textarea>
         <br>
-        <b-button-group>
-            <b-button variant="info" @click="addButtonClicked">
-                Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
-            </b-button>
-        </b-button-group>
+        <p>Field Type:</p>
+        <b-form-select
+                id="textarea"
+                v-model="modal.edit.field_type"
+                :options="modal.edit.options"
+                placeholder="Edit here.."
+                rows="1"
+                max-rows="3"
+        ></b-form-select>
+        <br>
+        <br>
+        <strong style="color: red">Please check if you have a duplicate field name before saving so bad things won't happen.</strong>
+        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
+        <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
+    </b-modal>
 
 
-
-        <!-- Modals -->
-        <b-modal v-model = "msg_modalVisible" hide-footer lazy>
-            <template slot="modal-title">
-                {{msg_modal_title}}
-            </template>
-            <div class="d-block text-center">
-                <h3>{{msg_modal_text}}</h3>
-            </div>
-            <b-button class="mt-3" block @click="msg_closeModal" variant = "primary">ok!</b-button>
-
-        </b-modal>
-
-        <b-modal v-model = "loading_modalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
-            <template slot="modal-title">
-                {{loading_modalHeader}}
-            </template>
-            <div class="d-block text-center">
-                <div slot="table-busy" class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                    <strong> Loading...</strong>
-                </div>
-            </div>
-        </b-modal>
-
-        <b-modal v-model = "edit_modalVisible" hide-footer lazy>
-            <template slot = "modal-title">
-                Editing Field Name
-            </template>
-            <b-form-textarea
-                    id="textarea"
-                    v-model="editMsg"
-                    placeholder="Edit here.."
-                    rows="1"
-                    max-rows="3"
-            ></b-form-textarea>
-            <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
-            <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
-        </b-modal>
-
-        <b-modal v-model = "delete_modalVisible" hide-footer lazy>
-            <template slot = "modal-title">
-                Deleting Field
-            </template>
-            <div class="d-block text-center">
-                <h3>Are you sure you want to delete {{deletingField}}</h3>
-            </div>
-            <b-button class="mt-3" block @click="deleteField(); delete_closeModal()" variant = "danger">Permanently delete this field and remove all existing uses of this field</b-button>
-            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
-        </b-modal>
-
-        <b-modal v-model = "add_modalVisible" hide-footer lazy>
-            <template slot = "modal-title">
-                Adding A Field
-            </template>
-            <p style="margin-bottom: 0">Field Name</p>
-            <b-form-textarea
-                    id="textarea"
-                    v-model="addFieldName"
-                    placeholder="This cannot be empty and must not already exist!"
-                    :state="isValidFieldName"
-                    size="sm"
-                    rows="1"
-                    max-rows="3"
-            ></b-form-textarea>
-            <p style="margin-bottom: 0">Value</p>
-            <b-form-textarea
-                    id="textarea"
-                    v-model="addFieldInitializer"
-                    placeholder="Enter a value or leave empty"
-                    size="sm"
-                    rows="1"
-                    max-rows="3"
-            ></b-form-textarea>
-            <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidFieldName">Add a new field and change all existing documents to have this field and value</b-button>
-            <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
-        </b-modal>
-    </div>
-</template>
+</div></template>
 
 <script>
 import draggable from 'vuedraggable'
@@ -121,309 +92,175 @@ export default {
         draggable
     },
     props: {
-        ftype: String, //required, optional, hidden
-        elements: Array, //Actual data 
-        doc: String, //name of doc of where the fields are from 
-        collection: String //name of collection of where the fields are from 
-    },
-    computed: {
-        isValidFieldName: function() {
-            return !this.fields.some(f => {return Object.values(f).indexOf(this.addFieldName) > -1}) && this.addFieldName.length > 0
-        }
+        sourceFieldName: String, //required, optional, hidden
+        sourceDocument: String, //name of doc of where the fields are from 
+        elements: Array, //Actual data of the fields
+        collectionsToEdit: Array, //name of collection of where the fields are from
+        subcollectionsToEdit: Array
     },
     data() {
         return {
-            fields: [], 
-            initialFields: [], //an initial copy for reset to work
-            msg_modal_title: "",
-            msg_modal_text: "",
-            msg_modalVisible: false,
-            loading_modalVisible: false,
-            loading_modalHeader: "",
-            editMsg: "",
-            edit_modalVisible: false,
-            oldFieldName: "", 
-            deletingField: "",
-            delete_modalVisible: false,
-            add_modalVisible: false,
-            addFieldName: "",
-            addFieldInitializer: "",
+            field_data: [],
+            field_data_initial_copy: [],
+            modal: {
+                msg: {
+                    visible: false,
+                    title: "",
+                    text: ""
+                },
+                loading: {
+                    visible: false,
+                    title: ""
+                },
+                edit: {
+                    visible: false,
+                    field_name: "",
+                    original_field_name: "",
+                    field_type: "",
+                    original_field_type: "",
+                    options: [],
+                }
+            }
         }
     },
     mounted() {
-        // Create 2 copies of the props
-        this.fields = this.elements;
-        this.initialFields = this.parse(this.fields); //this.parse cleans the data
+        this.field_data = this.elements;
+        this.field_data_initial_copy = this.parse(this.field_data);
+
+        // Grab input types
+        db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
+            this.modal.edit.options = query.data().types
+        })
     },
     methods: {
         parse(item) {
-            // Sometimes, a piece of data is of type Observer, which is used by vue
-            // To get rid of this, and turn the data into a regular object we can parse it like the following
             return JSON.parse(JSON.stringify(item));
         },
 
+        editButtonClicked(data) {
+            this.modal.edit.field_name = Object.keys(data)[0];
+            this.modal.edit.original_field_name = Object.keys(data)[0];
+            this.modal.edit.field_type = Object.values(data)[0];
+            this.modal.edit.original_field_type = Object.values(data)[0];
+            
+            this.modal.edit.visible = true;
+        },
+
+        deleteButtonClicked(field) {
+            // TODO
+        },
+
         resetOrdering() {
-            this.fields = this.initialFields;
+            this.field_data = this.field_data_initial_copy;
         },
 
         async saveOrdering() {
-            this.showLoadingModal("One second...")
-            let res = [];
-            this.fields.forEach(element => {
-                res.push(element["name"])
+            this.showLoadingModal("One second...");
+            let fields = [];
+            this.field_data.forEach(field => {
+                fields.push(field.data);
             });
 
             let updateVal = {};
-            updateVal[this.ftype] = res;
+            updateVal[this.sourceFieldName] = fields;
 
-            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateVal)
-
-            if(updateStatus) {
-                window.alert("Error on updating Global Fields Collection doc: " + doc);
-                return null;
-            }
-
-            else {
-                this.closeLoadingModal();
-                this.msg_showModal("Success!", "The ordering has been saved.")
-            }
-        },
-
-        editButtonClicked(field) {
-            this.oldFieldName = field; //quick save
-            this.editMsg = field;
-            this.edit_modalVisible = true;
-        },
-
-        // Returns an array of just the 'names' of the Object
-        names(obj) {
-            let res = [];
-            obj.forEach(f => {
-                res.push(f["name"])
-            })
-            return res;
-        },
-
-        //This checks if the fieldName has been used before in this.initialFields
-        alreadyExists(fieldName) {
-            return this.names(this.initialFields).map(i => {
-                return i.toLowerCase();
-            }).includes(fieldName.toLowerCase());
-        },
-
-        async save_edit() {
-            // check if the field already exists
-            this.edit_closeModal();
-            this.showLoadingModal("Saving")
-            let newFieldName = this.editMsg;
-            if (this.alreadyExists(newFieldName)) {
-                this.closeLoadingModal();
-                this.msg_showModal("Error", "Field already exists!")
-            }
-            else {
-                let fieldNames = this.names(this.initialFields); 
-                for (let i = 0; i < fieldNames.length ; i++) {
-                    if (fieldNames[i] === this.oldFieldName) { // Finding which field corresponds to the one we're trying to edit
-                        let arr = fieldNames;
-                        arr[i] = newFieldName; //changing it at the same index
-                        let updateValue = {};
-                        updateValue[this.ftype] = arr;
-
-                        // Updating it remotely
-                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
-                        if (updateStatus) {
-                            window.alert("Error on updating Global Fields Collection. Field: " + ftype + ", doc: " + doc);
-                            return null;
-                        }
-
-                        // This is a bug, this doesn't quite work yet.
-                        // Though what it should do is update any collection that has been affected by this new change
-                        let query = await db.collection(this.collection).get();
-                        let initialField = this.oldFieldName;
-                        query.forEach(doc => {
-                            let id = doc.id;
-                            let data = this.parse(doc.data());
-                            data[newFieldName] = data[initialField];
-                            delete data[initialField];
-                            db.collection(this.collection).doc(id).set(data);
-                        })
-
-                        // update locally
-                        this.initialFields[i]["name"] = newFieldName;
-
-                        //A user may have moved the fields, but editing a field name should not also save the ordering
-                        //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) {
-                            if (this.fields[j]["name"] === this.oldFieldName) {
-                                this.fields[j]["name"] = newFieldName;
-                            }
-                        }
-
-                        // once completed, reset (just to be safe)
-                        this.oldFieldName = "";
-
-                        this.closeLoadingModal()
-                        this.msg_showModal("Success", "Successfully updated firebase Global Fields Collection and corresponding documents")
-
-                        break;
-                    }
-                }
-
-
-            }
-        },
-
-        async deleteButtonClicked(field) {
-            this.deletingField = field;
-            this.delete_modalVisible = true;
-        },
-
-        async deleteField() {
-            this.delete_closeModal();
-            this.showLoadingModal("Deleting..");
-
-            let fieldNames = this.names(this.initialFields);
-                for (let i = 0; i < fieldNames.length ; i++) {
-                    if (fieldNames[i] === this.deletingField) {
-                        let arr = fieldNames;
-                        arr.splice(i, 1); 
-
-                        let updateValue = {};
-                        updateValue[this.ftype] = arr;
-
-                        let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
-                        if (updateStatus) {
-                            window.alert("Error on removing a field Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
-                            return null;
-                        }
-
-                        // This is a bug, this doesn't quite work yet. I'll fix this in the next version
-                        // But what it should do is update any collection that is affected by this new fieldname change
-                        let query = await db.collection(this.collection).get();
-                        let deletingFieldName = this.deletingField;
-                        query.forEach(doc => {
-                            let id = doc.id;
-                            let data = this.parse(doc.data());
-                            delete data[deletingFieldName];
-                            db.collection(this.collection).doc(id).set(data);
-                        })
-
-                        // update locally
-                        this.initialFields.splice(i, 1);
-
-                        //A user may have moved the fields, but editing a field name should not also save the ordering
-                        //this.fields may be in a different order, so we would have to find the field
-                        for (let j = 0; j < this.fields.length; j ++) {
-                            if (this.fields[j]["name"] === this.deletingField) {
-                                this.fields.splice(j, 1);
-                            }
-                        }
-
-                        // once completed, reset (just to be safe)
-                        this.deletingField = "";
-
-                        this.closeLoadingModal();
-                        this.msg_showModal("Success", "Successfully deleted field in firebase Global Fields Collection and corresponding documents")
-
-                        break;
-                    }
-                }
-
-        },
-
-        async addButtonClicked() {
-            this.addFieldName = "";
-            this.addFieldInitializer = "";
-            this.add_modalVisible = true;
-        },
-
-        async addField() {
-            this.add_closeModal();
-            this.showLoadingModal();
-
-            // Appending the input of this.addFieldName to the Update Values
-            let fieldNames = this.names(this.initialFields);
-            let arr = fieldNames;
-            arr.push(this.addFieldName);
-            let updateValue = {};
-            updateValue[this.ftype] = arr;
-
-            let updateStatus = await db.collection(this.collection).doc(this.doc).update(updateValue);
+            let updateStatus = await db.collection("GlobalFieldsCollection")
+                                .doc(this.sourceDocument).update(updateVal);
+            
             if (updateStatus) {
-                window.alert("Error on removing a field in Global Fields Collection. Field: " + this.deletingField + ", doc: " + doc);
+                window.alert("Error on updating Global Fields Collection doc: " + this.sourceDocument);
                 return null;
             }
-
-            // Again there's a bug here. Will fix.
-            let query = await db.collection(this.collection).get();
-            let newFieldName = this.addFieldName;
-            query.forEach(doc => {
-                let id = doc.id;
-                let data = this.parse(doc.data());
-                data[newFieldName] = this.addFieldInitializer;
-                console.log(data);
-                db.collection(this.collection).doc(id).set(data);
-            })
-
-            // update locally
-            this.initialFields.push({
-                "name": this.addFieldName,
-                "isProtected": false
-            })
-
-            this.fields.push({
-                "name": this.addFieldName,
-                "isProtected": false
-            })
-
-            // once completed, reset (just to be safe)
-            this.addFieldName = "";
-            this.addFieldInitializer = "";
-
+            this.field_data_initial_copy = this.field_data;
             this.closeLoadingModal();
-            this.msg_showModal("Success", "Successfully added new field in firebase Global Fields Collection and corresponding documents")
-
+            this.showMsgModal("Success", "The ordering has been saved.");
         },
 
 
-        // Modal methods
-        msg_closeModal() {
-            this.msg_modalVisible = false;
-        },
 
-        msg_showModal(header, msg){
-            this.msg_modal_title = header;
-            this.msg_modal_text = msg;
-            this.msg_modalVisible = true;
-        },
 
-        showLoadingModal(msg) {
-                this.loading_modalVisible = true;
-                this.loading_modalHeader = msg;
+        //Modal Methods
+        showMsgModal(title, text) {
+            this.modal.msg.visible = true;
+            this.modal.msg.title = title;
+            this.modal.msg.text = text;
         },
-
+        closeMsgModal() {
+            this.modal.msg.visible = false;
+        },
+        showLoadingModal(title) {
+            this.modal.loading.visible = true;
+            this.modal.loading.title = title;
+        },
         closeLoadingModal() {
-            this.loading_modalVisible = false;
+            this.modal.loading.visible = false;
         },
-
         edit_closeModal() {
-            this.edit_modalVisible = false;
+            this.modal.edit.visible = false;
         },
+        async save_edit() {
+            this.edit_closeModal();
+            this.showLoadingModal("Saving..");
+            let newFieldName = this.modal.edit.field_name;
+            let newFieldType = this.modal.edit.field_type;
+            for (let i = 0; i < this.field_data.length; i++) {
+                if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
+                    //Update GlobalFieldsCollection
+                    //reshape
+                    let updatedFieldNames = this.field_data.map(element => {
+                        return element.data
+                    })
+                    delete updatedFieldNames[i][this.modal.edit.original_field_name];
+                    updatedFieldNames[i][newFieldName] = newFieldType;
+                    let updateObject = {};
+                    updateObject[this.sourceFieldName] = updatedFieldNames;
 
-        delete_closeModal() {
-            this.delete_modalVisible = false;
-        },
+                    let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+                    if (updateStatus) {
+                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
+                        return null;
+                    }
 
-        add_closeModal() {
-            this.add_modalVisible = false;
-        },
+                    // Updating all the collections that needs an update
+                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
+                        let query = await db.collection(this.collectionsToEdit[j]).get();
+                        query.forEach(doc => {
+                            let id = doc.id;
+                            let data = this.parse(doc.data());
+                            data[newFieldName] = data[this.modal.edit.original_field_name]
+                            delete data[this.modal.edit.original_field_name];
+                            db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                        })
+                    }
+                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
+                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        query.forEach(doc => {
+                            let id = doc.id;
+                            let path = doc.ref.path
+                            let data = this.parse(doc.data());
+                            data[newFieldName] = data[this.modal.edit.original_field_name]
+                            delete data[this.modal.edit.original_field_name];
+                            db.doc(path).set(data);
+                        })
+                    }
+
+                    //TODO: Update Locally
+
+
+
+
+
+
+
+                    break;
+                }
+            }
+        }
 
     }
 }
 </script>
 
 <style>
-.fieldText{
-    width: 10rem;
-}
+
 </style>

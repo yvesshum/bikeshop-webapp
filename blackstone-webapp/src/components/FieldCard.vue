@@ -5,14 +5,25 @@
             <b-button-group>
                 <b-button squared variant="light" pressed><font-awesome-icon icon="bars" class="icon alt"/></b-button>
                 <div class="fieldText">
-                <b-button 
+                    <b-button 
+                        disabled 
+                        squared 
+                        block 
+                        variant="light" 
+                        pressed 
+                    >
+                        {{field}}
+                    </b-button>
+                </div>
+                <div class="fieldText">
+                    <b-button 
                     disabled 
                     squared 
                     block 
-                    variant="light" 
+                    variant="dark" 
                     pressed 
                 >
-                    {{field}}
+                    {{type}}
                 </b-button>
                 </div>
                 <b-button :disabled="isProtected" variant="info" @click="onEditClicked" squared><font-awesome-icon icon="edit" class ="icon alt"/></b-button>
@@ -29,14 +40,19 @@ export default {
     props: {
         field: String,
         isProtected: Boolean,
+        type: String
     },
    methods: {
        onEditClicked() {
-           this.$emit('editClicked', this.field);
+           let ret = {};
+           ret[this.field] = this.type;
+           this.$emit('editClicked', ret);
        },
 
        onDeleteClicked() {
-           this.$emit('deleteClicked', this.field);
+           let ret = {};
+           ret[this.field] = this.type;
+           this.$emit('deleteClicked', ret);
        }
    }
 }
@@ -44,7 +60,7 @@ export default {
 
 <style>
 .fieldText{
-    width:15rem;
+    width:10rem;
 
 }
 </style>
