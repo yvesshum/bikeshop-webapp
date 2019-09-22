@@ -3,6 +3,8 @@
     <ApronImg 
       v-for="(apron, n) in colors" style="display:inline-block;"
       :color="apron.color" :size="size" :active="apron_active(n)"
+      @mousehover="t => mouse_hover(n, t)" :class="{hovered: hover[n]}"
+      @click="val => mouse_click(n, val)"
     />
   </div>
 </template>
@@ -35,7 +37,9 @@ export default {
   },
 
   data: function() {
-    return {};
+    return {
+      hover: {},
+    };
   },
 
   computed: {
@@ -53,6 +57,20 @@ export default {
     apron_active: function(n) {
       return (this.level !== null && n <= this.level);
     },
+
+    mouse_hover: function(n, h) {
+      this.$set(this.hover, n, h ? true : undefined);
+    },
+
+    mouse_click: function(n, active) {
+      this.$emit("click", {level: n, active});
+    },
   },
 }
 </script>
+
+<style scoped>
+  .hovered {
+    filter: brightness(75%);
+  }
+</style>

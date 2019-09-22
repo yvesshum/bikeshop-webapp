@@ -1,5 +1,9 @@
 <template>
-	<div class="apron_img">
+	<div class="apron_img"
+		@mouseover="mousehover(true)"
+		@mouseleave="mousehover(false)"
+		@click="mouseclick"
+	>
 		<canvas ref="canvas"></canvas>
 	</div>
 </template>
@@ -209,6 +213,14 @@ export default {
 				g: Math.round(g * 255),
 				b: Math.round(b * 255),
 			});
+		},
+
+		mousehover: function(val) {
+			this.$emit('mousehover', val);
+		},
+
+		mouseclick: function() {
+			this.$emit('click', this.active);
 		},
 	},
 }
