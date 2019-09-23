@@ -224,7 +224,7 @@ export default {
                     // Updating all the collections that needs an update
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(doc => {
+                        query.forEach(async doc => {
                             let id = doc.id;
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[this.modal.edit.original_field_name]
@@ -234,13 +234,13 @@ export default {
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(doc => {
+                        query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            db.doc(path).set(data);
+                            await db.doc(path).set(data);
                         })
                     }
 
