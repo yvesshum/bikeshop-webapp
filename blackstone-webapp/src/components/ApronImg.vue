@@ -11,7 +11,7 @@
 
 <script>
 import ApronImage from "@/assets/apron_image.png";
-import ApronEmpty from "@/assets/apron_empty.png";
+import ApronEmpty from "@/assets/apron_empty_lock.png";
 
 export default {
 	name: 'apron_img',
