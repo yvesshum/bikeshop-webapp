@@ -5,10 +5,24 @@
       <h3 class="apron_color_title">Apron Color: {{apron_color}}</h3>
 
       <div class="progress_bar_container">
+        <b-button
+          style="display: inline-block; float: left"
+          :disabled="apron_level <= 0"
+          variant="primary"
+          @click="decrement_apron"
+          v-b-tooltip.hover.html="'Decrement Apron Color'"
+        >-</b-button>
         <ApronProgressBar
           style="display: inline-block; float: center"
           :colors="apron_colors" :size="32" :level="apron_level"
         />
+        <b-button
+          style="display: inline-block; float: right"
+          :disabled="apron_level >= apron_colors.length-1"
+          variant="primary"
+          @click="increment_apron"
+          v-b-tooltip.hover.html="'Increment Apron Color'"
+        >+</b-button>
       </div>
     </div>
 
@@ -19,6 +33,27 @@
       :headingData="test_headers"
       matchBy="name">
     </MatchTable>
+
+    <b-modal v-model="change_level_modal">
+      <template slot="modal-title">
+        Please confirm the following.
+      </template>
+
+      <h4>The apron color for <em>{{ youth_name }}</em>&nbsp;<small>(ID: {{ profile.id }})</small> will be {{change_level_effect > 0 ? 'increased' : 'decreased'}} by {{Math.abs(change_level_effect)}}:</h4>
+      <br />
+
+      <table class="clm_table"><tr>
+        <td>
+          <ApronImg :color="apron_colors[apron_level].color" :size="48" />
+          <b>{{apron_colors[apron_level].name}}</b>
+        </td>
+        <td class="clm_arrow">&#8658;</td>
+        <td>
+          <ApronImg :color="apron_colors[apron_level + change_level_effect].color" :size="48" />
+          <b>{{apron_colors[apron_level + change_level_effect].name}}</b>
+        </td>
+      </tr></table>
+    </b-modal>
 
   </div>
 </template>
@@ -70,6 +105,9 @@ export default {
           return (apron == null) ? "" : apron.name;
         }},
       ],
+
+      change_level_modal: false,
+      change_level_effect: 0,
     }
   },
 
@@ -94,6 +132,12 @@ export default {
     checked_data: function() {
       return this.get_profile_field("Apron Skills", []);
     },
+
+    youth_name: function() {
+      let fn = this.get_profile_field("First Name");
+      let ln = this.get_profile_field("Last Name");
+      return `${fn} ${ln}`;
+    },
   },
 
   methods: {
@@ -103,6 +147,16 @@ export default {
 
     apron_active: function(n) {
       return (this.apron_level !== null && n <= this.apron_level);
+    },
+
+    increment_apron: function() {
+      this.change_level_effect = 1;
+      this.change_level_modal = true;
+    },
+
+    decrement_apron: function() {
+      this.change_level_effect = -1;
+      this.change_level_modal = true;
     },
   }
 }
@@ -125,5 +179,15 @@ export default {
     display: inline-block;
     padding: 5px;
     float: right;
+  }
+
+  .clm_table {
+    margin: auto;
+    text-align: center;
+  }
+
+  .clm_arrow {
+    padding: 10px;
+    font-size: 200%
   }
 </style>
