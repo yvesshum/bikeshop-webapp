@@ -55,6 +55,8 @@
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
+    import {Timestamp} from '@/firebase.js'
+
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -142,7 +144,7 @@
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = new Date().toLocaleDateString();
+                    input["Order Date"] = Timestamp.fromDate(new Date());
 
                     let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
