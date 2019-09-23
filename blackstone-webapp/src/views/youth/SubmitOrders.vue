@@ -55,6 +55,8 @@
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
+    import {Timestamp} from '@/firebase.js'
+
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -89,12 +91,12 @@
                 if (value == null) {
                     return;
                 }
-
+                console.log(value);
                 for (let i = 0; i < this.requiredFields.length; i ++) {
-                    let curName = this.requiredFields[i]["name"];
-                    if (curName === "First Name") this.requiredFields[i]["value"] = value.split(" ")[0];
-                    else if (curName === "Last Name") this.requiredFields[i]["value"] = value.split(" ")[1];
-                    else if (curName === "Youth ID") this.requiredFields[i]["value"] = value.split(" ")[2];
+                    let fieldName = this.requiredFields[i]["name"];
+                    if (fieldName === "First Name") this.requiredFields[i]["value"] = value["First Name"];
+                    else if (fieldName === "Last Name") this.requiredFields[i]["value"] = value["Last Name"];
+                    else if (fieldName === "Youth ID") this.requiredFields[i]["value"] = value["ID"];
                 }
             },
 
@@ -142,7 +144,7 @@
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = new Date().toLocaleDateString();
+                    input["Order Date"] = Timestamp.fromDate(new Date());
 
                     let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
@@ -230,21 +232,21 @@
 
             for (let i = 0; i < fields["required"].length; i ++) {
                 this.requiredFields.push({
-                    name: fields["required"][i],
+                    name: Object.keys(fields["required"][i])[0],
                     value: "",
                     placeholder: this.placeholders[fields["required"][i]]
                 });
             }
             for (let i = 0; i < fields["optional"].length; i ++) {
                 this.optionalFields.push({
-                    name: fields["optional"][i],
+                    name: Object.keys(fields["optional"][i])[0],
                     value: "",
                     placeholder: this.placeholders[fields["optional"][i]]
                 })
             }
             for (let i = 0; i <fields["hidden"].length; i ++) {
                 this.hiddenFields.push({
-                    name: fields["hidden"][i],
+                    name: Object.keys(fields["hidden"][i])[0],
                     value: ""
                 })
             }

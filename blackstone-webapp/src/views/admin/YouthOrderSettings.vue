@@ -16,15 +16,15 @@
         <hr class="subheading">  
 
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required" doc="Youth Order Form" collection="GlobalPendingOrders"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="required" :elements="fields.required" sourceDocument="Youth Order Form" :collectionsToEdit="['GlobalPendingOrders']" :subcollectionsToEdit="['Order Log']"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Order Form" collection="GlobalPendingOrders"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="optional" :elements="fields.optional" sourceDocument="Youth Order Form" :collectionsToEdit="['GlobalPendingOrders']" :subcollectionsToEdit="['Order Log']"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden" doc="Youth Order Form" collection="GlobalPendingOrders"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Order Form" :collectionsToEdit="['GlobalPendingOrders']" :subcollectionsToEdit="['Order Log']"/>
         <hr class="divider">
         
         <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
@@ -77,9 +77,9 @@ export default {
 
         parseFields(items, dest, protectedFields) {
             for (let i = 0; i < items.length; i ++) { 
-                let isProtected = protectedFields.includes(items[i])
+                let isProtected = protectedFields.includes(Object.keys(items[i])[0])
                 dest.push({
-                    "name": items[i],
+                    "data": items[i],
                     "isProtected": isProtected
                 })
             }   
@@ -92,11 +92,10 @@ export default {
                 window.alert("Unable to get Youth Order Form fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["Youth ID", "Item Total Cost", "First Name", "Last Name", "Status", "Order Date"]
+                let protectedFields = ["Youth ID", "Item Total Cost", "First Name", "Last Name", "Status", "Order Date", "Period"]
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
-                this.initialFields = this.parse(this.fields);
             }
         },
 
