@@ -31,8 +31,15 @@ export default {
       validator: num => num > 0,
     },
     level: {
-      type: Number,
+      type: [Number, String],
       default: -1,
+      validator: val => {
+        if (typeof val == "string") {
+          return val == "all";
+        } else {
+          return val >= -1;
+        }
+      }
     },
   },
 
@@ -44,7 +51,14 @@ export default {
 
   methods: {
     apron_active: function(n) {
-      return (this.level !== null && n <= this.level);
+      if (this.level != null) {
+        if (typeof this.level == "string") {
+          return this.level == "all";
+        } else {
+          return n <= this.level;
+        }
+      }
+      return false;
     },
 
     apron_name: function(n) {
