@@ -66,11 +66,17 @@ export default {
     },
 
     mouse_hover: function(n, h) {
-      this.$set(this.hover, n, h ? true : undefined);
+      if (this.hover[n] != "click") {
+        this.$set(this.hover, n, h ? "hover" : undefined);
+      }
+      this.$emit("hover", this.hover);
     },
 
     mouse_click: function(n, active) {
+      let curr = this.hover[n];
+      this.$set(this.hover, n, (curr == undefined || curr == "hover") ? "click" : "hover");
       this.$emit("click", {level: n, active});
+      this.$emit("hover", this.hover);
     },
   },
 }

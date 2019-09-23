@@ -15,6 +15,7 @@
         <ApronProgressBar
           style="display: inline-block; float: center"
           :colors="apron_colors" :size="32" :level="apron_level"
+          @hover="hover"
         />
         <b-button
           style="display: inline-block; float: right"
@@ -27,6 +28,7 @@
     </div>
 
     <MatchTable
+      ref="match_table"
       style="clear: both;"
       :checkedData="checked_data"
       :fullData="test_full_data"
@@ -158,6 +160,15 @@ export default {
       this.change_level_effect = -1;
       this.change_level_modal = true;
     },
+
+    hover: function(hover_data) {
+      this.$refs.match_table.deselect_values();
+      Object.keys(hover_data).forEach(h => {
+        if (hover_data[h] != undefined) {
+          this.$refs.match_table.select_value("apron", h);
+        }
+      });
+    }
   }
 }
 </script>

@@ -3,7 +3,7 @@
     <!-- Filter: {{filter_by}} -->
     <!-- <b-button @click="filter_by='achieved'">Show Achieved Only</b-button> -->
     <!-- <b-button @click="filter_by='unachieved'">Show Unachieved Only</b-button> -->
-    <Table :headingdata="heading_data" :table_data="table_data" :args="table_args"></Table>
+    <Table :headingdata="heading_data" :table_data="table_data" :args="table_args" @Table="t => table = t"></Table>
   </div>
 </template>
 
@@ -26,6 +26,8 @@ export default {
     return {
       filter_by: null,
 
+      table: null,
+
       achieved_column: {
         field:"achieved",
         formatter:"tickCross",
@@ -44,6 +46,9 @@ export default {
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
           return `${value} Skills <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
+        rowSelected: row => {return},
+        rowDeselected: row => {return},
+        selectable: null,
       },
     };
   },
@@ -61,7 +66,18 @@ export default {
   },
 
   methods: {
-    
+    select_value: function(field, value) {
+      this.table.getRows().forEach(row => {
+        let curr_value = row.getData()[field];
+        if (curr_value == value) {
+          this.table.selectRow(row);
+        }
+      });
+    },
+
+    deselect_values: function() {
+      this.table.deselectRow();
+    },
   },
 }
 </script>
