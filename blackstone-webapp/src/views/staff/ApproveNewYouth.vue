@@ -93,27 +93,22 @@
             <!-- <div class="d-block text-center">
                 <h3>Edit the following message:</h3>
             </div> -->
-            <div v-for="(category, index) in editSelectedHours" :key="index">
-                Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
+            <div v-for="(category, index) in editSelected" :key="index">
+                Category: <b>{{category.Category}}</b> -
+                <span v-if="category.Value != ''">Currently set to {{category.Value}}</span>
+                <span v-if="category.Value == ''">Currently not set</span>
                 <br>
                 <b-form-input
-                id="number"
-                type="number"
-                v-model="editSelectedHours[index].Hours"
-                :placeholder="category.Hours"
+                id="text"
+                :type="category.Type"
+                v-model="editSelected[index].Value"
+                :placeholder="category.Value"
                 ></b-form-input>
                 <hr>
             </div>
-            <!-- <b-form-textarea
-                    id="textarea"
-                    v-model="editSelectedHours"
-                    placeholder="Enter a new message here.."
-                    rows="2"
-                    max-rows="5"
-            ></b-form-textarea> -->
 
             <b-button class="mt-3" block @click="saveHours(); closeHoursModal()" variant = "success">Save</b-button>
-            <b-button class="mt-3" block @click="closeHoursModal(); this.editSelectedHours = {};" variant="warning">Cancel</b-button>
+            <b-button class="mt-3" block @click="closeHoursModal(); this.editSelected = {};" variant="warning">Cancel</b-button>
 
         </b-modal>
 
@@ -166,7 +161,7 @@
                 loadingModalHeader: "",
                 deleteAmount: 0,
                 hoursModalVisible: false,
-                editSelectedHours: {}
+                editSelected: {}
             };
 
         },
@@ -184,6 +179,7 @@
 
                 headers = headers.data()["required"];
                 let fields = [];
+                fields.push({key: "Timestamp", sortable: true});
                 forKeyVal(headers, function(name, val, n) {
                     fields.push({key: name, sortable: true});
                 });
@@ -231,38 +227,43 @@
                 
                 var newIDs = []
                 
-                let listener = await rb.ref('Youth ID Number').on("value", snapshot => { 
-                    console.log("Snapshot value: " + snapshot.val())
-                    newIDs.push(snapshot.val());
+                await rb.ref('Youth ID Number').once("value", snapshot => { 
+                    console.log("Snapshot value: ")
+                    console.log(snapshot.val())
+                    newIDs.push(snapshot.val()["value"]);
                 })
                 
-                console.log("New ID: " + newIDs[0])
+                console.log(newIDs[0])
                 
                 let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
                 
-                let input = row
+                let input = JSON.parse(JSON.stringify(row));
+                delete input["Document ID"];
+                
+                console.log(input)
                 
                 let logStatus = await submitRef.set(input);
-
+                
                 if (logStatus) {
                     window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                     return null;
                 }
                 
-                // let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
-                // 
-                // if (status) {
-                //     window.alert("Error on deleting youth registration: " + row["Document ID"]);
-                //     return null;
-                // }
+                let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
+                
+                if (status) {
+                    window.alert("Error on deleting youth registration: " + row["Document ID"]);
+                    return null;
+                }
                 
                 this.removeLocally(row["Document ID"]);
                 
                 this.closeLoadingModal();
+                
                 newIDs[0] += 1;
-                // rb.ref('Youth ID Number').set({value: newIDs[0]});
-                // var newPostKey = firebase.database().ref().child('posts').push().key;
-                rb.ref('Youth ID Number').off("value", listener);
+                await rb.ref('Youth ID Number').set({"value": newIDs[0]});
+                // await rb.ref('Youth ID Number').off("value", listener);
+                
                 this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
 
             },
@@ -344,18 +345,25 @@
                 if (curRow == null) {
                     return null;
                 }
-                var editSelectedHours = [];
+                var editSelected = [];
                 for(var key in curRow){
-                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
-                        editSelectedHours.push({
+                    var type = "text";
+                    if(key == "Current Grade"){
+                        type = "number";
+                    }
+                    if(key == "DOB"){
+                        type = "date"
+                    }
+                    if(key != "Document ID" && key != "Timestamp"){
+                        editSelected.push({
                             "Category" : key,
-                            "Hours" : curRow[key]
+                            "Value" : curRow[key],
+                            "Type": type
                         });
-                        console.log("Pushing");
                     }
                 }
-                this.editSelectedHours = editSelectedHours;
-                console.log(this.editSelectedHours, this.selected);
+                this.editSelected = editSelected;
+                console.log(this.editSelected, this.selected);
                 this.showHoursModal();
             },
             
@@ -402,70 +410,37 @@
                 this.closeHoursModal();
                 this.showLoadingModal("Saving hours..");
                 let docID = this.selected[0]["Document ID"];
-                console.log(this.editSelectedHours);
+                console.log(this.editSelected);
                 
-                let newTotalHours = 0;
-                var newHours = '{'
-                for(let i = 0; i < this.editSelectedHours.length; i++){
-                    let category = this.editSelectedHours[i]["Category"];
-                    let hours = this.editSelectedHours[i]["Hours"];
-                    newTotalHours += parseFloat(hours);
-                    if(i == this.editSelectedHours.length - 1){
-                        newHours += '"' + category + '": "' + hours + '"'
-                    }else{
-                        newHours += '"' + category + '": "' + hours + '",'
-                    }
+                var newValues = {}
+                for(let i = 0; i < this.editSelected.length; i++){
+                      let category = this.editSelected[i]["Category"];
+                      let value = this.editSelected[i]["Value"];
+                      newValues[category] = value
                 }
-                newHours += '}';
-                console.log("New hours: " + newHours);
+                console.log("New values: " + newValues);
                 
-                let status = await db.collection("GlobalPendingHours").doc(docID).update(JSON.parse(newHours));
+                let status = await db.collection("GlobalPendingRegistrations").doc(docID).set(newValues);
                 if (status) {
                     window.alert("Err: " +  err);
-                    this.editSelectedHours = {};
+                    this.editSelected = {};
                     return null;
-                }
-
-                //TODO: Update user's pending hours
-                let profile = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).get();
-                if (profile.data() == null) {
-                    window.alert("Error, Youth ID does not exists: " + this.selected[0]["YouthID"])
-                }
-                //find amount to change for pending hours 
-                var originalAmount = 0;
-                for(var key in this.selected[0]){
-                    if(key != "Check In" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
-                        let addAmount = parseFloat(this.selected[0][key]);
-                        if(!isNaN(addAmount)){
-                            originalAmount += addAmount;
-                        }
-                    }
-                }
-
-                let netChange = newTotalHours - originalAmount;
-                let newPendingHours = Math.round((parseFloat(profile.data()["Pending Hours"]) + netChange)*100)/100
-                let status2 = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).update({
-                    "Pending Hours": newPendingHours.toString()
-                })
-
-                if (status2) {
-                    window.alert("Error on updating Youth Profile's Pending Hours, ID: " + this.selected[0]["Youth ID"])
                 }
                 
                 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
-                        console.log(this.editSelectedHours);
-                        for(var index in this.editSelectedHours){
-                            console.log(this.editSelectedHours[index]);
-                            this.items[i][this.editSelectedHours[index].Category] = this.editSelectedHours[index].Hours;
+                        console.log(this.editSelected);
+                        for(var index in this.editSelected){
+                            console.log(this.editSelected[index]);
+                            this.items[i][this.editSelected[index].Category] = this.editSelected[index].Value;
                         }
                         break;
                     }
                 }
                 this.closeLoadingModal();
-                this.showModal("Success!", "Your hours have been saved")
-                this.editSelectedHours = {};
+                this.showModal("Success!", "Your registration has been saved")
+                this.editSelected = {};
             },
 
             toggleBusy() {

@@ -39,7 +39,7 @@ NOTE: The null option is assigned a value "undefined" so that when the component
         <b-form-group style="text-align: left;">
             <b-form-radio-group v-model="choice" name="name" :options="options" stacked>
 
-                <b-form-radio :value="other_string" :style="args.style">
+                <b-form-radio :value="other_string" :style="args.style" v-if="show_other_option">
                     {{otherOption}}:<br />
                     <b-form-input v-model="other_value" value="" type="text"></b-form-input>
                 </b-form-radio>
@@ -74,6 +74,10 @@ export default {
             default: "",
         },
         nullOption: {
+            type: String,
+            default: null,
+        },
+        omitOtherOption: {
             type: String,
             default: null,
         },
@@ -124,6 +128,10 @@ export default {
 
         show_null_option: function() {
             return this.nullOption != null;
+        },
+        
+        show_other_option: function() {
+            return this.omitOtherOption == null;
         },
     },
 
