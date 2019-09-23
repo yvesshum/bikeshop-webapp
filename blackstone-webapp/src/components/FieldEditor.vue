@@ -229,7 +229,7 @@ export default {
                             let data = this.parse(doc.data());
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
