@@ -2,7 +2,7 @@
   <div class="apron_progress_bar">
     <ApronImg 
       v-for="(apron, n) in colors" style="display:inline-block;"
-      :color="apron.color" :size="size" :active="apron_active(n)"
+      :color="apron.color" :size="size" :active="apron_active(n)" :name="apron_name(n)"
       @mousehover="t => mouse_hover(n, t)" :class="{hovered: hover[n]}"
       @click="val => mouse_click(n, val)"
     />
@@ -42,20 +42,13 @@ export default {
     };
   },
 
-  computed: {
-    apron_color: function() {
-      if (this.level != null && this.level != -1) {
-        return this.colors[this.level].name;
-      }
-      else {
-        return "";
-      };
-    },
-  },
-
   methods: {
     apron_active: function(n) {
       return (this.level !== null && n <= this.level);
+    },
+
+    apron_name: function(n) {
+      return this.colors[n].name;
     },
 
     mouse_hover: function(n, h) {
@@ -72,5 +65,6 @@ export default {
 <style scoped>
   .hovered {
     filter: brightness(75%);
+    cursor: pointer;
   }
 </style>
