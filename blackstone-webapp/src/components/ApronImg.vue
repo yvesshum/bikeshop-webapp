@@ -3,6 +3,7 @@
 		@mouseover="mousehover(true)"
 		@mouseleave="mousehover(false)"
 		@click="mouseclick"
+		v-b-tooltip.hover.html="showName ? name : ''"
 	>
 		<canvas ref="canvas"></canvas>
 	</div>
@@ -16,10 +17,11 @@ export default {
 	name: 'apron_img',
 
 	props: {
-		color:  { type: Number,  default: -1,   },
-		name:   { type: String,  default: "",   },
-		size:   { type: Number,  default: 64,   },
-		active: { type: Boolean, default: true, },
+		color:    { type: Number,  default: -1,   },
+		name:     { type: String,  default: "",   },
+		size:     { type: Number,  default: 64,   },
+		active:   { type: Boolean, default: true, },
+		showName: { type: Boolean, default: true, },
 	},
 
 	data: function() {
