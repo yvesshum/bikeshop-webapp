@@ -3,7 +3,7 @@
 		@mouseover="mousehover(true)"
 		@mouseleave="mousehover(false)"
 		@click="mouseclick"
-		v-b-tooltip.hover.html="showName ? name : ''"
+		v-b-tooltip.hover.html="popup_msg"
 	>
 		<canvas ref="canvas"></canvas>
 	</div>
@@ -90,6 +90,19 @@ export default {
 		// Return the apron image currently being used (the active one or the inactive one)
 		current_image: function() {
 			return (this.active ? this.apron_image : this.apron_empty);
+		},
+
+		popup_msg: function() {
+			if (this.showName && this.name.length > 0) {
+				let achieved_msg = "";
+				if (this.active) {
+					achieved_msg += "(Complete)";
+				} else {
+					achieved_msg += "(Locked)";
+				}
+				return `${this.name} Apron<br />${achieved_msg}`;
+			}
+			return '';
 		},
 	},
 
