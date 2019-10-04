@@ -1,3 +1,5 @@
+// TODO: Adding/Editing new fields should bring up the appropriate special input 
+
 <template><div>
     <b-button-group style="margin-bottom:10px">
         <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
@@ -17,15 +19,16 @@
     </draggable>
     <p v-if="field_data.length === 0">No Fields Found </p>
     <br>
-    <!-- <b-button-group>
+    <b-button-group>
         <b-button variant="info" @click="addButtonClicked">
             Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
         </b-button>
-    </b-button-group> -->
+    </b-button-group>
     
     
 
     <!-- Modals -->
+    <!-- Msg -->
     <b-modal v-model = "modal.msg.visible" hide-footer lazy>
         <template slot="modal-title">
             {{modal.msg.title}}
@@ -36,6 +39,7 @@
         <b-button class="mt-3" block @click="closeMsgModal" variant = "primary">ok!</b-button>
     </b-modal>
 
+    <!-- Loading -->
     <b-modal v-model = "modal.loading.visible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
         <template slot="modal-title">
             {{modal.loading.title}}
@@ -48,6 +52,7 @@
         </div>
     </b-modal>
 
+    <!-- Editing -->
     <b-modal v-model = "modal.edit.visible" hide-footer lazy>
         <template slot = "modal-title">
             Editing Field
@@ -77,6 +82,56 @@
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
+    <!-- Deleting -->
+    <b-modal v-model = "modal.delete.visible" hide-footer lazy>
+        <template slot = "modal-title">
+            Deleting Field
+        </template>
+        <div class="d-block text-center">
+            <h3>Are you sure you want to delete {{modal.delete.field_name}}?</h3>
+        </div>
+        <b-button class="mt-3" block @click="deleteField(); delete_closeModal()" variant = "danger">Permanently delete this field and remove all existing uses of this field</b-button>
+        <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
+    </b-modal>
+
+    <!-- Adding -->
+    <b-modal v-model = "modal.add.visible" hide-footer lazy>
+        <template slot = "modal-title">
+            Adding A Field
+        </template>
+        <p style="margin-bottom: 0">Field Name</p>
+        <b-form-textarea
+                id="textarea"
+                v-model="modal.add.field_name"
+                placeholder="This cannot be empty and must not already exist!"
+                :state="isValidNewFieldName"
+                size="sm"
+                rows="1"
+                max-rows="3"
+        ></b-form-textarea>
+        <p style="margin-bottom: 0">Field Type</p>
+        <b-form-select
+                id="textarea"
+                v-model="modal.add.field_type"
+                :options="modal.edit.options"
+                placeholder="Edit here.."
+                rows="1"
+                max-rows="3"
+        ></b-form-select>
+
+        <p style="margin-bottom: 0">Initial Value</p>
+        <b-form-textarea
+                id="textarea"
+                v-model="modal.add.initial_value"
+                placeholder="Enter a value or leave empty"
+                size="sm"
+                rows="1"
+                max-rows="3"
+        ></b-form-textarea>
+        <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName">Add a new field and change all existing documents to have this field and value</b-button>
+        <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
+    </b-modal>
+
 
 </div></template>
 
@@ -97,6 +152,11 @@ export default {
         elements: Array, //Actual data of the fields
         collectionsToEdit: Array, //name of collection of where the fields are from
         subcollectionsToEdit: Array
+    },
+    computed: {
+        isValidNewFieldName: function() {
+            return !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
+        }
     },
     data() {
         return {
@@ -119,6 +179,16 @@ export default {
                     field_type: "",
                     original_field_type: "",
                     options: [],
+                },
+                delete: {
+                    visible: false,
+                    field_name: ""
+                },
+                add: {
+                    visible: false,
+                    field_name: "",
+                    field_type: "String",
+                    initial_value: ""
                 }
             }
         }
@@ -147,8 +217,18 @@ export default {
         },
 
         deleteButtonClicked(field) {
-            // TODO
+            this.modal.delete.field_name = Object.keys(field)[0];
+            this.modal.delete.visible = true;  
         },
+        
+        addButtonClicked() {
+            this.modal.add.field_name = "";
+            this.modal.add.field_type = "String";
+            this.modal.add.initial_value = "";
+            this.modal.add.visible = true;
+
+        },
+        
 
         resetOrdering() {
             this.field_data = this.field_data_initial_copy;
@@ -176,9 +256,6 @@ export default {
             this.showMsgModal("Success", "The ordering has been saved.");
         },
 
-
-
-
         //Modal Methods
         showMsgModal(title, text) {
             this.modal.msg.visible = true;
@@ -197,6 +274,12 @@ export default {
         },
         edit_closeModal() {
             this.modal.edit.visible = false;
+        },
+        delete_closeModal() {
+            this.modal.delete.visible = false;
+        },
+        add_closeModal() {
+            this.modal.add.visible = false;
         },
         async save_edit() {
             this.edit_closeModal();
@@ -244,17 +327,136 @@ export default {
                         })
                     }
 
-                    //TODO: Update Locally
+                    //Local Update
+                    let newVal = {};
+                    newVal[newFieldName] = newFieldType;
+                    this.field_data[i].data = newVal;
 
+                    //Updating the copied version. Since ordering may have changed, we'll need to search through this.
+                    for (let j = 0; j < this.field_data_initial_copy.length; j++) {
+                        if (Object.keys(this.field_data_initial_copy[j].data)[0] === this.modal.edit.original_field_name) {
+                            delete this.field_data_initial_copy[j][this.modal.edit.original_field_name]
+                            this.field_data_initial_copy[j][newFieldName] = newFieldType;
+                        }
+                    }
 
+                    this.closeLoadingModal();
+                    this.showMsgModal("Success!", "Successfully updated firebase Global Fields Collection and corresponding documents")
+                    break;
+                }
+            }
+        },
+        async deleteField() {
+            this.delete_closeModal();
+            this.showLoadingModal();
 
+            let updatedFields = this.field_data.map(element => {return element.data});
+            for (let i = 0; i < updatedFields.length; i ++) {
+                if (Object.keys(updatedFields[i])[0] === this.modal.delete.field_name) {
+                    // Delete from global fields collection
+                    updatedFields.splice(i, 1);
+                    let updateValue = {};
+                    updateValue[this.sourceFieldName] = updatedFields;
+                    let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).set(updateValue);
+                    if (deleteStatus) {
+                        window.alert("Error on removing a field in GlobalFieldsCollection. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
+                        return null;
+                    }
 
+                    // Delete from collections
+                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
+                        let query = await db.collection(this.collectionsToEdit[j]).get();
+                        query.forEach(async doc => {
+                            let id = doc.id;
+                            let data = this.parse(doc.data());
+                            delete data[this.modal.delete.field_name]
+                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                        })
+                    }
+                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
+                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        query.forEach(async doc => {
+                            let id = doc.id;
+                            let path = doc.ref.path
+                            let data = this.parse(doc.data());
+                            delete data[this.modal.delete.field_name]
+                            await db.doc(path).set(data);
+                        })
+                    }
 
+                    // Delete locally 
+                    this.field_data.splice(i, 1);
+                    
+                    for (let j = 0; j < this.field_data_initial_copy.length; j ++) {
+                        if (Object.keys(this.field_data_initial_copy[j].data)[0]) {
+                            this.field_data_initial_copy.splice(j, 1);
+                            break;
+                        }
+                    }
 
+                    this.modal.delete.field_name = "";
+
+                    this.closeLoadingModal();
+                    this.showMsgModal("Success!", "Successfully deleted field in GlobalFieldsCollection and corresponding documents");
 
                     break;
                 }
             }
+        },
+        async addField() {
+            this.modal.add.visible = false;
+            this.showLoadingModal();
+
+            // Update GlobalFieldsCollection
+            let updatedFields = this.field_data.map(element => {return element.data})
+            let fieldObject = {}
+            fieldObject[this.modal.add.field_name] = this.modal.add.field_type;
+            updatedFields.push(fieldObject);
+            let updateObject = {};
+            updateObject[this.sourceFieldName] = updatedFields;
+            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+            if (updateStatus) {
+                window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
+                return null;
+            }
+
+            //Update Collections
+            for (let j = 0; j < this.collectionsToEdit.length; j++) {
+                let query = await db.collection(this.collectionsToEdit[j]).get();
+                query.forEach(async doc => {
+                    let id = doc.id;
+                    let data = this.parse(doc.data());
+                    data[this.modal.add.field_name] = this.modal.add.initial_value;
+                    await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                })
+            }
+            for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
+                let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                query.forEach(async doc => {
+                    let id = doc.id;
+                    let path = doc.ref.path
+                    let data = this.parse(doc.data());
+                    data[this.modal.add.field_name] = this.modal.add.initial_value;
+                    await db.doc(path).set(data);
+                })
+            }
+
+            //Updating Locally 
+            let localUpdateObject = {
+                data: {},
+                isProtected: false
+            }
+            localUpdateObject.data[this.modal.add.field_name] = this.modal.add.field_type;
+            this.field_data.push(localUpdateObject);
+            this.field_data_initial_copy.push(localUpdateObject);
+
+            // Reset
+            this.modal.add.field_name = "";
+            this.modal.add.field_type = "String",
+            this.modal.add.initial_value = "";
+
+            this.closeLoadingModal();
+            this.showMsgModal("Success!", "Added a new field in GlobalFieldsCollection and corresponding documents.");
         }
 
     }
