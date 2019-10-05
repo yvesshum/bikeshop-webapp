@@ -43,7 +43,7 @@
         Please confirm the following.
       </template>
 
-      <h4>The apron color for <em>{{ youth_name }}</em>&nbsp;<small>(ID: {{ profile.id }})</small> will be {{change_level_effect > 0 ? 'increased' : 'decreased'}} by {{Math.abs(change_level_effect)}}:</h4>
+      <h4>The apron color for <em>{{ youth_name }}</em>&nbsp;<small>(ID: {{ youth_id }})</small> will be {{change_level_effect > 0 ? 'increased' : 'decreased'}} by {{Math.abs(change_level_effect)}}:</h4>
       <br />
 
       <table class="clm_table"><tr>
@@ -142,6 +142,10 @@ export default {
       let ln = this.get_profile_field("Last Name");
       return `${fn} ${ln}`;
     },
+
+    youth_id: function() {
+      return (this.profile != null) ? this.profile.id : "";
+    },
   },
 
   methods: {
@@ -192,6 +196,13 @@ export default {
     display: inline-block;
     padding: 5px;
     float: right;
+    height: auto;
+  }
+
+  .progress_bar_container:after {
+    clear: both;
+    content: "";
+    display: table;
   }
 
   .clm_table {
