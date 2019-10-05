@@ -13,7 +13,7 @@
           v-b-tooltip.hover.html="'Decrement Apron Color'"
         >-</b-button>
         <ApronProgressBar
-          style="display: inline-block; float: center"
+          style="display: inline-block;"
           :colors="apron_colors" :size="32" :level="apron_level"
           @hover="hover"
         />
@@ -25,6 +25,8 @@
           v-b-tooltip.hover.html="'Increment Apron Color'"
         >+</b-button>
       </div>
+
+      <div style="clear: both;"></div>
     </div>
 
     <MatchTable
