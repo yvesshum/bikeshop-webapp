@@ -51,6 +51,11 @@ export default {
 
         // Allow multiple selection with ctrl and shift keys
         selectable: true,
+
+        // When row selection changes, propagate those changes upward
+        rowSelectionChanged: (data, rows) => {
+          this.$emit('selected', rows.map(this.row_field_map));
+        },
       },
     };
   },
@@ -81,8 +86,15 @@ export default {
       this.table.deselectRow();
     },
 
+    // Manually grab the selected fields from the Tabulator
+    // These can also be tracked using the 'selected' emit
     get_selected_fields: function() {
-      return this.table.getSelectedRows().map(row => row.getData()[this.matchBy]);
+      return this.table.getSelectedRows().map(this.row_field_map);
+    },
+
+    // Mapping function from a Tabulator row to the data corresponding with the match field
+    row_field_map: function(row) {
+      return row.getData()[this.matchBy];
     },
 
     highlight_values: function(values, field) {

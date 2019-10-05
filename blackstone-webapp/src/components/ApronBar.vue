@@ -35,7 +35,9 @@
       :checkedData="checked_data"
       :fullData="test_full_data"
       :headingData="test_headers"
-      matchBy="name">
+      matchBy="name"
+      @selected="s => selected_skills = s"
+    >
     </MatchTable>
 
     <b-modal v-model="change_level_modal">
@@ -112,6 +114,8 @@ export default {
 
       change_level_modal: false,
       change_level_effect: 0,
+
+      selected_skills: [],
     }
   },
 
