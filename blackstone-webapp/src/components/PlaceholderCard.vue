@@ -61,7 +61,7 @@
                     id="textarea"
                     v-model="editFieldName"
                     placeholder="This must match one of the current fields"
-                    :state="existingFieldNames.includes(editFieldName)"
+                    :state="existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName}).length > 0"
                     size="sm"
                     rows="1"
                     max-rows="3"
@@ -182,7 +182,7 @@ export default {
     },
     mounted() {
         //check status by seeing if the field name exists in the GlobalFieldsCollection document
-        if (this.existingFieldNames.includes(this.field)) {
+        if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
             this.status = "success";
             this.statusIcon = "check-circle",
             this.statusMsg = ""

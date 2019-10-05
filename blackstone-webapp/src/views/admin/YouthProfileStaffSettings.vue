@@ -10,15 +10,15 @@
         <hr class="subheading">  
 
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="required" :elements="fields.required" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="required" :elements="fields.required" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="optional" :elements="fields.optional" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="optional" :elements="fields.optional" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="hidden" :elements="fields.hidden" doc="Youth Profile" collection="GlobalYouthProfile"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
         
         <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
@@ -70,7 +70,7 @@ export default {
             for (let i = 0; i < items.length; i ++) { 
                 let isProtected = protectedFields.includes(items[i])
                 dest.push({
-                    "name": items[i],
+                    "data": items[i],
                     "isProtected": isProtected
                 })
             }   
@@ -78,8 +78,7 @@ export default {
         
         async getFields() {
             let fields = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-            fields = fields.data();
-            if (fields == null) { 
+            fields = fields.data();            if (fields == null) { 
                 window.alert("Unable to get Youth Profile fields from Global Fields Collection");
             }
             else {
@@ -87,8 +86,8 @@ export default {
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
-                this.initialFields = this.parse(this.fields);
             }
+            console.log('f', this.fields);
         },
     },
     async mounted() {
