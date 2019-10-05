@@ -42,13 +42,15 @@ export default {
         groupBy: 'group',
         resizeableRows: false,
         resizeableColumns: false,
+
+        // Format the header to show number of skills achieved in each category
         groupHeader: function(value, count, data, group) {
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
           return `${value} Skills <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
-        rowSelected: row => {return},
-        rowDeselected: row => {return},
-        selectable: null,
+
+        // Allow multiple selection with ctrl and shift keys
+        selectable: true,
       },
     };
   },
@@ -78,6 +80,55 @@ export default {
     deselect_values: function() {
       this.table.deselectRow();
     },
+
+    get_selected_fields: function() {
+      return this.table.getSelectedRows().map(row => row.getData()[this.matchBy]);
+    },
+
+    highlight_values: function(values, field) {
+
+      // If no field provided, default to the one this table is matching by
+      if (field == null) field = this.matchBy;
+
+      // Loop through each row in the table to add or remove a highlight
+      this.table.getRows().forEach(r => {
+
+        // Get the classlist of the current row
+        let classList = r.getElement().classList;
+
+        // Get the value of the desired field in the current row
+        let match_val = r.getData()[field];
+
+        // If this value is in the list to highlight, do so
+        if (values.includes(match_val)) {
+          classList.add("highlighted_row");
+        }
+
+        // If not, clear the highlight
+        else {
+          classList.remove("highlighted_row");
+        }
+      });
+
+    },
   },
 }
 </script>
+
+<style>
+
+  .highlighted_row.tabulator-row-odd, .highlighted_row.tabulator-row {
+    background-color: #FEFCBD;
+    font-weight: bold;
+  }
+
+  .highlighted_row.tabulator-row-even {
+    background-color: #FDFA9B;
+    font-weight: bold;
+  }
+
+  .highlighted_row.tabulator-selected {
+    background-color: #99baad;
+  }
+
+</style>

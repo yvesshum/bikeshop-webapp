@@ -168,13 +168,12 @@ export default {
     },
 
     hover: function(hover_data) {
-      this.$refs.match_table.deselect_values();
-      Object.keys(hover_data).forEach(h => {
-        if (hover_data[h] != undefined) {
-          this.$refs.match_table.select_value("apron", h);
-        }
-      });
-    }
+      let highlight_vals = Object.keys(hover_data)
+        .filter(h => hover_data[h] != undefined)
+        .map(h => parseInt(h));
+
+      this.$refs.match_table.highlight_values(highlight_vals, "apron");
+    },
   }
 }
 </script>
