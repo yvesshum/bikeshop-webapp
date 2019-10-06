@@ -4,6 +4,7 @@
         <h3 style="margin: 20px">Register a new Youth here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>
+        
 
         <div v-for="field in requiredFields">
             <div class="each_field">
@@ -18,7 +19,9 @@
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
                 <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
-                <input v-if="field.type == 'tel'" size="35" v-model="field.value" :type="field.type" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" required>
+                <div v-if="field.type == 'tel'" class = "telDiv">
+                  <vue-tel-input v-model="field.value" maxLen=14 validCharactersOnly=true></vue-tel-input>
+                </div>
                 <div v-if="field.type == 'radioOther'" class = "radioDiv">
                     <RadioGroupOther v-model="field.value" :options="field.id" nullOption>
                     </RadioGroupOther>
@@ -63,6 +66,7 @@
 </template>
 
 <script>
+    import { VueTelInput } from 'vue-tel-input'
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
@@ -73,7 +77,8 @@
     export default {
         name: 'RegisterYouth',
         components: {
-            RadioGroupOther
+            RadioGroupOther,
+            VueTelInput,
         },
         data() {
             return {
@@ -436,6 +441,14 @@
         margin-right: auto;
         justify-content: center;
         border: 1px solid black;
+    }
+    
+    .telDiv{
+        width: 35%;
+        display: flex;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: center;
     }
 
 </style>

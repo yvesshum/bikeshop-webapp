@@ -98,12 +98,23 @@
                 <span v-if="category.Value != ''">Currently set to {{category.Value}}</span>
                 <span v-if="category.Value == ''">Currently not set</span>
                 <br>
-                <b-form-input
+                <b-form-input v-if="category.Type != 'radioOther' && category.Type != 'tel' && category.Type != 'radio'"
                 id="text"
                 :type="category.Type"
                 v-model="editSelected[index].Value"
                 :placeholder="category.Value"
                 ></b-form-input>
+                <div v-if="category.Type == 'radioOther'">
+                    <RadioGroupOther v-model="category.Value" :options="category.id" nullOption>
+                    </RadioGroupOther>
+                </div>
+                <div v-if="category.Type == 'tel'">
+                    <vue-tel-input v-model="category.Value" maxLen=14 validCharactersOnly=true></vue-tel-input>
+                </div>
+                <div v-if="category.Type == 'radio'">
+                    <RadioGroupOther v-model="category.Value" :options="category.id" omitOtherOption>
+                    </RadioGroupOther>
+                </div>
                 <hr>
             </div>
 
@@ -131,13 +142,19 @@
 
 </template>
 <script>
+    import { VueTelInput } from 'vue-tel-input'
+    import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
     import { forKeyVal } from '../../components/ParseDB.js';
+    let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+    
     export default {
         name: 'ApproveNewYouth',
         components: {
+          RadioGroupOther,
+          VueTelInput,
         },
         data() {
             return {
@@ -166,6 +183,11 @@
 
         },
         methods: {
+            async getEditFields() {
+                let f = await fieldsRef.get();
+                return f.data();
+            },
+            
             rowSelected(items){
                 this.selected = items;
             },
@@ -340,12 +362,49 @@
 
             },
             
-            editHours() {
+            async editHours() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
                     return null;
                 }
                 var editSelected = [];
+                
+                let fields = await this.getEditFields();
+                var getType = function (val) {
+                    var type = "";
+                    if (val == "String"){
+                        type = "text";
+                    } else if (val == "Boolean"){
+                        type = "radio";
+                    } else if (val == "Grade"){
+                        type = "number";
+                    } else if (val == "Date"){
+                        type = "date";
+                    } else if (val == "Gender"){
+                        type = "radioOther";
+                    } else if (val == "Phone"){
+                        type = "tel";
+                    } else if (val == "Race"){
+                        type = "radioOther";
+                    } else {
+                        type = "textarea";
+                    }
+                    return type;
+                };
+                var getLabels = function (val, fields) {
+                    var labels = null;
+                    if (val == "Boolean"){
+                        labels = ["Yes", "No"];
+                    }
+                    if (val == "Race"){
+                        labels = fields["race"];
+                    }
+                    else if (val == "Gender"){
+                        labels = fields["gender"];
+                    }
+                    return labels;
+                };
+                
                 for(var key in curRow){
                     var type = "text";
                     if(key == "Current Grade"){
@@ -355,11 +414,27 @@
                         type = "date"
                     }
                     if(key != "Document ID" && key != "Timestamp"){
-                        editSelected.push({
-                            "Category" : key,
-                            "Value" : curRow[key],
-                            "Type": type
-                        });
+                        console.log(getLabels(key, fields))
+                        if(getLabels(key, fields) == null){
+                            editSelected.push({
+                                Category: key,
+                                Value: curRow[key],
+                                Type: getType(key)
+                            });
+                        } else {
+                            editSelected.push({
+                                Category: key,
+                                Value: curRow[key],
+                                id: getLabels(key, fields),
+                                Type: getType(key)
+                            });
+                        }
+                        // editSelected.push({
+                        //     "Category" : key,
+                        //     "Value" : curRow[key],
+                        //     "Type": type
+                        // 
+                        // });
                     }
                 }
                 this.editSelected = editSelected;
