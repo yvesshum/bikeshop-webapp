@@ -1,7 +1,4 @@
 // TODO: Add pagination
-// Notes: 
-// TODO: https://bootstrap-vue.js.org/docs/components/table/ Use show details for hours
-// TODO: Grab peridos from `GlobalVariables` -> Seasons
 <template>
     <div>
         <top-bar/>
@@ -56,8 +53,32 @@
             </div>
             <b-row>
                 <b-col>
-                    <p v-if="this.total_Hours_Earned_Data.length === 0">No Entries found</p>
-                    <b-table hover :items="total_Hours_Earned_Data"></b-table>
+                    <div>   
+                        <p v-if="this.total_Hours_Earned_Data.length === 0">No Entries found</p>
+                        <b-table hover :items="total_Hours_Earned_Data" :fields="earned_Table_Fields" responsive="sm">
+                            <template v-slot:cell(show_details)="row">
+                                <b-button size="sm" @click="row.toggleDetails" class="mr-2">
+                                {{ row.detailsShowing ? 'Hide' : 'Show'}} Details
+                                </b-button>
+                            </template>
+                            <template v-slot:row-details="row">
+                                <b-card>
+                                    <!-- since `item` is an object, we need to do Object.keys()[0] to get a string key -->
+                                    <div v-for="item in excludeEarnedTableHeaders(row.item)" :key="Object.keys(item)[0]">
+                                        <b-row class="mb-2">
+                                        <b-col sm="3" class="text-sm-right"><b>{{Object.keys(item)[0]}}</b></b-col>
+                                        <b-col>{{Object.values(item)[0]}}</b-col>
+                                    </b-row>
+                                    </div>
+                                    <b-button size="sm" @click="row.toggleDetails">Hide Details</b-button>
+                                </b-card>
+                            </template>
+                            <template v-slot:cell(total_hours)="hoursRow">
+                                {{getSubtotalHours(hoursRow.item)}}
+                            </template>
+                        </b-table>
+                    </div>
+                    
                 </b-col>
             </b-row>
             <div v-if="this.total_Hours_Earned_Data.length !== 0">
@@ -156,7 +177,7 @@ export default {
             dailyAttendanceTableItems: [],
 
             Earned_Period_Data: {
-                season_options: ['Spring', 'Summer', 'Fall'],
+                season_options: [],
                 year_options: [],
                 selected_season: "",
                 selected_year: ""
@@ -165,17 +186,17 @@ export default {
             total_Hours_Earned_Loading: false,
             total_Hours_Earned_Breakdown: {},
             total_Hours_Earned: 0,
+            earned_Table_Fields: [],
 
             Spent_Period_Data: {
-                season_options: ['Spring', 'Summer', 'Fall'],
+                season_options: [],
                 year_options: [],
                 selected_season: "",
                 selected_year: ""
             },
             total_Hours_Spent_Data: [],
             total_Hours_Spent_Loading: false,
-            total_Hours_Spent: 0
-
+            total_Hours_Spent: 0,
 
         }
     },
@@ -251,6 +272,18 @@ export default {
                     }
                 }
             })
+            //These fields must be protected in work log
+            this.earned_Table_Fields = [
+                {key: 'Check In', sortable: true},
+                {key: 'Check Out', sortable: true},
+                {key: 'First Name', sortable: true},
+                {key: 'Last Name', sortable: true},
+                {key: 'Youth ID', sortable: true},
+                {key: 'total_hours'},
+                // {key: 'Notes', sortable: true}, //this goes under details
+                // {key: 'Period', sortable: true},
+                {key: 'show_details'} 
+            ]
             this.total_Hours_Earned_Loading = false;
         },
 
@@ -263,6 +296,7 @@ export default {
 
             let searchPeriod = this.Spent_Period_Data.selected_season + " " + this.Spent_Period_Data.selected_year.slice(2) //e.g. 2019 -> 19
             let query = {}
+            // Grab Youth ID from this as well
             try {
                 query = await db.collectionGroup("Order Log")
                                 .where("Period", '==', searchPeriod)
@@ -274,16 +308,48 @@ export default {
             query.forEach(doc => { 
                 let data = doc.data();
                 data["Order Date"] = data["Order Date"].toDate();
+
+                //Grabbing Youth ID from query metaadata
+                let regexp = /GlobalYouthProfile\/(\d*)\/Order Log/g
+                data["Youth ID"] = regexp.exec(doc.ref.path)[1];
+
                 this.total_Hours_Spent_Data.push(data);
+
                 // Append hours to total
                 this.total_Hours_Spent += parseFloat(data["Item Total Cost"]);
             })
             this.total_Hours_Spent_Loading = false;
-        }
+        },
 
+        excludeEarnedTableHeaders(data) { 
+            let ret = [];
+            let blacklistFields = this.earned_Table_Fields.map(field => {return field.key})
+            blacklistFields.push("_showDetails") 
+            Object.keys(data).forEach(key => { 
+                if (!blacklistFields.includes(key)) {
+                    let res = {};
+                    res[key] = data[key];
+                    ret.push(res)
+                }
+            })
+            return ret;
+        },
+
+        getSubtotalHours(dataRow) { 
+            let total = 0;
+            Object.keys(dataRow).forEach(key => {
+                if (!['Check In', 'Check Out', 'First Name', 'Last Name', 'Notes', 'Period', 'Youth ID'].includes(key)) {
+                    let value = parseFloat(dataRow[key])
+                    if (!isNaN(value)) {
+                        total += value;
+                    }
+                }
+            })
+            return total;
+        }
     },
 
-    mounted() {
+    async mounted() {
         //Generate year selector 
         this.Earned_Period_Data.year_options.push("2019") //start point
         this.Spent_Period_Data.year_options.push("2019");
@@ -293,7 +359,11 @@ export default {
             this.Earned_Period_Data.year_options.push(nextYear.toString());
             this.Spent_Period_Data.year_options.push(nextYear.toString());
         }
-        
+
+        //Grab the Season choices e.g. summer spring fall etc.
+        let seasonQuery = await db.collection("GlobalVariables").doc("ActivePeriods").get();
+        this.Earned_Period_Data.season_options = seasonQuery.data().Seasons;
+        this.Spent_Period_Data.season_options = seasonQuery.data().Seasons;
 
     }
     

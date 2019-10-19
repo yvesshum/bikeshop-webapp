@@ -1,104 +1,85 @@
 // TODO: Moment JS Time deoes not update in real time 
 <template>
-    <div>
-        <top-bar/>
-        <h2 style="margin-top: 20px;">
-            Check In/Out: {{ date }}
-        </h2>
-        <br>
-
-        <YouthIDSelector
-            @selected="handleSelect"
-            style="margin-bottom: 20px;"
-            ref="selector"
-        />
-
-        <p>Or fill in the information below</p>
-
-        <b-container block>
-            <b-row>
-                <b-col>
-                    <b-textarea placeholder="ID" style="text-align: center; align-self: center" v-model="ID"></b-textarea>
-                </b-col>
-                <b-col>
-                    <b-textarea placeholder="First Name" style="text-align: center; align-self: center" v-model="FirstName"></b-textarea>
-                </b-col>
-                <b-col>
-                    <b-textarea placeholder="Last Name" style="text-align: center; align-self: center" v-model="LastName"></b-textarea>
-                </b-col>
-            </b-row>
-            
-        </b-container>
-
-        <br>
-
-        <!-- Check In -->
-        <div v-if="userSelected && !isCheckedIn" >
-            <b-button
-                class="check-in-out-button"
-                @click="checkIn()"
-            >
-                <h4>
-                    Check In
-                </h4>
-                {{ time }}
-            </b-button>
-        </div>
-
-        <!-- Check Out -->
-        <div v-if="userSelected && isCheckedIn">
-            <b-button
-                class="check-in-out-button"
-                @click="showCheckoutModal"
-            >
-                <h4>
-                    Check Out
-                </h4>
-                {{ time }}
-            </b-button>
-            
-        </div>
-
-
-        <!-- Modals -->
-        <b-modal  hide-footer v-model="checkoutModalVisible">
-            <template slot="modal-title">
-                Hours since checked in: {{ totalHours }}
-            </template>
-            <div class ="checkout-form">
-                <h2 style="text-align: center">Fill out this form to log hours!</h2>
-                <div v-for="category in categories" :key="category" class="input-field">
-                    <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-                        <VueNumericInput 
-                            v-model="hours[category]"
-                            :min="0"
-                            :step="0.5"
-                            placeholder="Hours"
-                            align="center"
-                            style="width: 20rem"
-                            :precision="2"
-                        />
-                </div>
-                <br>
-                <p>Notes</p>
-                <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!" style="text-align:center">
-            </div>
-            <b-button class="mt-3" block @click="closeCheckoutModal" variant="danger">Cancel</b-button>
-            <b-button class="mt-3" block @click="checkOut()" variant="success">Confirm for staff review</b-button>
-        </b-modal>
-
-
-        <b-modal id="checkout-status-modal" hide-footer>
-            <template slot="modal-title">
-            {{ checkoutStatus.title }}
-            </template>
-            <div class="d-block text-center">
-            {{ checkoutStatus.message}}
-            </div>
-            <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Okay</b-button>
-        </b-modal>
-
+  <div>
+    <top-bar/>
+    <h2 style="margin-top: 20px;">
+        Check In/Out: {{ date }}
+    </h2>
+    <br>
+    <!-- ID Selector Component -->
+    <YouthIDSelector
+      @selected="handleSelect"
+      style="margin-bottom: 20px;"
+      ref="selector"
+    />
+    <br>
+    <!-- Check In -->
+    <div v-if="userSelected && !isCheckedIn" >
+      <b-button
+        class="check-in-out-button"
+        @click="checkIn()"
+      >
+        <h4>
+          Check In
+        </h4>
+        {{ time }}
+      </b-button>
     </div>
+    <!-- Check Out -->
+    <div v-if="userSelected && isCheckedIn">
+      <b-button
+        class="check-in-out-button"
+        @click="showCheckoutModal"
+      >
+        <h4>
+            Check Out
+        </h4>
+        {{ time }}
+      </b-button> 
+    </div>
+    <!-- Modals -->
+    <b-modal  hide-footer v-model="checkoutModalVisible">
+      <template slot="modal-title">
+          Hours since checked in: {{ totalHours }}
+      </template>
+      <div class ="checkout-form">
+        <h2 style="text-align: center">Fill out this form to log hours!</h2>
+        <div v-for="category in categories" :key="category" class="input-field">
+          <p style="text-align: center; margin-bottom:3px">{{category}}</p>
+            <VueNumericInput 
+              v-model="hours[category]"
+              :min="0"
+              :step="0.5"
+              placeholder="Hours"
+              align="center"
+              style="width: 20rem"
+              :precision="2"
+            />
+        </div>
+        <br>
+        <p>Notes</p>
+        <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!" style="text-align:center">
+      </div>
+      <b-button class="mt-3" block @click="closeCheckoutModal" variant="danger">Cancel</b-button>
+      <b-button class="mt-3" block @click="handleCheckOut()" variant="success">Confirm for staff review</b-button>
+    </b-modal>
+    <b-modal id="checkout-status-modal" hide-footer>
+      <div v-if="loading" class="text-center text-info my-2">
+        <b-spinner class="align-middle"></b-spinner>
+        <br>
+        <strong>Sending Request...</strong>
+      </div>
+      <div v-else>
+        <template slot="modal-title">
+          {{ checkoutStatus.title }}
+        </template>
+        <div class="d-block text-center">
+          {{ checkoutStatus.message}}
+        </div>
+        <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Okay</b-button>
+      </div>
+    </b-modal>
+  </div>
 </template>
 
 <script>
@@ -109,7 +90,6 @@ import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import moment from 'moment';
 import { setTimeout } from 'timers';
 import VueNumericInput from 'vue-numeric-input';
-
 
 export default {
     data() {
@@ -131,26 +111,23 @@ export default {
             totalHours: "", 
             date: "",
             time: "",
-            overHours: false
-
-
+            overHours: false,
+            loading: false
         }
     },
     methods: {
         handleSelect(item) {
-            if (item !== null && item !== undefined && item !== "") {
-                this.selected = true;
-                this.ID = item.split(" ")[2]
-                this.FirstName = item.split(" ")[0]
-                this.LastName = item.split(" ")[1]
-            }
-            else {
-                this.selected = false;
-                this.ID = ""
-                this.FirstName = ""
-                this.LastName = ""
-            }
-            
+          if (item !== null && item !== undefined) {
+            this.selected = true
+            this.ID = item['ID']
+            this.FirstName = item['First Name']
+            this.LastName = item['Last Name']
+          } else {
+            this.selected = false;
+            this.ID = ""
+            this.FirstName = ""
+            this.LastName = ""
+          }
         },
         showCheckoutModal() {
             this.getTotalHours();
@@ -198,10 +175,16 @@ export default {
         parseHours(hours) {
             return Math.round(hours*2)/2;
         },
+        handleCheckOut() {
+          this.$bvModal.hide('checkout-modal')
+          this.loading = true
+          this.$bvModal.show('checkout-status-modal')
+          this.checkOut().then(_ => {
+            this.loading = false
+          })
+        },
         async checkOut() {
             //TODO: Validation of hours.. or maybe not
-
-            this.$bvModal.hide('checkout-modal')
             let categoryHourSum = 0
             for (let category in this.hours) { 
                 categoryHourSum += this.parseHours(this.hours[category]);
@@ -244,11 +227,9 @@ export default {
             })
 
             this.closeCheckoutModal();
-            
-           
+
             this.checkoutStatus.title = 'Success'
             this.checkoutStatus.message = 'You have successfully checked out. Your hours have been requested.'
-            this.$bvModal.show('checkout-status-modal')
 
             this.resetInput();
         },

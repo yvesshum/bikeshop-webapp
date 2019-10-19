@@ -246,13 +246,14 @@
 
                         //create entry in order log
                         let YouthOrderLogRef = db.collection("GlobalYouthProfile").doc(YouthID).collection("Order Log");
-                        YouthOrderLogRef.doc().set({
-                            "Order Date": curData["Order Date"],
-                            "Item Name": curData["Item Name"],
-                            "Item ID": curData["Item ID"],
-                            "Item Total Cost": curData["Item Total Cost"],
-                            "Notes": curData["Notes"]
-                        }).catch(err => {
+                        let excludedFields = ["Youth ID", "First Name", "Last Name", "Status", "Document ID"]
+                        let res = {};
+                        Object.keys(curData).forEach(key => {
+                            if (!excludedFields.includes(key)) {
+                                res[key] = curData[key];
+                            }
+                        })
+                        YouthOrderLogRef.doc().set(res).catch(err => {
                             window.alert("Err: "+ err);
                             return null;
                         });

@@ -5,13 +5,13 @@
             <h1>Log hours for one or more youth</h1>
             <p v-if="profilesToAdd.length === 0">No youths selected</p>
             <div v-for="profile in profilesToAdd" :key="profile['ID']">
-                <YouthListCard :youth="profile" :deleteHandler="function(){removeProfileToAdd(profile)}"/>
+              <YouthListCard :youth="profile" :deleteHandler="function(){removeProfileToAdd(profile)}"/>
             </div>
             <br>
             <b-button @click="addButtonClicked" variant="success">Add a youth to log</b-button>
             <br>
             <h3>Hours</h3>
-            <div v-for="category in categories" :key="category" class="input-field">
+            <div v-for="(category, index) in categories" :key="index" class="input-field">
                 <p style="text-align: center; margin-bottom:3px">{{category}}</p>
                 <VueNumericInput 
                     v-model="hours[category]"
@@ -43,8 +43,8 @@
                 <YouthIDSelector @selected="handleSelect" ref="selector"/>
                 <br>
                 <h3 style="text-align: center">You have selected:</h3>
-                <div v-for="item in selected" :key="item">
-                    <YouthListCard :youth="toObject(item)" :deleteHandler="function(){removeSelected(item)}"/>
+                <div v-for="(item, index) in selected" :key="index">
+                  <YouthListCard :youth="item" :deleteHandler="function(){removeSelected(item)}"/>
                 </div>
 
                 <br>
@@ -134,12 +134,11 @@ export default {
         },
 
         addYouth() {
-            this.selected.forEach(item => { 
-                let data = item.split(" ");
+            this.selected.forEach(item => {
                 let res = {
-                    "First Name": data[0],
-                    "Last Name": data[1],
-                    "ID": data[2]
+                    "First Name": item["First Name"],
+                    "Last Name": item["Last Name"],
+                    "ID": item["ID"]
                 }
                 //Check for duplicates
                 if (this.profilesToAdd.filter(p => p.ID === res.ID).length === 0){
@@ -148,16 +147,6 @@ export default {
             })
             this.selected = [];
             this.closeAddModal();
-        },
-
-        //converts "Yves Shum 10001" to an object 
-        toObject(string) {
-            let data = string.split(" ")
-            return {
-                "First Name": data[0],
-                "Last Name": data[1],
-                "ID": data[2]
-            };
         },
 
         removeSelected(item) { 

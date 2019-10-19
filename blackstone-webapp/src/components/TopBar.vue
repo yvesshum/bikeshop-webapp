@@ -10,7 +10,7 @@
         <b-navbar class="navbar navbar-light navbar-expand-md shadow-sm navigation-clean-button" style="background-color: #16a2b8;">
             <div class="container">
               <a class="navbar-brand" href="/" style="font-family: Cabin, sans-serif;">Dashboard</a>
-              <a class="btn btn-light text-left bg-info border rounded border-info action-button" role="button" @click="logout">Log out</a>
+              <a class="btn btn-light text-left bg-info border rounded border-info action-button" role="button" @click="logout" v-if="show_logout_option">Log out</a>
             </div>
         </b-navbar>
     </div>
@@ -21,10 +21,21 @@
     import {firebase} from '../firebase'
     export default {
         name: 'TopBar',
+        props: {
+            omitEmail: {
+                type: String,
+                default: null,
+            },
+        },
         data() {
             return {
                 buttonText: ""
             };
+        },
+        computed: {
+            show_logout_option: function() {
+                return this.omitEmail == null;
+            },
         },
         methods: {
             logout: function() {
@@ -32,14 +43,17 @@
 
             },
             getButtonText() {
-                this.buttonText = "Logout " + firebase.auth().currentUser.email;
+                if(this.show_logout_option){
+                    this.buttonText = "Logout " + firebase.auth().currentUser.email;
+                }
             },
             imageUrl() {
                 window.location = "https://experimentalstation.org";
-            }
+            },
 
         },
         mounted() {
+            
             this.getButtonText();
         }
     }

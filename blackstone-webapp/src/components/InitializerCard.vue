@@ -182,7 +182,7 @@ export default {
     },
     mounted() {
         //check status by seeing if the field name exists in an array of hidden fields
-        if (this.existingFieldNames.includes(this.field)) {
+        if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
             this.status = "success";
             this.statusIcon = "check-circle",
             this.statusMsg = ""

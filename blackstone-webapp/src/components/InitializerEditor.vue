@@ -82,7 +82,7 @@ export default {
     },
     computed: {
         isValidFieldName: function() {
-            return this.existingFieldNames.includes(this.newFieldName) && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
+            return this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName}).length > 0 && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
         },
 
         isValidInitializer: function() {

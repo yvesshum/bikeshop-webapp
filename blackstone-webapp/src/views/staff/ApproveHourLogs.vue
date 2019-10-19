@@ -102,6 +102,7 @@
                 <b-form-input
                 id="number"
                 type="number"
+                step="0.5"
                 v-model="editSelectedHours[index].Hours"
                 :placeholder="category.Hours"
                 ></b-form-input>

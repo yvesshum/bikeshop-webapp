@@ -82,7 +82,7 @@ export default {
     },
     computed: {
         isValidField: function() {
-            return this.existingFieldNames.includes(this.newFieldName) && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
+            return this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName}).length > 0 && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
         },
 
         isValidPlaceholder: function() {
@@ -105,6 +105,7 @@ export default {
     },
     methods: {
         formatData(snapshot) {
+            // console.log(snapshot);
             let ret = [];
             let keys = Object.keys(snapshot);
             for (let i = 0; i < keys.length; i ++) {
@@ -118,6 +119,7 @@ export default {
         },
 
         formatNames(obj) {
+            console.log(obj);
             let ret = [];
             let keys = Object.keys(obj)
             for (let i = 0; i < keys.length; i++) {
@@ -134,6 +136,7 @@ export default {
 
         addButtonClicked() {
             this.newFieldName = "";
+            this.newPlaceholderText = "";
             this.new_modalVisible = true;
             
         },
