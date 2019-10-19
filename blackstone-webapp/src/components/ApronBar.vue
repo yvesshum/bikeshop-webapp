@@ -61,6 +61,14 @@
       </tr></table>
     </b-modal>
 
+    <div v-if="selected_skills.length > 0">
+      <b-button variant="success" @click="set_skills(true);">Add Selected Skills</b-button>
+      <b-button variant="danger" @click="set_skills(false);">Remove Selected Skills</b-button>
+    </div>
+    <div v-else>
+      <b-button disabled>Select skills to add or remove</b-button>
+    </div>
+
   </div>
 </template>
 
@@ -71,6 +79,7 @@ import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
 import MatchTable from '@/components/MatchTable';
+import {Status} from '@/components/Status.js';
 
 export default {
   name: 'apron_bar',
@@ -106,7 +115,7 @@ export default {
 
       test_headers: [
         {title:"Name", field:"name"},
-        {title:"Apron", field:"apron", width: 30, formatter:(cell, formatterParams) => {
+        {title:"Apron", field:"apron", width: 100, formatter:(cell, formatterParams) => {
           let apron = this.apron_colors[cell.getValue()];
           return (apron == null) ? "" : apron.name;
         }},
@@ -116,6 +125,8 @@ export default {
       change_level_effect: 0,
 
       selected_skills: [],
+
+      skill_status: new Status(),
     }
   },
 
@@ -138,7 +149,7 @@ export default {
     },
 
     checked_data: function() {
-      return this.get_profile_field("Apron Skills", []);
+      return this.skill_status.filter(Status.O);
     },
 
     youth_name: function() {
@@ -149,6 +160,18 @@ export default {
 
     youth_id: function() {
       return (this.profile != null) ? this.profile.id : "";
+    },
+  },
+
+  watch: {
+    profile: function() {
+      this.skill_status = new Status();
+      let skills = this.get_profile_field("Apron Skills", []);
+
+      this.test_full_data.map(s => s.name).forEach(skill => {
+        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
+        this.skill_status.add_vue(this, skill, start_status);
+      });
     },
   },
 
@@ -177,6 +200,11 @@ export default {
         .map(h => parseInt(h));
 
       this.$refs.match_table.highlight_values(highlight_vals, "apron");
+    },
+
+    set_skills: function(val) {
+      let skills = this.$refs.match_table.get_selected_fields();
+      skills.forEach(skill => this.skill_status.set(skill, val ? Status.O : Status.X));
     },
   }
 }
