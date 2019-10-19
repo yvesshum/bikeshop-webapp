@@ -20,14 +20,14 @@
                 <p class="field_header">{{field.name}}</p>
                 <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
                 <div v-if="field.type == 'tel'" class = "telDiv">
-                  <vue-tel-input v-model="field.value" maxLen=14 validCharactersOnly=true></vue-tel-input>
+                  <vue-tel-input v-model="field.value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
                 </div>
                 <div v-if="field.type == 'radioOther'" class = "radioDiv">
-                    <RadioGroupOther v-model="field.value" :options="field.id" nullOption>
+                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" nullOption>
                     </RadioGroupOther>
                 </div>
                 <div v-if="field.type == 'radio'" class = "radioDiv">
-                    <RadioGroupOther v-model="field.value" :options="field.id" omitOtherOption>
+                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
                     </RadioGroupOther>
                 </div>
                 </br></br>
