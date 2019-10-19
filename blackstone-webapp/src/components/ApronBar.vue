@@ -62,11 +62,15 @@
     </b-modal>
 
     <div v-if="selected_skills.length > 0">
-      <b-button variant="success" @click="set_skills(true);">Add Selected Skills</b-button>
-      <b-button variant="danger" @click="set_skills(false);">Remove Selected Skills</b-button>
+      <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
+      <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
     </div>
     <div v-else>
       <b-button disabled>Select skills to add or remove</b-button>
+      <div v-show="has_changes">
+        <b-button variant="success">Save Changes</b-button>
+        <b-button variant="danger" @click="reset_skills">Discard Changes</b-button>
+      </div>
     </div>
 
   </div>
@@ -161,6 +165,10 @@ export default {
     youth_id: function() {
       return (this.profile != null) ? this.profile.id : "";
     },
+
+    has_changes: function() {
+      return (this.skill_status == null) ? false : this.skill_status.has_status(Status.C);
+    },
   },
 
   watch: {
@@ -202,9 +210,22 @@ export default {
       this.$refs.match_table.highlight_values(highlight_vals, "apron");
     },
 
-    set_skills: function(val) {
+    // Set the given skills to the given status
+    set_skills: function(skills, status) {
+      skills.forEach(skill => this.skill_status.set(skill, status));
+    },
+
+    // Add or remove the currently selected skills
+    // Accepts val as boolean where True = Status.O and False = Status.X, or as status
+    set_selected_skills: function(val) {
       let skills = this.$refs.match_table.get_selected_fields();
-      skills.forEach(skill => this.skill_status.set(skill, val ? Status.O : Status.X));
+      let status = (typeof val == "boolean") ? (val ? Status.O : Status.X) : val;
+      this.set_skills(skills, status);
+    },
+
+    // Reset all the changed but unsaved skills to their original values
+    reset_skills: function() {
+      this.set_skills(this.skill_status.keys(), Status.RESET);
     },
   }
 }
