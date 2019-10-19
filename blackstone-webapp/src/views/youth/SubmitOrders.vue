@@ -4,17 +4,17 @@
         <h3 style="margin: 20px">Submit an order here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>
-        <YouthIDSelector @selected="selectedID"/>
+        <YouthIDSelector @selected="selectedID" periods="all"/>
         <p class = "separator">Or manually input it below</p>
-        <div v-for="field in requiredFields">
+        <div v-for="field in requiredFields" :key="field.name">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
+                <textarea v-model="field.name.value" :placeholder="field.name.placeholder"></textarea>
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
-        <div v-for="field in optionalFields">
+        <div v-for="field in optionalFields" :key="field.name">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
                 <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
@@ -23,9 +23,6 @@
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
-
-
-        <!--//copied from https://bootstrap-vue.js.org/docs/components/modal/-->
         <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">
                 Order Submitted!
@@ -42,7 +39,7 @@
             </template>
             <div class="d-block text-center">
                 <h3>The following fields have errors!</h3>
-                <h4 v-for="errors in errorFields">{{errors}}</h4>
+                <h4 v-for="errors in errorFields" :key="errors">{{errors}}</h4>
             </div>
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -182,10 +179,12 @@
                     if (!currentField["value"].length || currentField["value"] == null) ret.push(currentField["name"]);
                 }
 
+                //Total cost must be a valid number 
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
                 if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
 
+                //checking if you have enough hours 
                 let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
                 if (currentHours < parseFloat(ITC["value"])) {
                     ret.push("Not enough hours, you have " + currentHours);
@@ -223,6 +222,7 @@
             let fields = await this.getFields();
             await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => { 
                 this.placeholders = snapshot.val();
+                console.log(this.placeholders)
             })
 
             if (this.placeholders === {}) { 
