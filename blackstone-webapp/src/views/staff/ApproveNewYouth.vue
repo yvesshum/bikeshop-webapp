@@ -149,6 +149,7 @@
     import moment from 'moment'
     import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+    let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     
     export default {
         name: 'ApproveNewYouth',
@@ -186,6 +187,11 @@
             async getEditFields() {
                 let f = await fieldsRef.get();
                 return f.data();
+            },
+            
+            async getEditOptions() {
+                let o = await optionsRef.get();
+                return o.data();
             },
             
             rowSelected(items){
@@ -370,6 +376,7 @@
                 var editSelected = [];
                 
                 let fields = await this.getEditFields();
+                let options = await this.getEditOptions();
                 var getType = function (val) {
                     var type = "";
                     console.log(val)
@@ -398,10 +405,10 @@
                         labels = ["Yes", "No"];
                     }
                     if (val == "Race"){
-                        labels = fields["race"];
+                        labels = options["Races"];
                     }
                     else if (val == "Gender"){
-                        labels = fields["gender"];
+                        labels = options["Genders"];
                     }
                     return labels;
                 };
@@ -443,27 +450,6 @@
                         }
                     }
                 });
-                // for(var key in curRow){
-                //     if(key != "Document ID" && key != "Timestamp"){
-                //         console.log(getType(fields[key]));
-                //         if(getType(fields[key]) != null){
-                //             if(getLabels(fields[key], fields) == null){
-                //                 editSelected.push({
-                //                     Category: key,
-                //                     Value: curRow[key],
-                //                     Type: getType(fields[key])
-                //                 });
-                //             } else {
-                //                 editSelected.push({
-                //                     Category: key,
-                //                     Value: curRow[key],
-                //                     id: getLabels(fields[key], fields),
-                //                     Type: getType(fields[key])
-                //                 });
-                //             }
-                //         }
-                //     }
-                // }
                 this.editSelected = editSelected;
                 console.log(this.editSelected, this.selected);
                 this.showHoursModal();

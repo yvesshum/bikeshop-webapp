@@ -73,6 +73,7 @@
     import {firebase} from '../../firebase';
     import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+    let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
         name: 'RegisterYouth',
@@ -98,6 +99,10 @@
             async getFields() {
                 let f = await fieldsRef.get();
                 return f.data();
+            },
+            async getOptions() {
+                let o = await optionsRef.get();
+                return o.data();
             },
             // async getQuarter() {
             //     let f = await quarterRef.get();
@@ -281,6 +286,7 @@
         },
         async mounted() {
             let fields = await this.getFields();
+            let options = await this.getOptions();
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
@@ -319,10 +325,10 @@
                     labels = ["Yes", "No"];
                 }
                 if (val == "Race"){
-                    labels = fields["race"];
+                    labels = options["Races"];
                 }
                 else if (val == "Gender"){
-                    labels = fields["gender"];
+                    labels = options["Genders"];
                 }
                 return labels;
             };
