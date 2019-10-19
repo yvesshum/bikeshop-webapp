@@ -99,7 +99,7 @@
                 <span v-if="category.Value == ''">Currently not set</span>
                 <br>
                 <b-form-input v-if="category.Type != 'radioOther' && category.Type != 'tel' && category.Type != 'radio'"
-                id="text"
+                :id="category.Type"
                 :type="category.Type"
                 v-model="editSelected[index].Value"
                 :placeholder="category.Value"
@@ -109,7 +109,7 @@
                     </RadioGroupOther>
                 </div>
                 <div v-if="category.Type == 'tel'">
-                    <vue-tel-input v-model="category.Value" maxLen=14 validCharactersOnly=true></vue-tel-input>
+                    <vue-tel-input v-model="category.Value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
                 </div>
                 <div v-if="category.Type == 'radio'">
                     <RadioGroupOther v-model="category.Value" :options="category.id" omitOtherOption>
@@ -372,6 +372,7 @@
                 let fields = await this.getEditFields();
                 var getType = function (val) {
                     var type = "";
+                    console.log(val)
                     if (val == "String"){
                         type = "text";
                     } else if (val == "Boolean"){
@@ -387,7 +388,7 @@
                     } else if (val == "Race"){
                         type = "radioOther";
                     } else {
-                        type = "textarea";
+                        type = null;
                     }
                     return type;
                 };
@@ -404,39 +405,65 @@
                     }
                     return labels;
                 };
-                
-                for(var key in curRow){
-                    var type = "text";
-                    if(key == "Current Grade"){
-                        type = "number";
-                    }
-                    if(key == "DOB"){
-                        type = "date"
-                    }
-                    if(key != "Document ID" && key != "Timestamp"){
-                        console.log(getLabels(key, fields))
-                        if(getLabels(key, fields) == null){
+                forKeyVal(fields["required"], function(name, val, n) {
+                    console.log(getType(val));
+                    if(getType(val) != null){
+                        if(getLabels(val, fields) == null){
                             editSelected.push({
-                                Category: key,
-                                Value: curRow[key],
-                                Type: getType(key)
+                                Category: name,
+                                Value: curRow[name],
+                                Type: getType(val)
                             });
                         } else {
                             editSelected.push({
-                                Category: key,
-                                Value: curRow[key],
-                                id: getLabels(key, fields),
-                                Type: getType(key)
+                                Category: name,
+                                Value: curRow[name],
+                                id: getLabels(val, fields),
+                                Type: getType(val)
                             });
                         }
-                        // editSelected.push({
-                        //     "Category" : key,
-                        //     "Value" : curRow[key],
-                        //     "Type": type
-                        // 
-                        // });
                     }
-                }
+                });
+                forKeyVal(fields["optional"], function(name, val, n) {
+                    console.log(getType(val));
+                    if(getType(val) != null){
+                        if(getLabels(val, fields) == null){
+                            editSelected.push({
+                                Category: name,
+                                Value: curRow[name],
+                                Type: getType(val)
+                            });
+                        } else {
+                            editSelected.push({
+                                Category: name,
+                                Value: curRow[name],
+                                id: getLabels(val, fields),
+                                Type: getType(val)
+                            });
+                        }
+                    }
+                });
+                // for(var key in curRow){
+                //     if(key != "Document ID" && key != "Timestamp"){
+                //         console.log(getType(fields[key]));
+                //         if(getType(fields[key]) != null){
+                //             if(getLabels(fields[key], fields) == null){
+                //                 editSelected.push({
+                //                     Category: key,
+                //                     Value: curRow[key],
+                //                     Type: getType(fields[key])
+                //                 });
+                //             } else {
+                //                 editSelected.push({
+                //                     Category: key,
+                //                     Value: curRow[key],
+                //                     id: getLabels(fields[key], fields),
+                //                     Type: getType(fields[key])
+                //                 });
+                //             }
+                //         }
+                //     }
+                // }
                 this.editSelected = editSelected;
                 console.log(this.editSelected, this.selected);
                 this.showHoursModal();
@@ -483,7 +510,7 @@
             async saveHours() {
                 let note = this.editHours;
                 this.closeHoursModal();
-                this.showLoadingModal("Saving hours..");
+                this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelected);
                 
@@ -495,7 +522,7 @@
                 }
                 console.log("New values: " + newValues);
                 
-                let status = await db.collection("GlobalPendingRegistrations").doc(docID).set(newValues);
+                let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     window.alert("Err: " +  err);
                     this.editSelected = {};

@@ -37,7 +37,7 @@ NOTE: The null option is assigned a value "undefined" so that when the component
 <template>
     <div class="radio-group-other">
         <b-form-group style="text-align: left;">
-            <b-form-radio-group v-model="choice" name="name" :options="options" stacked>
+            <b-form-radio-group v-model="choice" :name="name" :options="options" stacked>
 
                 <b-form-radio :value="other_string" :style="args.style" v-if="show_other_option">
                     {{otherOption}}:<br />
