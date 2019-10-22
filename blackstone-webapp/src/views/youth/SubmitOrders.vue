@@ -174,16 +174,21 @@ Submit Orders should have error checking, e.g. not inputing a valid nubmer for I
                         this.$refs.selector.reset();
 
                         //TODO: Reset fields
-                        for (let f = 0; f < this.requiredFields.lenght; f ++) {
-                            this.requiredFields[f]["value"] = ""
-                        }
-                        for (let f = 0; f < this.optionalFields.lenght; f ++) {
-                            this.optionalFields[f]["value"] = ""
-                        }
+                        this.resetFields();
                         this.showModal();
                     }).catch(error => {
                         window.alert(error);
                     });
+                }
+            },
+
+            resetFields() {
+
+                for (let f = 0; f < this.requiredFields.length; f ++) {
+                    this.requiredFields[f]["value"] = "";
+                }
+                for (let f = 0; f < this.optionalFields.length; f ++) {
+                    this.optionalFields[f]["value"] = "";
                 }
             },
 
