@@ -1,9 +1,16 @@
 <!--
-Submit Orders is for Youth to submit their orders, spending their hours
+Submit Orders is for Youth to submit their orders, and spend their hours.
+
+The YouthID Selector only selects those that are current active
 
 Submit Orders should have error checking, e.g. not inputing a valid nubmer for Item Total Cost, not filling in required fields etc.
+    
+The submission also checks if the Youth has enough hours to pay for the item
 
-
+Once a submission goes through firebase should have the following changes:
+- In youth profile, Hours Spent should increase, Pending Hours should decrease
+- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status etc. 
+</template>
 
 -->
 <template>
@@ -173,7 +180,7 @@ Submit Orders should have error checking, e.g. not inputing a valid nubmer for I
                         //reset fields 
                         this.$refs.selector.reset();
 
-                        //TODO: Reset fields
+
                         this.resetFields();
                         this.showModal();
                     }).catch(error => {
