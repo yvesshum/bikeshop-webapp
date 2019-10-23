@@ -9,7 +9,7 @@ The submission also checks if the Youth has enough hours to pay for the item
 
 Once a submission goes through firebase should have the following changes:
 - In youth profile, Hours Spent should increase, Pending Hours should decrease
-- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status etc. 
+- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status (Always set to pending) etc. 
 </template>
 
 -->
