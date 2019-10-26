@@ -172,6 +172,18 @@ export default {
     }
   },
 
+  mounted: function() {
+    if (this.profile != null) {
+      this.skill_status = new Status();
+      let skills = this.get_profile_field("Apron Skills", []);
+
+      this.test_full_data.map(s => s.name).forEach(skill => {
+        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
+        this.skill_status.add_vue(this, skill, start_status);
+      });
+    }
+  },
+
   computed: {
     profile_data: function() {
       return (this.profile == null) ? null : this.profile.data();
