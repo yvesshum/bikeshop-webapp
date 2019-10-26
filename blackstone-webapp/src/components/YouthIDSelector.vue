@@ -750,7 +750,7 @@ Emits:
 
                     // If we've made it to this point, all of the fields in the profile are identical
                     // TODO: Error handling for this case
-                    console.log("WARNING: Identical profiles found: ", a, b);
+                    console.warn("Identical profiles found: ", a, b);
                     return 0;
                 };
 
