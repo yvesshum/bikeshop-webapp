@@ -734,6 +734,23 @@ Emits:
                         let diff;
                         let field = this.sort_by[i];
 
+                        // Check whether one or both of the fields does not exist. Note that this should not occur with complete data, since the fields this sorts by are required fields; this is to prevent crashing.
+                        // Sort null values after existing ones
+                        if (a[field] == null) {
+                            // If both fields do not exist, continue on to the next field
+                            if (b[field] == null) {
+                                continue;
+                            }
+                            // If b exists but a doesn't, sort b first
+                            else {
+                                return 1;
+                            }
+                        }
+                        // If a exists but b doesn't, sort a first
+                        else if (b[field] == null) {
+                            return -1;
+                        }
+
                         // Sort numeric IDs numerically
                         if (field == "ID" && !isNaN(a[field]) && !isNaN(b[field])) {
                             diff = Number(a[field]) - Number(b[field]);
