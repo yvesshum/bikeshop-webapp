@@ -579,27 +579,45 @@ Emits:
                 // Loop through each period and add the relevant youth to the bar
                 periods.forEach(function(period) {
                     try {
+
+                        // Grab the list of youth from the given period
+                        var new_profiles = [];
                         switch (period) {
                             case "none":
-                                youth_arr = youth_arr.concat(data["NeverActiveYouths"]);
+                                new_profiles = data["NeverActiveYouths"];
                                 break;
                             case ap:
-                                youth_arr = youth_arr.concat(data["CurrentActiveYouths"]);
+                                new_profiles = data["CurrentActiveYouths"];
                                 break;
                             case fp:
-                                youth_arr = youth_arr.concat(data["FutureActiveYouths"]);
+                                new_profiles = data["FutureActiveYouths"];
                                 break;
                             default:
-                                youth_arr = youth_arr.concat(past_data[period]);
+                                new_profiles = past_data[period];
                                 break;
                         }
-                    } catch (error) {
+
+                        // Add non-duplicate youth to the full array
+                        youth_arr = youth_arr.concat(new_profiles.filter(profile => {
+
+                            // If current profile matches any already in the list, don't include it
+                            for (var i = 0; i < youth_arr.length; i++) {
+                                if (profiles_equal(profile, youth_arr[i])) return false;
+                            }
+
+                            // If it didn't match any, it's a new profile, so include it
+                            return true;
+                        }));
+                    }
+
+                    // Catch an error, specifically from the switch statement, which assumes that any period which is not current, future, or none is a valid past period.
+                    catch (error) {
                         console.log("YouthIDSelector: Cannot load youths from period \"" + period + "\".", error);
                     };
                 });
 
-                // Remove duplicates and sort
-                youth_arr = unique(youth_arr).sort();
+                // Sort the result
+                youth_arr = youth_arr.sort();
 
                 // Stop the loading icon
                 this.is_busy = false;
@@ -608,11 +626,15 @@ Emits:
                 return youth_arr;
 
 
-                // Helper function - remove duplicate values from an array
-                function unique(arr) {
-                    return arr.filter(function(youth, n, arr) {
-                        return arr.indexOf(youth) == n;
-                    });
+                // Helper function - Identify identical youth profiles
+                function profiles_equal(p1, p2) {
+                    // Check each field in FIELDS for a mismatch - if one is found, profiles are not equal
+                    for (var f in FIELDS) {
+                        if (p1[FIELDS[f]] != p2[FIELDS[f]]) return false;
+                    }
+
+                    // If all of the fields matched, profiles are equal
+                    return true;
                 };
             },
 
