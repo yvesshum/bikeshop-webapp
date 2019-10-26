@@ -1,31 +1,43 @@
+<!--
+Submit Orders is for Youth to submit their orders, and spend their hours.
+
+The YouthID Selector only selects those that are current active
+
+Submit Orders should have error checking, e.g. not inputing a valid nubmer for Item Total Cost, not filling in required fields etc.
+    
+The submission also checks if the Youth has enough hours to pay for the item
+
+Once a submission goes through firebase should have the following changes:
+- In youth profile, Hours Spent should increase, Pending Hours should decrease
+- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status (Always set to pending) etc. 
+</template>
+
+-->
 <template>
     <div class = "YouthSubmitOrders">
         <top-bar/>
         <h3 style="margin: 20px">Submit an order here!</h3>
 
         <h4 class = "field_msg">Required fields:</h4>
-        <YouthIDSelector @selected="selectedID"/>
+        <YouthIDSelector @selected="selectedID" periods="current" ref="selector"/>
         <p class = "separator">Or manually input it below</p>
-        <div v-for="field in requiredFields">
+        <div v-for="field in requiredFields" :key="field.name">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
+                <textarea v-model="field.value" :placeholder="placeholders[field.name]"></textarea>
             </div>
         </div>
 
         <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
-        <div v-for="field in optionalFields">
+        <div v-for="field in optionalFields" :key="field.name">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <textarea v-model="field.value" :placeholder="field.placeholder"></textarea>
+                <textarea v-model="field.value" :placeholder="placeholders[field.name]"></textarea>
             </div>
         </div>
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
-
-
-        <!--//copied from https://bootstrap-vue.js.org/docs/components/modal/-->
         <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">
                 Order Submitted!
@@ -42,7 +54,7 @@
             </template>
             <div class="d-block text-center">
                 <h3>The following fields have errors!</h3>
-                <h4 v-for="errors in errorFields">{{errors}}</h4>
+                <h4 v-for="errors in errorFields" :key="errors">{{errors}}</h4>
             </div>
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -56,7 +68,6 @@
     import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
     import {Timestamp} from '@/firebase.js'
-
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -75,7 +86,6 @@
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {}, //The current Youth profile trying to submit
                 placeholders: {}
-        
             };
 
         },
@@ -91,7 +101,6 @@
                 if (value == null) {
                     return;
                 }
-                console.log(value);
                 for (let i = 0; i < this.requiredFields.length; i ++) {
                     let fieldName = this.requiredFields[i]["name"];
                     if (fieldName === "First Name") this.requiredFields[i]["value"] = value["First Name"];
@@ -133,7 +142,8 @@
                     period = period.data()["CurrentPeriod"]
                     input["Period"] = period;
 
-                    //TODO: Submit order hidden fields from realtime database 
+                    //Submit order hidden fields from realtime database 
+                    //Sometimes we add hidden fields for the databases' sake
                     await rb.ref('Submit Orders Initializers').once("value" , snapshot => { 
                         let hiddenProtectedInitializers = snapshot.val()["Protected"];
                         let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
@@ -146,6 +156,7 @@
                     })
                     input["Order Date"] = Timestamp.fromDate(new Date());
 
+                    console.log('i', input);
                     let submitRef = db.collection("GlobalPendingOrders").doc();
                     let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
                     if (submitResponse) {
@@ -154,21 +165,37 @@
                     }
 
                     //update youth hours with the appropriate value
-                    let ITC = Math.round((this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost"))*100)/100;
-                    let newHoursSpent =  Math.round((parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC["value"]))*100) / 100;
-                    let newPendingHours = Math.round((parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC["value"]))*100)/ 100;
+                    console.log(this.requiredFields);
+                    let ITC = Math.round((this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost").value)*100)/100;
+                    let newHoursSpent =  Math.round(((parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC)))*100) / 100;
+                    let newPendingHours = Math.round(((parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC)))*100)/ 100;
                     let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
+                    console.log('hours', ITC, newHoursSpent, newPendingHours);
                     youthRef.update({
-                        "Hours Spent": newHoursSpent.toString(),
-                        "Pending Hours": newPendingHours.toString()
+                        "Hours Spent": newHoursSpent,
+                        "Pending Hours": newPendingHours
                     }).then(() => {
                         //reset youth profile
                         this.YouthProfile = {};
+                        //reset fields 
+                        this.$refs.selector.reset();
 
+
+                        this.resetFields();
                         this.showModal();
                     }).catch(error => {
                         window.alert(error);
                     });
+                }
+            },
+
+            resetFields() {
+
+                for (let f = 0; f < this.requiredFields.length; f ++) {
+                    this.requiredFields[f]["value"] = "";
+                }
+                for (let f = 0; f < this.optionalFields.length; f ++) {
+                    this.optionalFields[f]["value"] = "";
                 }
             },
 
@@ -182,10 +209,12 @@
                     if (!currentField["value"].length || currentField["value"] == null) ret.push(currentField["name"]);
                 }
 
+                //Total cost must be a valid number 
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
                 if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
 
+                //checking if you have enough hours 
                 let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
                 if (currentHours < parseFloat(ITC["value"])) {
                     ret.push("Not enough hours, you have " + currentHours);
@@ -223,6 +252,7 @@
             let fields = await this.getFields();
             await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => { 
                 this.placeholders = snapshot.val();
+                console.log('p', this.placeholders)
             })
 
             if (this.placeholders === {}) { 

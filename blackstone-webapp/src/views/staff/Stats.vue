@@ -154,6 +154,7 @@
 import DatePicker from 'vue2-datepicker'
 import moment from 'moment'
 import { db } from '@/firebase.js'
+import {Timestamp} from '@/firebase.js'
 
 
 export default {
@@ -307,6 +308,7 @@ export default {
             }
             query.forEach(doc => { 
                 let data = doc.data();
+                console.log(data);
                 data["Order Date"] = data["Order Date"].toDate();
 
                 //Grabbing Youth ID from query metaadata

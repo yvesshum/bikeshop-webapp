@@ -99,7 +99,7 @@
                 <span v-if="category.Value == ''">Currently not set</span>
                 <br>
                 <b-form-input v-if="category.Type != 'radioOther' && category.Type != 'tel' && category.Type != 'radio'"
-                id="text"
+                :id="category.Type"
                 :type="category.Type"
                 v-model="editSelected[index].Value"
                 :placeholder="category.Value"
@@ -109,7 +109,7 @@
                     </RadioGroupOther>
                 </div>
                 <div v-if="category.Type == 'tel'">
-                    <vue-tel-input v-model="category.Value" maxLen=14 validCharactersOnly=true></vue-tel-input>
+                    <vue-tel-input v-model="category.Value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
                 </div>
                 <div v-if="category.Type == 'radio'">
                     <RadioGroupOther v-model="category.Value" :options="category.id" omitOtherOption>
@@ -149,6 +149,7 @@
     import moment from 'moment'
     import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+    let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     
     export default {
         name: 'ApproveNewYouth',
@@ -186,6 +187,11 @@
             async getEditFields() {
                 let f = await fieldsRef.get();
                 return f.data();
+            },
+            
+            async getEditOptions() {
+                let o = await optionsRef.get();
+                return o.data();
             },
             
             rowSelected(items){
@@ -370,8 +376,10 @@
                 var editSelected = [];
                 
                 let fields = await this.getEditFields();
+                let options = await this.getEditOptions();
                 var getType = function (val) {
                     var type = "";
+                    console.log(val)
                     if (val == "String"){
                         type = "text";
                     } else if (val == "Boolean"){
@@ -387,7 +395,7 @@
                     } else if (val == "Race"){
                         type = "radioOther";
                     } else {
-                        type = "textarea";
+                        type = null;
                     }
                     return type;
                 };
@@ -397,46 +405,51 @@
                         labels = ["Yes", "No"];
                     }
                     if (val == "Race"){
-                        labels = fields["race"];
+                        labels = options["Races"];
                     }
                     else if (val == "Gender"){
-                        labels = fields["gender"];
+                        labels = options["Genders"];
                     }
                     return labels;
                 };
-                
-                for(var key in curRow){
-                    var type = "text";
-                    if(key == "Current Grade"){
-                        type = "number";
-                    }
-                    if(key == "DOB"){
-                        type = "date"
-                    }
-                    if(key != "Document ID" && key != "Timestamp"){
-                        console.log(getLabels(key, fields))
-                        if(getLabels(key, fields) == null){
+                forKeyVal(fields["required"], function(name, val, n) {
+                    console.log(getType(val));
+                    if(getType(val) != null){
+                        if(getLabels(val, fields) == null){
                             editSelected.push({
-                                Category: key,
-                                Value: curRow[key],
-                                Type: getType(key)
+                                Category: name,
+                                Value: curRow[name],
+                                Type: getType(val)
                             });
                         } else {
                             editSelected.push({
-                                Category: key,
-                                Value: curRow[key],
-                                id: getLabels(key, fields),
-                                Type: getType(key)
+                                Category: name,
+                                Value: curRow[name],
+                                id: getLabels(val, fields),
+                                Type: getType(val)
                             });
                         }
-                        // editSelected.push({
-                        //     "Category" : key,
-                        //     "Value" : curRow[key],
-                        //     "Type": type
-                        // 
-                        // });
                     }
-                }
+                });
+                forKeyVal(fields["optional"], function(name, val, n) {
+                    console.log(getType(val));
+                    if(getType(val) != null){
+                        if(getLabels(val, fields) == null){
+                            editSelected.push({
+                                Category: name,
+                                Value: curRow[name],
+                                Type: getType(val)
+                            });
+                        } else {
+                            editSelected.push({
+                                Category: name,
+                                Value: curRow[name],
+                                id: getLabels(val, fields),
+                                Type: getType(val)
+                            });
+                        }
+                    }
+                });
                 this.editSelected = editSelected;
                 console.log(this.editSelected, this.selected);
                 this.showHoursModal();
@@ -483,7 +496,7 @@
             async saveHours() {
                 let note = this.editHours;
                 this.closeHoursModal();
-                this.showLoadingModal("Saving hours..");
+                this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelected);
                 
@@ -495,7 +508,7 @@
                 }
                 console.log("New values: " + newValues);
                 
-                let status = await db.collection("GlobalPendingRegistrations").doc(docID).set(newValues);
+                let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     window.alert("Err: " +  err);
                     this.editSelected = {};

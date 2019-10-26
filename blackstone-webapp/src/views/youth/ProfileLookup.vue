@@ -1,3 +1,10 @@
+<!--
+Profile Lookup is a restricted version of Profile Lookup & Editing, located in staff pages.
+
+This is still a work in progress, disregard this page for now.
+
+-->
+
 <template>
   <div class="profile_lookup_youth">
     <TopBar/>

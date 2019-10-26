@@ -172,7 +172,7 @@ export default {
             this.existingFieldNames = this.formatNames(doc.data());
             this.dataLoaded = true;
         })
-        this.listenerRef = await rb.ref(this.placeholderRef).on('value', snapshot => {
+        this.listenerRef = rb.ref(this.placeholderRef).on('value', snapshot => {
                 this.data = this.formatData(snapshot.val());
                 this.forceUpdate();
         });

@@ -1,4 +1,3 @@
-// TODO: Moment JS Time deoes not update in real time 
 <template>
   <div>
     <top-bar/>
@@ -46,14 +45,15 @@
         <h2 style="text-align: center">Fill out this form to log hours!</h2>
         <div v-for="category in categories" :key="category" class="input-field">
           <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-            <VueNumericInput 
+            <VueNumberInput 
               v-model="hours[category]"
               :min="0"
               :step="0.5"
               placeholder="Hours"
               align="center"
               style="width: 20rem"
-              :precision="2"
+              controls
+              :inputtable="false"
             />
         </div>
         <br>
@@ -89,7 +89,7 @@ import {Timestamp} from '@/firebase.js'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import moment from 'moment';
 import { setTimeout } from 'timers';
-import VueNumericInput from 'vue-numeric-input';
+import VueNumberInput from '@chenfengyuan/vue-number-input';
 
 export default {
     data() {
@@ -286,7 +286,7 @@ export default {
 
     components: {
         YouthIDSelector,
-        VueNumericInput
+        VueNumberInput
     }
 }
 </script>
