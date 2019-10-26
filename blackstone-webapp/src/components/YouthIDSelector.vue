@@ -579,40 +579,40 @@ Emits:
                 // Loop through each period and add the relevant youth to the bar
                 periods.forEach(function(period) {
 
-                        // Grab the list of youth from the given period
-                        var new_profiles = [];
-                        switch (period) {
-                            case "none":
-                                new_profiles = data["NeverActiveYouths"];
-                                break;
-                            case ap:
-                                new_profiles = data["CurrentActiveYouths"];
-                                break;
-                            case fp:
-                                new_profiles = data["FutureActiveYouths"];
-                                break;
-                            default:
-                                new_profiles = past_data[period];
-                                break;
+                    // Grab the list of youth from the given period
+                    var new_profiles = [];
+                    switch (period) {
+                        case "none":
+                            new_profiles = data["NeverActiveYouths"];
+                            break;
+                        case ap:
+                            new_profiles = data["CurrentActiveYouths"];
+                            break;
+                        case fp:
+                            new_profiles = data["FutureActiveYouths"];
+                            break;
+                        default:
+                            new_profiles = past_data[period];
+                            break;
+                    }
+
+                    // If the given period does not exist, send a warning in the console and skip to the next period
+                    if (new_profiles == undefined) {
+                        console.warn("Cannot load youths from period \"" + period + "\".");
+                        return;
+                    }
+
+                    // Add non-duplicate youth to the full array
+                    youth_arr = youth_arr.concat(new_profiles.filter(profile => {
+
+                        // If current profile matches any already in the list, don't include it
+                        for (var i = 0; i < youth_arr.length; i++) {
+                            if (profiles_equal(profile, youth_arr[i])) return false;
                         }
 
-                        // If the given period does not exist, send a warning in the console and skip to the next period
-                        if (new_profiles == undefined) {
-                            console.warn("Cannot load youths from period \"" + period + "\".");
-                            return;
-                        }
-
-                        // Add non-duplicate youth to the full array
-                        youth_arr = youth_arr.concat(new_profiles.filter(profile => {
-
-                            // If current profile matches any already in the list, don't include it
-                            for (var i = 0; i < youth_arr.length; i++) {
-                                if (profiles_equal(profile, youth_arr[i])) return false;
-                            }
-
-                            // If it didn't match any, it's a new profile, so include it
-                            return true;
-                        }));
+                        // If it didn't match any, it's a new profile, so include it
+                        return true;
+                    }));
                 });
 
                 // Sort the result
