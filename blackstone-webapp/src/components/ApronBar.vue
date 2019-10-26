@@ -65,13 +65,46 @@
       <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
       <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
     </div>
+    <div v-else-if="has_changes">
+      <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
+      <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
+    </div>
     <div v-else>
       <b-button disabled>Select skills to add or remove</b-button>
-      <div v-show="has_changes">
-        <b-button variant="success">Save Changes</b-button>
-        <b-button variant="danger" @click="reset_skills">Discard Changes</b-button>
-      </div>
     </div>
+
+    <b-modal v-model="change_skills_modal">
+      <template slot="modal-title">
+        Please confirm the following.
+      </template>
+
+      <h4>The following changes will be {{change_skills_effect ? "saved" : "discarded"}}:</h4>
+      <br />
+
+      <table style="margin: auto;">
+        <tr>
+          <th class="change_modal_header">Removed Skills</th>
+          <th class="change_modal_header">Added Skills</th>
+        </tr>
+        <tr>
+          <td class="change_modal_cell_remove">
+            <div v-for="skill in skills_to_remove">{{skill}}</div>
+          </td>
+          <td class="change_modal_cell_add">
+            <ul>
+              <li v-for="skill in skills_to_add">{{skill}}</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+
+      <template slot="modal-footer" slot-scope="{cancel}">
+        <b-button class="mt-3" block @click="accept_skills_modal" :variant="change_skills_effect ? 'success' : 'danger'">
+          {{change_skills_effect ? "Accept" : "Discard"}}
+        </b-button>
+        <b-button class="mt-3" block @click="cancel()" variant="primary">Cancel</b-button>
+      </template>
+    </b-modal>
 
   </div>
 </template>
@@ -128,6 +161,9 @@ export default {
       change_level_modal: false,
       change_level_effect: 0,
 
+      change_skills_modal: false,
+      change_skills_effect: 0,
+
       selected_skills: [],
 
       skill_status: new Status(),
@@ -168,6 +204,15 @@ export default {
 
     has_changes: function() {
       return (this.skill_status == null) ? false : this.skill_status.has_status(Status.C);
+    },
+
+    // TODO: Attach the type of the skill (mechanical, life, etc) to these objects
+    skills_to_add: function() {
+      return this.skill_status.filter(Status.ADD);
+    },
+
+    skills_to_remove: function() {
+      return this.skill_status.filter(Status.REM);
     },
   },
 
@@ -223,9 +268,24 @@ export default {
       this.set_skills(skills, status);
     },
 
-    // Reset all the changed but unsaved skills to their original values
-    reset_skills: function() {
-      this.set_skills(this.skill_status.keys(), Status.RESET);
+    show_skills_modal: function(val) {
+      this.change_skills_effect = val;
+      this.change_skills_modal = true;
+    },
+
+    accept_skills_modal: function() {
+      if (this.change_skills_effect) {
+        // Accept the skills
+        // Update Firebase
+        // If update succeeds, update all skills locally
+      }
+
+      // Reset all the changed but unsaved skills to their original values
+      else {
+        this.set_skills(this.skill_status.keys(), Status.RESET);
+      }
+
+      this.change_skills_modal = false;
     },
   }
 }
