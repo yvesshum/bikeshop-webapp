@@ -578,7 +578,6 @@ Emits:
 
                 // Loop through each period and add the relevant youth to the bar
                 periods.forEach(function(period) {
-                    try {
 
                         // Grab the list of youth from the given period
                         var new_profiles = [];
@@ -597,6 +596,12 @@ Emits:
                                 break;
                         }
 
+                        // If the given period does not exist, send a warning in the console and skip to the next period
+                        if (new_profiles == undefined) {
+                            console.warn("Cannot load youths from period \"" + period + "\".");
+                            return;
+                        }
+
                         // Add non-duplicate youth to the full array
                         youth_arr = youth_arr.concat(new_profiles.filter(profile => {
 
@@ -608,12 +613,6 @@ Emits:
                             // If it didn't match any, it's a new profile, so include it
                             return true;
                         }));
-                    }
-
-                    // Catch an error, specifically from the switch statement, which assumes that any period which is not current, future, or none is a valid past period.
-                    catch (error) {
-                        console.log("YouthIDSelector: Cannot load youths from period \"" + period + "\".", error);
-                    };
                 });
 
                 // Sort the result
