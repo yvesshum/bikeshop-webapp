@@ -111,6 +111,8 @@
 
 <script>
 // @ is an alias to /src
+import {db} from '@/firebase';
+import {firebase} from '@/firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
@@ -274,10 +276,20 @@ export default {
     },
 
     accept_skills_modal: function() {
+      // Add all changed skills to the database
       if (this.change_skills_effect) {
-        // Accept the skills
-        // Update Firebase
+
+        // Make new changes object for apron skills list
+        let changes = {"Apron Skills": this.skill_status.filter(Status.O)};
+
+        // Saves edits to firebase
+        db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
+          window.alert("Error: " + err);
+          return null;
+        });
+
         // If update succeeds, update all skills locally
+        this.skill_status.update();
       }
 
       // Reset all the changed but unsaved skills to their original values
