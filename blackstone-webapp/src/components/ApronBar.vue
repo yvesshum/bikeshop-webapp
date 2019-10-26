@@ -35,6 +35,7 @@
       :checkedData="checked_data"
       :fullData="test_full_data"
       :headingData="test_headers"
+      editable @matchchange="matchchange"
       matchBy="name"
       @selected="s => selected_skills = s"
     >
@@ -61,11 +62,11 @@
       </tr></table>
     </b-modal>
 
-    <div v-if="selected_skills.length > 0">
+    <!-- <div v-if="selected_skills.length > 0">
       <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
       <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
-    </div>
-    <div v-else-if="has_changes">
+    </div> -->
+    <div v-if="has_changes">
       <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
       <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
     </div>
@@ -267,6 +268,12 @@ export default {
         .map(h => parseInt(h));
 
       this.$refs.match_table.highlight_values(highlight_vals, "apron");
+    },
+
+    matchchange: function(cell) {
+      let skill = cell.name;
+      let status = cell.achieved ? Status.O : Status.X;
+      this.skill_status.set(skill, status);
     },
 
     // Set the given skills to the given status

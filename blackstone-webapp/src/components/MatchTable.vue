@@ -20,7 +20,7 @@ export default {
     Table,
   },
 
-  props: ['fullData', 'checkedData', 'headingData', 'matchBy'],
+  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable'],
 
   data: function() {
     return {
@@ -35,6 +35,9 @@ export default {
         width: 10,
         align: "center",
         headerSort: false,
+        editable: this.editable != undefined,
+        editor: 'tickCross',
+        cellEdited: cell => this.$emit("matchchange", cell.getData()),
         // bottomCalc: "count",
       },
 
