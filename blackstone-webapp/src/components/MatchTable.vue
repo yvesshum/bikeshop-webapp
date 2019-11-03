@@ -12,6 +12,7 @@
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import Table from '@/components/Table';
+import {Status} from '@/components/Status';
 
 export default {
   name: 'match_table',
@@ -31,14 +32,19 @@ export default {
       achieved_column: {
         field:"achieved",
         formatter:"tickCross",
-        formatterParams:{crossElement: false},
+        formatterParams: {crossElement: false},
         width: 10,
         align: "center",
         headerSort: false,
         editable: this.editable != undefined,
         editor: 'tickCross',
-        cellEdited: cell => this.$emit("matchchange", cell.getData()),
-        // bottomCalc: "count",
+        cellEdited: cell => {
+          var data = cell.getData();
+          var new_status = data.achieved ? Status.O : Status.X;
+          var row_id = this.get_row_id(data);
+
+          this.row_status.set(row_id, new_status);
+        },
       },
 
       table_args: {
@@ -60,7 +66,35 @@ export default {
           this.$emit('selected', rows.map(this.row_field_map));
         },
       },
+
+      row_status: new Status(),
     };
+  },
+
+  mounted: function() {
+    this.fullData.forEach(row => {
+      let row_id = this.get_row_id(row);
+      let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+      this.row_status.add_vue(this, row_id, status);
+    });
+  },
+
+  watch: {
+    fullData: function(new_rows) {
+      new_rows.forEach(row => {
+        let row_id = this.get_row_id(row);
+        let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+        if (!this.row_status.has_key(row_id)) {
+          this.row_status.add_vue(this, row_id, status);
+        }
+      });
+    },
+
+    checkedData: function(new_rows) {
+      this.row_status.forEach(row => {
+        this.row_status.set(row, new_rows.includes(row) ? Status.USE : Status.NOT);
+      });
+    },
   },
 
   computed: {
@@ -76,6 +110,11 @@ export default {
   },
 
   methods: {
+
+    get_row_id: function(row) {
+      return row[this.matchBy];
+    },
+
     select_value: function(field, value) {
       this.table.getRows().forEach(row => {
         let curr_value = row.getData()[field];
