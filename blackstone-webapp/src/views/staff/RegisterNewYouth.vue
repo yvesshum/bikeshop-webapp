@@ -9,7 +9,12 @@
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder"></br></br>
+                <input v-if="field.type != 'radio'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
+                <div v-if="field.type == 'radio'" class = "radioDiv">
+                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
+                    </RadioGroupOther>
+                </div>
+                </br></br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -74,6 +79,8 @@
     import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
+    let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
+    
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
         name: 'RegisterYouth',
@@ -99,6 +106,28 @@
             async getFields() {
                 let f = await fieldsRef.get();
                 return f.data();
+            },
+            async getSeasons() {
+                let s = await periodRef.get();
+                let activePeriods = s.data()
+                var seasons = activePeriods["Seasons"]
+                var current = activePeriods["CurrentPeriod"]
+                let curSeason = current.split(" ")[0];
+                var curYear = current.split(" ")[1];
+                var new_seasons = [];
+                var i = seasons.indexOf(curSeason);
+                while(new_seasons.length < seasons.length){
+                    new_seasons.push(seasons[i] + " " + curYear);
+                    if(seasons[i] == "Fall"){
+                        curYear = (parseInt(curYear) + 1).toString();
+                    }
+                    i += 1;
+                    if(i >= seasons.length){
+                        i = 0
+                    }
+                }
+                new_seasons.push("None");
+                return new_seasons;
             },
             async getOptions() {
                 let o = await optionsRef.get();
@@ -286,13 +315,12 @@
         },
         async mounted() {
             let fields = await this.getFields();
+            let seasons = await this.getSeasons();
             let options = await this.getOptions();
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
             })
-            
-            console.log("Placeholders: " + this.placeholders);
 
             if (this.placeholders === {}) { 
                 window.alert("Error on getting placeholder text values");
@@ -314,29 +342,36 @@
                     type = "tel";
                 } else if (val == "Race"){
                     type = "radioOther";
+                } else if (val == "Period"){
+                    type = "radio";
                 } else {
                     type = "textarea";
                 }
                 return type;
             };
             var getLabels = function (val, fields) {
+                console.log(val)
                 var labels = null;
                 if (val == "Boolean"){
                     labels = ["Yes", "No"];
                 }
+                if (val == "Period"){
+                    labels = seasons;
+                }
                 if (val == "Race"){
                     labels = options["Races"];
                 }
-                else if (val == "Gender"){
+                if (val == "Gender"){
                     labels = options["Genders"];
                 }
+                console.log(labels)
                 return labels;
             };
             var req_keys = [];
             var req_types = [];
             var req_labels = [];
             forKeyVal(fields["required"], function(name, val, n) {
-                console.log(`${n}: ${name},  ${val}`);
+                // console.log(`${n}: ${name},  ${val}`);
                 var type = getType(val);
                 var labels = getLabels(val, fields);
                 req_keys.push(name);
@@ -352,14 +387,13 @@
                         placeholder: this.placeholders[req_keys[i]]
                     });
                 } else {
-                    for (let j = 0; j < req_labels[i].length; j ++){
-                        this.requiredFields.push({
-                            name: req_keys[i],
-                            value: req_labels[i][j],
-                            id: req_labels[i][j],
-                            type: req_types[i]
-                        });
-                    }
+                    this.requiredFields.push({
+                        name: req_keys[i],
+                        value: "",
+                        values: req_labels[i],
+                        id: req_labels[i],
+                        type: req_types[i]
+                    });
                 }
                 
             }
@@ -367,7 +401,7 @@
             var opt_types = [];
             var opt_labels = [];
             forKeyVal(fields["optional"], function(name, val, n) {
-                console.log(`${n}: ${name},  ${val}`);
+                // console.log(`${n}: ${name},  ${val}`);
                 var type = getType(val);
                 var labels = getLabels(val, fields);
                 opt_keys.push(name);
@@ -394,7 +428,7 @@
             }
             var hidden_keys = [];
             forKeyVal(fields["hidden"], function(name, val, n) {
-                console.log(`${n}: ${name},  ${val}`);
+                // console.log(`${n}: ${name},  ${val}`);
                 var type = getType(val);
                 hidden_keys.push(name);
             });

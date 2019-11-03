@@ -10,7 +10,7 @@
                 </b-button-group>
                 
                 <b-button-group>
-                    <b-button variant="info" @click="editHours">Inspect Youth</b-button>
+                    <b-button variant="info" @click="editFields">Inspect Youth</b-button>
                 </b-button-group>
                 
                 <b-button-group>
@@ -86,7 +86,7 @@
 
         </b-modal>
         
-        <b-modal v-model = "hoursModalVisible" hide-footer lazy>
+        <b-modal v-model = "editModalVisible" hide-footer lazy>
             <template slot = "modal-title">
                 Editing Registration
             </template>
@@ -118,8 +118,8 @@
                 <hr>
             </div>
 
-            <b-button class="mt-3" block @click="saveHours(); closeHoursModal()" variant = "success">Save</b-button>
-            <b-button class="mt-3" block @click="closeHoursModal(); this.editSelected = {};" variant="warning">Cancel</b-button>
+            <b-button class="mt-3" block @click="saveEdits(); closeEditModal()" variant = "success">Save</b-button>
+            <b-button class="mt-3" block @click="closeEditModal(); this.editSelected = {};" variant="warning">Cancel</b-button>
 
         </b-modal>
 
@@ -150,6 +150,7 @@
     import { forKeyVal } from '../../components/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
+    let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
     
     export default {
         name: 'ApproveNewYouth',
@@ -178,8 +179,9 @@
                 loadingModalVisible: false,
                 loadingModalHeader: "",
                 deleteAmount: 0,
-                hoursModalVisible: false,
-                editSelected: {}
+                editModalVisible: false,
+                editSelected: {},
+                activePeriods: []
             };
 
         },
@@ -187,6 +189,27 @@
             async getEditFields() {
                 let f = await fieldsRef.get();
                 return f.data();
+            },
+            
+            async getSeasons() {
+                let seasons = this.activePeriods["Seasons"]
+                var current = this.activePeriods["CurrentPeriod"]
+                let curSeason = current.split(" ")[0];
+                var curYear = current.split(" ")[1];
+                var new_seasons = [];
+                var i = seasons.indexOf(curSeason);
+                while(new_seasons.length < seasons.length){
+                    new_seasons.push(seasons[i] + " " + curYear);
+                    if(seasons[i] == "Fall"){
+                        curYear = (parseInt(curYear) + 1).toString();
+                    }
+                    i += 1;
+                    if(i >= seasons.length){
+                        i = 0
+                    }
+                }
+                new_seasons.push("None");
+                return new_seasons;
             },
             
             async getEditOptions() {
@@ -270,6 +293,35 @@
                 
                 console.log(input)
                 
+                let s = await periodRef.get();
+                var current = s.data();
+                
+                if(input["Registration Period"] == "None") {
+                    current["NeverActiveYouths"].push({
+                        "First Name": input["First Name"],
+                        "ID": newIDs[0],
+                        "Last Name": input["Last Name"]
+                    });
+                } else if(input["Registration Period"] == this.activePeriods["CurrentPeriod"]) {
+                    current["CurrentActiveYouths"].push({
+                        "First Name": input["First Name"],
+                        "ID": newIDs[0],
+                        "Last Name": input["Last Name"]
+                    });
+                } else {
+                    current["FutureActiveYouths"].push({
+                        "First Name": input["First Name"],
+                        "ID": newIDs[0],
+                        "Last Name": input["Last Name"]
+                    });
+                }
+                let periodStatus = await periodRef.update(current);
+                if (periodStatus) {
+                    window.alert("Err: Could not add to period collection");
+                    this.editSelected = {};
+                    return null;
+                }
+                
                 let logStatus = await submitRef.set(input);
                 
                 if (logStatus) {
@@ -292,7 +344,7 @@
                 await rb.ref('Youth ID Number').set({"value": newIDs[0]});
                 // await rb.ref('Youth ID Number').off("value", listener);
                 
-                this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
+                this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s registration")
 
             },
 
@@ -328,9 +380,9 @@
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
                     + curRow["First Name"] + " " + curRow["Last Name"] + "'s youth registration");
             },
+            
 
             async confirmedDelete() {
-                //adjust hours
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
                 let curRow = this.selected[0];
@@ -368,7 +420,7 @@
 
             },
             
-            async editHours() {
+            async editFields() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
                     return null;
@@ -376,6 +428,7 @@
                 var editSelected = [];
                 
                 let fields = await this.getEditFields();
+                let seasons = await this.getSeasons();
                 let options = await this.getEditOptions();
                 var getType = function (val) {
                     var type = "";
@@ -394,7 +447,9 @@
                         type = "tel";
                     } else if (val == "Race"){
                         type = "radioOther";
-                    } else {
+                    }else if (val == "Period"){
+                        type = "radio";
+                    }else {
                         type = null;
                     }
                     return type;
@@ -409,6 +464,9 @@
                     }
                     else if (val == "Gender"){
                         labels = options["Genders"];
+                    }
+                    if (val == "Period"){
+                        labels = seasons;
                     }
                     return labels;
                 };
@@ -452,15 +510,15 @@
                 });
                 this.editSelected = editSelected;
                 console.log(this.editSelected, this.selected);
-                this.showHoursModal();
+                this.showEditModal();
             },
             
-            showHoursModal() {
-                this.hoursModalVisible = true;
+            showEditModal() {
+                this.editModalVisible = true;
             },
             
-            closeHoursModal() {
-                this.hoursModalVisible = false;
+            closeEditModal() {
+                this.editModalVisible = false;
             },
 
             showEditModal() {
@@ -471,31 +529,10 @@
                 this.editMsg = "";
                 this.editModalVisible = false;
             },
-
-            async saveNote() {
-                let note = this.editMsg;
-                this.closeEditModal();
-                this.showLoadingModal("Saving note..");
-                let docID = this.selected[0]["Document ID"];
-                let status = await db.collection("GlobalPendingHours").doc(docID).update({"Notes": note});
-                if (status) {
-                    window.alert("Err: " +  err);
-                    return null;
-                }
-
-                for (let i = 0; i < this.items.length; i++) {
-                    if (this.items[i]["Document ID"] === docID) {
-                        this.items[i]["Notes"] = note;
-                        break;
-                    }
-                }
-                this.closeLoadingModal();
-                this.showModal("Success!", "Your note has been saved")
-            },
             
-            async saveHours() {
-                let note = this.editHours;
-                this.closeHoursModal();
+            async saveEdits() {
+                let note = this.editFields;
+                this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelected);
@@ -550,6 +587,8 @@
         async mounted() {
             await this.getHeaders();
             await this.getTData();
+            let s = await periodRef.get();
+            this.activePeriods = s.data()
             this.toggleBusy();
             
         },
