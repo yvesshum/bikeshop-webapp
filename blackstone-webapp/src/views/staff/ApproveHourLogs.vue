@@ -99,14 +99,15 @@
             <div v-for="(category, index) in editSelectedHours" :key="index">
                 Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
                 <br>
-                <VueNumericInput 
+                <VueNumberInput 
                   v-model="editSelectedHours[index].Hours"
                   :min="0"
                   :step="0.5"
-                  :placeholder="category.Hours"
+                  placeholder="category.Hours"
                   align="center"
                   style="width: 20rem"
-                  :precision="2"
+                  controls
+                  :inputtable="false"
                 />
                 <hr>
             </div>
@@ -143,11 +144,11 @@
 </template>
 <script>
     import {db} from '../../firebase';
-    import numericInput from 'vue-numeric-input';
+    import VueNumberInput from '@chenfengyuan/vue-number-input';
     export default {
         name: 'ApproveHourLogs',
         components: {
-          numericInput
+          VueNumberInput
         },
         data() {
             return {

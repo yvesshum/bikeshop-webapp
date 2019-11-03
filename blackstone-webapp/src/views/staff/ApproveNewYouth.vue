@@ -299,19 +299,19 @@
                 if(input["Registration Period"] == "None") {
                     current["NeverActiveYouths"].push({
                         "First Name": input["First Name"],
-                        "ID": newIDs[0],
+                        "ID": newIDs[0].toString(),
                         "Last Name": input["Last Name"]
                     });
                 } else if(input["Registration Period"] == this.activePeriods["CurrentPeriod"]) {
                     current["CurrentActiveYouths"].push({
                         "First Name": input["First Name"],
-                        "ID": newIDs[0],
+                        "ID": newIDs[0].toString(),
                         "Last Name": input["Last Name"]
                     });
                 } else {
                     current["FutureActiveYouths"].push({
                         "First Name": input["First Name"],
-                        "ID": newIDs[0],
+                        "ID": newIDs[0].toString(),
                         "Last Name": input["Last Name"]
                     });
                 }
