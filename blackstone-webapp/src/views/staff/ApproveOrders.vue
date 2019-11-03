@@ -16,7 +16,7 @@
 
             <p style="margin: 1rem;">Selected {{selected.length}} rows</p>
         </div>
-
+        <p v-if="items.length === 0">No fields found!</p>
         <b-table
             selectable
             select-mode="multi"
