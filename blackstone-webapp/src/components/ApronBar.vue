@@ -38,6 +38,7 @@
       editable @matchchange="matchchange"
       matchBy="name"
       @selected="s => selected_skills = s"
+      @changes="c => changed_skills = c"
     >
     </MatchTable>
 
@@ -170,6 +171,8 @@ export default {
       selected_skills: [],
 
       skill_status: new Status(),
+
+      changed_skills: null,
     }
   },
 
@@ -218,16 +221,16 @@ export default {
     },
 
     has_changes: function() {
-      return (this.skill_status == null) ? false : this.skill_status.has_status(Status.C);
+      return this.skills_to_add.length > 0 || this.skills_to_remove.length > 0;
     },
 
     // TODO: Attach the type of the skill (mechanical, life, etc) to these objects
     skills_to_add: function() {
-      return this.skill_status.filter(Status.ADD);
+      return (this.changed_skills == null) ? [] : this.changed_skills.add;
     },
 
     skills_to_remove: function() {
-      return this.skill_status.filter(Status.REM);
+      return (this.changed_skills == null) ? [] : this.changed_skills.rem;
     },
   },
 
@@ -304,13 +307,15 @@ export default {
       if (this.change_skills_effect) {
 
         // Make new changes object for apron skills list
-        let changes = {"Apron Skills": this.skill_status.filter(Status.O)};
+        let changes = {"Apron Skills": this.changed_skills.use};
 
         // Saves edits to firebase
         db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
           window.alert("Error: " + err);
           return null;
         });
+
+        this.$refs.match_table.accept_changes();
 
         // If update succeeds, update all skills locally
         this.skill_status.update();

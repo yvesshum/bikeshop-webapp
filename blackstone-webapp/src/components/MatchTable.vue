@@ -44,6 +44,15 @@ export default {
           var row_id = this.get_row_id(data);
 
           this.row_status.set(row_id, new_status);
+
+          var changes = {
+            "add": this.row_status.filter(Status.ADD),
+            "rem": this.row_status.filter(Status.REM),
+            "use": this.row_status.filter(Status.O),
+            "not": this.row_status.filter(Status.X),
+          };
+
+          this.$emit("changes", changes);
         },
       },
 
@@ -164,6 +173,11 @@ export default {
         }
       });
 
+    },
+
+    accept_changes: function() {
+      this.row_status.update();
+      this.$emit("changes", null);
     },
   },
 }
