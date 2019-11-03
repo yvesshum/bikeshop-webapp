@@ -67,7 +67,8 @@ Once a submission goes through firebase should have the following changes:
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
-    import {Timestamp} from '@/firebase.js'
+    import {Timestamp} from '@/firebase.js';
+    import moment from 'moment';
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -154,7 +155,7 @@ Once a submission goes through firebase should have the following changes:
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = Timestamp.fromDate(new Date());
+                    input["Order Date"] = Timestamp.fromDate(moment().toDate());
 
                     console.log('i', input);
                     let submitRef = db.collection("GlobalPendingOrders").doc();

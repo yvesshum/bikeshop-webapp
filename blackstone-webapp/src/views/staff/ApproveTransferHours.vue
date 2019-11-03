@@ -190,7 +190,7 @@
                 fromYouthProfile = fromYouthProfile.data();
                 let newFromPendingHours = Math.round((parseFloat(fromYouthProfile["Pending Hours"]) + parseFloat(row["Amount"]))*100)/100;
                 let acceptFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).update({
-                    "Pending Hours": newFromPendingHours.toString()
+                    "Pending Hours": newFromPendingHours
                 });
 
                 if (acceptFromStatus) {
@@ -207,8 +207,8 @@
                 let newToPendingHours = Math.round((parseFloat(toYouthProfile["Pending Hours"]) - parseFloat(row["Amount"]))*100)/100;
                 let newToHoursEarned = Math.round((parseFloat(toYouthProfile["Hours Earned"]) + parseFloat(row["Amount"]))*100)/100;
                 let acceptToStatus = await db.collection("GlobalYouthProfile").doc(row["To ID"]).update({
-                    "Pending Hours": newToPendingHours.toString(),
-                    "Hours Earned": newToHoursEarned.toString()
+                    "Pending Hours": newToPendingHours,
+                    "Hours Earned": newToHoursEarned
                 });
 
                 if (acceptToStatus) {
@@ -315,7 +315,7 @@
                 let newFromHoursSpent = Math.round((parseFloat(fromYouthProfile["Hours Spent"]) - amount)*100)/100;
 
                 let rejectingToStatus = db.collection("GlobalYouthProfile").doc(this.rejectingToID).update({
-                    "Pending Hours": newToPendingHours.toString()
+                    "Pending Hours": newToPendingHours
                 });
                 if (rejectingToStatus == null) {
                     window.alert("Err, unable to update " + this.rejectingToID + " " + toYouthProfile["First Name"] + "'s profile")
@@ -323,8 +323,8 @@
                 }
 
                 let rejectingFromStatus = db.collection("GlobalYouthProfile").doc(this.rejectingFromID).update({
-                    "Pending Hours": newFromPendingHours.toString(),
-                    "Hours Spent": newFromHoursSpent.toString()
+                    "Pending Hours": newFromPendingHours,
+                    "Hours Spent": newFromHoursSpent
                 });
 
                 if (rejectingFromStatus == null) {
