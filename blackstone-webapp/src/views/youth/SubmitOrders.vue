@@ -59,6 +59,18 @@ Once a submission goes through firebase should have the following changes:
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+            <template slot="modal-title">
+                Loading
+            </template>
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong> Loading...</strong>
+                </div>
+            </div>
+        </b-modal>
+
     </div>
 
 </template>
@@ -81,6 +93,7 @@ Once a submission goes through firebase should have the following changes:
                 requiredFields: [], //[{name: "YouthID", value =""}, {name: "ItemID", value = ""}]
                 optionalFields: [],
                 hiddenFields: [],
+                loadingModalVisible: false,
                 modalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
@@ -110,6 +123,7 @@ Once a submission goes through firebase should have the following changes:
             },
 
             async submit() {
+                this.loadingModalVisible = true;
                 //Populate this.YouthProfile with the current youth trying to submit
                 let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
                 console.log(YouthID);
@@ -182,6 +196,7 @@ Once a submission goes through firebase should have the following changes:
 
 
                         this.resetFields();
+                        this.loadingModalVisible = false;
                         this.showModal();
                     }).catch(error => {
                         window.alert(error);
