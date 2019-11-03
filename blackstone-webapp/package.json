@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@chenfengyuan/vue-number-input": "^1.2.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.21",
     "@fortawesome/free-solid-svg-icons": "^5.10.1",
     "@fortawesome/vue-fontawesome": "^0.1.6",
@@ -21,7 +22,6 @@
     "vue": "^2.6.10",
     "vue-data-tabulator": "^0.2.4",
     "vue-multiselect": "^2.1.6",
-    "vue-numeric-input": "^1.0.5",
     "vue-router": "^3.0.3",
     "vue-simple-search-dropdown": "^1.0.1",
     "vue-tabulator": "^1.0.0",

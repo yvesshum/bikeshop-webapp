@@ -578,28 +578,45 @@ Emits:
 
                 // Loop through each period and add the relevant youth to the bar
                 periods.forEach(function(period) {
-                    try {
-                        switch (period) {
-                            case "none":
-                                youth_arr = youth_arr.concat(data["NeverActiveYouths"]);
-                                break;
-                            case ap:
-                                youth_arr = youth_arr.concat(data["CurrentActiveYouths"]);
-                                break;
-                            case fp:
-                                youth_arr = youth_arr.concat(data["FutureActiveYouths"]);
-                                break;
-                            default:
-                                youth_arr = youth_arr.concat(past_data[period]);
-                                break;
+
+                    // Grab the list of youth from the given period
+                    var new_profiles = [];
+                    switch (period) {
+                        case "none":
+                            new_profiles = data["NeverActiveYouths"];
+                            break;
+                        case ap:
+                            new_profiles = data["CurrentActiveYouths"];
+                            break;
+                        case fp:
+                            new_profiles = data["FutureActiveYouths"];
+                            break;
+                        default:
+                            new_profiles = past_data[period];
+                            break;
+                    }
+
+                    // If the given period does not exist, send a warning in the console and skip to the next period
+                    if (new_profiles == undefined) {
+                        console.warn("Cannot load youths from period \"" + period + "\".");
+                        return;
+                    }
+
+                    // Add non-duplicate youth to the full array
+                    youth_arr = youth_arr.concat(new_profiles.filter(profile => {
+
+                        // If current profile matches any already in the list, don't include it
+                        for (var i = 0; i < youth_arr.length; i++) {
+                            if (profiles_equal(profile, youth_arr[i])) return false;
                         }
-                    } catch (error) {
-                        console.log("YouthIDSelector: Cannot load youths from period \"" + period + "\".", error);
-                    };
+
+                        // If it didn't match any, it's a new profile, so include it
+                        return true;
+                    }));
                 });
 
-                // Remove duplicates and sort
-                youth_arr = unique(youth_arr).sort();
+                // Sort the result
+                youth_arr = youth_arr.sort();
 
                 // Stop the loading icon
                 this.is_busy = false;
@@ -608,11 +625,15 @@ Emits:
                 return youth_arr;
 
 
-                // Helper function - remove duplicate values from an array
-                function unique(arr) {
-                    return arr.filter(function(youth, n, arr) {
-                        return arr.indexOf(youth) == n;
-                    });
+                // Helper function - Identify identical youth profiles
+                function profiles_equal(p1, p2) {
+                    // Check each field in FIELDS for a mismatch - if one is found, profiles are not equal
+                    for (var f in FIELDS) {
+                        if (p1[FIELDS[f]] != p2[FIELDS[f]]) return false;
+                    }
+
+                    // If all of the fields matched, profiles are equal
+                    return true;
                 };
             },
 
@@ -713,6 +734,23 @@ Emits:
                         let diff;
                         let field = this.sort_by[i];
 
+                        // Check whether one or both of the fields does not exist. Note that this should not occur with complete data, since the fields this sorts by are required fields; this is to prevent crashing.
+                        // Sort null values after existing ones
+                        if (a[field] == null) {
+                            // If both fields do not exist, continue on to the next field
+                            if (b[field] == null) {
+                                continue;
+                            }
+                            // If b exists but a doesn't, sort b first
+                            else {
+                                return 1;
+                            }
+                        }
+                        // If a exists but b doesn't, sort a first
+                        else if (b[field] == null) {
+                            return -1;
+                        }
+
                         // Sort numeric IDs numerically
                         if (field == "ID" && !isNaN(a[field]) && !isNaN(b[field])) {
                             diff = Number(a[field]) - Number(b[field]);
@@ -729,7 +767,7 @@ Emits:
 
                     // If we've made it to this point, all of the fields in the profile are identical
                     // TODO: Error handling for this case
-                    console.log("WARNING: Identical profiles found: ", a, b);
+                    console.warn("Identical profiles found: ", a, b);
                     return 0;
                 };
 
