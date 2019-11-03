@@ -3,17 +3,17 @@
           <nav class="navbar navbar-light navbar-expand-md navigation-clean-button">
               <div class="container">
                 <img id="logo" src="../assets/experimental_station_logo.png">
-                <button data-toggle="collapse" class="navbar-toggler" data-target="#navcol-1">
+                <button class="navbar-toggler" v-b-toggle.navcol-1>
                   <span class="sr-only">Toggle navigation</span>
                   <span class="navbar-toggler-icon"></span>
                 </button>
-                  <div class="collapse navbar-collapse" id="navcol-1">
+                  <b-collapse class="navbar-collapse" id="navcol-1">
                       <ul class="nav navbar-nav mr-auto"></ul>
                       <span class="navbar-text actions">
                         <a class="nav_button" href="/">Dashboard</a>
                         <a class="btn btn-light action-button" role="button" @click="logout" v-if="show_logout_option">Log Out</a>
                       </span>
-                  </div>
+                  </b-collapse>
               </div>
           </nav>
           <div class="under_navbar_padding">
@@ -109,7 +109,6 @@
   color: #fff;
   border: none;
   padding: .5rem 1rem;
-  transition: background-color 0.25s;
   }
 
   .navigation-clean-button .navbar-text .action-button:hover {
