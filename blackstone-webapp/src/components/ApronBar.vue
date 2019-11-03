@@ -51,13 +51,13 @@
 
       <table class="clm_table"><tr>
         <td>
-          <ApronImg :color="apron_colors[apron_level].color" :size="48" />
-          <b>{{apron_colors[apron_level].name}}</b>
+          <ApronImg :color="get_apron_property(apron_level, 'color')" :size="48" />
+          <b>{{get_apron_property(apron_level, 'name')}}</b>
         </td>
         <td class="clm_arrow">&#8658;</td>
         <td>
-          <ApronImg :color="apron_colors[apron_level + change_level_effect].color" :size="48" />
-          <b>{{apron_colors[apron_level + change_level_effect].name}}</b>
+          <ApronImg :color="get_apron_property(apron_level + change_level_effect, 'color')" :size="48" />
+          <b>{{get_apron_property(apron_level + change_level_effect, 'name')}}</b>
         </td>
       </tr></table>
     </b-modal>
@@ -250,6 +250,11 @@ export default {
 
     apron_active: function(n) {
       return (this.apron_level !== null && n <= this.apron_level);
+    },
+
+    get_apron_property: function(level, prop) {
+      if (this.apron_colors == null || this.apron_colors[level] == null) return "";
+      return this.apron_colors[level][prop];
     },
 
     increment_apron: function() {
