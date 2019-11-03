@@ -2,7 +2,7 @@
   <div>
           <nav class="navbar navbar-light navbar-expand-md navigation-clean-button">
               <div class="container">
-                <img id="logo" src="../assets/experimental_station_logo.png">
+                <img id="logo" @click=imageUrl src="../assets/experimental_station_logo.png">
                 <button class="navbar-toggler" v-b-toggle.navcol-1>
                   <span class="sr-only">Toggle navigation</span>
                   <span class="navbar-toggler-icon"></span>
@@ -16,7 +16,7 @@
                   </b-collapse>
               </div>
           </nav>
-          <div class="under_navbar_padding">
+          <div v-if="addPadding" class="under_navbar_padding">
           </div>
   </div>
 
@@ -32,6 +32,10 @@
                 type: String,
                 default: null,
             },
+            addPadding: {
+              type: Boolean,
+              default: true
+            }
         },
         data() {
             return {
@@ -109,6 +113,7 @@
   color: #fff;
   border: none;
   padding: .5rem 1rem;
+  cursor: pointer;
   }
 
   .navigation-clean-button .navbar-text .action-button:hover {
@@ -120,6 +125,7 @@
   }
 
   #logo {
+    cursor: pointer;
     width: 70%;
     padding: 1rem;
     max-width: 300px;

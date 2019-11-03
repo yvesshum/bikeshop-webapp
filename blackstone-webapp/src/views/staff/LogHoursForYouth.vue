@@ -13,7 +13,7 @@
             <h3>Hours</h3>
             <div v-for="(category, index) in categories" :key="index" class="input-field">
                 <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-                <VueNumericInput 
+                <VueNumberInput 
                     v-model="hours[category]"
                     :min="0"
                     :step="0.5"
@@ -21,6 +21,8 @@
                     align="center"
                     style="width: 20rem"
                     :precision="2"
+                    controls
+                    :inputtable="false"
                 />
             </div>
             <div class="notes">
@@ -89,7 +91,7 @@
 import YouthIDSelector from '../../components/YouthIDSelector'
 import YouthListCard from '../../components/YouthListCard'
 import {db} from '@/firebase.js'
-import VueNumericInput from 'vue-numeric-input'
+import VueNumberInput from '@chenfengyuan/vue-number-input';
 import moment from 'moment'
 
 export default {
@@ -229,7 +231,7 @@ export default {
     components: {
         YouthIDSelector,
         YouthListCard,
-        VueNumericInput
+        VueNumberInput
 
     }
 };
