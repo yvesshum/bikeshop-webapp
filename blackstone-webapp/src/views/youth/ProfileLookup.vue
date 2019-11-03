@@ -104,7 +104,7 @@ export default {
 
   methods: {
 
-    selectedID: async function(id) {
+    selectedID: async function({ ID: id }) {
 
       // No id returned - clear the page
       if (id == null) {
