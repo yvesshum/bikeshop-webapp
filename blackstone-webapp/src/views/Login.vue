@@ -1,5 +1,6 @@
 <template>
     <div class = "login">
+      <div class="jumbotron loginJumbo">
         <h3>Sign in to your youth/staff account</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
         <input type = "password" v-model = "password" placeholder = "Password"><br>
@@ -12,6 +13,7 @@
         </div>
 
         <p>If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</p>
+        </div>
     </div>
 </template>
 
@@ -45,11 +47,12 @@
 
 <style scoped>
     .login {
-        margin-top: 40px;
+        height:100%;
+        background-image: url('/img/bike.42814278.jpg');
     }
     input {
         margin: 10px 0;
-        width: 20%;
+        width: 50%;
         padding: 15px;
         text-align: center;
     }
@@ -60,5 +63,12 @@
     p a {
         text-decoration: underline;
         cursor: pointer;
+    }
+    .loginJumbo {
+      max-width: 60%;
+      top:20px;
+      position: relative;
+      margin:auto;
+      border-radius: 10px;
     }
 </style>
