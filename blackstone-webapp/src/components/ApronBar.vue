@@ -171,6 +171,9 @@ export default {
       selected_skills: [],
 
       changed_skills: null,
+
+      checked_data: [],
+      apron_color: null,
     }
   },
 
@@ -184,21 +187,20 @@ export default {
     },
 
     apron_level: function() {
-      return this.get_profile_field("Apron Color", null);
+      // return this.get_profile_field("Apron Color", null);
+      return this.apron_colors.map(c => c.name).indexOf(this.selected);
     },
 
-    apron_color: function() {
-      if (this.apron_level != null && this.apron_level != -1) {
-        return this.apron_colors[this.apron_level].name;
-      }
-      else {
-        return "n/a";
-      };
-    },
-
-    checked_data: function() {
-      return this.get_profile_field("Apron Skills", []);
-    },
+    // apron_color: function() {
+    //   // return this.get_profile_field("Apron Color", null);
+    //   // let color = this.get_profile_field("Apron Color", null);
+    //   if (this.apron_level != null && this.apron_level != -1) {
+    //     return this.apron_colors[this.apron_level].name;
+    //   }
+    //   else {
+    //     return "n/a";
+    //   };
+    // },
 
     youth_name: function() {
       let fn = this.get_profile_field("First Name");
@@ -226,13 +228,8 @@ export default {
 
   watch: {
     profile: function() {
-      this.skill_status = new Status();
-      let skills = this.get_profile_field("Apron Skills", []);
-
-      this.test_full_data.map(s => s.name).forEach(skill => {
-        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
-        this.skill_status.add_vue(this, skill, start_status);
-      });
+      this.checked_data = this.get_profile_field("Apron Skills", []);
+      this.apron_color = this.get_profile_field("Apron Color", null);
     },
   },
 
