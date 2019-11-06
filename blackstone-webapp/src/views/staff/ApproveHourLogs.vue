@@ -99,6 +99,7 @@
                 Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
                 <br>
                 <VueNumberInput 
+                  center
                   v-model="editSelectedHours[index].Hours"
                   :min="0"
                   :step="0.5"
