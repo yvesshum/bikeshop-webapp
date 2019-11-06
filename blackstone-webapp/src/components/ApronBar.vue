@@ -35,7 +35,7 @@
       :checkedData="checked_data"
       :fullData="test_full_data"
       :headingData="test_headers"
-      editable @matchchange="matchchange"
+      editable
       matchBy="name"
       @selected="s => selected_skills = s"
       @changes="c => changed_skills = c"
@@ -170,22 +170,12 @@ export default {
 
       selected_skills: [],
 
-      skill_status: new Status(),
-
       changed_skills: null,
     }
   },
 
   mounted: function() {
-    if (this.profile != null) {
-      this.skill_status = new Status();
-      let skills = this.get_profile_field("Apron Skills", []);
 
-      this.test_full_data.map(s => s.name).forEach(skill => {
-        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
-        this.skill_status.add_vue(this, skill, start_status);
-      });
-    }
   },
 
   computed: {
@@ -207,7 +197,7 @@ export default {
     },
 
     checked_data: function() {
-      return this.skill_status.filter(Status.O);
+      return this.get_profile_field("Apron Skills", []);
     },
 
     youth_name: function() {
@@ -278,25 +268,6 @@ export default {
       this.$refs.match_table.highlight_values(highlight_vals, "apron");
     },
 
-    matchchange: function(cell) {
-      let skill = cell.name;
-      let status = cell.achieved ? Status.O : Status.X;
-      this.skill_status.set(skill, status);
-    },
-
-    // Set the given skills to the given status
-    set_skills: function(skills, status) {
-      skills.forEach(skill => this.skill_status.set(skill, status));
-    },
-
-    // Add or remove the currently selected skills
-    // Accepts val as boolean where True = Status.O and False = Status.X, or as status
-    set_selected_skills: function(val) {
-      let skills = this.$refs.match_table.get_selected_fields();
-      let status = (typeof val == "boolean") ? (val ? Status.O : Status.X) : val;
-      this.set_skills(skills, status);
-    },
-
     show_skills_modal: function(val) {
       this.change_skills_effect = val;
       this.change_skills_modal = true;
@@ -315,15 +286,13 @@ export default {
           return null;
         });
 
-        this.$refs.match_table.accept_changes();
-
         // If update succeeds, update all skills locally
-        this.skill_status.update();
+        this.$refs.match_table.accept_changes();
       }
 
       // Reset all the changed but unsaved skills to their original values
       else {
-        this.set_skills(this.skill_status.keys(), Status.RESET);
+        this.$refs.match_table.discard_changes();
       }
 
       this.change_skills_modal = false;
