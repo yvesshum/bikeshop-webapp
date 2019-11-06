@@ -93,6 +93,7 @@ import YouthListCard from '../../components/YouthListCard'
 import {db} from '@/firebase.js'
 import VueNumberInput from '@chenfengyuan/vue-number-input';
 import moment from 'moment'
+import { Timestamp } from '@/firebase.js'
 
 export default {
     name: "LogHoursForYouth",
@@ -189,8 +190,8 @@ export default {
                     "Youth ID": youth.ID,
                     "Period": period,
                     "Notes": this.notes,
-                    "Check In": moment().format(),
-                    "Check Out": moment().format()
+                    "Check In": Timestamp.fromDate(new Date()   ),
+                    "Check Out": Timestamp.fromDate(new Date())
                 }
                 entry = {...entry, ...this.hours};
                 try {
@@ -207,7 +208,7 @@ export default {
                 }
                 let newPendingHours = parseFloat(profile["Pending Hours"]) + totalHours
                 db.collection("GlobalYouthProfile").doc(youth.ID).update({
-                    "Pending Hours": newPendingHours.toString()
+                    "Pending Hours": newPendingHours
                 })
             })
 
