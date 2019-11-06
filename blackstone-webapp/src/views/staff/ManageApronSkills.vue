@@ -20,7 +20,7 @@
               <b-button variant="danger" @click="deleteSkill">Delete selected skill</b-button>
           </b-button-group>
         </div>
-        </br>
+        <br>
         <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skills']" @rowSelected="updateSelected"/>
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button>
