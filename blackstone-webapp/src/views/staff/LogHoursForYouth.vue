@@ -14,6 +14,7 @@
             <div v-for="(category, index) in categories" :key="index" class="input-field">
                 <p style="text-align: center; margin-bottom:3px">{{category}}</p>
                 <VueNumberInput 
+                    center
                     v-model="hours[category]"
                     :min="0"
                     :step="0.5"
@@ -167,7 +168,7 @@ export default {
 
         async handleSubmit(){
             this.loadingModalVisbile = true;
-            this.profilesToAdd.forEach(async youth => {
+            for (let youth of this.profilesToAdd) {
                 //Grab Profile Data
                 let profile = await db.collection("GlobalYouthProfile").doc(youth.ID).get()
                 profile = profile.data();
@@ -190,7 +191,7 @@ export default {
                     "Youth ID": youth.ID,
                     "Period": period,
                     "Notes": this.notes,
-                    "Check In": Timestamp.fromDate(new Date()   ),
+                    "Check In": Timestamp.fromDate(new Date()),
                     "Check Out": Timestamp.fromDate(new Date())
                 }
                 entry = {...entry, ...this.hours};
@@ -207,14 +208,19 @@ export default {
                     totalHours += parseFloat(this.hours[keys[i]])
                 }
                 let newPendingHours = parseFloat(profile["Pending Hours"]) + totalHours
-                db.collection("GlobalYouthProfile").doc(youth.ID).update({
+                await db.collection("GlobalYouthProfile").doc(youth.ID).update({
                     "Pending Hours": newPendingHours
                 })
-            })
+                console.log('logged.')
+            }
 
             //Reset locally 
             this.profilesToAdd = [];
             this.notes = "Logged by staff"
+            this.categories.forEach(category => { 
+                this.hours[category] = 0;
+            })
+
             this.loadingModalVisbile = false;
             this.successModalVisbile = true;
         }
