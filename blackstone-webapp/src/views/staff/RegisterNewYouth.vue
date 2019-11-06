@@ -14,7 +14,7 @@
                     <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
                     </RadioGroupOther>
                 </div>
-                </br></br>
+                <br><br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -35,7 +35,7 @@
                     <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
                     </RadioGroupOther>
                 </div>
-                </br></br>
+                <br><br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
