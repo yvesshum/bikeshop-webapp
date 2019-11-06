@@ -220,9 +220,12 @@
                     //detach RTD listener
                     // rb.ref('Youth Profile Initializers').off("value", this.listenerRef);
                     
-                    submitRef.set(input).then(response => {
+                    let submitStatus = await submitRef.set(input)
+                    if (submitStatus) {
+                        window.alert("Error Adding new registration");
+                    }
                         // console.log("Document written with ID: ", submitRef.id);
-                        this.newID = submitRef.id;
+                    this.newID = submitRef.id;
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
                         // });
@@ -244,7 +247,7 @@
                         //     console.log(textareas[i].value)
                         //     textareas[i].value = "";
                         // }
-                    })
+
                     // .catch(function(error) {
                         // console.error("Error adding document: ", error);
                     // });
