@@ -14,7 +14,7 @@
         >-</b-button>
         <ApronProgressBar
           style="display: inline-block;"
-          :colors="apron_colors" :size="32" :level="apron_level"
+          :colors="apron_colors" :size="32" :level="apron_level+1"
           @hover="hover"
         />
         <b-button
