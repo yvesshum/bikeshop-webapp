@@ -14,7 +14,7 @@
         >-</b-button>
         <ApronProgressBar
           style="display: inline-block;"
-          :colors="apron_colors" :size="32" :level="apron_level+1"
+          :colors="apron_colors" :size="32" :level="apron_level"
           @hover="hover"
         />
         <b-button
@@ -42,7 +42,7 @@
     >
     </MatchTable>
 
-    <b-modal v-model="change_level_modal">
+    <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
         Please confirm the following.
       </template>
@@ -188,7 +188,7 @@ export default {
 
     apron_level: function() {
       // return this.get_profile_field("Apron Color", null);
-      return this.apron_colors.map(c => c.name).indexOf(this.selected);
+      return this.apron_colors.map(c => c.name).indexOf(this.apron_color);
     },
 
     // apron_color: function() {
@@ -255,6 +255,23 @@ export default {
     decrement_apron: function() {
       this.change_level_effect = -1;
       this.change_level_modal = true;
+    },
+
+    accept_level_modal: function() {
+      var new_color = this.get_apron_property(this.apron_level + this.change_level_effect, 'name');
+
+      var changes = {
+        "Apron Color": new_color,
+      };
+
+      console.log("Saving changes to database:", changes);
+
+      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
+        window.alert("Error: " + err);
+        return null;
+      });
+
+      this.apron_color = new_color;
     },
 
     hover: function(hover_data) {
