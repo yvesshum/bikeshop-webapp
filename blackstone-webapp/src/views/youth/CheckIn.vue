@@ -46,6 +46,7 @@
         <div v-for="category in categories" :key="category" class="input-field">
           <p style="text-align: center; margin-bottom:3px">{{category}}</p>
             <VueNumberInput 
+              center
               v-model="hours[category]"
               :min="0"
               :step="0.5"

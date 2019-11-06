@@ -138,13 +138,20 @@ Once a submission goes through firebase should have the following changes:
                 //if an error field has been returned
                 if (badFields.length) {
                     this.errorFields = badFields;
+                    this.loadingModalVisible = false;
                     this.showErrorModal();
                 }
                 else {
                     let input = {};
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
+                        if (data[i]["name"] === "Item Total Cost") {
+                            input[data[i]["name"]] = Math.round(parseFloat(data[i]["value"])*100) /100;
+                        }
+                        else {
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
+                        
                     }
 
                     data = this.parse(this.optionalFields);

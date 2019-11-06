@@ -55,14 +55,15 @@ In firebase the following things happen:
             <b-row>
                 <b-col align="center">
                     <VueNumberInput
-                            v-model="value"
-                            :min="1"
-                            placeholder="Amount to transfer"
-                            align="center"
-                            :step="0.5"
-                            style="width: 20rem"
-                            controls
-                            :inputtable="false"
+                        center
+                        v-model="value"
+                        :min="1"
+                        placeholder="Amount to transfer"
+                        align="center"
+                        :step="0.5"
+                        style="width: 20rem"
+                        controls
+                        :inputtable="false"
                     />
                 </b-col>
             </b-row>
