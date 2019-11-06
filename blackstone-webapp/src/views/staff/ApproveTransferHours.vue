@@ -1,5 +1,3 @@
-<!--TODO: Reject-->
-
 <template>
     <div>
         <top-bar/>
@@ -231,7 +229,7 @@
                     "Date": Timestamp.fromDate(moment(row["Date"], "YYYY-MM-DD hh:mm a").toDate()),
                     "From ID": row["From ID"],
                     "From Name": row["From Name"],
-                    "Amount": praseFloat(row["Amount"]),
+                    "Amount": parseFloat(row["Amount"]),
                     "Notes": row["Notes"],
                     "Period": row["Period"]
                 });
