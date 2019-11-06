@@ -9,11 +9,16 @@
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input v-if="field.type != 'radio'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
+                
+                <!-- <div v-if="field.type == 'Date'">
+
+                </div> -->
                 <div v-if="field.type == 'radio'" class = "radioDiv">
                     <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
                     </RadioGroupOther>
                 </div>
+                <!--  -->
+                <input v-else size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
                 <br><br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
@@ -44,13 +49,12 @@
 
 
 
-        <!--//copied from https://bootstrap-vue.js.org/docs/components/modal/-->
         <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">
                 New Youth registered!
             </template>
             <div class="d-block text-center">
-                <h3>A new Youth has been registered with ID: {{newID}}!</h3>
+                <h3>A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -66,6 +70,19 @@
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
+         <!-- Loading Modal -->
+        <b-modal v-model = "loadingModalVisbile" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+            <template slot="modal-title">
+                Doing some work...
+            </template>
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong> Loading...</strong>
+                </div>
+            </div>
+        </b-modal>
+
     </div>
 
 </template>
@@ -77,6 +94,8 @@
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
     import { forKeyVal } from '../../components/ParseDB.js';
+    import {Timestamp} from '@/firebase.js';
+
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
@@ -95,6 +114,7 @@
                 optionalFields: [],
                 hiddenFields: [],
                 modalVisible: false,
+                loadingModalVisible: true,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
@@ -105,6 +125,7 @@
         methods: {
             async getFields() {
                 let f = await fieldsRef.get();
+                this.loadingModalVisible = false;
                 return f.data();
             },
             async getSeasons() {
@@ -146,10 +167,12 @@
                 }
             },
             async submit() {
+                this.loadingModalVisible = true;
                 //if an error field has been returned
                 let badFields = await this.checkValid();
                 if (badFields.length) {
                     this.errorFields = badFields;
+                    this.loadingModalVisible = false;
                     this.showErrorModal();
                 }
                 else {
@@ -178,7 +201,7 @@
                     })
                     
                     var today = new Date();
-                    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate() + ', ' + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
                     let data = this.parse(this.requiredFields);
@@ -225,7 +248,7 @@
                     // .catch(function(error) {
                         // console.error("Error adding document: ", error);
                     // });
-                    
+                    this.loadingModalVisible = false;
                     this.showModal();
                 }
             },
@@ -314,6 +337,7 @@
             }
         },
         async mounted() {
+            this.loadingModalVisible = true;
             let fields = await this.getFields();
             let seasons = await this.getSeasons();
             let options = await this.getOptions();
