@@ -155,6 +155,27 @@ import DatePicker from 'vue2-datepicker'
 import moment from 'moment'
 import { db } from '@/firebase.js'
 import {Timestamp} from '@/firebase.js'
+let setOrder = function(field){
+    var fieldVal = 0;
+    if (field == "Check In"){
+        fieldVal = 1;
+    } else if (field == "Check Out"){
+        fieldVal = 2;
+    } else if (field == "Youth ID"){
+        fieldVal = 3;
+    } else if (field == "First Name"){
+        fieldVal = 4;
+    } else if (field == "Last Name"){
+        fieldVal = 5;
+    } else if (field == "Notes"){
+        fieldVal = 6;
+    } else if (field == "Period"){
+        fieldVal = 8;
+    } else {
+        fieldVal = 7
+    }
+    return fieldVal
+};
 
 
 export default {
@@ -227,7 +248,16 @@ export default {
             }
             let res = [];
             queryResult.forEach(doc => {
-                res.push(doc.data())
+                var data = doc.data();
+                const ordered = {};
+                Object.keys(data).sort(function(a, b){
+                  var aVal = setOrder(a);
+                  var bVal = setOrder(b);
+                  return aVal-bVal;
+                }).forEach(function(key) {
+                  ordered[key] = data[key];
+                });
+                res.push(ordered);
             });
             return res;
         },
@@ -251,9 +281,18 @@ export default {
                 window.alert(err);
             }
             query.forEach(doc => { 
-                let data = doc.data();
+                var data = doc.data();
                 data["Check In"] = data["Check In"].toDate();
                 data["Check Out"] = data["Check Out"].toDate();
+                const ordered = {};
+                Object.keys(data).sort(function(a, b){
+                  var aVal = setOrder(a);
+                  var bVal = setOrder(b);
+                  return aVal-bVal;
+                }).forEach(function(key) {
+                  ordered[key] = data[key];
+                });
+                data = ordered;
                 this.total_Hours_Earned_Data.push(data);
                 // Append hours to breakdown
                 for (let key in data) { 

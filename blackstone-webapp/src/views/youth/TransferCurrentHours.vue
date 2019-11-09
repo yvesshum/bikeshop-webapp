@@ -53,12 +53,17 @@ In firebase the following things happen:
                 <br>
             </b-row>
             <b-row>
-                <b-col>
-                    <VueNumericInput
-                            v-model="value"
-                            :min="1"
-                            placeholder="Amount to transfer"
-                            align="center"
+                <b-col align="center">
+                    <VueNumberInput
+                        center
+                        v-model="value"
+                        :min="1"
+                        placeholder="Amount to transfer"
+                        align="center"
+                        :step="0.5"
+                        style="width: 20rem"
+                        controls
+                        :inputtable="false"
                     />
                 </b-col>
             </b-row>
@@ -115,14 +120,14 @@ In firebase the following things happen:
 
 <script>
     import YouthIDSelector from '../../components/YouthIDSelector';
-    import VueNumericInput from 'vue-numeric-input';
+    import VueNumberInput from '@chenfengyuan/vue-number-input';
     import {db} from '../../firebase';
     import {Timestamp} from '@/firebase.js'
     export default {
         name: 'HourTransfer',
         components: {
             YouthIDSelector,
-            VueNumericInput
+            VueNumberInput
 
         },
 

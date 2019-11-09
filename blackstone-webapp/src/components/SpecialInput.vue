@@ -1,5 +1,5 @@
 <!--
-* Usage: <SpecialInput input="String" args="arguments" ref="specialInput1"/>
+* Usage: <SpecialInput inputType="String" args="arguments" ref="specialInput1" tag="specialInput1" v-on:specialInput1="handleEmit"/>
 
 * Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race, Grade, Email
 
@@ -17,21 +17,25 @@ arguments1: {
 If a property is not specified, "args.property_name" would just be undefined and all is well (I think). 
 Style argument is just for the specific <b-form> components instead of the entire div
 
-* The ref is so that we can call the .get method for the value later on.
-`this.$refs.specialInput1.get()` This returns whatever value it is
+* The ref is only necessary if you want to call private methods here 
+* tag is necessary to capture the data emission. The emit tag is specified as the tag prop.
+
 -->
 
 <template>
     <div v-if="ready">
         <!-- Returns an String that is an integer -->
         <div v-if="input === 'Integer'">
-            <VueNumericInput
-                v-model="value"
-                :step="1"
-                :placeholder="args.placeholder"
-                :align="args.align"
-                :precision="args.precision"
-                :style="args.style"
+            <VueNumberInput 
+              center
+              v-model="value"
+              :min="0"
+              :step="1"
+              placeholder="Hours"
+              align="center"
+              style="width: 20rem"
+              controls
+              :inputtable="false"
             />
 
         </div>
@@ -49,23 +53,17 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- Returns a 10 digit string -->
         <div v-else-if="input === 'Phone'">
-            <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input>
-        </div>
-
-        <!-- Returns a string "YYYY-MM-DD"-->
-        <div v-else-if="input === 'Date'">
-            <b-form-input v-model="value" type="date" :style="args.style"></b-form-input>
-        </div>
-
-        <!-- Returns a time "hh:mm" in 24 hour format -->
-        <div v-else-if="input === 'Time'">
-            <b-form-input v-model="value" type="time" :style="args.style"></b-form-input>   
+            <!-- <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input> -->
+            <vue-tel-input v-model="value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
         </div>
 
         <!-- Returns a ISO string-->
         <div v-else-if="input === 'Datetime'">
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
-             <!-- In progress, none of the packages seem to work so far -->
+             <!-- In progress, none of the packages seem to work so far -->     
+
+    
+
         </div>
 
         <!-- Returns M/F or some string -->
@@ -102,17 +100,20 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
-            <VueNumericInput
-                v-model="value"
-                :step="0.5"
-                :placeholder="args.placeholder"
-                :align="args.align"
-                :precision="args.precision"
-                :style="args.style"
-                :min="0"
+            <VueNumberInput 
+              center
+              v-model="value"
+              :min="0"
+              :step="0.5"
+              placeholder="Hours"
+              align="center"
+              style="width: 20rem"
+              controls
+              :inputtable="false"
             />
         </div>
 
+        <!-- String Input -->
         <div v-else>
             <b-form-input v-model="value" type="text" :style="args.style"></b-form-input> 
         </div>
@@ -121,23 +122,37 @@ Style argument is just for the specific <b-form> components instead of the entir
     </div>
 </template>
 <script>
-import VueNumericInput from 'vue-numeric-input';
+import VueNumberInput from '@chenfengyuan/vue-number-input';
+import { VueTelInput } from 'vue-tel-input'
+import { Timestamp } from '@/firebase.js'
+
+  
+// Import date picker css
+import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
+   
+
+
 // import datetime from 'vuejs-datetimepicker';
 
 export default {
     name: 'SpecialInput',
     props: {
-        input: {
+        inputType: {
             type: String,
             default: "String",
         },
         arguments: {    
             type: Object,
-            default: {}
+            default: function (){ return {} }
+        },
+        tag: {
+            type:String,
+            default: "unknown_ref"
         }
     },
     data() {
         return {
+            input: null,
             value: null,
             args: {},
             ready: false,
@@ -171,14 +186,16 @@ export default {
 
     watch: {
         value: function() {
-            this.$emit("input", this.value)
+            this.$emit(this.tag, this.value)
         },
+
+        inputType: function() {
+            this.value = null;
+            this.input = this.inputType;
+        }
     },
 
     methods: {
-        get() {
-            return this.value;
-        },
         sanitizeArgs() {
 
         },
@@ -208,11 +225,11 @@ export default {
         },
 
         isValidEmail() {
-            console.log(this.value);
+
             if (this.value == null) return false
             else {
                 let data = this.value.split("@")
-                console.log(data)
+
                 return (data[0] != null && data[1] != null)
             }
             
@@ -224,11 +241,13 @@ export default {
         this.args = this.arguments;
         this.setValue(this.args.value);
         this.ready = true;
+
     },
 
     components: {
-        VueNumericInput,
-        // datetime
+        VueTelInput,
+        VueNumberInput,
+
     }
 
 }

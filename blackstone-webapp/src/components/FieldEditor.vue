@@ -64,7 +64,7 @@
                 v-model="modal.edit.field_name"
                 placeholder="Edit here.."
                 rows="1"
-                max-rows="3"
+                max-rows="1"
         ></b-form-textarea>
         <br>
         <p>Field Type:</p>
@@ -74,7 +74,7 @@
                 :options="modal.edit.options"
                 placeholder="Edit here.."
                 rows="1"
-                max-rows="3"
+                max-rows="1"
         ></b-form-select>
         <br>
         <br>
@@ -102,35 +102,37 @@
         </template>
         <p style="margin-bottom: 0">Field Name</p>
         <b-form-textarea
-                id="textarea"
-                v-model="modal.add.field_name"
-                placeholder="This cannot be empty and must not already exist!"
-                :state="isValidNewFieldName"
-                size="sm"
-                rows="1"
+            id="textarea"
+            v-model="modal.add.field_name"
+            placeholder="This cannot be empty and must not already exist!"
+            :state="isValidNewFieldName"
+            size="sm"
+            rows="1"
                 max-rows="3"
         ></b-form-textarea>
         <p style="margin-bottom: 0">Field Type</p>
         <b-form-select
-                id="textarea"
-                v-model="modal.add.field_type"
-                :options="modal.edit.options"
-                placeholder="Edit here.."
-                rows="1"
-                max-rows="3"
+            id="textarea"
+            v-model="modal.add.field_type"
+            :options="modal.edit.options"
+            placeholder="Edit here.."
+            rows="1"
+            max-rows="3"
         ></b-form-select>
 
         <p style="margin-bottom: 0">Initial Value</p>
-        <b-form-textarea
-                id="textarea"
-                v-model="modal.add.initial_value"
-                placeholder="Enter a value or leave empty"
-                size="sm"
-                rows="1"
-                max-rows="3"
-        ></b-form-textarea>
+        <!-- <b-form-textarea
+            id="textarea"
+            v-model="modal.add.initial_value"
+            placeholder="Enter a value or leave empty"
+            size="sm"
+            rows="1"
+            max-rows="3"
+        ></b-form-textarea> -->
+        <SpecialInput :inputType="modal.add.field_type" ref="addInput" tag="addInput" v-on:addInput="handleSpecialInputEmit"/>
         <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName">Add a new field and change all existing documents to have this field and value</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
+
     </b-modal>
 
 
@@ -140,12 +142,14 @@
 import draggable from 'vuedraggable'
 import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
+import SpecialInput from '../components/SpecialInput.vue'
 
 export default {
     name: 'fieldEditor',
     components: {
         FieldCard,
-        draggable
+        draggable,
+        SpecialInput
     },
     props: {
         sourceFieldName: String, //required, optional, hidden
@@ -204,6 +208,11 @@ export default {
         })
     },
     methods: {
+        handleSpecialInputEmit(value) {
+            this.modal.add.initial_value = value;
+            console.log(this.modal.add.initial_value);
+        },
+
         parse(item) {
             return JSON.parse(JSON.stringify(item));
         },
@@ -358,7 +367,7 @@ export default {
                     updatedFields.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedFields;
-                    let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).set(updateValue);
+                    let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateValue);
                     if (deleteStatus) {
                         window.alert("Error on removing a field in GlobalFieldsCollection. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
                         return null;
@@ -420,24 +429,28 @@ export default {
                 window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
                 return null;
             }
-
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
                 let query = await db.collection(this.collectionsToEdit[j]).get();
+                
                 query.forEach(async doc => {
                     let id = doc.id;
                     let data = this.parse(doc.data());
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
+
+                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
                     await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                 })
             }
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+
                 query.forEach(async doc => {
                     let id = doc.id;
                     let path = doc.ref.path
                     let data = this.parse(doc.data());
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
+                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
                     await db.doc(path).set(data);
                 })
             }

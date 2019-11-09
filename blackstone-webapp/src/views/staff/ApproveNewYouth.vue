@@ -322,6 +322,9 @@
                     return null;
                 }
                 
+                //Get rid of Timestamp as it's an unncessary field for Youth Profile
+                delete input.Timestamp
+
                 let logStatus = await submitRef.set(input);
                 
                 if (logStatus) {
