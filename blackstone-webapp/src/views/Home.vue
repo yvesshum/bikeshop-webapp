@@ -211,7 +211,7 @@ h4 {
 }
 
 #menu_container {
-  padding-top: 7rem;
+  padding-top: 6rem;
   margin: auto;
   max-width: 750px;
   background-color: #ffffff;

@@ -145,7 +145,7 @@
                 
         </b-container>
     
-
+    <QueryTable />
     </div>
     
 </template>
@@ -155,6 +155,7 @@ import DatePicker from 'vue2-datepicker'
 import moment from 'moment'
 import { db } from '@/firebase.js'
 import {Timestamp} from '@/firebase.js'
+import QueryTable from '../../components/QueryTable'
 let setOrder = function(field){
     var fieldVal = 0;
     if (field == "Check In"){
@@ -182,6 +183,7 @@ export default {
     name: 'Stats',
     components: {
         DatePicker,
+        QueryTable
 
     },
     data() {
@@ -387,8 +389,14 @@ export default {
                 }
             })
             return total;
-        }
+        },
+        async getProfileData () {
+        let profiles = await db.collection("GlobalYouthProfile").get()
+        return profiles.docs.map(x => Object.assign(x.data(), {ID:x.id}))
+
+        },
     },
+
 
     async mounted() {
         //Generate year selector 
@@ -405,7 +413,8 @@ export default {
         let seasonQuery = await db.collection("GlobalVariables").doc("ActivePeriods").get();
         this.Earned_Period_Data.season_options = seasonQuery.data().Seasons;
         this.Spent_Period_Data.season_options = seasonQuery.data().Seasons;
-
+        let profileData = await this.getProfileData();
+        console.log(profileData)
     }
     
 }
