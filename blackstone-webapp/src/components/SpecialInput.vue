@@ -126,13 +126,6 @@ import VueNumberInput from '@chenfengyuan/vue-number-input';
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 
-  
-// Import date picker css
-import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
-   
-
-
-// import datetime from 'vuejs-datetimepicker';
 
 export default {
     name: 'SpecialInput',
