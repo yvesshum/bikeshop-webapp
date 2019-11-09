@@ -180,6 +180,7 @@ export default {
     watch: {
         value: function() {
             this.$emit(this.ref, this.value)
+             this.$emit("input", this.value)
         },
 
         inputType: function() {
