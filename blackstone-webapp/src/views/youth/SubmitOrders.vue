@@ -176,7 +176,7 @@ Once a submission goes through firebase should have the following changes:
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = Timestamp.fromDate(moment().toDate());
+                    input["Order Date"] = Timestamp.fromDate(new Date());
 
                     console.log('i', input);
                     let submitRef = db.collection("GlobalPendingOrders").doc();
