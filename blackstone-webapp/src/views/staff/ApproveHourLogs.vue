@@ -36,7 +36,6 @@
             :items="items"
             :fields="fields"
             @row-selected="rowSelected"
-            sticky-header
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
             id="transfer_table"
@@ -99,13 +98,17 @@
             <div v-for="(category, index) in editSelectedHours" :key="index">
                 Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
                 <br>
-                <b-form-input
-                id="number"
-                type="number"
-                step="0.5"
-                v-model="editSelectedHours[index].Hours"
-                :placeholder="category.Hours"
-                ></b-form-input>
+                <VueNumberInput 
+                  center
+                  v-model="editSelectedHours[index].Hours"
+                  :min="0"
+                  :step="0.5"
+                  placeholder="category.Hours"
+                  align="center"
+                  style="width: 20rem"
+                  controls
+                  :inputtable="false"
+                />
                 <hr>
             </div>
             <!-- <b-form-textarea
@@ -141,9 +144,11 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import VueNumberInput from '@chenfengyuan/vue-number-input';
     export default {
         name: 'ApproveHourLogs',
         components: {
+          VueNumberInput
         },
         data() {
             return {
@@ -174,6 +179,9 @@
         methods: {
             rowSelected(items){
                 this.selected = items;
+            },
+            reject: function(evt) {
+                evt.preventDefault();
             },
 
             async getHeaders() {
@@ -258,8 +266,8 @@
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
-                    "Pending Hours": newPendingHours.toString(), 
-                    "Hours Earned": newHoursEarned.toString()
+                    "Pending Hours": newPendingHours, 
+                    "Hours Earned": newHoursEarned
                 });
 
                 if (acceptStatus) {
@@ -274,15 +282,10 @@
                     return null;
                 }
                 
-                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set({
-                    "Check In": row["Check In"],
-                    "Check Out": row["Check Out"],
-                    "Youth ID": row["Youth ID"],
-                    "First Name": row["First Name"],
-                    "Last Name": row["Last Name"],
-                    "Amount": amount.toString(),
-                    "Notes": row["Notes"]
-                });
+                var worklog = row;
+                delete worklog["Document ID"];
+                
+                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(row);
 
                 if (logStatus) {
                     window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
@@ -358,7 +361,7 @@
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount) * 100) / 100;
                 
                 let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
-                    "Pending Hours": newPendingHours.toString(),
+                    "Pending Hours": newPendingHours,
                 });
                 
                 if (rejectingStatus == null) {
@@ -505,7 +508,7 @@
                 let netChange = newTotalHours - originalAmount;
                 let newPendingHours = Math.round((parseFloat(profile.data()["Pending Hours"]) + netChange)*100)/100
                 let status2 = await db.collection("GlobalYouthProfile").doc(this.selected[0]["Youth ID"]).update({
-                    "Pending Hours": newPendingHours.toString()
+                    "Pending Hours": newPendingHours
                 })
 
                 if (status2) {

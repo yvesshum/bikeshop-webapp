@@ -39,13 +39,13 @@ In firebase the following things happen:
             <b-row>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px" periods="all"/>
+                        <YouthIDSelector ref="selectedFrom" @selected="selectedFrom" style="margin-bottom: 10px" periods="all"/>
                         <br>
                     </b-row>
                 </b-col>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px" periods="all"/>
+                        <YouthIDSelector ref="selectedTo" @selected="selectedTo" style="margin-bottom: 10px" periods="all"/>
                     </b-row>
                 </b-col>
             </b-row>
@@ -53,12 +53,18 @@ In firebase the following things happen:
                 <br>
             </b-row>
             <b-row>
-                <b-col>
-                    <VueNumericInput
-                            v-model="value"
-                            :min="1"
-                            placeholder="Amount to transfer"
-                            align="center"
+                <b-col align="center">
+                    <VueNumberInput
+                        center
+                        v-model="value"
+                        :min="1"
+                        placeholder="Amount to transfer"
+                        align="center"
+                        :step="0.5"
+                        style="width: 20rem"
+                        controls
+                        ref="hoursInput"
+                        :inputtable="false"
                     />
                 </b-col>
             </b-row>
@@ -115,14 +121,14 @@ In firebase the following things happen:
 
 <script>
     import YouthIDSelector from '../../components/YouthIDSelector';
-    import VueNumericInput from 'vue-numeric-input';
+    import VueNumberInput from '@chenfengyuan/vue-number-input';
     import {db} from '../../firebase';
     import {Timestamp} from '@/firebase.js'
     export default {
         name: 'HourTransfer',
         components: {
             YouthIDSelector,
-            VueNumericInput
+            VueNumberInput
 
         },
 
@@ -227,6 +233,10 @@ In firebase the following things happen:
                         }
 
                         this.closeLoadingModal();
+                        this.$refs.selectedFrom.reset();
+                        this.$refs.selectedTo.reset();
+                          this.$refs.hoursInput.setValue(1)
+
                         this.showModal("Success!", "Your request has been sent for staff approval")
                     }
                     else {

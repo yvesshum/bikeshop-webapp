@@ -59,6 +59,18 @@ Once a submission goes through firebase should have the following changes:
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+            <template slot="modal-title">
+                Loading
+            </template>
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong> Loading...</strong>
+                </div>
+            </div>
+        </b-modal>
+
     </div>
 
 </template>
@@ -67,7 +79,8 @@ Once a submission goes through firebase should have the following changes:
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import YouthIDSelector from "../../components/YouthIDSelector";
-    import {Timestamp} from '@/firebase.js'
+    import {Timestamp} from '@/firebase.js';
+    import moment from 'moment';
 
     let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
@@ -81,6 +94,7 @@ Once a submission goes through firebase should have the following changes:
                 requiredFields: [], //[{name: "YouthID", value =""}, {name: "ItemID", value = ""}]
                 optionalFields: [],
                 hiddenFields: [],
+                loadingModalVisible: false,
                 modalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
@@ -110,6 +124,7 @@ Once a submission goes through firebase should have the following changes:
             },
 
             async submit() {
+                this.loadingModalVisible = true;
                 //Populate this.YouthProfile with the current youth trying to submit
                 let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
                 console.log(YouthID);
@@ -123,13 +138,20 @@ Once a submission goes through firebase should have the following changes:
                 //if an error field has been returned
                 if (badFields.length) {
                     this.errorFields = badFields;
+                    this.loadingModalVisible = false;
                     this.showErrorModal();
                 }
                 else {
                     let input = {};
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
+                        if (data[i]["name"] === "Item Total Cost") {
+                            input[data[i]["name"]] = Math.round(parseFloat(data[i]["value"])*100) /100;
+                        }
+                        else {
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
+                        
                     }
 
                     data = this.parse(this.optionalFields);
@@ -154,7 +176,7 @@ Once a submission goes through firebase should have the following changes:
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = Timestamp.fromDate(new Date());
+                    input["Order Date"] = Timestamp.fromDate(moment().toDate());
 
                     console.log('i', input);
                     let submitRef = db.collection("GlobalPendingOrders").doc();
@@ -182,6 +204,7 @@ Once a submission goes through firebase should have the following changes:
 
 
                         this.resetFields();
+                        this.loadingModalVisible = false;
                         this.showModal();
                     }).catch(error => {
                         window.alert(error);

@@ -7,9 +7,9 @@
 
         <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Category editor</h2>
         <hr class="subheading">
-
         <h3 v-b-tooltip.hover title="These are the current hour logging Categories for youth">Categories:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="Categories" :elements="fields.Categories" doc="Hour Logging Categories" collection="GlobalVariables"/>
+        <CategoryEditor sourceFieldName="Categories" sourceDocument="Hour Logging Categories" :elements="fields.Categories" :collectionsToEdit="[]" :subcollectionsToEdit="['Work Log']"/>
+
         <hr class="divider">
 
         <SettingsBottomNote/>
@@ -19,6 +19,7 @@
 </template>
 
 <script>
+import CategoryEditor from '../../components/CategoryEditor.vue'
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
 import fieldEditor from '../../components/FieldEditor.vue'
@@ -27,14 +28,15 @@ export default {
   name: 'HourLoggingCategoriesSettings',
   components: {
     SettingsBottomNote,
-    fieldEditor
+    fieldEditor,
+    CategoryEditor
 
   },
   data() {
     return {
       fields: {
         Categories: []
-      },
+      },  
       dataLoaded: false,
     }
   },
@@ -43,12 +45,11 @@ export default {
       return JSON.parse(JSON.stringify(item));
     },
 
-    parseFields(items, dest, protectedFields) {
+    parseFields(items, dest) {
+      console.log(items);
       for (let i = 0; i < items.length; i ++) {
-        let isProtected = protectedFields.includes(items[i])
         dest.push({
-          "name": items[i],
-          "isProtected": isProtected
+          "data": items[i],
         })
       }
     },
@@ -60,8 +61,7 @@ export default {
         window.alert("Unable to get Hour Logging Categories from Global Variables");
       }
       else {
-        let protectedFields = []
-        this.parseFields(fields["Categories"], this.fields.Categories, protectedFields);
+        this.parseFields(fields["Categories"], this.fields.Categories);
         this.initialFields = this.parse(this.fields);
       }
     },

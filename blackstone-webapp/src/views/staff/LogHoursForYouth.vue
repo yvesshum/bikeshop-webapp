@@ -13,7 +13,8 @@
             <h3>Hours</h3>
             <div v-for="(category, index) in categories" :key="index" class="input-field">
                 <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-                <VueNumericInput 
+                <VueNumberInput 
+                    center
                     v-model="hours[category]"
                     :min="0"
                     :step="0.5"
@@ -21,6 +22,8 @@
                     align="center"
                     style="width: 20rem"
                     :precision="2"
+                    controls
+                    :inputtable="false"
                 />
             </div>
             <div class="notes">
@@ -89,8 +92,9 @@
 import YouthIDSelector from '../../components/YouthIDSelector'
 import YouthListCard from '../../components/YouthListCard'
 import {db} from '@/firebase.js'
-import VueNumericInput from 'vue-numeric-input'
+import VueNumberInput from '@chenfengyuan/vue-number-input';
 import moment from 'moment'
+import { Timestamp } from '@/firebase.js'
 
 export default {
     name: "LogHoursForYouth",
@@ -164,7 +168,7 @@ export default {
 
         async handleSubmit(){
             this.loadingModalVisbile = true;
-            this.profilesToAdd.forEach(async youth => {
+            for (let youth of this.profilesToAdd) {
                 //Grab Profile Data
                 let profile = await db.collection("GlobalYouthProfile").doc(youth.ID).get()
                 profile = profile.data();
@@ -187,8 +191,8 @@ export default {
                     "Youth ID": youth.ID,
                     "Period": period,
                     "Notes": this.notes,
-                    "Check In": moment().format(),
-                    "Check Out": moment().format()
+                    "Check In": Timestamp.fromDate(new Date()),
+                    "Check Out": Timestamp.fromDate(new Date())
                 }
                 entry = {...entry, ...this.hours};
                 try {
@@ -204,14 +208,19 @@ export default {
                     totalHours += parseFloat(this.hours[keys[i]])
                 }
                 let newPendingHours = parseFloat(profile["Pending Hours"]) + totalHours
-                db.collection("GlobalYouthProfile").doc(youth.ID).update({
-                    "Pending Hours": newPendingHours.toString()
+                await db.collection("GlobalYouthProfile").doc(youth.ID).update({
+                    "Pending Hours": newPendingHours
                 })
-            })
+                console.log('logged.')
+            }
 
             //Reset locally 
             this.profilesToAdd = [];
             this.notes = "Logged by staff"
+            this.categories.forEach(category => { 
+                this.hours[category] = 0;
+            })
+
             this.loadingModalVisbile = false;
             this.successModalVisbile = true;
         }
@@ -229,7 +238,7 @@ export default {
     components: {
         YouthIDSelector,
         YouthListCard,
-        VueNumericInput
+        VueNumberInput
 
     }
 };

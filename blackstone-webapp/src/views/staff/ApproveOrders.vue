@@ -16,7 +16,7 @@
 
             <p style="margin: 1rem;">Selected {{selected.length}} rows</p>
         </div>
-
+        <p v-if="items.length === 0">No fields found!</p>
         <b-table
             selectable
             select-mode="multi"
@@ -133,6 +133,7 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Order Date"] = data["Order Date"].toDate();
                     ret.push(data);
                 });
                 return ret;
@@ -179,8 +180,8 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": (Math.round((parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"]))*100)/100).toString(),
-                            // "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"])).toString()
+                            "Pending Hours": (Math.round((parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"]))*100)/100),
+                            // "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"]))
                         }).then((err) => {
                             if (err) this.showModal("Error", "Unable to update Youth Profile's hours, this may be an internet connection problem")
                             return null;
@@ -213,7 +214,7 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": Math.round(((parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"]))*100)/100).toString()
+                            "Pending Hours": Math.round(((parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"]))*100)/100)
                         }).catch(err => {
                             window.alert("Error " + err);
                             return null;
@@ -325,17 +326,17 @@
                 //if rejecting document is already approved
                 if (this.items[itemIndex]["Status"] === "Approved") {
                     //decrease hours spent by item cost
-                    let newHoursSpent = (Math.round((parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100).toString();
+                    let newHoursSpent = (Math.round((parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100);
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
-                        "Hours Spent": newHoursSpent.toString()
+                        "Hours Spent": newHoursSpent
                     }).catch(err => {
                         window.alert("Error: " + err);
                         return null;
                     })
                 }
                 else { //if rejecting document is of pending status
-                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100).toString();
-                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100).toString();
+                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
+                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent,
                         "Pending Hours": newPendingHours

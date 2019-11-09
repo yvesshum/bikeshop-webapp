@@ -1,19 +1,25 @@
 <template>
-    <div class = "NavBar">
-        <!-- <b-navbar type="dark" variant="info" fill>
-            <div class ="NavBarContents">
-            <b-navbar-brand href="/" style="align-self: center">Dashboard</b-navbar-brand>
-            <img alt="experimental_station_logo" src = "../assets/experimental_station_logo.png" width = "20%" @click="imageUrl">
-            <b-button pill @click="logout" style="align-self: center">{{buttonText}}</b-button>
-            </div>
-        </b-navbar> -->
-        <b-navbar class="navbar navbar-light navbar-expand-md shadow-sm navigation-clean-button" style="background-color: #16a2b8;">
-            <div class="container">
-              <a class="navbar-brand" href="/" style="font-family: Cabin, sans-serif;">Dashboard</a>
-              <a class="btn btn-light text-left bg-info border rounded border-info action-button" role="button" @click="logout" v-if="show_logout_option">Log out</a>
-            </div>
-        </b-navbar>
-    </div>
+  <div>
+          <nav class="navbar navbar-light navbar-expand-md navigation-clean-button">
+              <div class="container">
+                <img id="logo" @click=imageUrl src="../assets/experimental_station_logo.png">
+                <button class="navbar-toggler" v-b-toggle.navcol-1>
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                  <b-collapse class="navbar-collapse" id="navcol-1">
+                      <ul class="nav navbar-nav mr-auto"></ul>
+                      <span class="navbar-text actions">
+                        <a class="nav_button" href="/">Dashboard</a>
+                        <a class="btn btn-light action-button" role="button" @click="logout" v-if="show_logout_option">Log Out</a>
+                      </span>
+                  </b-collapse>
+              </div>
+          </nav>
+          <div v-if="addPadding" class="under_navbar_padding">
+          </div>
+  </div>
+
 </template>
 
 
@@ -26,6 +32,10 @@
                 type: String,
                 default: null,
             },
+            addPadding: {
+              type: Boolean,
+              default: true
+            }
         },
         data() {
             return {
@@ -53,29 +63,73 @@
 
         },
         mounted() {
-            
+
             this.getButtonText();
         }
     }
 </script>
 
 <style scoped>
-    img{
-        cursor: pointer;
-        align-self: center;
-        min-width: 10rem;
-        margin: 0.7rem 1rem;
-    }
-    .NavBar {
-      margin-bottom: 2rem;
-    }
-    .NavBarContents{
-        display: flex;
-        flex-direciton: row;
-        flex: 1;
-        justify-content: space-evenly;
-        }
+  .navbar {
+  background-color: #efffff;
+  position: fixed;
+  width: 100%;
+  z-index: 99;
+  -webkit-box-shadow: 0px 3px 20px 0px rgba(0,0,0,0.5);
+  -moz-box-shadow: 0px 3px 20px 0px rgba(0,0,0,0.5);
+  box-shadow: 0px 3px 20px 0px rgba(0,0,0,0.5);
+  }
 
+  .nav_button {
+  padding: 0rem 1rem;
+  }
 
+  .navigation-clean-button {
+  padding: 1rem 0.5rem;
+  }
+
+  .navigation-clean-button .navbar-toggler {
+  border-color: #ddd;
+  margin-right: 1rem;
+  }
+
+  .navigation-clean-button .navbar-toggler:focus {
+  background-color: #fff;
+  }
+
+  .navigation-clean-button .actions .nav_button {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #465765;
+  }
+
+  .navigation-clean-button .navbar-text .action-button,
+  .navigation-clean-button .navbar-text .action-button:active,
+  .navigation-clean-button .navbar-text .action-button:hover,
+  .navigation-clean-button .navbar-text .action-button:focus {
+  background: #56c6c6;
+  border-radius: 20px;
+  font-size: inherit;
+  color: #fff;
+  border: none;
+  padding: .5rem 1rem;
+  cursor: pointer;
+  }
+
+  .navigation-clean-button .navbar-text .action-button:hover {
+  background: #66d7d7;
+  }
+
+  .under_navbar_padding {
+    padding: 5rem;
+  }
+
+  #logo {
+    cursor: pointer;
+    width: 70%;
+    padding: 1rem;
+    max-width: 300px;
+    min-width: 225px;
+  }
 
 </style>

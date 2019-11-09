@@ -145,7 +145,7 @@
                 
         </b-container>
     
-
+    <QueryTable />
     </div>
     
 </template>
@@ -155,12 +155,35 @@ import DatePicker from 'vue2-datepicker'
 import moment from 'moment'
 import { db } from '@/firebase.js'
 import {Timestamp} from '@/firebase.js'
+import QueryTable from '../../components/QueryTable'
+let setOrder = function(field){
+    var fieldVal = 0;
+    if (field == "Check In"){
+        fieldVal = 1;
+    } else if (field == "Check Out"){
+        fieldVal = 2;
+    } else if (field == "Youth ID"){
+        fieldVal = 3;
+    } else if (field == "First Name"){
+        fieldVal = 4;
+    } else if (field == "Last Name"){
+        fieldVal = 5;
+    } else if (field == "Notes"){
+        fieldVal = 6;
+    } else if (field == "Period"){
+        fieldVal = 8;
+    } else {
+        fieldVal = 7
+    }
+    return fieldVal
+};
 
 
 export default {
     name: 'Stats',
     components: {
         DatePicker,
+        QueryTable
 
     },
     data() {
@@ -227,7 +250,16 @@ export default {
             }
             let res = [];
             queryResult.forEach(doc => {
-                res.push(doc.data())
+                var data = doc.data();
+                const ordered = {};
+                Object.keys(data).sort(function(a, b){
+                  var aVal = setOrder(a);
+                  var bVal = setOrder(b);
+                  return aVal-bVal;
+                }).forEach(function(key) {
+                  ordered[key] = data[key];
+                });
+                res.push(ordered);
             });
             return res;
         },
@@ -251,9 +283,18 @@ export default {
                 window.alert(err);
             }
             query.forEach(doc => { 
-                let data = doc.data();
+                var data = doc.data();
                 data["Check In"] = data["Check In"].toDate();
                 data["Check Out"] = data["Check Out"].toDate();
+                const ordered = {};
+                Object.keys(data).sort(function(a, b){
+                  var aVal = setOrder(a);
+                  var bVal = setOrder(b);
+                  return aVal-bVal;
+                }).forEach(function(key) {
+                  ordered[key] = data[key];
+                });
+                data = ordered;
                 this.total_Hours_Earned_Data.push(data);
                 // Append hours to breakdown
                 for (let key in data) { 
@@ -348,8 +389,14 @@ export default {
                 }
             })
             return total;
-        }
+        },
+        async getProfileData () {
+        let profiles = await db.collection("GlobalYouthProfile").get()
+        return profiles.docs.map(x => Object.assign(x.data(), {ID:x.id}))
+
+        },
     },
+
 
     async mounted() {
         //Generate year selector 
@@ -366,7 +413,8 @@ export default {
         let seasonQuery = await db.collection("GlobalVariables").doc("ActivePeriods").get();
         this.Earned_Period_Data.season_options = seasonQuery.data().Seasons;
         this.Spent_Period_Data.season_options = seasonQuery.data().Seasons;
-
+        let profileData = await this.getProfileData();
+        console.log(profileData)
     }
     
 }
