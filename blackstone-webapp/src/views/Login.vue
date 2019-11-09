@@ -48,7 +48,7 @@
 <style scoped>
     .login {
         height:100%;
-        background-image: url('/img/bike.42814278.jpg');
+        background-image: url('../assets/bike.jpg');
     }
     input {
         margin: 10px 0;
