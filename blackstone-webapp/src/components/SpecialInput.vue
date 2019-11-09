@@ -179,7 +179,7 @@ export default {
 
     watch: {
         value: function() {
-            this.$emit(this.tag, this.value)
+            this.$emit(this.ref, this.value)
         },
 
         inputType: function() {
@@ -189,6 +189,8 @@ export default {
     },
 
     methods: {
+
+
         sanitizeArgs() {
 
         },
