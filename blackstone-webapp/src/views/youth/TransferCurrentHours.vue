@@ -39,13 +39,13 @@ In firebase the following things happen:
             <b-row>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedFrom" style="margin-bottom: 10px" periods="all"/>
+                        <YouthIDSelector ref="selectedFrom" @selected="selectedFrom" style="margin-bottom: 10px" periods="all"/>
                         <br>
                     </b-row>
                 </b-col>
                 <b-col>
                     <b-row>
-                        <YouthIDSelector @selected="selectedTo" style="margin-bottom: 10px" periods="all"/>
+                        <YouthIDSelector ref="selectedTo" @selected="selectedTo" style="margin-bottom: 10px" periods="all"/>
                     </b-row>
                 </b-col>
             </b-row>
@@ -63,6 +63,7 @@ In firebase the following things happen:
                         :step="0.5"
                         style="width: 20rem"
                         controls
+                        ref="hoursInput"
                         :inputtable="false"
                     />
                 </b-col>
@@ -232,6 +233,10 @@ In firebase the following things happen:
                         }
 
                         this.closeLoadingModal();
+                        this.$refs.selectedFrom.reset();
+                        this.$refs.selectedTo.reset();
+                          this.$refs.hoursInput.setValue(1)
+
                         this.showModal("Success!", "Your request has been sent for staff approval")
                     }
                     else {
