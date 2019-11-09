@@ -1,21 +1,21 @@
 <!--
-Transfer Hours, useful for Youths who want to transfer their hours to/from other youths. 
+Transfer Hours, useful for Youths who want to transfer their hours to/from other youths.
 To prevent Youths from griefing other people, this page only submits a transfer request, to `GlobalTransferHours`,
-for a staff member to approve. 
+for a staff member to approve.
 
 (As it is current configure, it is possible to transfer hours to yourself, at the expense of your own Hours)
 
 Youths have the ability to select their hours from a incrementer (There's a bug in this, where if a user types in
 a non-numerical character, bad things will happen, but we're working on a new incrementer component, so don't fret)
 
-Youth can also put down an optional note for staff to see. 
+Youth can also put down an optional note for staff to see.
 
 When the submit button is clicked, a modal should appear to indicate the status of their action. This page makes sure that
 the Youth has enough Hours to transfer.
 
-In firebase the following things happen: 
-- GlobalYouthProfile: The 'from' Youth has Hours Spent increased, and Pending Hours decreased 
-                      The 'to' Youth has Pending Hours increased 
+In firebase the following things happen:
+- GlobalYouthProfile: The 'from' Youth has Hours Spent increased, and Pending Hours decreased
+                      The 'to' Youth has Pending Hours increased
 - GlobalTransferHours has a new record of the transaction, waiting to be approved
 -->
 <template>
@@ -168,11 +168,11 @@ In firebase the following things happen:
                 fromID = this.fromSelector["ID"]
                 toID   = this.toSelector["ID"]
 
-                if (fromID == "" && toID == "") {
+                if (fromID == null || toID == null) {
                     this.showModal("Error", "Please select/enter an ID for both 'To' and 'From'");
                 }
                 else {
-                    this.showLoadingModal("One second..");
+                    this.showLoadingModal("Checking if this transaction is valid...");
                     //check if from user has sufficient credits for the amount
                     let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(fromID).get();
                     let toYouthProfile = await db.collection("GlobalYouthProfile").doc(toID).get();
@@ -194,7 +194,7 @@ In firebase the following things happen:
                     if (currentHours >= amount) {
                         //create request for it
 
-                        //Attaching current period 
+                        //Attaching current period
                         let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
                         period = period.data()["CurrentPeriod"]
 
@@ -236,7 +236,7 @@ In firebase the following things happen:
                     }
                     else {
                         this.closeLoadingModal();
-                        this.showModal("Error", "From user does not have enough hours! They only have: " + currentHours.toString());
+                        this.showModal("Error", "The sender does not have enough hours! They only have " + currentHours.toString() + " hours.");
                     }
 
 
