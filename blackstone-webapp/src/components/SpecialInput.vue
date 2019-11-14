@@ -141,12 +141,14 @@ export default {
         tag: {
             type:String,
             default: "unknown_ref"
-        }
+        },
+        value: {
+
+        },
     },
     data() {
         return {
             input: null,
-            value: null,
             args: {},
             ready: false,
             raceOptions: [
@@ -178,13 +180,16 @@ export default {
     },
 
     watch: {
+        // Right now this is necessary so local changes to this.value are propagated
+        // up to the parent
+        // TODO: Fix this so it doesn't locally set this.value
         value: function() {
-            this.$emit(this.ref, this.value)
-             this.$emit("input", this.value)
+            this.$emit(this.tag, this.value)
+            this.$emit("input", this.value)
         },
 
         inputType: function() {
-            this.value = null;
+            this.setValue(null);
             this.input = this.inputType;
         }
     },
@@ -197,21 +202,21 @@ export default {
         },
 
         setValue(val) {
-            this.value = val;
+            this.$emit("input", val);
             return;
         },
 
         initValue(val) {
             if (val != null) {
-                this.value = val;
+                this.setValue(val);
                 return;
             }
             switch(this.input) {
                 case 'Integer':
-                    this.value = 0
+                    this.setValue(0);
                     break;
                 case 'Boolean':
-                    this.value = "false"
+                    this.setValue("false");
                     break;
             }
         },
@@ -237,7 +242,6 @@ export default {
         this.args = this.arguments;
         this.setValue(this.args.value);
         this.ready = true;
-
     },
 
     components: {
