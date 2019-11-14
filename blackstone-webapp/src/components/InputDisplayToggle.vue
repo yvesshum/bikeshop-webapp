@@ -17,7 +17,7 @@
     </div>
 
     <div ref="edit_container" v-else>
-      <SpecialInput ref="edit_input" :input="type" :arguments="input_args" v-model="edit_value">
+      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value">
       </SpecialInput>
       <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()">
         <div v-if="changed">

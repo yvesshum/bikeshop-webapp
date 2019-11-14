@@ -195,6 +195,7 @@ export default {
             this.$emit("input", new_value);
         },
 
+        // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
         inputType: function() {
             this.setValue(null);
             this.input = this.inputType;
@@ -247,6 +248,7 @@ export default {
     mounted() {
         this.sanitizeArgs();
         this.args = this.arguments;
+        this.input = this.inputType;
         this.setValue(this.args.value);
         this.ready = true;
     },
