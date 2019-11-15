@@ -47,7 +47,7 @@ export default {
 
   data: function() {
     return {
-      edit_value: null,
+      edit_value: undefined,
     }
   },
 
@@ -80,10 +80,6 @@ export default {
 
     reset: function() {
       this.edit_value = this.defaultValue;
-      if (!Array.isArray(this.defaultValue)) {
-        this.$refs.edit_input.setValue(this.defaultValue);
-      }
-      
       this.$emit("Reset", this.edit_value);
     },
 

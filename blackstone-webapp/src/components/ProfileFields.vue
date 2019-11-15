@@ -359,7 +359,7 @@ export default {
 
       // Have to use Vue.$set to make the new properties reactive (dynamic updates)
       this.row_status.keys().forEach(key => {
-        this.$set(this.local_values, key, null);
+        this.$set(this.local_values, key, undefined);
         this.$set(this.fields_used, key, false);
       });
     },
@@ -373,7 +373,7 @@ export default {
       // TODO - confirm change profile modal if unsaved changes?
       this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
-        this.local_values[key] = null;
+        this.local_values[key] = undefined;
       });
 
       // If a profile was passed, display it to the screen
