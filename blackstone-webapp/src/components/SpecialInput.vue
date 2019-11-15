@@ -151,7 +151,7 @@ export default {
     data() {
         return {
             input: null,
-            inner_value: null,
+            inner_value: this.value,
             args: {},
             ready: false,
             raceOptions: [
