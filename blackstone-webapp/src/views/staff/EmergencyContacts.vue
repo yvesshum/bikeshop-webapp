@@ -21,6 +21,7 @@
 import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
+import {search} from "@/components/Search.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -39,7 +40,7 @@ export default {
       headers: [
         { // The name of the youth
           title: "Name", field: "Name",
-          headerFilter: true, headerFilterFunc: this.name_filter
+          headerFilter: true, headerFilterFunc: search
         },
         { // The ID of the youth
           title: "ID", field: "ID", width: 70,
@@ -103,11 +104,6 @@ export default {
         var contact = data[field];
         return `<p style='text-align: center'>${contact.Name}<br />${contact.Phone}</p>`;
       }
-    },
-
-    // Function to filter the rows based on the name search
-    name_filter: function(headerValue, rowValue, rowData, filterParams) {
-      return rowValue.toLowerCase().indexOf(headerValue.toLowerCase()) >= 0;
     },
 
     // Function to filter the rows based on the ID search
