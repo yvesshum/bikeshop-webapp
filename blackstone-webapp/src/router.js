@@ -26,6 +26,7 @@ import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
 import Stats from './views/staff/Stats.vue';
+import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 
 Vue.use(Router);
 
@@ -222,6 +223,15 @@ const router = new Router({
             path: '/stats',
             name: 'stats',
             component: Stats,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/emergency-contacts',
+            name: 'emergency-contacts',
+            component: EmergencyContacts,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

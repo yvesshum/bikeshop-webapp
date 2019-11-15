@@ -56,11 +56,12 @@ Emits:
         LOADED: "loaded",
         LOADING: "loading",
         UNLOADED: "unloaded",
+        FAILED: "failed",
     };
 
     export default {
         name: 'CollectionTable',
-        props: ['heading_data', 'collection', 'args', 'groupBy', 'groupByOptions', 'progressiveLoad'],
+        props: ['heading_data', 'collection', 'args', 'groupBy', 'groupByOptions', 'progressiveLoad', 'doc_formatter'],
 
         data: function () {
             return {
@@ -210,6 +211,9 @@ Emits:
 
             // Format a specific doc as a row
             format_doc: function(doc) {
+                if (this.doc_formatter != undefined)
+                    return this.doc_formatter(doc);
+
                 var data = doc.data();
                 
                 // Save the doc's ID as an extra field - used for convenience in setting status
