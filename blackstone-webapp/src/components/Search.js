@@ -29,7 +29,7 @@ export const SPECIAL_CHARS = [
 
 
 export function filter(search_term, opt) {
-	return make_binary_search(search_term)(opt);
+	return make_filter(search_term)(opt);
 }
 
 export function make_filter(search_term) {
