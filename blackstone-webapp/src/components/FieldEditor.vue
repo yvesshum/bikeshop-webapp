@@ -129,7 +129,7 @@
             rows="1"
             max-rows="3"
         ></b-form-textarea> -->
-        <SpecialInput :inputType="modal.add.field_type" ref="addInput" tag="addInput" v-on:addInput="handleSpecialInputEmit"/>
+        <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
         <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName">Add a new field and change all existing documents to have this field and value</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
 
@@ -208,11 +208,6 @@ export default {
         })
     },
     methods: {
-        handleSpecialInputEmit(value) {
-            this.modal.add.initial_value = value;
-            console.log(this.modal.add.initial_value);
-        },
-
         parse(item) {
             return JSON.parse(JSON.stringify(item));
         },
