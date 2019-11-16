@@ -234,7 +234,7 @@ export default {
         var date2 = option.Out.toDate();
         var formatted_date = this.format_date(date1, date2).replace(/<.+?>/g, " ").toLowerCase();
 
-        return formatted_date.indexOf(search_term) >= 0;
+        return formatted_date.indexOf(search_term.toLowerCase()) >= 0;
       },
 
       format_time: function(cell) {
