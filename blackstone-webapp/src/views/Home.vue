@@ -33,6 +33,8 @@
         </b-card>
       </div>
 
+      <div v-if="isStaff" class="staff_view">
+
       <div class="heading">
           <h1>Staff</h1>
       </div>
@@ -118,6 +120,7 @@
         </b-collapse>
       </b-card>
   </div>
+    </div>
 </div>
 <footer>
     <p class="copyright" >Blackstone Bicycle Works © 2019</p>
