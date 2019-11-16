@@ -565,8 +565,8 @@ export default {
           return {
             title: x,
             field: x,
-            headerFilter: (x==="ID"||x==="Name"),
-            headerFilterFunc: filter
+            headerFilter: true,
+            headerFilterFunc:  (x==="ID"||x==="Name") ? filter : "like"
           };
         })
       );
