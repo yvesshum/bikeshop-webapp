@@ -21,7 +21,7 @@
 import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
-import {search} from "@/components/Search.js";
+import {filter} from "@/components/Search.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -40,7 +40,7 @@ export default {
       headers: [
         { // The name of the youth
           title: "Name", field: "Name",
-          headerFilter: true, headerFilterFunc: search
+          headerFilter: true, headerFilterFunc: filter
         },
         { // The ID of the youth
           title: "ID", field: "ID", width: 70,

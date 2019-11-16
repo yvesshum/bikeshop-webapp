@@ -28,9 +28,12 @@ export const SPECIAL_CHARS = [
 
 
 
+export function filter(search_term, opt) {
+	return make_binary_search(search_term)(opt);
+}
 
-export function binary_search(search_term) {
-	return (opt) => make_search(search_term)(opt).length() > 0
+export function make_filter(search_term) {
+	return (opt) => make_search(search_term)(opt) != null
 };
 
 export function search(search_term, opt) {
@@ -131,7 +134,7 @@ export function make_search(search_term) {
         //
         // If either of these conditions is not met, filter this option out.
         if ((unmatched_terms.length !== 0) || (num_fields_matched < num_terms)) {
-            return false;
+            return null;
         };
 
         return true;
