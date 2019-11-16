@@ -36,6 +36,7 @@
         groupBy="Period"
         :groupByOptions="periods"
         :progressiveLoad="true"
+        :doc_formatter="doc_formatter"
         style="width:90%;margin:auto;"
       ></CollectionTable>
     </div>
@@ -61,7 +62,7 @@ export default {
     YouthIDSelector,
     ProfileFields,
     ApronBar,
-    CollectionTable
+    CollectionTable,
   },
 
   data: function() {
@@ -74,11 +75,54 @@ export default {
       log_headers_doc: null,
 
       order_log_headers: [],
-      work_log_headers: [],
 
       work_log_headers_omit: ["First Name", "Last Name", "Youth ID"],
 
       periods: [],
+
+
+
+      work_log_headers: [
+        { // The Date
+          title: "Date", field: "Date", formatter: this.format_date_cell,
+          headerFilter: true, headerFilterFunc: this.date_filter,
+        },
+        { // The check in time
+          title: "Check In", field: "Check In", formatter: this.format_time,
+          headerFilter: "number", headerFilterFunc: this.time_filter,
+        },
+        { // The check out time
+          title: "Check Out", field: "Check Out", formatter: this.format_time,
+          headerFilter: "number", headerFilterFunc: this.time_filter,
+        },
+        { // The hours earned, broken down by category
+          title: "Hours", field: "Hours", formatter: this.format_work_hours
+        },
+        "Notes",
+      ],
+
+      // Helper function to group document data for the table
+      doc_formatter: (doc) => {
+        var data = doc.data();
+        return {
+          "Date": {
+            In: data["Check In"],
+            Out: data["Check Out"],
+          },
+          "Check In": data["Check In"],
+          "Check Out": data["Check Out"],
+          "Hours": {
+            "Class": data["Class"],
+            "Elective": data["Elective"],
+            "Bike Riding or Cycling": data["Bike Riding or Cycling"],
+            "Shop Support": data["Shop Support"],
+            "Other": data["Other"],
+            "Misc": data["Misc"],
+          },
+          "Notes": data["Notes"],
+          "Period": data["Period"],
+        };
+      },
     };
   },
 
@@ -87,9 +131,6 @@ export default {
     this.log_headers_doc = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
 
     this.order_log_headers = this.log_headers_doc.data()['Order Log Headers'];
-    this.work_log_headers = this.log_headers_doc.data()['Work Log Headers'].filter(header => {
-      return !this.work_log_headers_omit.includes(header);
-    });
 
     let periods_doc = await db.collection("GlobalVariables").doc("ActivePeriods").get();
     let periods_data = periods_doc.data();
@@ -144,7 +185,93 @@ export default {
         this.currentProfile = null;
         this.order_log_collection = null;
         this.work_log_collection  = null;
-      }
+      },
+
+      // Formatting for the hours column of the Work Log goes here
+      format_work_hours: function(cell) {
+        var val = cell.getValue();
+        var keys = Object.keys(val);
+        var msg = "<table>";
+        var sum = 0;
+
+        keys.forEach(f => {
+          if (val[f] > 0) {
+            msg += `<tr><td>${f}:</td><td>${val[f]}</td></tr>`;
+            sum += val[f];
+          }
+        });
+        msg += "<tr><td>Total:</td><td>" + sum + "</td></tr>";
+        msg += "</table>";
+
+        return msg;
+      },
+
+      format_date_cell: function(cell) {
+        var val = cell.getValue();
+        var date1 = val.In.toDate();
+        var date2 = val.Out.toDate();
+
+        return this.format_date(date1, date2);
+      },
+
+      format_date: function(date1, date2) {
+        var day, weekday;
+
+        if (this.same_day(date1, date2)) {
+          day     = this.get_date(date1);
+          weekday = this.get_weekday(date1);
+        }
+        else {
+          day = date1.toLocaleDateString(undefined, {month: "short", day: "numeric"}) + " - " + date2.toLocaleDateString(undefined, {month: "short", day: "numeric", year: "numeric"});
+          weekday = `${this.get_weekday(date1)} - ${this.get_weekday(date2)}`;
+        }
+
+        return `<p>${day}<br />${weekday}</p>`;
+      },
+
+      date_filter: function(search_term, option) {
+        var date1 = option.In.toDate();
+        var date2 = option.Out.toDate();
+        var formatted_date = this.format_date(date1, date2).replace(/<.+?>/g, " ").toLowerCase();
+
+        return formatted_date.indexOf(search_term) >= 0;
+      },
+
+      format_time: function(cell) {
+        var val = cell.getValue();
+        var date = val.toDate();
+
+        var time = date.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+          timeZoneName: "short",
+        });
+
+        return `<p>${time}</p>`;
+      },
+
+      time_filter: function(search_term, option) {
+        var val = option.toDate();
+        var hour = (val.getHours() % 12).toString();
+        console.log(hour, typeof hour, search_term, typeof search_term);
+        return hour == search_term;
+      },
+
+      same_day: function(date1, date2) {
+
+        return date1.getDate() === date2.getDate()
+          && date1.getMonth() === date2.getMonth()
+          && date1.getFullYear() === date2.getFullYear();
+      },
+
+      get_weekday: function(date) {
+        return date.toLocaleDateString(undefined, {weekday: "long"});
+      },
+
+      get_date: function(date) {
+        return date.toLocaleDateString(undefined, {dateStyle: "long"})
+      },
     }
 }
 </script>
