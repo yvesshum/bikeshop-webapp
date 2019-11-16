@@ -20,6 +20,8 @@ Style argument is just for the specific <b-form> components instead of the entir
 * The ref is only necessary if you want to call private methods here 
 * tag is necessary to capture the data emission. The emit tag is specified as the tag prop.
 
+* NOTE: In order to share a single value on three levels (the child input component, this current component, and the parent component), the input component uses v-model with the inner_value variable, and this component uses value to allow its parent to use v-model. Whenever one of these is changed, it updates the other.
+
 -->
 
 <template>
@@ -43,7 +45,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="Boolean">
+                <b-form-radio-group  v-model="inner_value" name="Boolean">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -54,7 +56,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns a 10 digit string -->
         <div v-else-if="input === 'Phone'">
             <!-- <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input> -->
-            <vue-tel-input v-model="value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
+            <vue-tel-input v-model="inner_value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
         </div>
 
         <!-- Returns a ISO string-->
@@ -69,7 +71,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="value" name="Gender">
+                <b-form-radio-group  v-model="inner_value" name="Gender">
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -85,24 +87,24 @@ Style argument is just for the specific <b-form> components instead of the entir
             "Black or African American", 
             "White" -->
         <div v-else-if="input === 'Race'">
-            <b-form-select v-model="value" :options="raceOptions" :style="args.style"></b-form-select>
+            <b-form-select v-model="inner_value" :options="raceOptions" :style="args.style"></b-form-select>
         </div>
 
         <!-- Returns 'K', '1,12' -->
         <div v-else-if="input === 'Grade'">
-            <b-form-select v-model="value" :options="gradeOptions" :style="args.style"></b-form-select>
+            <b-form-select v-model="inner_value" :options="gradeOptions" :style="args.style"></b-form-select>
         </div>
 
         <!-- Returns an email string -->
         <div v-else-if="input === 'Email'">
-            <b-form-input v-model="value" type="email" :state="isValidEmail()" :style="args.style"></b-form-input> 
+            <b-form-input v-model="inner_value" type="email" :state="isValidEmail()" :style="args.style"></b-form-input>
         </div>
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
             <VueNumberInput 
               center
-              v-model="value"
+              v-model="inner_value"
               :min="0"
               :step="0.5"
               placeholder="Hours"
@@ -115,7 +117,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input v-model="value" type="text" :style="args.style"></b-form-input> 
+            <b-form-input v-model="inner_value" type="text" :style="args.style"></b-form-input>
         </div>
 
 
@@ -126,13 +128,6 @@ import VueNumberInput from '@chenfengyuan/vue-number-input';
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 
-  
-// Import date picker css
-import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
-   
-
-
-// import datetime from 'vuejs-datetimepicker';
 
 export default {
     name: 'SpecialInput',
@@ -148,12 +143,15 @@ export default {
         tag: {
             type:String,
             default: "unknown_ref"
-        }
+        },
+        value: {
+
+        },
     },
     data() {
         return {
             input: null,
-            value: null,
+            inner_value: null,
             args: {},
             ready: false,
             raceOptions: [
@@ -185,37 +183,48 @@ export default {
     },
 
     watch: {
-        value: function() {
-            this.$emit(this.tag, this.value)
+
+        // When the value is changed by the parent, update the inner_value for the input component
+        value: function(new_value) {
+            this.inner_value = new_value;
         },
 
+        // When the inner value of the input component changes, propagate that change upward
+        inner_value: function(new_value) {
+            // this.$emit(this.tag, new_value);
+            this.$emit("input", new_value);
+        },
+
+        // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
         inputType: function() {
-            this.value = null;
+            this.setValue(null);
             this.input = this.inputType;
         }
     },
 
     methods: {
+
+
         sanitizeArgs() {
 
         },
 
         setValue(val) {
-            this.value = val;
+            this.$emit("input", val);
             return;
         },
 
         initValue(val) {
             if (val != null) {
-                this.value = val;
+                this.setValue(val);
                 return;
             }
             switch(this.input) {
                 case 'Integer':
-                    this.value = 0
+                    this.setValue(0);
                     break;
                 case 'Boolean':
-                    this.value = "false"
+                    this.setValue("false");
                     break;
             }
         },
@@ -239,9 +248,9 @@ export default {
     mounted() {
         this.sanitizeArgs();
         this.args = this.arguments;
+        this.input = this.inputType;
         this.setValue(this.args.value);
         this.ready = true;
-
     },
 
     components: {
