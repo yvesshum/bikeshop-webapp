@@ -203,6 +203,7 @@ import { db } from "@/firebase.js";
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
+import {filter} from '@/components/Search.js'
 let setOrder = function(field) {
   var fieldVal = 0;
   if (field == "Check In") {
@@ -492,7 +493,15 @@ export default {
     },
     async getProfileData() {
       let profiles = await db.collection("GlobalYouthProfile").get();
-      return profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
+      let squashed = profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
+      squashed = squashed.map(x=>{
+        var combinedName = x["Last Name"] + ", " + x["First Name"];
+        delete x["Last Name"];
+        delete x["First Name"];
+        x["Name"] = combinedName;
+        return x;
+      })
+      return squashed
     },
     async displayTable() {
       var tableData = await this.getProfileData();
@@ -507,7 +516,9 @@ export default {
         columns: this.fields_selected.map(x => {
           return {
             title: x,
-            field: x
+            field: x,
+            headerFilter: (x==="ID"||x==="Name"),
+            headerFilterFunc: filter
           };
         }),
         pagination: "local",
@@ -553,7 +564,9 @@ export default {
       this.table.setColumns(nV.map(x => {
           return {
             title: x,
-            field: x
+            field: x,
+            headerFilter: (x==="ID"||x==="Name"),
+            headerFilterFunc: filter
           };
         })
       );
