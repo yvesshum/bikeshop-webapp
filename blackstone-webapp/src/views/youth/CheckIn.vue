@@ -34,7 +34,7 @@
             Check Out
         </h4>
         {{ time }}
-      </b-button> 
+      </b-button>
     </div>
     <!-- Modals -->
     <b-modal  hide-footer v-model="checkoutModalVisible">
@@ -45,7 +45,7 @@
         <h2 style="text-align: center">Fill out this form to log hours!</h2>
         <div v-for="category in categories" :key="category" class="input-field">
           <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-            <VueNumberInput 
+            <VueNumberInput
               center
               v-model="hours[category]"
               :min="0"
@@ -77,7 +77,7 @@
         <div class="d-block text-center">
           {{ checkoutStatus.message}}
         </div>
-        <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Okay</b-button>
+        <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Done</b-button>
       </div>
     </b-modal>
   </div>
@@ -109,7 +109,7 @@ export default {
             categories: [],
             hours: {},
             notes: "",
-            totalHours: "", 
+            totalHours: "",
             date: "",
             time: "",
             overHours: false,
@@ -156,14 +156,14 @@ export default {
                 "Check In Time": moment().format(),
             }
             rb.ref('Checked In/' + this.ID).set(ret).catch(err => {
-                window.alert("Err: " + err);
+                window.alert("Error: " + err);
                 return null;
             })
             this.checkoutStatus.title = 'Success'
             this.checkoutStatus.message = 'You have successfully checked in.'
             this.$bvModal.show('checkout-status-modal')
             this.resetInput();
-        
+
         },
         resetInput() {
             this.$refs.selector.reset();
@@ -187,15 +187,15 @@ export default {
         async checkOut() {
             //TODO: Validation of hours.. or maybe not
             let categoryHourSum = 0
-            for (let category in this.hours) { 
+            for (let category in this.hours) {
                 categoryHourSum += this.parseHours(this.hours[category]);
                 console.log(this.hours[category])
             }
-            
+
             //add to GlobbalPendingHours
             let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
             period = period.data()["CurrentPeriod"]
-            
+
             let val = {
                 "First Name": this.FirstName,
                 "Last Name": this.LastName,
@@ -263,9 +263,9 @@ export default {
     },
 
     async mounted() {
-        this.listenerRef = await rb.ref('Checked In').on("value", snapshot => { 
+        this.listenerRef = await rb.ref('Checked In').on("value", snapshot => {
             if (snapshot.val() == null) this.checkedInUsers = {};
-            else this.checkedInUsers = snapshot.val();          
+            else this.checkedInUsers = snapshot.val();
         })
 
         //Hour Logging categories
@@ -274,7 +274,7 @@ export default {
         this.categories = categories;
 
         //set hour logs to be 0 by default
-        this.categories.forEach(category => { 
+        this.categories.forEach(category => {
             this.hours[category] = 0;
         })
 
