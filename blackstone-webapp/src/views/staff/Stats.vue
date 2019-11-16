@@ -500,7 +500,7 @@ export default {
       //This looks really complicated, but it's just because Javascript is kind of annoying
       //It takes each profile, gets its headers (field names), merges that list (.flat()), and then deduplicates them (... Set)
       this.checkbox_fields = [...new Set(tableData.map(x => Object.keys(x)).flat())].sort();
-
+      this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"),1).unshift(["ID"])
       this.table = new Tabulator("#table", {
         data: tableData,
         layout: "fitColumns",
@@ -548,9 +548,9 @@ export default {
   watch: {
     fields_selected: function(val, oldVal) {
       let nV = Object.values(Object.assign({}, val));
-      console.log(nV);
-      this.table.setColumns(
-        nV.sort().map(x => {
+      nV.splice(nV.indexOf("ID"),1)
+      nV.sort().unshift("ID") //Force ID to always be leftmost column
+      this.table.setColumns(nV.map(x => {
           return {
             title: x,
             field: x
