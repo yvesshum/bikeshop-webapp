@@ -1,7 +1,8 @@
 <!--
-* Usage: <SpecialInput inputType="String" args="arguments" ref="specialInput1" tag="specialInput1" v-on:specialInput1="handleEmit"/>
+* Usage: <SpecialInput inputType="String" args="arguments" v-model="specialInputvalue"/>
 
-* Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race, Grade, Email
+* Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race....
+        The full list can be viewed in GlobalVariables/SpecialInput 
 
 * Args must be an object. 
 Some components have properties that we would like to set through Special Input.
@@ -125,7 +126,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input v-model="inner_value" type="text" :style="args.style"></b-form-input>
+            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
         </div>
 
 
