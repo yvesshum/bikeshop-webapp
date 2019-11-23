@@ -115,6 +115,14 @@ Style argument is just for the specific <b-form> components instead of the entir
             />
         </div>
 
+        <div v-else-if="input === 'Class'">
+            <b-form-select v-model="inner_value" :options="classOptions" :style="args.style"></b-form-select>
+        </div>
+
+        <div v-else-if="input === 'Period'">
+            <!-- full selection  -->
+        </div>
+
         <!-- String Input -->
         <div v-else>
             <b-form-input v-model="inner_value" type="text" :style="args.style"></b-form-input>
@@ -127,7 +135,7 @@ Style argument is just for the specific <b-form> components instead of the entir
 import VueNumberInput from '@chenfengyuan/vue-number-input';
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
-
+import {db} from '@/firebase.js'
 
 export default {
     name: 'SpecialInput',
@@ -179,6 +187,7 @@ export default {
                 { value: "11", text: '11' },
                 { value: "12", text: '12' },
             ],
+            classOptions: [],
         }
     },
 
@@ -196,9 +205,13 @@ export default {
         },
 
         // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
+        // Yves: We need this for fieldEditor >.> inputType will change 
         inputType: function() {
             this.setValue(null);
             this.input = this.inputType;
+            if (this.inputType === "Class" && !this.classOptions.length) {
+                this.getClassOptions();
+            }
         }
     },
 
@@ -242,14 +255,32 @@ export default {
                 return (data[0] != null && data[1] != null)
             }
             
+        },
+
+        async getClassOptions() {
+            let classes = await db.collection("GlobalVariables").doc("Classes").get();
+            // { value: "12", text: '12' },
+            Object.entries(classes.data()).forEach(c => {
+                this.classOptions.push({
+                    value: c[0],
+                    text: c[0] + ": " + c[1]
+                })
+            })
+            console.log('t', this.classOptions);
         }
     },
 
-    mounted() {
+    async mounted() {
         this.sanitizeArgs();
         this.args = this.arguments;
         this.input = this.inputType;
         this.setValue(this.args.value);
+
+        //get Class data 
+        if (this.input === "Class") {
+            await this.getClassOptions();
+        }
+
         this.ready = true;
     },
 
