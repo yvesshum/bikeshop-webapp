@@ -120,7 +120,7 @@ Style argument is just for the specific <b-form> components instead of the entir
         </div>
 
         <div v-else-if="input === 'Period'">
-            <!-- full selection  -->
+            <b-form-select v-model="inner_value" :options="periodOptions" :style="args.style"></b-form-select>
         </div>
 
         <!-- String Input -->
@@ -136,6 +136,7 @@ import VueNumberInput from '@chenfengyuan/vue-number-input';
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
+import moment from 'moment'
 
 export default {
     name: 'SpecialInput',
@@ -188,6 +189,7 @@ export default {
                 { value: "12", text: '12' },
             ],
             classOptions: [],
+            periodOptions: [],
         }
     },
 
@@ -202,6 +204,7 @@ export default {
         inner_value: function(new_value) {
             // this.$emit(this.tag, new_value);
             this.$emit("input", new_value);
+            console.log(new_value);
         },
 
         // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
@@ -210,7 +213,11 @@ export default {
             this.setValue(null);
             this.input = this.inputType;
             if (this.inputType === "Class" && !this.classOptions.length) {
+                //only get it once, avoid api spam
                 this.getClassOptions();
+            }
+            else if (this.inputType === "Period" && !this.periodOptions.length) {
+                this.getPeriodOptions();
             }
         }
     },
@@ -267,6 +274,24 @@ export default {
                 })
             })
             console.log('t', this.classOptions);
+        },
+
+        async getPeriodOptions() {
+            let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
+            seasons = seasons.data().Seasons;
+            let years = [];
+            years.push(moment().subtract(1, 'years').format("YY"));
+            years.push(moment().format("YY"));
+            years.push(moment().add(1, 'years').format("YY"));
+            years.forEach(year => {
+                seasons.forEach(season => {
+                    this.periodOptions.push({
+                        value: season + " " + year,
+                        text: season + " " + year
+                    })
+                })
+            })
+
         }
     },
 
