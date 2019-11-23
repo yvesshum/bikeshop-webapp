@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home" v-if="ready">
     <top-bar :addPadding="false"/>
     <SpecialInput input="Datetime" :arguments="{}"/>
     <div id="menu_container">
@@ -11,7 +11,7 @@
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-6>Record and Manage Hours</h5>
           </b-card-header>
-          <b-collapse id="accordion-6" accordion="my-accordion" role="tabpanel">
+          <b-collapse id="accordion-6" accordion="my-accordion" role="tabpanel" :visible="!isStaff">
             <b-card-body>
                 <button onclick="location.href='/check-in'" class="btn btn-outline-info btn-block" type="button">Check In/Check Out</button>
                 <button onclick="location.href='/profile-lookup'" class="btn btn-outline-info btn-block" type="button">Profile Lookup</button>
@@ -140,7 +140,8 @@ export default {
   },
   data() {
       return {
-          isStaff: false
+          isStaff: false,
+          ready: false
       }
   },
   methods: {
@@ -154,6 +155,7 @@ export default {
             }
         }
         console.log(this.isStaff);
+        this.ready = true;
 
   }
 }

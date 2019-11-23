@@ -1,27 +1,16 @@
 <template>
     <div class = ApproveNewYouth>
         <top-bar/>
-        <h1>Approve New Youth Dashboard</h1>
-        <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-
-                <b-button-group>
-                    <b-button variant="success" @click="accept">Approve</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="info" @click="editFields">Inspect Youth</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
+        <h1 class="title">Approve New Youth Dashboard</h1>
+        <div class="toolbarwrapper">
+            <b-button-toolbar style="justify-content: center;">
+                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+                    <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
+
 
         <b-table
             striped
@@ -85,7 +74,7 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
-        
+
         <b-modal v-model = "editModalVisible" hide-footer lazy>
             <template slot = "modal-title">
                 Editing Registration
@@ -151,7 +140,7 @@
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
-    
+
     export default {
         name: 'ApproveNewYouth',
         components: {
@@ -190,7 +179,7 @@
                 let f = await fieldsRef.get();
                 return f.data();
             },
-            
+
             async getSeasons() {
                 let seasons = this.activePeriods["Seasons"]
                 var current = this.activePeriods["CurrentPeriod"]
@@ -211,12 +200,12 @@
                 new_seasons.push("None");
                 return new_seasons;
             },
-            
+
             async getEditOptions() {
                 let o = await optionsRef.get();
                 return o.data();
             },
-            
+
             rowSelected(items){
                 this.selected = items;
             },
@@ -272,30 +261,37 @@
 
 
             async accept() {
+              if(this.selected[0] != null) {
                 let row = this.selected[0];
+              }
+              else {
+                window.alert("Error on accepting Youth");
+                return null;
+              }
+
 
                 this.showLoadingModal("Doing some work in the background...");
-                
+
                 var newIDs = []
-                
-                await rb.ref('Youth ID Number').once("value", snapshot => { 
+
+                await rb.ref('Youth ID Number').once("value", snapshot => {
                     console.log("Snapshot value: ")
                     console.log(snapshot.val())
                     newIDs.push(snapshot.val()["value"]);
                 })
-                
+
                 console.log(newIDs[0])
-                
+
                 let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
-                
+
                 let input = JSON.parse(JSON.stringify(row));
                 delete input["Document ID"];
-                
+
                 console.log(input)
-                
+
                 let s = await periodRef.get();
                 var current = s.data();
-                
+
                 if(input["Registration Period"] == "None") {
                     current["NeverActiveYouths"].push({
                         "First Name": input["First Name"],
@@ -321,32 +317,32 @@
                     this.editSelected = {};
                     return null;
                 }
-                
+
                 //Get rid of Timestamp as it's an unncessary field for Youth Profile
                 delete input.Timestamp
 
                 let logStatus = await submitRef.set(input);
-                
+
                 if (logStatus) {
                     window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                     return null;
                 }
-                
+
                 let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
-                
+
                 if (status) {
                     window.alert("Error on deleting youth registration: " + row["Document ID"]);
                     return null;
                 }
-                
+
                 this.removeLocally(row["Document ID"]);
-                
+
                 this.closeLoadingModal();
-                
+
                 newIDs[0] += 1;
                 await rb.ref('Youth ID Number').set({"value": newIDs[0]});
                 // await rb.ref('Youth ID Number').off("value", listener);
-                
+
                 this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s registration")
 
             },
@@ -383,13 +379,13 @@
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
                     + curRow["First Name"] + " " + curRow["Last Name"] + "'s youth registration");
             },
-            
+
 
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
                 let curRow = this.selected[0];
-                
+
                 this.showLoadingModal("Doing some work in the background...");
 
                 let status = db.collection("GlobalPendingRegistrations").doc(this.rejectingDocumentID).delete();
@@ -422,14 +418,14 @@
                 this.showEditModal();
 
             },
-            
+
             async editFields() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
                     return null;
                 }
                 var editSelected = [];
-                
+
                 let fields = await this.getEditFields();
                 let seasons = await this.getSeasons();
                 let options = await this.getEditOptions();
@@ -515,11 +511,11 @@
                 console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
-            
+
             showEditModal() {
                 this.editModalVisible = true;
             },
-            
+
             closeEditModal() {
                 this.editModalVisible = false;
             },
@@ -532,14 +528,14 @@
                 this.editMsg = "";
                 this.editModalVisible = false;
             },
-            
+
             async saveEdits() {
                 let note = this.editFields;
                 this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelected);
-                
+
                 var newValues = {}
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
@@ -547,15 +543,15 @@
                       newValues[category] = value
                 }
                 console.log("New values: " + newValues);
-                
+
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     window.alert("Err: " +  err);
                     this.editSelected = {};
                     return null;
                 }
-                
-                
+
+
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
                         console.log(this.editSelected);
@@ -593,18 +589,18 @@
             let s = await periodRef.get();
             this.activePeriods = s.data()
             this.toggleBusy();
-            
+
         },
     }
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
+.toolbarwrapper {
+margin-bottom: 1rem;
+}
+.title {
+margin-bottom: 1rem;
+padding: 0 1rem;
+}
 
 </style>

@@ -1,7 +1,8 @@
 <!--
-* Usage: <SpecialInput inputType="String" args="arguments" ref="specialInput1" tag="specialInput1" v-on:specialInput1="handleEmit"/>
+* Usage: <SpecialInput inputType="String" args="arguments" v-model="specialInputvalue"/>
 
-* Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race, Grade, Email
+* Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race....
+        The full list can be viewed in GlobalVariables/SpecialInput 
 
 * Args must be an object. 
 Some components have properties that we would like to set through Special Input.
@@ -115,9 +116,17 @@ Style argument is just for the specific <b-form> components instead of the entir
             />
         </div>
 
+        <div v-else-if="input === 'Class'">
+            <b-form-select v-model="inner_value" :options="classOptions" :style="args.style"></b-form-select>
+        </div>
+
+        <div v-else-if="input === 'Period'">
+            <b-form-select v-model="inner_value" :options="periodOptions" :style="args.style"></b-form-select>
+        </div>
+
         <!-- String Input -->
         <div v-else>
-            <b-form-input v-model="inner_value" type="text" :style="args.style"></b-form-input>
+            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
         </div>
 
 
@@ -127,7 +136,8 @@ Style argument is just for the specific <b-form> components instead of the entir
 import VueNumberInput from '@chenfengyuan/vue-number-input';
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
-
+import {db} from '@/firebase.js'
+import moment from 'moment'
 
 export default {
     name: 'SpecialInput',
@@ -179,6 +189,8 @@ export default {
                 { value: "11", text: '11' },
                 { value: "12", text: '12' },
             ],
+            classOptions: [],
+            periodOptions: [],
         }
     },
 
@@ -193,12 +205,21 @@ export default {
         inner_value: function(new_value) {
             // this.$emit(this.tag, new_value);
             this.$emit("input", new_value);
+            console.log(new_value);
         },
 
         // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
+        // Yves: We need this for fieldEditor >.> inputType will change 
         inputType: function() {
             this.setValue(null);
             this.input = this.inputType;
+            if (this.inputType === "Class" && !this.classOptions.length) {
+                //only get it once, avoid api spam
+                this.getClassOptions();
+            }
+            else if (this.inputType === "Period" && !this.periodOptions.length) {
+                this.getPeriodOptions();
+            }
         }
     },
 
@@ -242,14 +263,50 @@ export default {
                 return (data[0] != null && data[1] != null)
             }
             
+        },
+
+        async getClassOptions() {
+            let classes = await db.collection("GlobalVariables").doc("Classes").get();
+            // { value: "12", text: '12' },
+            Object.entries(classes.data()).forEach(c => {
+                this.classOptions.push({
+                    value: c[0],
+                    text: c[0] + ": " + c[1]
+                })
+            })
+            console.log('t', this.classOptions);
+        },
+
+        async getPeriodOptions() {
+            let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
+            seasons = seasons.data().Seasons;
+            let years = [];
+            years.push(moment().subtract(1, 'years').format("YY"));
+            years.push(moment().format("YY"));
+            years.push(moment().add(1, 'years').format("YY"));
+            years.forEach(year => {
+                seasons.forEach(season => {
+                    this.periodOptions.push({
+                        value: season + " " + year,
+                        text: season + " " + year
+                    })
+                })
+            })
+
         }
     },
 
-    mounted() {
+    async mounted() {
         this.sanitizeArgs();
         this.args = this.arguments;
         this.input = this.inputType;
         this.setValue(this.args.value);
+
+        //get Class data 
+        if (this.input === "Class") {
+            await this.getClassOptions();
+        }
+
         this.ready = true;
     },
 
