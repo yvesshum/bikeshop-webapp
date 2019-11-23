@@ -28,7 +28,9 @@
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
+                <SpecialInput v-model="field.value" :ref="field.name" :input="field.type" :arguments="args">
+                </SpecialInput>
+                <!-- <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
                 <div v-if="field.type == 'tel'" class = "telDiv">
                   <vue-tel-input v-model="field.value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
                 </div>
@@ -39,8 +41,9 @@
                 <div v-if="field.type == 'radio'" class = "radioDiv">
                     <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
                     </RadioGroupOther>
-                </div>
-                <br><br>
+                </div> -->
+                <!-- <br> -->
+                <br>
                 <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
@@ -89,6 +92,7 @@
 
 <script>
     import { VueTelInput } from 'vue-tel-input'
+    import SpecialInput from '@/components/SpecialInput';
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
@@ -106,6 +110,7 @@
         components: {
             RadioGroupOther,
             VueTelInput,
+            SpecialInput,
         },
         data() {
             return {
@@ -119,7 +124,10 @@
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
                 newID: "123",
-                placeholders: {}
+                placeholders: {},
+                args: {
+                    "size": "35"
+                }
             };
         },
         methods: {
@@ -426,32 +434,17 @@
             }
             var opt_keys = [];
             var opt_types = [];
-            var opt_labels = [];
             forKeyVal(fields["optional"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
-                var labels = getLabels(val, fields);
                 opt_keys.push(name);
-                opt_types.push(type);
-                opt_labels.push(labels)
+                opt_types.push(val);
             });
             for (let i = 0; i < opt_keys.length; i ++) {
-                if(opt_labels[i] == null){
-                  this.optionalFields.push({
-                      name: opt_keys[i],
-                      value: "",
-                      type: opt_types[i],
-                      placeholder: this.placeholders[opt_keys[i]]
-                  });
-                } else {
-                    this.optionalFields.push({
-                        name: opt_keys[i],
-                        value: "",
-                        values: opt_labels[i],
-                        id: opt_labels[i],
-                        type: opt_types[i]
-                    });
-                }
+                this.optionalFields.push({
+                    name: opt_keys[i],
+                    value: "",
+                    type: opt_types[i],
+                    placeholder: this.placeholders[opt_keys[i]]
+                });
             }
             var hidden_keys = [];
             forKeyVal(fields["hidden"], function(name, val, n) {
