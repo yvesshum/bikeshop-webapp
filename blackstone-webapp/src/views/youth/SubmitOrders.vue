@@ -163,8 +163,8 @@ Once a submission goes through firebase should have the following changes:
                     }
 
                     //Attaching current period
-                    let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
-                    period = period.data()["CurrentPeriod"]
+                    let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
+                    let period = metadata.data()["CurrentPeriod"];
                     input["Period"] = period;
 
                     //Submit order hidden fields from realtime database

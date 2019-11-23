@@ -549,8 +549,8 @@ export default {
 
     //Grab the Season choices e.g. summer spring fall etc.
     let seasonQuery = await db
-      .collection("GlobalVariables")
-      .doc("ActivePeriods")
+      .collection("GlobalPeriods")
+      .doc("metadata")
       .get();
     this.Earned_Period_Data.season_options = seasonQuery.data().Seasons;
     this.Spent_Period_Data.season_options = seasonQuery.data().Seasons;

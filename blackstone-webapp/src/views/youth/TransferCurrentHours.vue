@@ -196,8 +196,8 @@ In firebase the following things happen:
                         //create request for it
 
                         //Attaching current period
-                        let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
-                        period = period.data()["CurrentPeriod"]
+                        let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
+                        let period = metadata.data()["CurrentPeriod"];
 
                         db.collection("GlobalTransferHours").doc().set({
                             "From ID": fromID,

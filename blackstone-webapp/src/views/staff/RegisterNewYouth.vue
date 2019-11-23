@@ -9,18 +9,11 @@
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                
-                <!-- <div v-if="field.type == 'Date'">
-
-                </div> -->
-                <div v-if="field.type == 'radio'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
-                    </RadioGroupOther>
+                <div class = "specialDiv">
+                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                  </SpecialInput>
                 </div>
-                <!--  -->
-                <input v-else size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
-                <br><br>
-                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
+                <br>
             </div>
         </div>
 
@@ -28,23 +21,11 @@
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <SpecialInput v-model="field.value" :ref="field.name" :input="field.type" :arguments="args">
-                </SpecialInput>
-                <!-- <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
-                <div v-if="field.type == 'tel'" class = "telDiv">
-                  <vue-tel-input v-model="field.value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
+                <div class = "specialDiv">
+                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                  </SpecialInput>
                 </div>
-                <div v-if="field.type == 'radioOther'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" nullOption>
-                    </RadioGroupOther>
-                </div>
-                <div v-if="field.type == 'radio'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
-                    </RadioGroupOther>
-                </div> -->
-                <!-- <br> -->
                 <br>
-                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
             </div>
         </div>
 
@@ -125,8 +106,10 @@
                 YouthProfile: {},
                 newID: "123",
                 placeholders: {},
-                args: {
-                    "size": "35"
+                arguments: {
+                    "placeholder": "0",
+                    "align": "center",
+                    "style": "text-align:center; color: #FF0000"
                 }
             };
         },
@@ -361,88 +344,31 @@
                 window.alert("Error on getting placeholder text values");
                 return null;
             }
-            var getType = function (val) {
-                var type = "";
-                if (val == "String"){
-                    type = "textarea";
-                } else if (val == "Boolean"){
-                    type = "radio";
-                } else if (val == "Grade"){
-                    type = "number";
-                } else if (val == "Date"){
-                    type = "date";
-                } else if (val == "Gender"){
-                    type = "radioOther";
-                } else if (val == "Phone"){
-                    type = "tel";
-                } else if (val == "Race"){
-                    type = "radioOther";
-                } else if (val == "Period"){
-                    type = "radio";
-                } else {
-                    type = "textarea";
-                }
-                return type;
-            };
-            var getLabels = function (val, fields) {
-                console.log(val)
-                var labels = null;
-                if (val == "Boolean"){
-                    labels = ["Yes", "No"];
-                }
-                if (val == "Period"){
-                    labels = seasons;
-                }
-                if (val == "Race"){
-                    labels = options["Races"];
-                }
-                if (val == "Gender"){
-                    labels = options["Genders"];
-                }
-                console.log(labels)
-                return labels;
-            };
             var req_keys = [];
-            var req_types = [];
-            var req_labels = [];
+            var req_vals = [];
             forKeyVal(fields["required"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
-                var labels = getLabels(val, fields);
                 req_keys.push(name);
-                req_types.push(type);
-                req_labels.push(labels)
+                req_vals.push(val);
             });
             for (let i = 0; i < req_keys.length; i ++) {
-                if(req_labels[i] == null){
-                    this.requiredFields.push({
-                        name: req_keys[i],
-                        value: "",
-                        type: req_types[i],
-                        placeholder: this.placeholders[req_keys[i]]
-                    });
-                } else {
-                    this.requiredFields.push({
-                        name: req_keys[i],
-                        value: "",
-                        values: req_labels[i],
-                        id: req_labels[i],
-                        type: req_types[i]
-                    });
-                }
-                
+                this.requiredFields.push({
+                    name: req_keys[i],
+                    value: "",
+                    type: req_vals[i],
+                    placeholder: this.placeholders[req_keys[i]]
+                });
             }
             var opt_keys = [];
-            var opt_types = [];
+            var opt_vals = [];
             forKeyVal(fields["optional"], function(name, val, n) {
                 opt_keys.push(name);
-                opt_types.push(val);
+                opt_vals.push(val);
             });
             for (let i = 0; i < opt_keys.length; i ++) {
                 this.optionalFields.push({
                     name: opt_keys[i],
                     value: "",
-                    type: opt_types[i],
+                    type: opt_vals[i],
                     placeholder: this.placeholders[opt_keys[i]]
                 });
             }
@@ -494,17 +420,8 @@
         
     }
     
-    .radioDiv{
-        width: 35%;
-        display: flex;
-        margin-left: auto;
-        margin-right: auto;
-        justify-content: center;
-        border: 1px solid black;
-    }
-    
-    .telDiv{
-        width: 35%;
+    .specialDiv{
+        width: 50%;
         display: flex;
         margin-left: auto;
         margin-right: auto;
