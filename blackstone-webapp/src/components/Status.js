@@ -13,6 +13,10 @@ export class Status {
     return Object.keys(this);
   }
 
+  has_key(key) {
+    return this.keys().includes(key);
+  }
+
   forEach(op) {
     if (op.length == 1)
       this.keys().forEach(op);
@@ -91,7 +95,7 @@ export class Status {
 
   has_status(vals) {
     let parsed_vals = Status.parse_status(vals);
-    for (key in this) {
+    for (var key in this) {
       if (parsed_vals.includes(this[key])) {
         return true;
       }

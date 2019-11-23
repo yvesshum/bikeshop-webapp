@@ -4,12 +4,12 @@ Submit Orders is for Youth to submit their orders, and spend their hours.
 The YouthID Selector only selects those that are current active
 
 Submit Orders should have error checking, e.g. not inputing a valid nubmer for Item Total Cost, not filling in required fields etc.
-    
+
 The submission also checks if the Youth has enough hours to pay for the item
 
 Once a submission goes through firebase should have the following changes:
 - In youth profile, Hours Spent should increase, Pending Hours should decrease
-- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status (Always set to pending) etc. 
+- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status (Always set to pending) etc.
 </template>
 
 -->
@@ -131,7 +131,10 @@ Once a submission goes through firebase should have the following changes:
                 if (!(YouthID["value"] == null || YouthID["value"] === "")) {
                     let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
                     this.YouthProfile = YouthProfile.data();
-                    if (YouthProfile == null) this.errorFields.push("YouthID not found");
+                    if (YouthProfile == null) {
+                      this.errorFields.push("YouthID not found");
+                      this.showErrorModal();
+                    }
                 }
 
                 let badFields = await this.checkValid();
@@ -151,7 +154,7 @@ Once a submission goes through firebase should have the following changes:
                         else {
                             input[data[i]["name"]] = data[i]["value"];
                         }
-                        
+
                     }
 
                     data = this.parse(this.optionalFields);
@@ -159,24 +162,24 @@ Once a submission goes through firebase should have the following changes:
                         input[data[i]["name"]] = data[i]["value"];
                     }
 
-                    //Attaching current period 
+                    //Attaching current period
                     let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
                     period = period.data()["CurrentPeriod"]
                     input["Period"] = period;
 
-                    //Submit order hidden fields from realtime database 
+                    //Submit order hidden fields from realtime database
                     //Sometimes we add hidden fields for the databases' sake
-                    await rb.ref('Submit Orders Initializers').once("value" , snapshot => { 
+                    await rb.ref('Submit Orders Initializers').once("value" , snapshot => {
                         let hiddenProtectedInitializers = snapshot.val()["Protected"];
                         let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
                         for (let key in hiddenProtectedInitializers) {
                             input[key] = hiddenProtectedInitializers[key]
                         }
-                        for (let key in hiddenUnprotectedInitializers) { 
+                        for (let key in hiddenUnprotectedInitializers) {
                             input[key] = hiddenUnprotectedInitializers[key]
                         }
                     })
-                    input["Order Date"] = Timestamp.fromDate(moment().toDate());
+                    input["Order Date"] = Timestamp.fromDate(new Date());
 
                     console.log('i', input);
                     let submitRef = db.collection("GlobalPendingOrders").doc();
@@ -199,7 +202,7 @@ Once a submission goes through firebase should have the following changes:
                     }).then(() => {
                         //reset youth profile
                         this.YouthProfile = {};
-                        //reset fields 
+                        //reset fields
                         this.$refs.selector.reset();
 
 
@@ -232,12 +235,12 @@ Once a submission goes through firebase should have the following changes:
                     if (!currentField["value"].length || currentField["value"] == null) ret.push(currentField["name"]);
                 }
 
-                //Total cost must be a valid number 
+                //Total cost must be a valid number
                 let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
                 if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
                 if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
 
-                //checking if you have enough hours 
+                //checking if you have enough hours
                 let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
                 if (currentHours < parseFloat(ITC["value"])) {
                     ret.push("Not enough hours, you have " + currentHours);
@@ -269,16 +272,17 @@ Once a submission goes through firebase should have the following changes:
 
             closeErrorModal() {
                 this.errorModalVisible = false;
+                //return scrolling ability
             }
         },
         async mounted() {
             let fields = await this.getFields();
-            await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => { 
+            await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => {
                 this.placeholders = snapshot.val();
                 console.log('p', this.placeholders)
             })
 
-            if (this.placeholders === {}) { 
+            if (this.placeholders === {}) {
                 window.alert("Error on getting placeholder text values");
                 return null;
             }
@@ -338,7 +342,7 @@ Once a submission goes through firebase should have the following changes:
 
     .field_header{
         margin-bottom:1px;
-        
+
     }
 
 </style>

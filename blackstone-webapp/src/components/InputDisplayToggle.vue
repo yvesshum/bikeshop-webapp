@@ -17,7 +17,7 @@
     </div>
 
     <div ref="edit_container" v-else>
-      <SpecialInput ref="edit_input" :input="type" :arguments="input_args" v-model="edit_value">
+      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value">
       </SpecialInput>
       <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()">
         <div v-if="changed">
@@ -47,11 +47,12 @@ export default {
 
   data: function() {
     return {
-      edit_value: null,
+      edit_value: undefined,
     }
   },
 
   mounted: function() {
+    this.edit_value = this.defaultValue;
     this.$emit("Mounted", this);
   },
 
@@ -79,10 +80,6 @@ export default {
 
     reset: function() {
       this.edit_value = this.defaultValue;
-      if (!Array.isArray(this.defaultValue)) {
-        this.$refs.edit_input.setValue(this.defaultValue);
-      }
-      
       this.$emit("Reset", this.edit_value);
     },
 

@@ -35,12 +35,14 @@
       :checkedData="checked_data"
       :fullData="test_full_data"
       :headingData="test_headers"
+      editable
       matchBy="name"
       @selected="s => selected_skills = s"
+      @changes="c => changed_skills = c"
     >
     </MatchTable>
 
-    <b-modal v-model="change_level_modal">
+    <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
         Please confirm the following.
       </template>
@@ -50,22 +52,22 @@
 
       <table class="clm_table"><tr>
         <td>
-          <ApronImg :color="apron_colors[apron_level].color" :size="48" />
-          <b>{{apron_colors[apron_level].name}}</b>
+          <ApronImg :color="get_apron_property(apron_level, 'color')" :size="48" />
+          <b>{{get_apron_property(apron_level, 'name')}}</b>
         </td>
         <td class="clm_arrow">&#8658;</td>
         <td>
-          <ApronImg :color="apron_colors[apron_level + change_level_effect].color" :size="48" />
-          <b>{{apron_colors[apron_level + change_level_effect].name}}</b>
+          <ApronImg :color="get_apron_property(apron_level + change_level_effect, 'color')" :size="48" />
+          <b>{{get_apron_property(apron_level + change_level_effect, 'name')}}</b>
         </td>
       </tr></table>
     </b-modal>
 
-    <div v-if="selected_skills.length > 0">
+    <!-- <div v-if="selected_skills.length > 0">
       <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
       <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
-    </div>
-    <div v-else-if="has_changes">
+    </div> -->
+    <div v-if="has_changes">
       <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
       <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
     </div>
@@ -168,20 +170,15 @@ export default {
 
       selected_skills: [],
 
-      skill_status: new Status(),
+      changed_skills: null,
+
+      checked_data: [],
+      apron_color: null,
     }
   },
 
   mounted: function() {
-    if (this.profile != null) {
-      this.skill_status = new Status();
-      let skills = this.get_profile_field("Apron Skills", []);
 
-      this.test_full_data.map(s => s.name).forEach(skill => {
-        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
-        this.skill_status.add_vue(this, skill, start_status);
-      });
-    }
   },
 
   computed: {
@@ -190,21 +187,20 @@ export default {
     },
 
     apron_level: function() {
-      return this.get_profile_field("Apron Color", null);
+      // return this.get_profile_field("Apron Color", null);
+      return this.apron_colors.map(c => c.name).indexOf(this.apron_color);
     },
 
-    apron_color: function() {
-      if (this.apron_level != null && this.apron_level != -1) {
-        return this.apron_colors[this.apron_level].name;
-      }
-      else {
-        return "n/a";
-      };
-    },
-
-    checked_data: function() {
-      return this.skill_status.filter(Status.O);
-    },
+    // apron_color: function() {
+    //   // return this.get_profile_field("Apron Color", null);
+    //   // let color = this.get_profile_field("Apron Color", null);
+    //   if (this.apron_level != null && this.apron_level != -1) {
+    //     return this.apron_colors[this.apron_level].name;
+    //   }
+    //   else {
+    //     return "n/a";
+    //   };
+    // },
 
     youth_name: function() {
       let fn = this.get_profile_field("First Name");
@@ -217,28 +213,23 @@ export default {
     },
 
     has_changes: function() {
-      return (this.skill_status == null) ? false : this.skill_status.has_status(Status.C);
+      return this.skills_to_add.length > 0 || this.skills_to_remove.length > 0;
     },
 
     // TODO: Attach the type of the skill (mechanical, life, etc) to these objects
     skills_to_add: function() {
-      return this.skill_status.filter(Status.ADD);
+      return (this.changed_skills == null) ? [] : this.changed_skills.add;
     },
 
     skills_to_remove: function() {
-      return this.skill_status.filter(Status.REM);
+      return (this.changed_skills == null) ? [] : this.changed_skills.rem;
     },
   },
 
   watch: {
     profile: function() {
-      this.skill_status = new Status();
-      let skills = this.get_profile_field("Apron Skills", []);
-
-      this.test_full_data.map(s => s.name).forEach(skill => {
-        let start_status = (skills.includes(skill)) ? Status.USE : Status.NOT;
-        this.skill_status.add_vue(this, skill, start_status);
-      });
+      this.checked_data = this.get_profile_field("Apron Skills", []);
+      this.apron_color = this.get_profile_field("Apron Color", null);
     },
   },
 
@@ -251,6 +242,11 @@ export default {
       return (this.apron_level !== null && n <= this.apron_level);
     },
 
+    get_apron_property: function(level, prop) {
+      if (this.apron_colors == null || this.apron_colors[level] == null) return "";
+      return this.apron_colors[level][prop];
+    },
+
     increment_apron: function() {
       this.change_level_effect = 1;
       this.change_level_modal = true;
@@ -261,25 +257,29 @@ export default {
       this.change_level_modal = true;
     },
 
+    accept_level_modal: function() {
+      var new_color = this.get_apron_property(this.apron_level + this.change_level_effect, 'name');
+
+      var changes = {
+        "Apron Color": new_color,
+      };
+
+      console.log("Saving changes to database:", changes);
+
+      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
+        window.alert("Error: " + err);
+        return null;
+      });
+
+      this.apron_color = new_color;
+    },
+
     hover: function(hover_data) {
       let highlight_vals = Object.keys(hover_data)
         .filter(h => hover_data[h] != undefined)
         .map(h => parseInt(h));
 
       this.$refs.match_table.highlight_values(highlight_vals, "apron");
-    },
-
-    // Set the given skills to the given status
-    set_skills: function(skills, status) {
-      skills.forEach(skill => this.skill_status.set(skill, status));
-    },
-
-    // Add or remove the currently selected skills
-    // Accepts val as boolean where True = Status.O and False = Status.X, or as status
-    set_selected_skills: function(val) {
-      let skills = this.$refs.match_table.get_selected_fields();
-      let status = (typeof val == "boolean") ? (val ? Status.O : Status.X) : val;
-      this.set_skills(skills, status);
     },
 
     show_skills_modal: function(val) {
@@ -292,7 +292,7 @@ export default {
       if (this.change_skills_effect) {
 
         // Make new changes object for apron skills list
-        let changes = {"Apron Skills": this.skill_status.filter(Status.O)};
+        let changes = {"Apron Skills": this.changed_skills.use};
 
         // Saves edits to firebase
         db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
@@ -301,12 +301,12 @@ export default {
         });
 
         // If update succeeds, update all skills locally
-        this.skill_status.update();
+        this.$refs.match_table.accept_changes();
       }
 
       // Reset all the changed but unsaved skills to their original values
       else {
-        this.set_skills(this.skill_status.keys(), Status.RESET);
+        this.$refs.match_table.discard_changes();
       }
 
       this.change_skills_modal = false;
