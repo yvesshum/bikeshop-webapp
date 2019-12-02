@@ -236,8 +236,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    // data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
-                    // data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+
+                    data["Timestamp"] = data["Timestamp"].toDate();
                     ret.push(data);
                 });
                 return ret;
