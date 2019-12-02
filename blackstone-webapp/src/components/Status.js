@@ -89,6 +89,10 @@ export class Status {
     this.unfilter(Status.N).forEach( key => this.set(key, new_status) );
   }
 
+  set_all_f(f) {
+    this.forEach((key, val) => this.set(key, f(key, val)));
+  }
+
   is_status(key, vals) {
     return Status.parse_status(vals).includes(this[key]);
   }
