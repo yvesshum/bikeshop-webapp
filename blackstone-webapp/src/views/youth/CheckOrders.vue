@@ -57,6 +57,7 @@ export default {
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                    data["Order Date"] = data["Order Date"].toDate();
                     ret.push(data);
                 });
                 return ret;
