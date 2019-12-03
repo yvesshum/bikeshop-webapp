@@ -211,8 +211,9 @@ Emits:
 
             // Format a specific doc as a row
             format_doc: function(doc) {
-                if (this.doc_formatter != undefined)
+                if (this.doc_formatter != undefined) {
                     return this.doc_formatter(doc);
+                }
 
                 var data = doc.data();
                 
