@@ -20,6 +20,14 @@
 
     <br />
 
+    <PeriodsClassesDisplay
+      :active_periods="active_periods"
+      v-bind="periodData"
+      style="max-width: 50%; margin:auto"
+    />
+
+    <br />
+
     <table id="fields_table" ref="fields_table" v-show="profile!=null">
 
       <tbody v-for="section in table_sections"><tbody v-if="show_section(section.Name)">
@@ -148,38 +156,48 @@
 
 <script>
 // @ is an alias to /src
+import {db} from '@/firebase';
+import {firebase} from '@/firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import {Status} from '@/components/Status.js';
 import {forKeyVal} from '@/components/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
 import InputDisplayToggle from '@/components/InputDisplayToggle';
+import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields"],
+  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields"],
   components: {
     ToggleButton,
-    InputDisplayToggle
+    InputDisplayToggle,
+    PeriodsClassesDisplay,
   },
 
   data: function() {
     return {
+      // Track whether currently in edit mode
       edit_mode: false,
 
+      // Lists of special fields
       specially_displayed_fields: [
         "First Name",
         "Last Name",
         "Hours Earned",
         "Hours Spent",
         "Pending Hours",
+        "ActivePeriods",
+        "Class",
       ],
       hidden_fields: [
         "Apron Color",
+        "Apron Skills",
         "Work Log",
         "Transfer Log",
         "Order Log",
-        "Last Sign In",
+        "Registration Period",
+        "Class",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
@@ -300,6 +318,12 @@ export default {
     youth_id: function() {
       if (this.profile == null) return "";
       return this.profile.id;
+    },
+
+    active_periods: function() {
+      if (this.profile == null) return [];
+      console.log(this.profile.data()["ActivePeriods"]);
+      return this.profile.data()["ActivePeriods"];
     },
 
     submit_edits_variant: function() {
