@@ -9,6 +9,10 @@
     <div ref="body_fields" style="display: none;">
       <ProfileFields :profile="currentProfile" :headerDoc="header_doc" :periodData="period_data" edit showOptionalFields />
 
+      <br />
+
+      <ApronBar :profile="currentProfile" />
+
       <br /><br />
 
       <h2>Order Log</h2>
@@ -35,6 +39,8 @@
         :doc_formatter="doc_formatter"
         style="width:90%;margin:auto;"
       ></CollectionTable>
+
+      <br /><br />
     </div>
   </div>
 </template>
