@@ -1,18 +1,22 @@
 
 <template>
     <div class="period-classes-display">
-        <div>
+        <div v-if="youth != undefined">
             <span class="full_name">{{youth_name}}</span>&nbsp;
             <span class="id_parens">(ID: {{youth_id}})</span>
         </div>
         
-         <br />
-        <div>
-            Currently active? {{ is_active(cur_period) ? "Yes" : "No" }}
+        <br />
+
+        <div v-if="detail_view != undefined">
+            <div>
+                Currently active? {{ is_active(cur_period) ? "Yes" : "No" }}
+            </div>
+            <div>
+                Registered for next quarter? {{ is_active(reg_period) ? "Yes" : "No" }}
+            </div>
         </div>
-        <div>
-            Registered for next quarter? {{ is_active(reg_period) ? "Yes" : "No" }}
-        </div>
+
         <table class="table table-bordered">
             <thead>
             <tr>
@@ -31,7 +35,7 @@
             </tbody>
         </table>
 
-        <div v-if="display.length > 0">
+        <div v-if="detail_view != undefined && display.length > 0">
             <div style="float:left; width:30%">
                 <font size="5">{{display}}:</font>
             </div>
@@ -64,7 +68,7 @@
 
 export default {
     name: 'period-classes-display',
-    props: ['youth', 'active_periods', 'seasons', 'cur_period', 'reg_period', "class_list"],
+    props: ['youth', 'active_periods', 'seasons', 'cur_period', 'reg_period', "class_list", "detail_view"],
 
     data: function () {
         return {
