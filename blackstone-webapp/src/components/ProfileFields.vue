@@ -284,7 +284,7 @@ export default {
 
       Object.keys(data).forEach(section => {
         forKeyVal(data[section], (name, val) => {
-          if (!this.hidden_fields.includes(name)) {
+          if (!this.is_hidden(name)) {
             temp[name] = val;
           }
         });
@@ -407,7 +407,7 @@ export default {
         var data = doc.data();        
 
         for (var key in data) {
-          if (this.hidden_fields.includes(key)) continue;
+          if (this.is_hidden(key)) continue;
 
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
@@ -437,7 +437,7 @@ export default {
 
     init_row_status(data, field, stat) {
       forKeyVal(data[field], (name, val) => {
-        if (!this.hidden_fields.includes(name)) {
+        if (!this.is_hidden(name)) {
           this.row_status.add_vue(this, name, stat);
         }
       });
@@ -481,6 +481,10 @@ export default {
 
     is_used: function(field) {
       return this.fields_used[field];
+    },
+
+    is_hidden: function(field) {
+      return this.hidden_fields.includes(field);
     },
 
     is_changed: function(field) {
