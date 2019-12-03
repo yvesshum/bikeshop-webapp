@@ -49,6 +49,7 @@
                             // If a row is (de)selected, let the parent handle it
                             rowSelected:   row => this.$emit('selectedRow',   row),
                             rowDeselected: row => this.$emit('deselectedRow', row),
+                            rowSelectionChanged: (data, rows) => this.$emit('newSelection', rows),
             };
 
             this.tabulator = new Tabulator(this.$refs.table, {...defaultArgs, ...this.args});
