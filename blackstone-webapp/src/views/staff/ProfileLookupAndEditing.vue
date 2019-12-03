@@ -259,7 +259,7 @@ export default {
           weekday = this.get_weekday(date);
         }
 
-        return `<p>${day}<br />${weekday}</p>`;
+        return `<div>${day}<br />${weekday}</div>`;
       },
 
       date_filter: function(search_term, option) {
@@ -281,7 +281,7 @@ export default {
           timeZoneName: "short",
         });
 
-        return `<p>${time}</p>`;
+        return `<div>${time}</div>`;
       },
 
       time_filter: function(search_term, option) {
