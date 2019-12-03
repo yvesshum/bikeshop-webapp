@@ -49,6 +49,9 @@ Emits:
 </template>
 
 <script>
+    // TODO: Test GROUP.FAILED with Firebase failed retrievals
+    import {db} from '../../firebase';
+
     const Tabulator = require('tabulator-tables');
 
     // An "enum" to represent the status of a given group
@@ -113,15 +116,31 @@ Emits:
                         let key = group.getKey();
 
                         // If group has not yet been loaded, set the status to loading
-                        if (this.loaded_groups[key] == GROUP.UNLOADED) {
+                        if (should_load(this.loaded_groups[key])) {
                             this.loaded_groups[key] = GROUP.LOADING;
 
-                            // Query the database for all docs in this group
-                            let query = await this.collection.where(this.groupBy, "==", key).get();
+                            console.log("Group:", group);
 
-                            // Add the docs to the table, and set the status to loaded
-                            this.addCollection(query);
-                            this.loaded_groups[key] = GROUP.LOADED;
+                            // Query the database for all docs in this group
+                            this.collection.where(this.groupBy, "==", key).get().then(
+
+                                // Add the docs to the table, and set the status to loaded
+                                query => {
+                                    this.addCollection(query);
+                                    this.loaded_groups[key] = GROUP.LOADED;
+                                },
+
+                                // Catch an error
+                                error => {
+                                    this.loaded_groups[key] = GROUP.FAILED;
+                                    // TODO: Manually close the group
+                                }
+                            );
+                        };
+
+                        // Helper function to determine whether a database retrieval is necessary
+                        function should_load(val) {
+                            return val == GROUP.UNLOADED || val == GROUP.FAILED;
                         };
                     },
 
@@ -144,13 +163,16 @@ Emits:
 
                             switch (val) {
                                 case GROUP.UNLOADED:
-                                    return "Click to load";
+                                    return "Click to load.";
                                     break;
                                 case GROUP.LOADING:
                                     return "Loading...";
                                     break;
                                 case GROUP.LOADED:
-                                    return `${count?count:"No"} item${count==1?"":"s"}`;
+                                    return `${count?count:"No"} item${count==1?"":"s"}.`;
+                                    break;
+                                case GROUP.FAILED:
+                                    return "Load failed. Click to retry.";
                                     break;
                             };
                         };
