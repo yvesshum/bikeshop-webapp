@@ -3,11 +3,8 @@
     <TopBar/>
     <p>This is the staff view of the youth profile lookup page</p>
 
-    <!-- Replaced selector bar with static buttons to test without spamming firebase -->
     <YouthIDSelector @selected="load_youth"/>
-    <!-- <button ref="adam_button" v-on:click="load_adam()">Load Adam's Profile</button> -->
-    <!-- <button ref="yves_button" v-on:click="load_yves()">Load Yves's Profile</button> -->
-    <!-- <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
+    <br />
 
     <div ref="body_fields" style="display: none;">
       <ProfileFields :profile="currentProfile" :headerDoc="header_doc" :periodData="period_data" edit showOptionalFields />
@@ -180,28 +177,6 @@ export default {
           this.order_log_collection = snapshot.collection("Order Log");
           this.work_log_collection  = snapshot.collection("Work Log");
         }
-      },
-
-      load_adam: async function() {
-
-        this.$refs.body_fields.style.display = "";
-
-        let snapshot = db.collection("GlobalYouthProfile").doc("HPLtPG2rZCfdGhATE36x");
-
-        this.currentProfile = await snapshot.get();
-        this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection  = snapshot.collection("Work Log");
-      },
-
-      load_yves: async function() {
-
-        this.$refs.body_fields.style.display = "";
-
-        let snapshot = db.collection("GlobalYouthProfile").doc("10001");
-
-        this.currentProfile = await snapshot.get();
-        this.order_log_collection = snapshot.collection("Order Log");
-        this.work_log_collection  = snapshot.collection("Work Log");
       },
 
       load_none: function() {
