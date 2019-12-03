@@ -6,7 +6,7 @@
     <YouthIDSelector @selected="load_youth"/>
     <br />
 
-    <div ref="body_fields" style="display: none;">
+    <div ref="body_fields" v-show="currentProfile != null">
       <ProfileFields :profile="currentProfile" :headerDoc="header_doc" :periodData="period_data" edit showOptionalFields />
 
       <br />
@@ -170,26 +170,19 @@ export default {
 
         // No id returned - clear the page
         if (youth == null) {
-          this.load_none();
+          this.currentProfile = null;
+          this.order_log_collection = null;
+          this.work_log_collection  = null;
         }
 
         // Id returned - load profile for that youth
         else {
-          this.$refs.body_fields.style.display = "";
-
           let snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
 
           this.currentProfile = await snapshot.get();
           this.order_log_collection = snapshot.collection("Order Log");
           this.work_log_collection  = snapshot.collection("Work Log");
         }
-      },
-
-      load_none: function() {
-        this.$refs.body_fields.style.display = "none";
-        this.currentProfile = null;
-        this.order_log_collection = null;
-        this.work_log_collection  = null;
       },
 
       // Formatting for the hours column of the Work Log goes here
