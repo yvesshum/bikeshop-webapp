@@ -10,8 +10,7 @@
     <!-- <button ref="none_button" v-on:click="load_none()">Clear Profile Info</button> -->
 
     <div ref="body_fields" style="display: none;">
-      <ProfileFields :profile="currentProfile" :headerDoc="header_doc" edit showOptionalFields />
-      <!-- <ApronBar /> -->
+      <ProfileFields :profile="currentProfile" :headerDoc="header_doc" :periodData="period_data" edit showOptionalFields />
 
       <br /><br />
 
@@ -76,10 +75,10 @@ export default {
 
       order_log_headers: [],
 
-      work_log_headers_omit: ["First Name", "Last Name", "Youth ID"],
-
+      periods_db: db.collection("GlobalPeriods"),
+      periods_doc: null,
+      period_data: null,
       periods: [],
-
 
 
       work_log_headers: [
@@ -144,12 +143,25 @@ export default {
   mounted: async function() {
     this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
 
-    let periods_doc = await db.collection("GlobalVariables").doc("ActivePeriods").get();
-    let periods_data = periods_doc.data();
-    this.periods = [periods_data["CurrentPeriod"], ...periods_data["PastPeriods"]];
+    await this.load_profile_data();
   },
 
     methods: {
+
+      load_profile_data: async function() {
+        this.periods_doc = await this.periods_db.doc("metadata").get();
+        var data = this.periods_doc.data();
+
+        var class_list = data["Classes"].map(c => Object.keys(c)[0]);
+
+        this.periods = data["All Periods"];
+        this.period_data = {
+          cur_period: data["CurrentPeriod"],
+          reg_period: data["CurrentRegistrationPeriod"],
+          seasons:    data["Seasons"],
+          class_list,
+        };
+      },
 
       load_youth: async function(youth) {
 
