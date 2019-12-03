@@ -84,7 +84,7 @@ export default {
 
       work_log_headers: [
         { // The Date
-          title: "Date", field: "Date", formatter: this.format_date_cell,
+          title: "Date", field: "Date", formatter: this.format_date,
           headerFilter: true, headerFilterFunc: this.date_filter,
         },
         { // The check in time
@@ -101,14 +101,29 @@ export default {
         "Notes",
       ],
 
+      order_log_headers: [
+        { // The name of the item
+          title: "Item Name", field: "Item Name", headerFilter: true,
+        },
+        { // The ID number of the item
+          title: "Item ID", field: "Item ID", headerFilter: true,
+        },
+        { // The date and time of the order
+          title: "Date", field: "Order Date", formatter: this.format_date_time,
+          headerFilter: true, headerFilterFunc: this.date_filter,
+        },
+        { // The cost of the item (in hours)
+          title: "Cost", field: "Item Total Cost",
+          formatter: (cell) => cell.getValue() + " Hours"
+        },
+        "Notes",
+      ],
+
       // Helper function to group document data for the table
       doc_formatter: (doc) => {
         var data = doc.data();
         return {
-          "Date": {
-            In: data["Check In"],
-            Out: data["Check Out"],
-          },
+          "Date": [ data["Check In"], data["Check Out"] ],
           "Check In": data["Check In"],
           "Check Out": data["Check Out"],
           "Hours": {
@@ -128,9 +143,6 @@ export default {
 
   mounted: async function() {
     this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-    this.log_headers_doc = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
-
-    this.order_log_headers = this.log_headers_doc.data()['Order Log Headers'];
 
     let periods_doc = await db.collection("GlobalVariables").doc("ActivePeriods").get();
     let periods_data = periods_doc.data();
@@ -206,24 +218,45 @@ export default {
         return msg;
       },
 
-      format_date_cell: function(cell) {
+      format_date_time: function(cell) {
         var val = cell.getValue();
-        var date1 = val.In.toDate();
-        var date2 = val.Out.toDate();
+        var date = val.toDate();
 
-        return this.format_date(date1, date2);
+        var day     = this.get_date(date);
+        var weekday = this.get_weekday(date);
+        var time    = date.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+          timeZoneName: "short",
+        });
+
+        return `<div>${day}<br />${weekday} &emsp; ${time}</div>`;
       },
 
-      format_date: function(date1, date2) {
+      format_date: function(cell) {
         var day, weekday;
+        var val = cell.getValue();
 
-        if (this.same_day(date1, date2)) {
-          day     = this.get_date(date1);
-          weekday = this.get_weekday(date1);
+        if (Array.isArray(val)) {
+          let date1 = val[0].toDate();
+          let date2 = val[1].toDate();
+
+          if (this.same_day(date1, date2)) {
+            day     = this.get_date(date1);
+            weekday = this.get_weekday(date1);
+          }
+          else {
+            day = date1.toLocaleDateString(undefined, {month: "short", day: "numeric"}) + " - " + date2.toLocaleDateString(undefined, {month: "short", day: "numeric", year: "numeric"});
+            weekday = `${this.get_weekday(date1)} - ${this.get_weekday(date2)}`;
+          }
+
         }
+
         else {
-          day = date1.toLocaleDateString(undefined, {month: "short", day: "numeric"}) + " - " + date2.toLocaleDateString(undefined, {month: "short", day: "numeric", year: "numeric"});
-          weekday = `${this.get_weekday(date1)} - ${this.get_weekday(date2)}`;
+          let date = val.toDate();
+          day     = this.get_date(date);
+          weekday = this.get_weekday(date);
         }
 
         return `<p>${day}<br />${weekday}</p>`;
