@@ -113,7 +113,7 @@
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
             <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
-            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile Staff View</button>
+            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration</button>
             <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
             <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
           </b-card-body>
