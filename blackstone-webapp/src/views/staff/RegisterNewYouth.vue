@@ -107,9 +107,7 @@
                 newID: "123",
                 placeholders: {},
                 arguments: {
-                    "placeholder": "0",
-                    "align": "center",
-                    "style": "text-align:center; color: #FF0000"
+                    "placeholder": "0"
                 }
             };
         },
@@ -421,8 +419,7 @@
     }
     
     .specialDiv{
-        width: 50%;
-        display: flex;
+        width: 35%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
