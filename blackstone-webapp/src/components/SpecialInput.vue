@@ -39,10 +39,9 @@ use v-model. Whenever one of these is changed, it updates the other.
         <div v-if="input === 'Integer'">
             <VueNumberInput 
               center
-              v-model="value"
+              v-model="inner_value"
               :min="0"
               :step="1"
-              placeholder="Hours"
               align="center"
               style="width: 20rem"
               controls

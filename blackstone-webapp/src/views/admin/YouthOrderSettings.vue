@@ -15,6 +15,9 @@
         <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Field editor</h2>  
         <hr class="subheading">  
 
+        <b-button variant="info" onclick="location.href='special-input-demo'">Click here for a field type demo</b-button>
+        <hr class="divider">
+
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
         <fieldEditor v-if="dataLoaded" sourceFieldName="required" :elements="fields.required" sourceDocument="Youth Order Form" :collectionsToEdit="['GlobalPendingOrders']" :subcollectionsToEdit="['Order Log']"/>
         <hr class="divider">
