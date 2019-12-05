@@ -79,6 +79,7 @@
               hover
               :items="total_Hours_Earned_Data"
               :fields="earned_Table_Fields"
+              sort-by="Check In"
               responsive="sm"
             >
               <template v-slot:cell(show_details)="row">
