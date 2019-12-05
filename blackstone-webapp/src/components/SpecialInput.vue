@@ -72,9 +72,13 @@ use v-model. Whenever one of these is changed, it updates the other.
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
              <!-- In progress, none of the packages seem to work so far -->   
         
-        <datetime type="datetime" v-model="inner_value"/>
+             <datetime type="datetime" v-model="inner_value"/>
 
 
+        </div>
+        
+        <div v-else-if="input === 'Date'">
+            <!-- Work in progress -->
         </div>
 
         <!-- Returns M/F or some string -->
