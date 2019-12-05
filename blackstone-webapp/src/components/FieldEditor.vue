@@ -1,4 +1,3 @@
-// TODO: Adding/Editing new fields should bring up the appropriate special input 
 // TODO: Field names must not have symbols
 
 <template><div>
