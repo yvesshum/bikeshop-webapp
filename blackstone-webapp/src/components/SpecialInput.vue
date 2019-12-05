@@ -282,12 +282,12 @@ export default {
                     text: c[0] + ": " + c[1]
                 })
             })
-            console.log('t', this.classOptions);
         },
 
         async getPeriodOptions() {
             let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
             seasons = seasons.data().Seasons;
+            console.log('sget', seasons);
             let years = [];
             years.push(moment().subtract(1, 'years').format("YY"));
             years.push(moment().format("YY"));
@@ -313,6 +313,10 @@ export default {
         //get Class data 
         if (this.input === "Class") {
             await this.getClassOptions();
+        }
+
+        if (this.input ==="Period") {
+            await this.getPeriodOptions();
         }
 
         this.ready = true;
