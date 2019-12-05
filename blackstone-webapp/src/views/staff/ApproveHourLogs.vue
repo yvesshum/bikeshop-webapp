@@ -1,28 +1,14 @@
 <template>
     <div class = ApproveHourLogs>
         <top-bar/>
-        <h1>Approve Hours Dashboard</h1>
+        <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-
-                <b-button-group>
-                    <b-button variant="success" @click="accept">Approve</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="info" @click="editHours">Edit Hours</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="editNote">Edit note</b-button>
-                </b-button-group>
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel Log</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
+            <b-button-toolbar style="justify-content: center;">
+                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+                    <b-button variant="info" @click="editHours" style="margin: 1%;">Edit Hours</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel Log</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
 
@@ -87,7 +73,7 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
-        
+
         <b-modal v-model = "hoursModalVisible" hide-footer lazy>
             <template slot = "modal-title">
                 Editing hours
@@ -98,7 +84,7 @@
             <div v-for="(category, index) in editSelectedHours" :key="index">
                 Category: <b>{{category.Category}}</b> - Currently set to {{category.Hours}} hour(s)
                 <br>
-                <VueNumberInput 
+                <VueNumberInput
                   center
                   v-model="editSelectedHours[index].Hours"
                   :min="0"
@@ -196,7 +182,7 @@
                 for (let i = 0; i < headers.length; i++) {
                     fields.push({key: headers[i], sortable: true});
                 }
-                
+
                 let categories = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
                 categories = categories.data();
                 for (let i = 0; i <categories["Categories"].length; i ++) {
@@ -262,11 +248,11 @@
                         console.log("Current approve amount: " + amount);
                     }
                 }
-                
+
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
-                    "Pending Hours": newPendingHours, 
+                    "Pending Hours": newPendingHours,
                     "Hours Earned": newHoursEarned
                 });
 
@@ -275,23 +261,23 @@
                 }
 
                 this.removeLocally(row["Document ID"]);
-                
+
                 let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
                 if (status3 == null) {
                     window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
                     return null;
                 }
-                
+
                 var worklog = row;
                 delete worklog["Document ID"];
-                
+
                 let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(row);
 
                 if (logStatus) {
                     window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
                     return null;
                 }
-                
+
                 this.closeLoadingModal();
                 this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
 
@@ -347,23 +333,23 @@
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
                 let curRow = this.selected[0];
-                
+
                 let forYouthProfile = await db.collection("GlobalYouthProfile").doc(curRow["Youth ID"]).get();
                 console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + curRow["Youth ID"]);
                     return null;
                 }
-                
+
                 this.showLoadingModal("Doing some work in the background...");
                 forYouthProfile = forYouthProfile.data();
-                
+
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - this.deleteAmount) * 100) / 100;
-                
+
                 let rejectingStatus = db.collection("GlobalYouthProfile").doc(this.rejectingID).update({
                     "Pending Hours": newPendingHours,
                 });
-                
+
                 if (rejectingStatus == null) {
                     window.alert("Err, unable to update " + this.rejectingID + " " + forYouthProfile["First Name"] + "'s profile")
                     return null;
@@ -401,7 +387,7 @@
                 this.showEditModal();
 
             },
-            
+
             editHours() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
@@ -421,11 +407,11 @@
                 console.log(this.editSelectedHours, this.selected);
                 this.showHoursModal();
             },
-            
+
             showHoursModal() {
                 this.hoursModalVisible = true;
             },
-            
+
             closeHoursModal() {
                 this.hoursModalVisible = false;
             },
@@ -459,14 +445,14 @@
                 this.closeLoadingModal();
                 this.showModal("Success!", "Your note has been saved")
             },
-            
+
             async saveHours() {
                 let note = this.editHours;
                 this.closeHoursModal();
                 this.showLoadingModal("Saving hours..");
                 let docID = this.selected[0]["Document ID"];
                 console.log(this.editSelectedHours);
-                
+
                 let newTotalHours = 0;
                 var newHours = '{'
                 for(let i = 0; i < this.editSelectedHours.length; i++){
@@ -481,7 +467,7 @@
                 }
                 newHours += '}';
                 console.log("New hours: " + newHours);
-                
+
                 let status = await db.collection("GlobalPendingHours").doc(docID).update(JSON.parse(newHours));
                 if (status) {
                     window.alert("Err: " +  err);
@@ -494,7 +480,7 @@
                 if (profile.data() == null) {
                     window.alert("Error, Youth ID does not exists: " + this.selected[0]["YouthID"])
                 }
-                //find amount to change for pending hours 
+                //find amount to change for pending hours
                 var originalAmount = 0;
                 for(var key in this.selected[0]){
                     if(key != "Check In" && key != "Period" && key != "Youth ID" && key != "First Name" && key != "Notes" && key != "Document ID" && key != "Check Out" && key != "Last Name"){
@@ -514,8 +500,8 @@
                 if (status2) {
                     window.alert("Error on updating Youth Profile's Pending Hours, ID: " + this.selected[0]["Youth ID"])
                 }
-                
-                
+
+
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
                         console.log(this.editSelectedHours);
@@ -557,12 +543,12 @@
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
+.toolbar_wrapper {
+margin-bottom: 1rem;
+}
+.title {
+margin-bottom: 1rem;
+padding: 0 1rem;
+}
 
 </style>

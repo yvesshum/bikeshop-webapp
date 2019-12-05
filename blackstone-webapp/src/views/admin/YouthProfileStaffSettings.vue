@@ -68,7 +68,7 @@ export default {
 
         parseFields(items, dest, protectedFields) {
             for (let i = 0; i < items.length; i ++) { 
-                let isProtected = protectedFields.includes(items[i])
+                let isProtected = protectedFields.includes(Object.keys(items[i])[0])
                 dest.push({
                     "data": items[i],
                     "isProtected": isProtected
@@ -82,7 +82,7 @@ export default {
                 window.alert("Unable to get Youth Profile fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log"]
+                let protectedFields = ["Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log", "Class"]
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
