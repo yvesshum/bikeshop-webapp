@@ -25,15 +25,20 @@
             <thead>
             <tr>
                 <th scope="col">Year</th>
-                <th scope="col" v-for="s in seasons">{{s}}</th>
+                <th scope="col" v-for="s in seasons" :class="get_header_classes(s)">{{s}}</th>
             </tr>
             </thead>
             <tbody @mouseleave="dehover_cell">
             <tr v-for="year in years">
-                <th scope="row">{{year}}</th>
-                <td v-for="s in seasons" @mouseover="hover_cell(s, year)" @click="select_cell(s, year)">
-                    <span v-if="is_active_sy(s, year)">{{get_class_sy(s,year)}}</span>
-                    <span v-else></span>
+                <th scope="row" :class="get_header_classes(year)">20{{year}}</th>
+                <td v-for="s in seasons"
+                    @mouseover="hover_cell(s, year)"
+                    @click="select_cell(s, year)"
+                    style="cursor:pointer; text-align: left;"
+                    :class="get_cell_classes(s, year)"
+                >
+                    <span v-if="is_active_sy(s, year)">&#9745; {{get_class_sy(s,year)}}</span>
+                    <span v-else>&#9744;</span>
                 </td>
             </tr>
             </tbody>
@@ -159,9 +164,53 @@ export default {
             var temp = `${season} ${year}`;
             this.selected = (this.selected == temp) ? "" : temp;
         },
+
+        get_cell_classes: function(season, year) {
+            var sel = this.selected == `${season} ${year}`;
+            var hov = this.hover == `${season} ${year}`;
+
+            if (sel) {
+                return hov ? "table-hov-sel" : "table-sel" ;
+            }
+            else {
+                return hov ? "table-hov" : "" ;
+            }
+        },
+
+        get_header_classes: function(val) {
+            var hov = this.split_period_name(this.hover);
+            var match_hov = (val == hov.year || val == hov.season);
+            var match_sel = false;
+
+            if (this.selected.length > 0) {
+                let sel = this.split_period_name(this.selected);
+                match_sel = (val == sel.year || val == sel.season);
+            }
+
+            if (match_sel) {
+                return match_hov ? "table-hov-sel" : "table-sel" ;
+            }
+            else {
+                return match_hov ? "table-hov" : "" ;
+            }
+        }
     },
 }
 </script>
 <style>
+    table.table th.table-hov, table.table td.table-hov {
+      background-color: #DFDFDF;
+      /*background-color: #BBB;*/
+    }
+
+    table.table th.table-sel, table.table td.table-sel {
+      background-color: #CBE0FE;
+      /*background-color: #9ABCEA;*/
+    }
+
+    table.table th.table-hov-sel, table.table td.table-hov-sel {
+      background-color: #B2C4DE;
+      /*background-color: #769BCC;*/
+    }
 
 </style>
