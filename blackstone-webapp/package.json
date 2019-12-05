@@ -29,6 +29,7 @@
     "vue-simple-search-dropdown": "^1.0.1",
     "vue-tabulator": "^1.0.0",
     "vue-tel-input": "^4.0.0",
+    "vue2-datepicker": "^3.2.2",
     "vuedraggable": "^2.23.0",
     "vuefire": "^2.1.0",
     "weekstart": "^1.0.1"
