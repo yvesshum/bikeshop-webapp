@@ -68,12 +68,13 @@ use v-model. Whenever one of these is changed, it updates the other.
             <vue-tel-input v-model="inner_value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
         </div>
 
-        <!-- Returns a ISO string-->
+        <!-- Returns a ISO string -->
         <div v-else-if="input === 'Datetime'">
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
-             <!-- In progress, none of the packages seem to work so far -->     
+             <!-- In progress, none of the packages seem to work so far -->   
+        
+        <datetime type="datetime" v-model="inner_value"/>
 
-    
 
         </div>
 
@@ -142,6 +143,8 @@ use v-model. Whenever one of these is changed, it updates the other.
 </template>
 <script>
 import VueNumberInput from '@chenfengyuan/vue-number-input';
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
@@ -211,8 +214,8 @@ export default {
 
         // When the inner value of the input component changes, propagate that change upward
         inner_value: function(new_value) {
-            // this.$emit(this.tag, new_value);
             this.$emit("input", new_value);
+
             console.log(new_value);
         },
 
@@ -321,7 +324,7 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
-
+        Datetime
     }
 
 }
