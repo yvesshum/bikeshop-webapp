@@ -83,6 +83,7 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import {Timestamp} from '../../firebase'
     export default {
         name: 'ApproveOrders',
         components: {
@@ -254,6 +255,7 @@
                                 res[key] = curData[key];
                             }
                         })
+                        res["Order Date"] = Timestamp.fromDate(res["Order Date"]);
                         YouthOrderLogRef.doc().set(res).catch(err => {
                             window.alert("Err: "+ err);
                             return null;

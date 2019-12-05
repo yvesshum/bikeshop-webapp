@@ -15,7 +15,7 @@
       </b-row>
       <b-row>
         <b-col>
-          <DatePicker :lang="lang" v-model="datePicker_date" />
+          <Datetime auto v-model="datePicker_date" />
         </b-col>
         <b-col>
           <b-button @click="lookupDailyAttendance">See attendance</b-button>
@@ -79,6 +79,7 @@
               hover
               :items="total_Hours_Earned_Data"
               :fields="earned_Table_Fields"
+              sort-by="Check In"
               responsive="sm"
             >
               <template v-slot:cell(show_details)="row">
@@ -197,9 +198,10 @@
 </template>
 
 <script>
-import DatePicker from "vue2-datepicker";
 import moment from "moment";
 import { db } from "@/firebase.js";
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
@@ -229,7 +231,7 @@ let setOrder = function(field) {
 export default {
   name: "Stats",
   components: {
-    DatePicker,
+    Datetime,
     QueryTable,
     Tabulator
   },
@@ -499,6 +501,13 @@ export default {
         delete x["Last Name"];
         delete x["First Name"];
         x["Name"] = combinedName;
+        if(x.ActivePeriods){
+          var newPeriods = [];
+          for (var el of Object.keys(x.ActivePeriods)){
+            newPeriods.push(` ${el}: ${x.ActivePeriods[el]}`)
+          }
+          x.ActivePeriods = newPeriods;
+        }
         return x;
       })
       return squashed

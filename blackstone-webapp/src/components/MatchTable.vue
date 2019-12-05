@@ -60,6 +60,7 @@ export default {
         groupBy: 'group',
         resizeableRows: false,
         resizeableColumns: false,
+        index: 'name',
 
         // Format the header to show number of skills achieved in each category
         groupHeader: function(value, count, data, group) {
@@ -73,6 +74,17 @@ export default {
         // When row selection changes, propagate those changes upward
         rowSelectionChanged: (data, rows) => {
           this.$emit('selected', rows.map(this.row_field_map));
+        },
+
+        // Mark rows with unsaved changes
+        rowFormatter: row => {
+          var row_id = this.get_row_id(row.getData());
+          if (this.row_status.is_status(row_id, Status.C)) {
+            row.getElement().classList.add("changed_row");
+          }
+          else {
+            row.getElement().classList.remove("changed_row");
+          }
         },
       },
 
@@ -177,6 +189,20 @@ export default {
 
     accept_changes: function() {
       this.row_status.update();
+      this.table.getRows().forEach(r => r.reformat());
+      this.$emit("changes", null);
+    },
+
+    discard_changes: function() {
+      this.row_status.reset();
+      this.table.getRows().forEach(row => {
+        let row_data = row.getData();
+        let row_name = this.get_row_id(row_data);
+        let achieved = this.row_status.is_status(row_name, Status.O);
+
+        this.table.updateData([{...row_data, achieved}]);
+        row.reformat();
+      })
       this.$emit("changes", null);
     },
   },
@@ -185,14 +211,16 @@ export default {
 
 <style>
 
+  .changed_row {
+    font-weight: bold;
+  }
+
   .highlighted_row.tabulator-row-odd, .highlighted_row.tabulator-row {
     background-color: #FEFCBD;
-    font-weight: bold;
   }
 
   .highlighted_row.tabulator-row-even {
     background-color: #FDFA9B;
-    font-weight: bold;
   }
 
   .highlighted_row.tabulator-selected {

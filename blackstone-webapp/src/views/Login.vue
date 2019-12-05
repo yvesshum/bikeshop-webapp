@@ -1,16 +1,18 @@
 <template>
     <div class = "login">
       <div class="jumbotron loginJumbo">
+        <h2>
+              Parents, if you are looking to register a new child,
+              <a href="/register-new-youth">
+              Register a new youth
+              </a>
+        </h2>
+        <br /> <br />
         <h3>Sign in to your youth/staff account</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
         <input type = "password" v-model = "password" placeholder = "Password"><br>
         <button @click="login">Login!</button>
-        </br></br>
-        <div>
-          <a href="/register-new-youth">
-              Or register a new youth
-          </a>
-        </div>
+        
 
         <p>If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</p>
         </div>

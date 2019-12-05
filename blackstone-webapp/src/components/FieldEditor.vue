@@ -1,4 +1,3 @@
-// TODO: Adding/Editing new fields should bring up the appropriate special input 
 // TODO: Field names must not have symbols
 
 <template><div>
@@ -143,6 +142,7 @@ import draggable from 'vuedraggable'
 import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
+import { Timestamp } from '../firebase'
 
 export default {
     name: 'fieldEditor',
@@ -285,6 +285,10 @@ export default {
         },
         add_closeModal() {
             this.modal.add.visible = false;
+        },
+        checkDateTime(type,value){
+          if(type!=="Datetime") return value;
+          else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
             this.edit_closeModal();
@@ -431,6 +435,7 @@ export default {
                 query.forEach(async doc => {
                     let id = doc.id;
                     let data = this.parse(doc.data());
+
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
 
                     // data[this.modal.add.field_name] = this.$refs.addInput.get();
