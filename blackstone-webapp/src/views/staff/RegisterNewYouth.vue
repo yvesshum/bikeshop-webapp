@@ -195,11 +195,17 @@
                 
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
+                        if(data[i]["value"] == undefined){
+                            data[i]["value"] = "";
+                        }
                         input[data[i]["name"]] = data[i]["value"];
                     }
                     
                     data = this.parse(this.optionalFields);
                     for (let i = 0; i < data.length; i ++) {
+                        if(data[i]["value"] == undefined){
+                            data[i]["value"] = "";
+                        }
                         input[data[i]["name"]] = data[i]["value"];
                     }
                     
@@ -373,7 +379,6 @@
             var hidden_keys = [];
             forKeyVal(fields["hidden"], function(name, val, n) {
                 // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
                 hidden_keys.push(name);
             });
             for (let i = 0; i <hidden_keys.length; i ++) {

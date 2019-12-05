@@ -98,23 +98,8 @@
                 <span v-if="category.Value != ''">Currently set to {{category.Value}}</span>
                 <span v-if="category.Value == ''">Currently not set</span>
                 <br>
-                <b-form-input v-if="category.Type != 'radioOther' && category.Type != 'tel' && category.Type != 'radio'"
-                :id="category.Type"
-                :type="category.Type"
-                v-model="editSelected[index].Value"
-                :placeholder="category.Value"
-                ></b-form-input>
-                <div v-if="category.Type == 'radioOther'">
-                    <RadioGroupOther v-model="category.Value" :options="category.id" nullOption>
-                    </RadioGroupOther>
-                </div>
-                <div v-if="category.Type == 'tel'">
-                    <vue-tel-input v-model="category.Value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
-                </div>
-                <div v-if="category.Type == 'radio'">
-                    <RadioGroupOther v-model="category.Value" :options="category.id" omitOtherOption>
-                    </RadioGroupOther>
-                </div>
+                <SpecialInput v-model="category.NewValue" :inputType="category.Type" :args="arguments">
+                </SpecialInput>
                 <hr>
             </div>
 
@@ -144,6 +129,7 @@
 <script>
     import { VueTelInput } from 'vue-tel-input'
     import RadioGroupOther from '../../components/RadioGroupOther';
+    import SpecialInput from '@/components/SpecialInput';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
@@ -157,6 +143,7 @@
         components: {
           RadioGroupOther,
           VueTelInput,
+          SpecialInput
         },
         data() {
             return {
@@ -247,8 +234,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-
-                    data["Timestamp"] = data["Timestamp"].toDate();
+                    // data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
+                    // data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
                     ret.push(data);
                 });
                 return ret;
@@ -405,7 +392,7 @@
                 if (curRow == null) {
                     return null;
                 }
-                var editSelected = [];
+                var editSelectedLocal = [];
                 
                 let fields = await this.getEditFields();
                 let seasons = await this.getSeasons();
@@ -418,11 +405,10 @@
                     req_vals.push(val);
                 });
                 for (let i = 0; i < req_keys.length; i ++) {
-                    editSelected.push({
-                        name: req_keys[i],
-                        value: "",
-                        type: req_vals[i],
-                        placeholder: this.placeholders[req_keys[i]]
+                    editSelectedLocal.push({
+                        Category: req_keys[i],
+                        Value: curRow[req_keys[i]],
+                        Type: req_vals[i]
                     });
                 }
                 var opt_keys = [];
@@ -432,14 +418,13 @@
                     opt_vals.push(val);
                 });
                 for (let i = 0; i < opt_keys.length; i ++) {
-                    editSelected.push({
-                        name: opt_keys[i],
-                        value: "",
-                        type: opt_vals[i],
-                        placeholder: this.placeholders[opt_keys[i]]
+                    editSelectedLocal.push({
+                        Category: opt_keys[i],
+                        Value: curRow[opt_keys[i]],
+                        Type: opt_vals[i]
                     });
                 }
-                this.editSelected = editSelected;
+                this.editSelected = editSelectedLocal;
                 console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
@@ -466,15 +451,18 @@
                 this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
-                console.log(this.editSelected);
+                // console.log(this.editSelected);
                 
                 var newValues = {}
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
-                      let value = this.editSelected[i]["Value"];
+                      var value = this.editSelected[i]["Value"];
+                      if(this.editSelected[i]["NewValue"] != undefined){
+                          value = this.editSelected[i]["NewValue"];
+                      }
                       newValues[category] = value
                 }
-                console.log("New values: " + newValues);
+                console.log("New values: " + JSON.stringify(newValues));
                 
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
@@ -489,7 +477,9 @@
                         console.log(this.editSelected);
                         for(var index in this.editSelected){
                             console.log(this.editSelected[index]);
-                            this.items[i][this.editSelected[index].Category] = this.editSelected[index].Value;
+                            if(this.editSelected[index].NewValue != undefined){
+                                this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
+                            }
                         }
                         break;
                     }
