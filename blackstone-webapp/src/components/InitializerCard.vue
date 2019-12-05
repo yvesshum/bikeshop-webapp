@@ -102,7 +102,7 @@ export default {
     name: 'InitializerCard',
     props: {
         field: String,
-        initializer: String,
+        initializer: String | Number,
         existingFieldNames: Array ,
         rbRef: String
     },
