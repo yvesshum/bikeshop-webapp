@@ -9,12 +9,16 @@
         <br />
 
         <div v-if="detail_view != undefined">
-            <div>
-                Currently active? {{ is_active(cur_period) ? "Yes" : "No" }}
-            </div>
-            <div>
-                Registered for next quarter? {{ is_active(reg_period) ? "Yes" : "No" }}
-            </div>
+            <table style="width: 100%; text-align: center;">
+                <tr>
+                    <td style="width:50%;">Currently Active?</td>
+                    <td style="width:50%;">Registered for next quarter?</td>
+                </tr>
+                <tr>
+                    <td>{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
+                    <td>{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
+                </tr>
+            </table>
         </div>
 
         <table class="table table-bordered">
