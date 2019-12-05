@@ -5,23 +5,31 @@
         The full list can be viewed in GlobalVariables/SpecialInput 
 
 * Args must be an object. 
+
 Some components have properties that we would like to set through Special Input.
-To allow for this we add a property in the component below e.g. :placeholder="args.placeholder", 
+
+To allow for this we can add a property in the component below e.g. :placeholder="args.placeholder", 
+
 To specify a property from the parent using args="arguments", one would just 
 have to pass in an object with key=name_of_property value=value_of_property.
+
 Like this in methods: 
 arguments1: {
     "placeholder": "0",
     "align": "center"
     "style": "text-align:center; color: #FF0000"
 }
-If a property is not specified, "args.property_name" would just be undefined and all is well (I think). 
+
+Note that if a property is not specified, "args.property_name" would just be undefined and all is well (I think). 
 Style argument is just for the specific <b-form> components instead of the entire div
 
 * The ref is only necessary if you want to call private methods here 
-* tag is necessary to capture the data emission. The emit tag is specified as the tag prop.
 
-* NOTE: In order to share a single value on three levels (the child input component, this current component, and the parent component), the input component uses v-model with the inner_value variable, and this component uses value to allow its parent to use v-model. Whenever one of these is changed, it updates the other.
+
+* NOTE: In order to share a single value on three levels (the child input component, 
+this current component, and the parent component), the input component uses v-model 
+with the inner_value variable, and this component uses value to allow its parent to 
+use v-model. Whenever one of these is changed, it updates the other.
 
 -->
 
