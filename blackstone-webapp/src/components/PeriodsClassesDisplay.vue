@@ -82,10 +82,12 @@ export default {
 
     computed: {
         period_list: function() {
-            return Object.keys(this.active_periods);
+            return (this.active_periods == null) ? [] : Object.keys(this.active_periods);
         },
 
         years: function() {
+            if (this.period_list.length == 0) return [];
+
             var min_year = this.period_list.map(this.get_period_year).reduce((acc, curr) =>
                 Math.min(acc, curr)
             );
