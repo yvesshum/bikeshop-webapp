@@ -11,12 +11,31 @@
         <div v-if="detail_view != undefined">
             <table style="width: 100%; text-align: center;">
                 <tr>
-                    <td style="width:50%;">Currently Active?</td>
-                    <td style="width:50%;">Registered for next quarter?</td>
+                    <td style="width:30%;">Currently Active?</td>
+                    <td style="width:40%;">Registered for next quarter?</td>
+                    <td style="width:30%;">
+                        <span v-if="display.length == 0"><i>Choose a period below.</i></span>
+                        <span v-else-if="is_active(display)">{{display}} Class:</span>
+                        <span v-else><i>Youth was not active.</i></span>
+                    </td>
                 </tr>
                 <tr>
                     <td>{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
                     <td>{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
+                    <td>
+                        <b-dropdown variant="primary" id="dropdown-text" :text="get_class(display)" class="m-2">
+                            <b-dropdown-text style="width: 240px;">
+                                <i>Change the status and class for {{youth_name}} in {{display}}.</i>
+                            </b-dropdown-text>
+                            <b-dropdown-divider></b-dropdown-divider>
+                            <b-dropdown-text style="width: 240px;">
+                                <i>Classes:</i>
+                            </b-dropdown-text>
+                            <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
+                            <b-dropdown-divider></b-dropdown-divider>
+                            <b-dropdown-item-button @click="set_class(display, null)">Set to inactive</b-dropdown-item-button>
+                        </b-dropdown>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -43,31 +62,6 @@
             </tr>
             </tbody>
         </table>
-
-        <div v-if="detail_view != undefined && display.length > 0">
-            <div style="float:left; width:30%">
-                <font size="5">{{display}}:</font>
-            </div>
-            <div style="float:left;">
-                <div v-if="is_active(display)">
-                    <b-dropdown variant="primary" id="dropdown-text" :text="get_class(display)" class="m-2">
-                        <b-dropdown-text style="width: 240px;">
-                            <i>Change the status and class for {{youth_name}} in {{display}}.</i>
-                        </b-dropdown-text>
-                        <b-dropdown-divider></b-dropdown-divider>
-                        <b-dropdown-text style="width: 240px;">
-                            <i>Classes:</i>
-                        </b-dropdown-text>
-                        <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
-                        <b-dropdown-divider></b-dropdown-divider>
-                        <b-dropdown-item-button @click="set_class(display, null)">Set to inactive</b-dropdown-item-button>
-                    </b-dropdown>
-                </div>
-                <div v-else>
-                    <i>Youth was not active in {{display}}</i>
-                </div>
-            </div>
-        </div>
 
         <div style="clear:both"></div>
     </div>
