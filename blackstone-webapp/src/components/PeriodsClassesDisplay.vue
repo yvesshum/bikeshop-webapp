@@ -56,7 +56,10 @@
                     style="cursor:pointer; text-align: left;"
                     :class="get_cell_classes(s, year)"
                 >
-                    <span v-if="is_active_sy(s, year)">&#9745; {{get_class_sy(s,year)}}</span>
+                    <span v-if="is_future_period(s, year)"></span>
+                    <span v-else-if="is_active_sy(s, year)">
+                        &#9745; {{get_class_sy(s,year)}}
+                    </span>
                     <span v-else>&#9744;</span>
                 </td>
             </tr>
@@ -68,6 +71,7 @@
 </template>
 
 <script>
+import {Period} from '@/components/Period.js';
 
 export default {
     name: 'period-classes-display',
@@ -88,10 +92,10 @@ export default {
         years: function() {
             if (this.period_list.length == 0) return [];
 
-            var min_year = this.period_list.map(this.get_period_year).reduce((acc, curr) =>
+            var min_year = this.period_list.map(Period.year).reduce((acc, curr) =>
                 Math.min(acc, curr)
             );
-            var max_year = this.split_period_name(this.reg_period).year;
+            var max_year = Period.year(this.reg_period);
             var arr = [];
 
             for (let i = parseInt(max_year); i >= parseInt(min_year); i--) {
@@ -114,26 +118,25 @@ export default {
         },
     },
 
+    created() {
+        Period.setSeasons(this.seasons);
+    },
+
     mounted () {
 
     },
 
     methods: {
-        split_period_name: function(period) {
-            var p = period.split(" ");
-            return {season: p[0], year: p[1]};
-        },
-
-        get_period_year: function(period) {
-            return this.split_period_name(period).year;
-        },
-
         is_active_sy: function(season, year) {
-            return this.is_active(`${season} ${year}`);
+            return this.is_active(Period.concat(season, year));
         },
 
         is_active: function(period) {
             return this.period_list.includes(period);
+        },
+
+        is_future_period: function(season, year) {
+            return Period.newer(Period.makePeriod(season, year), this.reg_period);
         },
 
         get_class_sy: function(season, year) {
@@ -157,11 +160,15 @@ export default {
         },
 
         select_cell: function(season, year) {
-            var temp = `${season} ${year}`;
+            var temp = Period.concat(season, year);
             this.selected = (this.selected == temp) ? "" : temp;
         },
 
         get_cell_classes: function(season, year) {
+            if (this.is_future_period(season, year)) {
+                return "table-unavailable";
+            }
+
             var sel = this.selected == `${season} ${year}`;
             var hov = this.hover == `${season} ${year}`;
 
@@ -174,12 +181,13 @@ export default {
         },
 
         get_header_classes: function(val) {
-            var hov = this.split_period_name(this.hover);
+            var hov = Period.fromString(this.hover);
+            if (hov == null) hov = new Period("", "");
             var match_hov = (val == hov.year || val == hov.season);
             var match_sel = false;
 
             if (this.selected.length > 0) {
-                let sel = this.split_period_name(this.selected);
+                let sel = Period.fromString(this.selected);
                 match_sel = (val == sel.year || val == sel.season);
             }
 
@@ -207,6 +215,11 @@ export default {
     table.table th.table-hov-sel, table.table td.table-hov-sel {
       background-color: #B2C4DE;
       /*background-color: #769BCC;*/
+    }
+
+    table.table td.table-unavailable {
+        background-color: #c0c0c0;
+        cursor: pointer;
     }
 
 </style>
