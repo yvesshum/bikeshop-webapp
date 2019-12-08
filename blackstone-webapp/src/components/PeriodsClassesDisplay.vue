@@ -148,7 +148,12 @@ export default {
         },
 
         hover_cell: function(season, year) {
-            this.hover = Period.concat(season, year);
+            if (this.is_future_period(season, year)) {
+                this.dehover_cell();
+            }
+            else {
+                this.hover = Period.concat(season, year);
+            }
         },
 
         dehover_cell: function() {
