@@ -9,11 +9,11 @@
         <br />
 
         <div v-if="detail_view != undefined">
-            <table style="width: 100%; text-align: center;">
+            <table style="width: 95%; margin: auto; text-align:left;">
                 <tr>
-                    <td style="width:30%;">Currently Active?</td>
-                    <td style="width:40%;">Registered for next quarter?</td>
-                    <td style="width:30%;">
+                    <td style="width:5%;">{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
+                    <td style="width:47%;">Active in current quarter ({{cur_period}})</td>
+                    <td style="width:48%; text-align:center;">
                         <span v-if="display.length == 0 || is_future_period(display)">
                             <i>Choose a period below.</i>
                         </span>
@@ -22,8 +22,8 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
                     <td>{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
+                    <td>Registered for next quarter ({{reg_period}})</td>
                     <td>
                         <b-dropdown right id="dropdown-text" class="m-2"
                             :variant="dropdown_variant"
