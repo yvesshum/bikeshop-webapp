@@ -71,12 +71,10 @@ export class Period {
 			return;
 		}
 
-		if (this.year == operand.year) {
-			return Period.seasons.indexOf(this.season) - Period.seasons.indexOf(operand.season);
-		}
-		else {
-			return this.year.localeCompare(operand.year);
-		}
+		var year_diff = this.year - operand.year;
+		var season_diff = Period.seasons.indexOf(this.season) - Period.seasons.indexOf(operand.season);
+
+		return (year_diff * Period.seasons.length) + season_diff;
 	}
 
 	// Compare two Period objects
