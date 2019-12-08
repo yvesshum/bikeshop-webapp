@@ -1,7 +1,3 @@
-// Combine and split period names
-
-// Min and max period
-
 export class Period {
 
 	// Create new Period object from season and year
@@ -25,10 +21,12 @@ export class Period {
 		return new Period(val1, val2);
 	}
 
+	// Combine separate seasona nd year variables into properly formatted period string
 	static concat(season, year) {
 		return (new Period(season, year)).toString();
 	}
 
+	// Set the season list for the periods object
 	static setSeasons(season_list) {
 		if (Period.seasons == undefined) {
 			Period.seasons = season_list;
@@ -47,18 +45,22 @@ export class Period {
 		Period.seasons = season_list;
 	}
 
+	// Get the season
 	getSeason() {
 		return this.season;
 	}
 
+	// Get the year
 	getYear() {
 		return this.year;
 	}
 
+	// Obtain the season from a period string
 	static season(period) {
 		return Period.fromString(period).getSeason();
 	}
 
+	// Obtain the year from a period string
 	static year(period) {
 		return Period.fromString(period).getYear();
 	}
@@ -89,30 +91,37 @@ export class Period {
 		return arr.sort(Period.compare);
 	}
 
+	// Get the oldest period in an array
 	static oldest(arr) {
 		return arr.reduce(reduce_extrema(-1));
 	}
 
+	// TRUE if a is older than b, false otherwise
 	static older(a, b) {
 		return Period.makePeriod(a).olderThan(Period.makePeriod(b));
 	}
 
+	// TRUE if current period object is older than given period, false otherwise
 	olderThan(operand) {
 		return this.compareTo(operand) < 0;
 	}
 
+	// Get the most recent period in an array
 	static newest(arr) {
 		return arr.reduce(reduce_extrema(1));
 	}
 
+	// TRUE if a is more recent than b, false otherwise
 	static newer(a, b) {
 		return Period.makePeriod(a).newerThan(Period.makePeriod(b));
 	}
 
+	// TRUE if current period object is more recent than given period, false otherwise
 	newerThan(operand) {
 		return this.compareTo(operand) > 0;
 	}
 
+	// Obtain the earliest and the most recent period from an array
 	static range(arr) {
 		return {oldest: Period.oldest(arr), newest: Period.newest(arr)};
 	}
