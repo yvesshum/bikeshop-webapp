@@ -17,7 +17,7 @@
                         <span v-if="display.length == 0 || is_future_period(display)">
                             <i>Choose a period below.</i>
                         </span>
-                        <span v-else-if="is_active(display)">{{display}} Class:</span>
+                        <span v-else-if="is_active(display)">Youth's class in {{display}}:</span>
                         <span v-else><i>Youth was not active.</i></span>
                     </td>
                 </tr>
@@ -147,8 +147,12 @@ export default {
         },
 
         get_class: function(season, year) {
+            if (season.length == 0) {
+                return "- n/a -  ";
+            }
             var period = Period.makePeriod(season, year);
-            return this.active_periods[period.toString()];
+            var temp = this.active_periods[period.toString()];
+            return (temp != null) ? temp : "Not Active";
         },
 
         set_class: function(period, new_class) {
