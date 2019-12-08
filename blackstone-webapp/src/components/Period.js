@@ -116,6 +116,68 @@ export class Period {
 	static range(arr) {
 		return {oldest: Period.oldest(arr), newest: Period.newest(arr)};
 	}
+
+	getNext() {
+		if (Period.seasons == undefined) {
+			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			return;
+		}
+
+		var index = Period.seasons.indexOf(this.season);
+		var new_period;
+
+		// If this is the last season of the year, loop around and increment the year
+	     if (index == Period.seasons.length - 1) {
+	        new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
+	     } else {
+	        new_period = new Period(Period.seasons[index+1], this.year);
+	     };
+
+	     return new_period;
+	}
+
+	static genNext(period) {
+		return Period.makePeriod(period).getNext();
+	}
+
+	getNextStr() {
+		return this.getNext().toString();
+	}
+
+	static genNextStr(period) {
+		return Period.makePeriod(period).getNextStr();
+	}
+
+	getPrev() {
+		if (Period.seasons == undefined) {
+			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			return;
+		}
+
+		var index = Period.seasons.indexOf(this.season);
+		var new_period;
+
+		// If this is the last season of the year, loop around and increment the year
+	     if (index == 0) {
+	        new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
+	     } else {
+	        new_period = new Period(Period.seasons[index-1], this.year);
+	     };
+
+	     return new_period;
+	}
+
+	static genPrev(period) {
+		return Period.makePeriod(period).getPrev();
+	}
+
+	getPrevStr() {
+		return this.getPrev().toString();
+	}
+
+	static genPrevStr(period) {
+		return Period.makePeriod(period).getPrevStr();
+	}
 };
 
 Period.prototype.toString = function() {
