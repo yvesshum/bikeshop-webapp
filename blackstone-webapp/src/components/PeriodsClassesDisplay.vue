@@ -14,7 +14,9 @@
                     <td style="width:30%;">Currently Active?</td>
                     <td style="width:40%;">Registered for next quarter?</td>
                     <td style="width:30%;">
-                        <span v-if="display.length == 0"><i>Choose a period below.</i></span>
+                        <span v-if="display.length == 0 || is_future_period(display)">
+                            <i>Choose a period below.</i>
+                        </span>
                         <span v-else-if="is_active(display)">{{display}} Class:</span>
                         <span v-else><i>Youth was not active.</i></span>
                     </td>
@@ -49,7 +51,7 @@
             </thead>
             <tbody @mouseleave="dehover_cell">
             <tr v-for="year in years">
-                <th scope="row" :class="get_header_classes(year)">20{{year}}</th>
+                <th scope="row" :class="get_header_classes(year)" @mouseover="dehover_cell()">20{{year}}</th>
                 <td v-for="s in seasons"
                     @mouseover="hover_cell(s, year)"
                     @click="select_cell(s, year)"
@@ -152,7 +154,7 @@ export default {
         },
 
         hover_cell: function(season, year) {
-            this.hover = `${season} ${year}`;
+            this.hover = Period.concat(season, year);
         },
 
         dehover_cell: function() {
@@ -160,6 +162,8 @@ export default {
         },
 
         select_cell: function(season, year) {
+            if (this.is_future_period(season, year)) return;
+
             var temp = Period.concat(season, year);
             this.selected = (this.selected == temp) ? "" : temp;
         },
