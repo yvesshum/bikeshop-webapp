@@ -59,8 +59,8 @@
                     :class="get_cell_classes(s, year)"
                 >
                     <span v-if="is_future_period(s, year)"></span>
-                    <span v-else-if="is_active_sy(s, year)">
-                        &#9745; {{get_class_sy(s,year)}}
+                    <span v-else-if="is_active(s, year)">
+                        &#9745; {{get_class(s,year)}}
                     </span>
                     <span v-else>&#9744;</span>
                 </td>
@@ -129,24 +129,18 @@ export default {
     },
 
     methods: {
-        is_active_sy: function(season, year) {
-            return this.is_active(Period.concat(season, year));
-        },
-
-        is_active: function(period) {
-            return this.period_list.includes(period);
+        is_active: function(season, year) {
+            var period = Period.makePeriod(season, year);
+            return this.period_list.includes(period.toString());
         },
 
         is_future_period: function(season, year) {
             return Period.newer(Period.makePeriod(season, year), this.reg_period);
         },
 
-        get_class_sy: function(season, year) {
-            return this.get_class(`${season} ${year}`);
-        },
-
-        get_class: function(period) {
-            return this.active_periods[period];
+        get_class: function(season, year) {
+            var period = Period.makePeriod(season, year);
+            return this.active_periods[period.toString()];
         },
 
         set_class: function(period, new_class) {
@@ -173,8 +167,8 @@ export default {
                 return "table-unavailable";
             }
 
-            var sel = this.selected == `${season} ${year}`;
-            var hov = this.hover == `${season} ${year}`;
+            var sel = Period.compare(this.selected, new Period(season, year)) == 0;
+            var hov = Period.compare(this.hover,    new Period(season, year)) == 0;
 
             if (sel) {
                 return hov ? "table-hov-sel" : "table-sel" ;
@@ -186,7 +180,6 @@ export default {
 
         get_header_classes: function(val) {
             var hov = Period.fromString(this.hover);
-            if (hov == null) hov = new Period("", "");
             var match_hov = (val == hov.year || val == hov.season);
             var match_sel = false;
 
