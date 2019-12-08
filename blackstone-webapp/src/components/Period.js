@@ -12,7 +12,8 @@ export class Period {
 
     // Create new Period object from "Season Year" string
     static fromString(str) {
-    	if (str == null || str.length == 0) return null
+    	if (str == null) return null;
+    	if (str.length == 0) return new Period("", "");
         var p = str.split(" ");
         return new Period(p[0], p[1]);
     }
