@@ -25,17 +25,21 @@
                     <td>{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
                     <td>{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
                     <td>
-                        <b-dropdown variant="primary" id="dropdown-text" :text="get_class(display)" class="m-2">
+                        <b-dropdown right id="dropdown-text" class="m-2"
+                            :variant="dropdown_variant"
+                            :text="get_class(display)"
+                            style="min-width: 100%;"
+                            :disabled="display.length == 0"
+                        >
                             <b-dropdown-text style="width: 240px;">
                                 <i>Change the status and class for {{youth_name}} in {{display}}.</i>
                             </b-dropdown-text>
                             <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-text style="width: 240px;">
-                                <i>Classes:</i>
-                            </b-dropdown-text>
-                            <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
+                            <b-dropdown-group id="add-class" header="Classes" style="width: 240px;">
+                                <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
+                            </b-dropdown-group>
                             <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-item-button @click="set_class(display, null)">Set to inactive</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="set_class(display, null)">-none-</b-dropdown-item-button>
                         </b-dropdown>
                     </td>
                 </tr>
@@ -117,6 +121,10 @@ export default {
 
         display: function() {
             return (this.selected.length > 0) ? this.selected : this.hover;
+        },
+
+        dropdown_variant: function() {
+            return (this.display.length > 0) ? 'primary' : 'outline-secondary';
         },
     },
 
