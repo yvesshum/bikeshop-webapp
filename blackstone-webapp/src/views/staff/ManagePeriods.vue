@@ -148,6 +148,7 @@ export default {
       // Misc
       season_list: null,
       period_sort_map: null,
+      year_list: null,
 
       period_status: null,
 
@@ -217,6 +218,14 @@ export default {
       this.season_list.forEach(function(element, n) {
         this.period_sort_map[element] = n;
       }.bind(this));
+
+      this.year_list = [];
+      var min_year = this.split_period_name(data["FirstPeriod"]).year;
+      var max_year = this.split_period_name(this.reg_period).year;
+
+      for (let i = parseInt(min_year); i <= parseInt(max_year); i++) {
+          this.year_list.push(i.toString());
+      }
     },
 
     load_current_youths: async function() {
