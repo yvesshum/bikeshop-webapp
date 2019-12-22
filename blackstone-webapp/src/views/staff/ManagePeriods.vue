@@ -23,6 +23,11 @@
           :args="args"
           @newSelection="reg_row_selected"
         />
+
+        <YouthIDSelector periods="all"
+          :args="{multiple: true, hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
+          @selected="s => selected_bar = s"
+        />
       </div>
 
       <div class="col-right">
@@ -89,6 +94,7 @@ import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
 import ToggleButton from '@/components/ToggleButton';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
+import YouthIDSelector from '@/components/YouthIDSelector';
 import {Status} from '@/components/Status.js';
 import {filter} from "@/components/Search.js";
 import {forKeyVal} from '@/components/ParseDB.js';
@@ -100,6 +106,7 @@ export default {
     Table,
     ToggleButton,
     PeriodsClassesDisplay,
+    YouthIDSelector,
   },
 
   data: function() {
@@ -141,6 +148,7 @@ export default {
 
       selected_cur: [],
       selected_reg: [],
+      selected_bar: [],
       all_youth: null,
 
       // Misc
@@ -167,7 +175,7 @@ export default {
 
   computed: {
     selected_youths: function() {
-      return [...this.selected_cur, ...this.selected_reg];
+      return [...this.selected_cur, ...this.selected_reg, ...this.selected_bar];
     },
 
     selected_youth: function() {
