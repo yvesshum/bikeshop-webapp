@@ -31,10 +31,9 @@
       </div>
 
       <div class="col-right">
-        <h3>Youth Information</h3>
-
         <div v-if="selected_youths.length == 0">
-          Select youth from the tables to the left, or choose a youth from the search bar below.
+          <h3>Youth Information</h3>
+          Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
         </div>
 
         <!-- TODO: Load the youth's profile to get their active_periods -->
@@ -52,18 +51,43 @@
         </div>
 
         <div v-else>
+          <h3>Batch Operations</h3>
 
-          <b-dropdown variant="primary" id="dropdown-text" text="Year" class="m-2">
-            <b-dropdown-item-button v-for="y in ['19','20']">{{y}}</b-dropdown-item-button>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item-button>Clear</b-dropdown-item-button>
-          </b-dropdown>
-
-          <b-dropdown variant="primary" id="dropdown-text" text="Season" class="m-2">
-            <b-dropdown-item-button v-for="s in season_list">{{s}}</b-dropdown-item-button>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item-button>Clear</b-dropdown-item-button>
-          </b-dropdown>
+          <div>
+            <div style="width: 60%; float: left;">
+              <b-dropdown
+                variant="primary" :split-variant="batch_season_variant" split
+                id="dropdown-text" class="m-2"
+                :text="batch_season_display"
+                style="margin: auto;"
+              >
+                <b-dropdown-item-button v-for="s in season_list" @click="batch_season = s">
+                  {{s}}
+                </b-dropdown-item-button>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item-button @click="batch_season = null">
+                  Clear
+                </b-dropdown-item-button>
+              </b-dropdown>
+            </div>
+            <div style="width: 40%; float: right;">
+              <b-dropdown
+                variant="primary" :split-variant="batch_year_variant" split
+                id="dropdown-text" class="m-2"
+                :text="batch_year_display"
+                style="margin: auto;"
+              >
+                <b-dropdown-item-button v-for="y in year_list" @click="batch_year = y">
+                  {{y}}
+                </b-dropdown-item-button>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item-button @click="batch_year = null">
+                  Clear
+                </b-dropdown-item-button>
+              </b-dropdown>
+            </div>
+          </div>
+          <div style="clear: both;"></div>
 
           <b-dropdown variant="primary" id="dropdown-text" text="Class" class="m-2">
             <b-dropdown-item-button v-for="c in class_list">{{c}}</b-dropdown-item-button>
@@ -152,6 +176,9 @@ export default {
 
       period_status: null,
 
+      batch_season: null,
+      batch_year: null,
+
     };
   },
 
@@ -196,6 +223,22 @@ export default {
         ret.push(name);
       });
       return ret;
+    },
+
+    batch_season_display: function() {
+      return (this.batch_season != null) ? this.batch_season : "Choose a season";
+    },
+
+    batch_year_display: function() {
+      return (this.batch_year != null) ? this.batch_year : "Choose a year";
+    },
+
+    batch_season_variant: function() {
+      return (this.batch_season != null) ? "primary" : "outline-primary";
+    },
+
+    batch_year_variant: function() {
+      return (this.batch_year != null) ? "primary" : "outline-primary";
     },
   },
 
