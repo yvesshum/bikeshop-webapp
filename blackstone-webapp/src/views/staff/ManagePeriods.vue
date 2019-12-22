@@ -312,4 +312,24 @@ export default {
     color: gray;
     font-size: 0.75em;
   }
+
+  .col-container:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  .col-left {
+    float: left;
+    width: 45%;
+    padding-left: 3%;
+    padding-right: 1.5%;
+  }
+
+  .col-right {
+    float: left;
+    width: 55%;
+    padding-left: 1.5%;
+    padding-right: 3%;
+  }
 </style>
