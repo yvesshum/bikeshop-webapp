@@ -74,12 +74,6 @@
         </div>
       </div>
     </div>
-
-    <br /><br />
-
-    <h3>Past Quarters</h3>
-    <div id="past-quarters-table"></div>
-
   </div>
 </template>
 
