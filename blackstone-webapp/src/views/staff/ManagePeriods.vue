@@ -6,22 +6,19 @@
 
     <div class="col-container">
       <div class="col-left">
-        <h3>Current Quarter (Fall 19)</h3>
+        <ButtonArrayHeader
+          :left="[{name: 'First', arr: 'b'}, 'Previous']"
+          :right="['Next', {name: 'Current', arr: 'd'}, {name: 'Registration', arr: 'b'}]"
+          @clicked="switch_to"
+        >
+          <h3>{{display_period}}</h3>
+        </ButtonArrayHeader>
         <Table
           ref="current_table"
           :headingdata="headers"
           :table_data="cur_youths"
           :args="args"
           @newSelection="cur_row_selected"
-        />
-
-        <h3>Registration for Next Quarter (Winter 20)</h3>
-        <Table
-          ref="registration_table"
-          :headingdata="headers"
-          :table_data="reg_youths"
-          :args="args"
-          @newSelection="reg_row_selected"
         />
 
         <YouthIDSelector periods="all"
@@ -145,9 +142,11 @@ import Table from '@/components/Table';
 import ToggleButton from '@/components/ToggleButton';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
+import ButtonArrayHeader from '@/components/ButtonArrayHeader';
 import {Status} from '@/components/Status.js';
 import {filter} from "@/components/Search.js";
 import {forKeyVal} from '@/components/ParseDB.js';
+import {Period} from '@/components/Period.js';
 
 export default {
   name: 'manage_periods',
@@ -157,6 +156,7 @@ export default {
     ToggleButton,
     PeriodsClassesDisplay,
     YouthIDSelector,
+    ButtonArrayHeader,
   },
 
   data: function() {
@@ -172,6 +172,7 @@ export default {
       past_periods: [],
       cur_period: null,
       reg_period: null,
+      fst_period: null,
       cur_youths: [], // With period_status, are these two even necessary?
       reg_youths: [],
       classes: [],
@@ -212,6 +213,8 @@ export default {
       batch_season: null,
       batch_year: null,
 
+      display_period: null,
+
     };
   },
 
@@ -220,6 +223,7 @@ export default {
     await this.load_metadata();
     await this.load_current_youths();
     await this.load_periods();
+    this.display_period = this.cur_period;
 
     this.period_status = new Object();
 
@@ -295,20 +299,24 @@ export default {
       // Store current periods
       this.cur_period = data["CurrentPeriod"];
       this.reg_period = data["CurrentRegistrationPeriod"];
+      this.fst_period = data["FirstPeriod"];
 
       // Store the list of classes
       this.classes = data["Classes"];
 
       // Store seasons
       this.season_list = data["Seasons"];
+      Period.setSeasons(this.season_list);
+
       this.period_sort_map = new Object();
       this.season_list.forEach(function(element, n) {
         this.period_sort_map[element] = n;
       }.bind(this));
 
+      // Store years
       this.year_list = [];
       this.year_list_records = [];
-      var min_year = this.split_period_name(data["FirstPeriod"]).year;
+      var min_year = this.split_period_name(this.fst_period).year;
       var max_year = this.split_period_name(this.reg_period).year;
       var max_year_r = this.split_period_name(this.cur_period).year;
 
@@ -396,6 +404,26 @@ export default {
       if (season == null || year == null) return "";
       var val = this.get_youth_class(youth, season, year);
       return (val != null) ? val : "n/a";
+    },
+
+    switch_to: function(change_code) {
+      switch (change_code) {
+        case "Current":
+          this.display_period = this.cur_period;
+          break;
+        case "Registration":
+          this.display_period = this.reg_period;
+          break;
+        case "First":
+          this.display_period = this.fst_period;
+          break;
+        case "Previous":
+          this.display_period = Period.genPrevStr(this.display_period);
+          break;
+        case "Next":
+          this.display_period = Period.genNextStr(this.display_period);
+          break;
+      }
     },
 
     split_period_name: function(period) {
