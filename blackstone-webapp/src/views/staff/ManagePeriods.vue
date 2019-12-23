@@ -86,7 +86,7 @@
             <div style="display: inline-block; width: 2em;"></div>
             <div style="display: inline-block;">
               <b-dropdown
-                variant="success" split
+                variant="success"
                 id="dropdown-text" class="m-2"
                 text="Set Class"
                 style="margin: auto;"
@@ -96,11 +96,11 @@
                     <i>Set the class during (season) for all selected youth.</i>
                 </b-dropdown-text>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item-button v-for="c in class_list">
+                <b-dropdown-item-button v-for="c in class_list" @click="change_periods_selected(c)">
                   {{c}}
                 </b-dropdown-item-button>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item-button>
+                <b-dropdown-item-button @click="change_periods_selected(null)">
                   Clear
                 </b-dropdown-item-button>
               </b-dropdown>
@@ -459,6 +459,14 @@ export default {
 
     change_period: function(change) {
       console.log("Changing period: ", change);
+    },
+
+    change_periods_selected: function(change) {
+      var change_list = this.selected_youths.map(youth => {
+        return {youth, period: this.batch_period, new_class: change}
+      });
+
+      console.log("Changes: ", change_list);
     },
 
   },
