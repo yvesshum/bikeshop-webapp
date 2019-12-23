@@ -196,10 +196,7 @@ export default {
           title: "ID", field: "ID", width: 90, headerFilter: true
         },
         { // The class the youth is registered in
-          // TODO: Get filter values from the database
-          // TODO: Group by class?
           title: "Class", field: "Class", headerFilter: "select",
-          headerFilterParams: {values: ["", "Earn a bike", "Gear up one", "Geared up two"]}
         },
       ],
       args: {
@@ -320,6 +317,11 @@ export default {
 
       // Store the list of classes
       this.classes = data["Classes"];
+
+      // Use the list of classes to set the filter options for the class column
+      var class_col = this.headers.pop();
+      class_col = {...class_col, headerFilterParams: {values: ["", ...this.class_list]}};
+      this.headers.push(class_col);
 
       // Store seasons
       this.season_list = data["Seasons"];
