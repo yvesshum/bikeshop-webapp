@@ -11,12 +11,12 @@
           :right="['Next', {name: 'Current', arr: 'd'}, {name: 'Registration', arr: 'b'}]"
           @clicked="switch_to"
         >
-          <h3>{{display_period}}</h3>
+          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
           :headingdata="headers"
-          :table_data="cur_youths"
+          :table_data="display_youths"
           :args="args"
           @newSelection="cur_row_selected"
         />
@@ -169,12 +169,9 @@ export default {
       metadata_doc: null,
 
       // Data loaded from the ActivePeriod document
-      past_periods: [],
       cur_period: null,
       reg_period: null,
       fst_period: null,
-      cur_youths: [], // With period_status, are these two even necessary?
-      reg_youths: [],
       classes: [],
 
       // The column headers for the table
@@ -198,7 +195,6 @@ export default {
       },
 
       selected_cur: [],
-      selected_reg: [],
       selected_bar: [],
       all_youth: null,
 
@@ -214,6 +210,7 @@ export default {
       batch_year: null,
 
       display_period: null,
+      display_youths: [],
 
     };
   },
@@ -221,9 +218,8 @@ export default {
   mounted: async function() {
 
     await this.load_metadata();
-    await this.load_current_youths();
     await this.load_periods();
-    this.display_period = this.cur_period;
+    this.switch_to("Current");
 
     this.period_status = new Object();
 
@@ -235,7 +231,7 @@ export default {
 
   computed: {
     selected_youths: function() {
-      return [...this.selected_cur, ...this.selected_reg, ...this.selected_bar];
+      return [...this.selected_cur, ...this.selected_bar];
     },
 
     selected_youth: function() {
@@ -328,27 +324,6 @@ export default {
       }
     },
 
-    load_current_youths: async function() {
-      this.cur_youths = await this.load_youths(this.cur_period);
-      this.reg_youths = await this.load_youths(this.cur_period);
-
-
-
-      this.cur_youths.forEach(youth => 
-        youth["Full Name"] = `${youth["First Name"]} ${youth["Last Name"]}`
-      );
-
-      this.reg_youths.forEach(youth => 
-        youth["Full Name"] = `${youth["First Name"]} ${youth["Last Name"]}`
-      );
-    },
-
-    load_youths: async function(period) {
-      var name = this.split_period_name(period);
-      var doc = await this.periods_db.doc(name.year).get();
-      return doc.data()[period];
-    },
-
     load_periods: async function() {
       this.periods = {};
       this.year_list_records.forEach(async year => {
@@ -424,6 +399,20 @@ export default {
           this.display_period = Period.genNextStr(this.display_period);
           break;
       }
+
+      var period = this.get_period(Period.season(this.display_period), Period.year(this.display_period));
+
+      if (period == null) {
+        this.display_youths = [];
+      }
+
+      else {
+        this.display_youths = period.map(y => {
+          return {...y, "Full Name": y["First Name"] + " " + y["Last Name"]}
+        });
+      }
+
+      console.log(this.display_youths);
     },
 
     split_period_name: function(period) {
@@ -447,10 +436,6 @@ export default {
 
     cur_row_selected: function(rows) {
       this.selected_cur = this.row_selected(rows);
-    },
-
-    reg_row_selected: function(rows) {
-      this.selected_reg = this.row_selected(rows);
     },
 
     row_selected: function(rows) {
