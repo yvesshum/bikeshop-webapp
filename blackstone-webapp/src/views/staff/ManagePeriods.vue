@@ -51,15 +51,15 @@
         </div>
 
         <div v-else>
-          <h3>Batch Operations</h3>
+          <h3>Edit Multiple Youth</h3>
 
           <div>
-            <div style="width: 60%; float: left;">
+            <div style="display: inline-block;">
               <b-dropdown
                 variant="primary" :split-variant="batch_season_variant" split
                 id="dropdown-text" class="m-2"
                 :text="batch_season_display"
-                style="margin: auto;"
+                style="margin: auto;" right
               >
                 <b-dropdown-item-button v-for="s in season_list" @click="batch_season = s">
                   {{s}}
@@ -70,12 +70,12 @@
                 </b-dropdown-item-button>
               </b-dropdown>
             </div>
-            <div style="width: 40%; float: right;">
+            <div style="display: inline-block;">
               <b-dropdown
                 variant="primary" :split-variant="batch_year_variant" split
                 id="dropdown-text" class="m-2"
                 :text="batch_year_display"
-                style="margin: auto;"
+                style="margin: auto;" right
               >
                 <b-dropdown-item-button v-for="y in year_list" @click="batch_year = y">
                   {{y}}
@@ -86,14 +86,30 @@
                 </b-dropdown-item-button>
               </b-dropdown>
             </div>
+            <div style="display: inline-block; width: 2em;"></div>
+            <div style="display: inline-block;">
+              <b-dropdown
+                variant="success" split
+                id="dropdown-text" class="m-2"
+                text="Set Class"
+                style="margin: auto;"
+                :disabled="batch_period == null"
+              >
+                <b-dropdown-text style="width: 260px;">
+                    <i>Set the class during (season) for all selected youth.</i>
+                </b-dropdown-text>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item-button v-for="c in class_list">
+                  {{c}}
+                </b-dropdown-item-button>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item-button>
+                  Clear
+                </b-dropdown-item-button>
+              </b-dropdown>
+            </div>
           </div>
-          <div style="clear: both;"></div>
 
-          <b-dropdown variant="primary" id="dropdown-text" text="Class" class="m-2">
-            <b-dropdown-item-button v-for="c in class_list">{{c}}</b-dropdown-item-button>
-            <b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item-button>Clear</b-dropdown-item-button>
-          </b-dropdown>
 
         </div>
       </div>
@@ -239,6 +255,16 @@ export default {
 
     batch_year_variant: function() {
       return (this.batch_year != null) ? "primary" : "outline-primary";
+    },
+
+    batch_period: function() {
+      return (this.batch_year != null && this.batch_season != null)
+        ? `${this.batch_season} ${this.batch_year}`
+        : null
+    },
+
+    batch_period_display: function() {
+      return (this.batch_period != null) ? `Class in ${this.batch_period}` : "Choose a period";
     },
   },
 
