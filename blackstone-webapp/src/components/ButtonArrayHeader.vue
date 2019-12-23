@@ -5,7 +5,8 @@
             <b-button v-for="b in left" class="arr-l"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
-                variant="primary"
+                :variant="in_bounds(b) ? 'primary' : 'secondary'"
+                :disabled="!in_bounds(b)"
             >
                 <span v-if="get_arrow(b) == 's'">&larr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Larr;</span>
@@ -17,7 +18,8 @@
             <b-button v-for="b in rev_right" class="arr-r"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
-                variant="primary"
+                :variant="in_bounds(b) ? 'primary' : 'secondary'"
+                :disabled="!in_bounds(b)"
             >
                 <span v-if="get_arrow(b) == 's'">&rarr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Rarr;</span>
@@ -32,7 +34,7 @@
 
 export default {
     name: 'button-array-header',
-    props: ["left", "right"],
+    props: ["left", "right", "min", "max", "compareFunc", "current"],
 
     methods: {
         switch_to: function(name) {
@@ -49,13 +51,30 @@ export default {
         },
 
         get_arrow: function(b) {
-            if (typeof b == "string") {
+            if (typeof b == "string" || b.arr == undefined) {
                 return "s";
             }
             else {
                 return b.arr;
             }
         },
+
+        in_bounds: function(b) {
+            if (this.current == null) return true;
+
+            switch (b.val) {
+                case 'min':
+                case 'prev':
+                    return this.compareFunc(this.min, this.current) < 0;
+
+                case 'max':
+                case 'next':
+                    return this.compareFunc(this.max, this.current) > 0;
+
+                default:
+                    return true;
+            }
+        }
     },
 
     computed: {

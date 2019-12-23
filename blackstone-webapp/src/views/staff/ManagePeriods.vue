@@ -7,8 +7,8 @@
     <div class="col-container">
       <div class="col-left">
         <ButtonArrayHeader
-          :left="[{name: 'First', arr: 'b'}, 'Previous']"
-          :right="['Next', {name: 'Current', arr: 'd'}, {name: 'Registration', arr: 'b'}]"
+          :left="button_header_l" :right="button_header_r" :current="display_period"
+          :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
         >
           <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
@@ -211,6 +211,17 @@ export default {
 
       display_period: null,
       display_youths: [],
+
+      button_header_l: [
+        {name: 'First', arr: 'b', val: 'min'},
+        {name: 'Previous', val: 'prev'},
+      ],
+
+      button_header_r: [
+        {name: 'Next', val: 'next'},
+        {name: 'Current', arr: 'd'},
+        {name: 'Registration', arr: 'b', val: 'max'},
+      ],
 
     };
   },
@@ -432,6 +443,10 @@ export default {
       } else {
         return a_year.localeCompare(b_year);
       }
+    },
+
+    compare_periods: function(a, b) {
+      return Period.compare(a, b);
     },
 
     cur_row_selected: function(rows) {
