@@ -113,13 +113,25 @@
                 <th scope="col">Name</th>
                 <th scope="col">ID</th>
                 <th scope="col">{{batch_period_display}}</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
-              <tr v-for="youth in selected_youths">
-                <td>{{youth["First Name"]}} {{youth["Last Name"]}}</td>
-                <td>{{youth["ID"]}}</td>
-                <td>{{get_youth_class_display(youth, batch_season, batch_year)}}</td>
+              <tr v-for="youth in selected_youths" style="padding-top: 0px;">
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{youth["First Name"]}} {{youth["Last Name"]}}
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{youth["ID"]}}
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{get_youth_class_display(youth, batch_season, batch_year)}}
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  <b-button variant="outline-danger" size="sm" style="padding: 0px 6px;">
+                    &times;
+                  </b-button>
+                </td>
               </tr>
             </tbody>
         </table>
