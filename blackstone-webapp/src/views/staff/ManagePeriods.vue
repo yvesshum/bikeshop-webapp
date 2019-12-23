@@ -448,11 +448,6 @@ export default {
       return false;
     },
 
-    is_active: function(youth, season, year) {
-      // TODO: Use youth's profile or relevant periods document?
-      return (season == "Winter" || year == "19");
-    },
-
     change_period: function(change) {
       console.log("Changing period: ", change);
     },
