@@ -40,7 +40,7 @@
         <div v-else-if="selected_youths.length == 1">
           <PeriodsClassesDisplay
             :youth="selected_youth"
-            :active_periods="{'Fall 19': 'Earn a bike', 'Winter 20': 'Gear up one', 'Spring 17': 'abc'}"
+            :active_periods="get_youth_classes(selected_youth)"
             :seasons="season_list"
             :cur_period="cur_period"
             :reg_period="reg_period"
@@ -345,7 +345,24 @@ export default {
       this.periods = {};
       this.year_list_records.forEach(async year => {
         this.periods[year] = (await this.periods_db.doc(year).get()).data();
+    },
+
+    // Format: {'Fall 18': 'Gear Up 2', 'Winter 20': 'Gear Up 2', 'Spring 17': 'Earn a Bike', 'Summer 18': 'Gear Up 1'}
+    get_youth_classes(youth) {
+      var result = {};
+
+      // Cycle through each year/season pair
+      this.year_list.forEach(year => {
+        this.season_list.forEach(season => {
+
+          // Add class to object if it exists
+          let youth_class = this.get_youth_class(youth, season, year);
+          if (youth_class != null)
+            result[season + " " + year] = youth_class;
+        })
       });
+
+      return result;
     },
 
     get_period(season, year) {
