@@ -200,9 +200,7 @@ export default {
 
       // Misc
       season_list: null,
-      period_sort_map: null,
       year_list: [],
-      year_list_records: [],
 
       period_status: null,
 
@@ -315,30 +313,20 @@ export default {
       this.season_list = data["Seasons"];
       Period.setSeasons(this.season_list);
 
-      this.period_sort_map = new Object();
-      this.season_list.forEach(function(element, n) {
-        this.period_sort_map[element] = n;
-      }.bind(this));
-
       // Store years
       this.year_list = [];
-      this.year_list_records = [];
-      var min_year = this.split_period_name(this.fst_period).year;
-      var max_year = this.split_period_name(this.reg_period).year;
-      var max_year_r = this.split_period_name(this.cur_period).year;
-
+      var min_year = Period.year(this.fst_period);
+      var max_year = Period.year(this.reg_period);
       for (let i = parseInt(min_year); i <= parseInt(max_year); i++) {
           this.year_list.push(i.toString());
-      }
-      for (let i = parseInt(min_year); i <= parseInt(max_year_r); i++) {
-          this.year_list_records.push(i.toString());
       }
     },
 
     load_periods: async function() {
       this.periods = {};
-      this.year_list_records.forEach(async year => {
+      this.year_list.forEach(async year => {
         this.periods[year] = (await this.periods_db.doc(year).get()).data();
+      });
     },
 
     // Format: {'Fall 18': 'Gear Up 2', 'Winter 20': 'Gear Up 2', 'Spring 17': 'Earn a Bike', 'Summer 18': 'Gear Up 1'}
@@ -424,25 +412,6 @@ export default {
       }
 
       console.log(this.display_youths);
-    },
-
-    split_period_name: function(period) {
-      var p = period.split(" ");
-      return {season: p[0], year: p[1]};
-    },
-
-    // Function to determine period ordering.
-    // Usage: some_period_array.sort(sort_periods)
-    sort_periods: function(a, b) {
-      let a_month = a.slice(0,-2).trim();
-      let b_month = b.slice(0,-2).trim();
-      let a_year = a.slice(-2);
-      let b_year = b.slice(-2);
-      if (a_year == b_year) {
-        return this.period_sort_map[a_month] - this.period_sort_map[b_month];
-      } else {
-        return a_year.localeCompare(b_year);
-      }
     },
 
     compare_periods: function(a, b) {
