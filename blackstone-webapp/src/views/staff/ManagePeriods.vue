@@ -110,6 +110,22 @@
             </div>
           </div>
 
+          <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">ID</th>
+                <th scope="col">{{batch_period_display}}</th>
+            </tr>
+            </thead>
+            <tbody>
+              <tr v-for="youth in selected_youths">
+                <td>{{youth["First Name"]}} {{youth["Last Name"]}}</td>
+                <td>{{youth["ID"]}}</td>
+                <td>{{get_youth_class_display(youth, batch_season, batch_year)}}</td>
+              </tr>
+            </tbody>
+        </table>
 
         </div>
       </div>
@@ -188,7 +204,8 @@ export default {
       // Misc
       season_list: null,
       period_sort_map: null,
-      year_list: null,
+      year_list: [],
+      year_list_records: [],
 
       period_status: null,
 
@@ -202,6 +219,7 @@ export default {
 
     await this.load_metadata();
     await this.load_current_youths();
+    await this.load_periods();
 
     this.period_status = new Object();
 
@@ -289,11 +307,16 @@ export default {
       }.bind(this));
 
       this.year_list = [];
+      this.year_list_records = [];
       var min_year = this.split_period_name(data["FirstPeriod"]).year;
       var max_year = this.split_period_name(this.reg_period).year;
+      var max_year_r = this.split_period_name(this.cur_period).year;
 
       for (let i = parseInt(min_year); i <= parseInt(max_year); i++) {
           this.year_list.push(i.toString());
+      }
+      for (let i = parseInt(min_year); i <= parseInt(max_year_r); i++) {
+          this.year_list_records.push(i.toString());
       }
     },
 
@@ -316,6 +339,46 @@ export default {
       var name = this.split_period_name(period);
       var doc = await this.periods_db.doc(name.year).get();
       return doc.data()[period];
+    },
+
+    load_periods: async function() {
+      this.periods = {};
+      this.year_list_records.forEach(async year => {
+        this.periods[year] = (await this.periods_db.doc(year).get()).data();
+      });
+    },
+
+    get_period(season, year) {
+      if (this.periods == null || this.periods[year] == null) {
+        return null;
+      }
+      return this.periods[year][season + " " + year];
+    },
+
+    get_youth_class(youth, season, year) {
+      var full_period = this.get_period(season, year);
+      if (full_period == null) return null;
+
+      let matches = full_period.filter(y => {
+        return y.ID == youth.ID && y["First Name"] == youth["First Name"] && y["Last Name"] == youth["Last Name"];
+      });
+
+      if (matches.length == 0) {
+        return null;
+      }
+      else if (matches.length == 1) {
+        return matches[0].Class
+      }
+      else {
+        // Error - multiple records found
+        return matches[0].Class
+      }
+    },
+
+    get_youth_class_display(youth, season, year) {
+      if (season == null || year == null) return "";
+      var val = this.get_youth_class(youth, season, year);
+      return (val != null) ? val : "n/a";
     },
 
     split_period_name: function(period) {
