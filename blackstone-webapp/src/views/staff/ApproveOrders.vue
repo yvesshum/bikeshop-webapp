@@ -29,6 +29,8 @@
             :sort-desc.sync="sortDesc"
             id="order_table"
             :busy="isBusy"
+            sticky-header="500px"
+            style="border-top: 5px solid grey;"
         >
             <div slot="table-busy" class="text-center text-danger my-2">
             <b-spinner class="align-middle"></b-spinner>
@@ -83,6 +85,7 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import {Timestamp} from '../../firebase'
     export default {
         name: 'ApproveOrders',
         components: {
@@ -254,6 +257,7 @@
                                 res[key] = curData[key];
                             }
                         })
+                        res["Order Date"] = Timestamp.fromDate(res["Order Date"]);
                         YouthOrderLogRef.doc().set(res).catch(err => {
                             window.alert("Err: "+ err);
                             return null;

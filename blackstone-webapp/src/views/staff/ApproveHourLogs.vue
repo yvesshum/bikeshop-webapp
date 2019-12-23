@@ -26,6 +26,8 @@
             :sort-desc.sync="sortDesc"
             id="transfer_table"
             :busy="isBusy"
+            sticky-header="500px"
+            style="border-top: 5px solid grey;"
         >
             <div slot="table-busy" class="text-center text-danger my-2">
                 <b-spinner class="align-middle"></b-spinner>
@@ -130,6 +132,8 @@
 </template>
 <script>
     import {db} from '../../firebase';
+    import moment from 'moment';
+    import {Timestamp} from '../../firebase'
     import VueNumberInput from '@chenfengyuan/vue-number-input';
     export default {
         name: 'ApproveHourLogs',
@@ -202,8 +206,9 @@
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
                     console.log(data["Check In"].toDate());
-                    data["Check In"] = data["Check In"].toDate();
-                    data["Check Out"] = data["Check Out"].toDate();
+                    // moment(data["Date"].toDate()).format("YYYY-MM-DD hh:mm a");
+                    data["Check In"] = moment(data["Check In"].toDate()).format("YYYY-MM-DD hh:mm a");
+                    data["Check Out"] = moment(data["Check Out"].toDate()).format("YYYY-MM-DD hh:mm a");
                     ret.push(data);
                 });
                 return ret;
@@ -245,7 +250,6 @@
                         if(!isNaN(addAmount)){
                             amount += addAmount;
                         }
-                        console.log("Current approve amount: " + amount);
                     }
                 }
 
@@ -268,10 +272,13 @@
                     return null;
                 }
 
-                var worklog = row;
+                let worklog = row;
                 delete worklog["Document ID"];
+                worklog["Check In"] = Timestamp.fromDate(moment(worklog["Check In"], "YYYY-MM-DD hh:mm a").toDate());
+                worklog["Check Out"] = Timestamp.fromDate(moment(worklog["Check Out"], "YYYY-MM-DD hh:mm a").toDate());
 
-                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(row);
+
+                let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(worklog);
 
                 if (logStatus) {
                     window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
@@ -545,6 +552,7 @@
 <style>
 .toolbar_wrapper {
 margin-bottom: 1rem;
+position: sticky;
 }
 .title {
 margin-bottom: 1rem;

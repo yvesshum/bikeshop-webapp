@@ -123,7 +123,7 @@
     </div>
 </div>
 <footer>
-    <p class="copyright" >Blackstone Bicycle Works © 2019</p>
+    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1a</p>
 </footer>
 </div>
 

@@ -39,10 +39,9 @@ use v-model. Whenever one of these is changed, it updates the other.
         <div v-if="input === 'Integer'">
             <VueNumberInput 
               center
-              v-model="value"
+              v-model="inner_value"
               :min="0"
               :step="1"
-              placeholder="Hours"
               align="center"
               style="width: 20rem"
               controls
@@ -73,7 +72,7 @@ use v-model. Whenever one of these is changed, it updates the other.
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
              <!-- In progress, none of the packages seem to work so far -->     
 
-    
+            <datetime type="datetime" v-model="inner_value"/>
 
         </div>
 
@@ -146,6 +145,8 @@ import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
 
 export default {
     name: 'SpecialInput',
@@ -282,12 +283,12 @@ export default {
                     text: c[0] + ": " + c[1]
                 })
             })
-            console.log('t', this.classOptions);
         },
 
         async getPeriodOptions() {
             let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
             seasons = seasons.data().Seasons;
+            console.log('sget', seasons);
             let years = [];
             years.push(moment().subtract(1, 'years').format("YY"));
             years.push(moment().format("YY"));
@@ -315,13 +316,17 @@ export default {
             await this.getClassOptions();
         }
 
+        if (this.input ==="Period") {
+            await this.getPeriodOptions();
+        }
+
         this.ready = true;
     },
 
     components: {
         VueTelInput,
         VueNumberInput,
-
+        Datetime
     }
 
 }
