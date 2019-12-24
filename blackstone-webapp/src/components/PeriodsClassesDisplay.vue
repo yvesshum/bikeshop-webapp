@@ -136,6 +136,12 @@ export default {
 
     },
 
+    watch: {
+        seasons: function() {
+            Period.setSeasons(this.seasons);
+        },
+    },
+
     methods: {
         is_active: function(season, year) {
             var period = Period.makePeriod(season, year);

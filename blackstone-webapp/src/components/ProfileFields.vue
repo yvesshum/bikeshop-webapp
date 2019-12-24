@@ -22,6 +22,7 @@
 
     <PeriodsClassesDisplay
       :active_periods="active_periods"
+      :seasons="season_list"
       v-bind="periodData"
       style="max-width: 50%; margin:auto"
     />
@@ -357,6 +358,11 @@ export default {
 
     has_changes_strict: function() {
       return this.check_edits(true);
+    },
+
+    season_list: function() {
+      if (this.periodData == null) return undefined;
+      return this.periodData.seasons;
     },
   },
 
