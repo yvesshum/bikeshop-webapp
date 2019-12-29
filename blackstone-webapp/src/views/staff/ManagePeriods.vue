@@ -18,7 +18,9 @@
           :headingdata="headers"
           :table_data="display_youths"
           :args="args"
-          @newSelection="cur_row_selected"
+          @deselectedRow="deselected_row"
+          @replaceData="replaceData"
+          @rowClick="row_click"
         />
 
         <YouthIDSelector periods="all"
@@ -127,8 +129,8 @@
                 <td style="padding-top: 3px; padding-bottom: 3px;">
                   {{get_youth_class_display(youth, batch_season, batch_year)}}
                 </td>
-                <td style="padding-top: 3px; padding-bottom: 3px;">
-                  <b-button variant="outline-danger" size="sm" style="padding: 0px 6px;">
+                <td style="padding: 3px 3px;">
+                  <b-button variant="outline-danger" size="sm" style="padding: 0px 6px;" @click="deselect_youth(youth)">
                     &times;
                   </b-button>
                 </td>
@@ -205,6 +207,7 @@ export default {
 
       selected_cur: [],
       selected_bar: [],
+      selected_youths: [],
       all_youth: null,
 
       // Misc
@@ -248,9 +251,6 @@ export default {
   },
 
   computed: {
-    selected_youths: function() {
-      return [...this.selected_cur, ...this.selected_bar];
-    },
 
     selected_youth: function() {
       if (this.selected_youths.length == 1) {
@@ -417,37 +417,98 @@ export default {
 
       if (period == null) {
         this.display_youths = [];
-      }
-
-      else {
+      } else {
         this.display_youths = period.map(y => {
           return {...y, "Full Name": y["First Name"] + " " + y["Last Name"]}
         });
       }
-
-      console.log(this.display_youths);
     },
 
     compare_periods: function(a, b) {
       return Period.compare(a, b);
     },
 
-    cur_row_selected: function(rows) {
-      this.selected_cur = this.row_selected(rows);
-    },
-
     row_selected: function(rows) {
       return (rows.length == 0) ? [] : rows.map(row => row.getData());
     },
 
+    // Add a youth to the selection list if it is not already in it
+    add_to_selected: function(youth) {
+      if (!this.contains(this.selected_youths, youth))
+        this.selected_youths.push(youth)
+    },
+
+    // Remove a youth from the selection list
+    remove_from_selected: function(youth) {
+      this.selected_youths = this.selected_youths.filter(y => {
+        return y.ID != youth.ID
+      });
+    },
+
+    deselect_youth: function(youth) {
+      this.remove_from_selected(youth);
+      this.deselect_youth_row(youth);
+    },
+
+    // Deselect a youth in the table
+    deselect_youth_row: function(youth) {
+      let table = this.$refs.current_table.tabulator;
+      let rows = table.getRows().filter(r => this.youths_match(r.getData(), youth));
+      rows.forEach(row => table.deselectRow(row));
+    },
+
+    // Event handler for tabulator deselectRow event
+    // Removes the youth from the main list
+    deselected_row: function(r) {
+      this.remove_from_selected(r.getData());
+    },
+
+    // Event handler for tabulator replaceData event
+    // Reselects all youth which are currently being edited
+    replaceData: function(data) {
+
+      // Get the table
+      let table = this.$refs.current_table.tabulator;
+
+      // Filter the table's rows down to the rows whose youth is in the selected list
+      // and select each of those rows
+      let sel_rows = table.getRows().filter(r => this.youth_is_selected(r.getData()));
+      sel_rows.forEach(r => table.selectRow(r));
+    },
+
+    // Event handler for tabulator rowClick event
+    // Have to use this instead of selected because it only fires on manual selection,
+    // not on programmatic selection
+    row_click: function({event, row, selected}) {
+
+      // If regular click (not CTRL-click or shift-click), deselect everyone
+      if (!(event.ctrlKey || event.shiftKey)) {
+        this.selected_youths = [];
+      }
+
+      // Add everyone currently selected in the table to the list
+      selected.forEach(r => this.add_to_selected(r.getData()));
+    },
+
+
+    youth_is_selected: function(youth) {
+      return this.contains(this.selected_youths, youth);
+    },
+
+    // Check whether the given list contains a youth-like object matching the passed object
     contains: function(list, youth) {
       for (let x in list) {
         let curr = list[x];
-        if (youth["ID"] == curr["ID"] && youth["Full Name"] == curr["Full Name"]) {
+        if (this.youths_match(curr, youth)) {
           return true;
         }
       }
       return false;
+    },
+
+    // Check whether two youth-like objects match
+    youths_match: function(y1, y2) {
+      return y1["ID"] == y2["ID"] && y1["Full Name"] == y2["Full Name"];
     },
 
     change_period: function(change) {
