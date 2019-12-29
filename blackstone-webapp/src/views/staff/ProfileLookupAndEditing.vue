@@ -56,6 +56,7 @@ import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
+import {Period} from "@/components/Period.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -157,7 +158,9 @@ export default {
 
         var class_list = data["Classes"].map(c => Object.keys(c)[0]);
 
-        this.periods = data["All Periods"];
+        await Period.setSeasons(data["Seasons"]);
+        this.periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
+
         this.period_data = {
           cur_period: data["CurrentPeriod"],
           reg_period: data["CurrentRegistrationPeriod"],
