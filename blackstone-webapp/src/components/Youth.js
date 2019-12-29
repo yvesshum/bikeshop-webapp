@@ -18,8 +18,8 @@ export class Youth {
 
 	// Return true if the given object has all the required fields of a Youth object
 	static isYouthLike(obj) {
-		for (let val in Youth.requiredVals()) {
-			if (obj[val] === undefined) {
+		for (let n in Youth.requiredVals()) {
+			if (obj[reqs[n]] === undefined) {
 				return false;
 			}
 		}
@@ -38,8 +38,9 @@ export class Youth {
 
 	// Check whether two Youth-like objects match
 	static equiv(y1, y2) {
-		for (var val in Youth.requiredVals()) {
-			if (y1[val] != y2[val]) {
+		var reqs = Youth.requiredVals();
+		for (var n in reqs) {
+			if (y1[reqs[n]] != y2[reqs[n]]) {
 				return false;
 			}
 		}
