@@ -57,6 +57,7 @@ import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/components/Period.js";
+import {mapKeyVal} from "@/components/ParseDB.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -156,8 +157,6 @@ export default {
         this.periods_doc = await this.periods_db.doc("metadata").get();
         var data = this.periods_doc.data();
 
-        var class_list = data["Classes"].map(c => Object.keys(c)[0]);
-
         await Period.setSeasons(data["Seasons"]);
         this.periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
 
@@ -165,7 +164,7 @@ export default {
           cur_period: data["CurrentPeriod"],
           reg_period: data["CurrentRegistrationPeriod"],
           seasons:    data["Seasons"],
-          class_list,
+          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
         };
       },
 
