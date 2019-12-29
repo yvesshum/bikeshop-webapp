@@ -161,6 +161,7 @@ import {Status} from '@/components/Status.js';
 import {filter} from "@/components/Search.js";
 import {forKeyVal} from '@/components/ParseDB.js';
 import {Period} from '@/components/Period.js';
+import {Youth} from '@/components/Youth.js';
 
 export default {
   name: 'manage_periods',
@@ -372,9 +373,7 @@ export default {
       var full_period = this.get_period(season, year);
       if (full_period == null) return null;
 
-      let matches = full_period.filter(y => {
-        return y.ID == youth.ID && y["First Name"] == youth["First Name"] && y["Last Name"] == youth["Last Name"];
-      });
+      let matches = Youth.findMatches(full_period, youth);
 
       if (matches.length == 0) {
         return null;
@@ -419,7 +418,7 @@ export default {
         this.display_youths = [];
       } else {
         this.display_youths = period.map(y => {
-          return {...y, "Full Name": y["First Name"] + " " + y["Last Name"]}
+          return {...y, "Full Name": Youth.getFullName(y)}
         });
       }
     },
@@ -434,15 +433,14 @@ export default {
 
     // Add a youth to the selection list if it is not already in it
     add_to_selected: function(youth) {
-      if (!this.contains(this.selected_youths, youth))
+      if (!this.youth_is_selected(youth)) {
         this.selected_youths.push(youth)
+      }
     },
 
     // Remove a youth from the selection list
     remove_from_selected: function(youth) {
-      this.selected_youths = this.selected_youths.filter(y => {
-        return y.ID != youth.ID
-      });
+      this.selected_youths = this.selected_youths.filter(y => !Youth.equiv(youth, y));
     },
 
     deselect_youth: function(youth) {
@@ -453,7 +451,7 @@ export default {
     // Deselect a youth in the table
     deselect_youth_row: function(youth) {
       let table = this.$refs.current_table.tabulator;
-      let rows = table.getRows().filter(r => this.youths_match(r.getData(), youth));
+      let rows = table.getRows().filter(r => Youth.equiv(r.getData(), youth));
       rows.forEach(row => table.deselectRow(row));
     },
 
@@ -492,23 +490,7 @@ export default {
 
 
     youth_is_selected: function(youth) {
-      return this.contains(this.selected_youths, youth);
-    },
-
-    // Check whether the given list contains a youth-like object matching the passed object
-    contains: function(list, youth) {
-      for (let x in list) {
-        let curr = list[x];
-        if (this.youths_match(curr, youth)) {
-          return true;
-        }
-      }
-      return false;
-    },
-
-    // Check whether two youth-like objects match
-    youths_match: function(y1, y2) {
-      return y1["ID"] == y2["ID"] && y1["Full Name"] == y2["Full Name"];
+      return Youth.contains(this.selected_youths, youth);
     },
 
     change_period: function(change) {
