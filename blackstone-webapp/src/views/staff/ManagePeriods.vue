@@ -46,7 +46,13 @@
             :class_list="class_list"
             @change_period="change_period"
             detail_view
-          />
+          >
+            <span class="full_name">{{youth_name}}</span>&nbsp;
+            <span class="id_parens">(ID: {{youth_id}})</span>
+            <b-button variant="outline-danger" size="sm" style="padding: 0px 6px; float: right;" @click="deselect_youth(selected_youth)">
+              &times;
+            </b-button>
+          </PeriodsClassesDisplay>
         </div>
 
         <div v-else>

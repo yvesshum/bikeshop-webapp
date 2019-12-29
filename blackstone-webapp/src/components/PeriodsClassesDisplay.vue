@@ -1,10 +1,12 @@
 
 <template>
     <div class="period-classes-display">
-        <div v-if="youth != undefined">
-            <span class="full_name">{{youth_name}}</span>&nbsp;
-            <span class="id_parens">(ID: {{youth_id}})</span>
-        </div>
+        <slot>
+            <div v-if="youth != undefined">
+                <span class="full_name">{{youth_name}}</span>&nbsp;
+                <span class="id_parens">(ID: {{youth_id}})</span>
+            </div>
+        </slot>
         
         <br />
 
