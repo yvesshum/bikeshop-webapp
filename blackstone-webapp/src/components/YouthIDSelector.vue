@@ -59,13 +59,15 @@ Emits:
             v-model="value"
             :options="filtered.options"
             :placeholder="placeholder"
-            open-direction="bottom"
             :internal-search="false"
             @search-change="val => search_term = val"
             :show-labels="false"
             :block-keys="['Tab', 'Enter']"
             :preserveSearch="true"
             :loading="is_busy"
+            v-bind="args"
+            :trackBy="'ID'"
+            :label="'Display'"
         >
             <template slot="singleLabel" slot-scope="props">
                 <span class="option__desc">
@@ -160,6 +162,10 @@ Emits:
                     // Reduce array with && to ensure all values are in FIELDS array
                     return s.reduce((a,c) => a && FIELDS.indexOf(c) !== -1, true)
                 },
+            },
+            args: {
+                type: Object,
+                default: () => {},
             },
         },
         data () {
@@ -618,6 +624,9 @@ Emits:
                 // Sort the result
                 youth_arr = youth_arr.sort();
 
+                // Add display version of each youth's information to the object
+                youth_arr = youth_arr.map(y => {return {...y, Display: this.nameWithID(y)}});
+
                 // Stop the loading icon
                 this.is_busy = false;
 
@@ -639,7 +648,7 @@ Emits:
 
             // Package name and ID into a string
             nameWithID (youth) {
-                return `${youth["First Name"]} ${youth["Last Name"]} ${youth["ID"]}`;
+                return `${youth["First Name"]} ${youth["Last Name"]} (${youth["ID"]})`;
             },
 
             //Needed for Check In
