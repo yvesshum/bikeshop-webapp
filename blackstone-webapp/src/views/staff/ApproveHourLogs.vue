@@ -26,6 +26,8 @@
             :sort-desc.sync="sortDesc"
             id="transfer_table"
             :busy="isBusy"
+            sticky-header="500px"
+            style="border-top: 5px solid grey;"
         >
             <div slot="table-busy" class="text-center text-danger my-2">
                 <b-spinner class="align-middle"></b-spinner>
@@ -545,6 +547,7 @@
 <style>
 .toolbar_wrapper {
 margin-bottom: 1rem;
+position: sticky;
 }
 .title {
 margin-bottom: 1rem;
