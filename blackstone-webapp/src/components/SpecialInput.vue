@@ -74,8 +74,8 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         </div>
         
-        <div v-else-if="input === 'Date'">
-            <datepicker v-model="inner_value"></datepicker>
+        <div v-else-if="input === 'Date'" style="text-align: center;">
+            <datepicker v-model="inner_value" style="display: inline-block;"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->

@@ -217,9 +217,9 @@
                             this.showErrorModal();
                             return null;
                         }
-                        input["Returning"] = true;
+                        input["Returning"] = "Returning Youth";
                     } else {
-                        input["Returning"] = false;
+                        input["Returning"] = "New Youth";
                         //hidden field initializers
                         await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
                             console.log("Hidden listener")
@@ -286,6 +286,15 @@
                     }
                         // console.log("Document written with ID: ", submitRef.id);
                     this.newID = submitRef.id;
+                    
+                    // Clear the fields
+                    for (let i = 0; i < this.requiredFields.length; i ++) {
+                        this.requiredFields[i]["value"] = undefined;
+                    }
+                    for (let i = 0; i < this.optionalFields.length; i ++) {
+                        this.optionalFields[i]["value"] = undefined;
+                    }
+                          
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
                         // });
@@ -489,7 +498,6 @@
 
     .field_header{
         margin-bottom:1px;
-        
     }
     
     .specialDiv{
