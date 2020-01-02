@@ -217,9 +217,10 @@
                             this.showErrorModal();
                             return null;
                         }
-                        input["Returning"] = "Returning Youth";
+                        input["New or Returning"] = "Returning Youth";
+                        input["ReturningID"] = this.returningYouthID;
                     } else {
-                        input["Returning"] = "New Youth";
+                        input["New or Returning"] = "New Youth";
                         //hidden field initializers
                         await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
                             console.log("Hidden listener")
