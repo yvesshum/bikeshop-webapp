@@ -1,9 +1,34 @@
 <template>
     <div class = "RegisterYouth">
         <top-bar omitEmail/>
-        <h3 style="margin: 20px">Register a new Youth here!</h3>
+        
+        <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
+        
+        <div class = "specialDiv">
+          <b-form-select v-model="returningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
+        </div>
+        
+        <h3 v-if="returningYouth == 'New Youth'" style="margin: 20px">Register a new Youth here!</h3>
+        
+        <h3 v-if="returningYouth == 'Returning Youth'" style="margin: 20px">Register a returning Youth here!</h3>
+
+        <div v-if="returningYouth != '-'">
 
         <h4 class = "field_msg">Required fields:</h4>
+        
+        <div v-if="returningYouth == 'Returning Youth'">
+        
+          <p class="field_header">Enter Your Youth ID:</p>
+        
+          <div class = "specialDiv">
+            <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
+            </br>
+            <h4 class = "field_msg">Optional fields:</h4>
+            <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
+            <hr>
+          </div>
+        
+      </div>
         
 
         <div v-for="field in requiredFields">
@@ -17,7 +42,7 @@
             </div>
         </div>
 
-        <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
+        <h4 class = "field_msg" v-if="returningYouth == 'New Youth'">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
@@ -31,6 +56,7 @@
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
+        </div>
 
 
         <b-modal v-model = "modalVisible" hide-footer lazy>
@@ -38,7 +64,8 @@
                 New Youth registered!
             </template>
             <div class="d-block text-center">
-                <h3>A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
+                <h3 v-if="returningYouth == 'New Youth'">A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
+                <h3 v-if="returningYouth == 'Returning Youth'">A returning Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -55,7 +82,7 @@
         </b-modal>
 
          <!-- Loading Modal -->
-        <b-modal v-model = "loadingModalVisbile" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
             <template slot="modal-title">
                 Doing some work...
             </template>
@@ -100,7 +127,7 @@
                 optionalFields: [],
                 hiddenFields: [],
                 modalVisible: false,
-                loadingModalVisible: true,
+                loadingModalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
@@ -108,7 +135,14 @@
                 placeholders: {},
                 arguments: {
                     "placeholder": "0"
-                }
+                },
+                returningYouth: "-",
+                returningOptions: [
+                    { value: '-', text: '-' },
+                    { value: 'New Youth', text: 'New Youth' },
+                    { value: "Returning Youth", text: 'Returning Youth' }
+                ],
+                returningYouthID: null,
             };
         },
         methods: {
@@ -173,21 +207,35 @@
                     // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                     
                     var input = {};
-                    //hidden field initializers
-                    await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
-                        console.log("Hidden listener")
-                        console.log(snapshot.val())
-                        let hiddenProtectedInitializers = snapshot.val()["Protected"];
-                        let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
-                        for (let key in hiddenProtectedInitializers) {
-                            console.log("Protected hidden")
-                            input[key] = hiddenProtectedInitializers[key]
+                    
+                    if(this.returningYouth == "Returning Youth"){
+                        let selectedYouth = await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
+                        input = selectedYouth.data();
+                        if (input == null) {
+                            this.errorFields = ["Returning Youth ID"];
+                            this.loadingModalVisible = false;
+                            this.showErrorModal();
+                            return null;
                         }
-                        for (let key in hiddenUnprotectedInitializers) { 
-                            console.log("Unprotected hidden")
-                            input[key] = hiddenUnprotectedInitializers[key]
-                        }
-                    })
+                        input["Returning"] = true;
+                    } else {
+                        input["Returning"] = false;
+                        //hidden field initializers
+                        await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
+                            console.log("Hidden listener")
+                            console.log(snapshot.val())
+                            let hiddenProtectedInitializers = snapshot.val()["Protected"];
+                            let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
+                            for (let key in hiddenProtectedInitializers) {
+                                console.log("Protected hidden")
+                                input[key] = hiddenProtectedInitializers[key]
+                            }
+                            for (let key in hiddenUnprotectedInitializers) { 
+                                console.log("Unprotected hidden")
+                                input[key] = hiddenUnprotectedInitializers[key]
+                            }
+                        })
+                    }
                     
                     var today = new Date();
                     var date = Timestamp.fromDate(new Date());
@@ -196,17 +244,29 @@
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
-                            data[i]["value"] = "";
+                            if(this.returningYouth != "Returning Youth"){
+                                data[i]["value"] = "";
+                            }
+                        } else if(this.returningYouth == "Returning Youth") {
+                            input[data[i]["name"]] = data[i]["value"];
                         }
-                        input[data[i]["name"]] = data[i]["value"];
+                        if(this.returningYouth != "Returning Youth"){
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
                     }
                     
                     data = this.parse(this.optionalFields);
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
-                            data[i]["value"] = "";
+                            if(this.returningYouth != "Returning Youth"){
+                                data[i]["value"] = "";
+                            }
+                        } else if(this.returningYouth == "Returning Youth") {
+                            input[data[i]["name"]] = data[i]["value"];
                         }
-                        input[data[i]["name"]] = data[i]["value"];
+                        if(this.returningYouth != "Returning Youth"){
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
                     }
                     
                     console.log(input);
@@ -214,10 +274,15 @@
 
                     //detach RTD listener
                     // rb.ref('Youth Profile Initializers').off("value", this.listenerRef);
-                    
                     let submitStatus = await submitRef.set(input)
-                    if (submitStatus) {
-                        window.alert("Error Adding new registration");
+                    if(this.returningYouth == "Returning Youth"){
+                        if (submitStatus) {
+                            window.alert("Error adding returning registration");
+                        }
+                    } else {
+                        if (submitStatus) {
+                            window.alert("Error adding new registration");
+                        }
                     }
                         // console.log("Document written with ID: ", submitRef.id);
                     this.newID = submitRef.id;
@@ -254,10 +319,14 @@
             async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
-                for (let i = 0; i < this.requiredFields.length; i++) {
-                    let currentField = this.requiredFields[i];
-                    //if it is of length 0
-                    if (!currentField["value"].length) ret.push(currentField["name"]);
+                if(this.returningYouth == "New Youth"){
+                  for (let i = 0; i < this.requiredFields.length; i++) {
+                      let currentField = this.requiredFields[i];
+                      //if it is of length 0
+                      if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
+                  }
+                } else {
+                  if (!this.returningYouthID.length) ret.push("Returning Youth ID");
                 }
                 return ret;
             },

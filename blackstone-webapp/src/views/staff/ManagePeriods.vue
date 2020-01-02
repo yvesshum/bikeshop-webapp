@@ -328,6 +328,7 @@ export default {
       this.periods = {};
       this.year_list_records.forEach(async year => {
         this.periods[year] = (await this.periods_db.doc(year).get()).data();
+      });
     },
 
     // Format: {'Fall 18': 'Gear Up 2', 'Winter 20': 'Gear Up 2', 'Spring 17': 'Earn a Bike', 'Summer 18': 'Gear Up 1'}

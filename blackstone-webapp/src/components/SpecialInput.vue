@@ -75,7 +75,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         </div>
         
         <div v-else-if="input === 'Date'">
-            <!-- Work in progress -->
+            <datepicker v-model="inner_value"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
@@ -149,6 +149,7 @@ import {db} from '@/firebase.js'
 import moment from 'moment'
 import { Datetime } from 'vue-datetime'
 import 'vue-datetime/dist/vue-datetime.css'
+import Datepicker from 'vuejs-datepicker';
 
 export default {
     name: 'SpecialInput',
@@ -328,7 +329,8 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
-        Datetime
+        Datetime,
+        Datepicker
     }
 
 }
