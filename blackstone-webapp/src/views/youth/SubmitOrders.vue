@@ -1,127 +1,97 @@
-<!--
-Submit Orders is for Youth to submit their orders, and spend their hours.
-
-The YouthID Selector only selects those that are current active
-
-Submit Orders should have error checking, e.g. not inputing a valid nubmer for Item Total Cost, not filling in required fields etc.
-
-The submission also checks if the Youth has enough hours to pay for the item
-
-Once a submission goes through firebase should have the following changes:
-- In youth profile, Hours Spent should increase, Pending Hours should decrease
-- GlobalPendingOrders should have a new record with all the fields on the form + some hidden fields such as Order Date, Period, Status (Always set to pending) etc.
-</template>
-
--->
+// New submit orders 
 <template>
-    <div class = "YouthSubmitOrders">
+<div>
+    <div class="spinner" v-if="!allReady">
+        <b-spinner label="Loading..."></b-spinner>
+    </div>
+    <div class="YouthSubmitOrders" v-show="allReady">
         <top-bar/>
-        <h3 style="margin: 20px">Submit an order here!</h3>
-
-        <h4 class = "field_msg">Required fields:</h4>
-        <YouthIDSelector @selected="selectedID" periods="current" ref="selector"/>
-        <p class = "separator">Or manually input it below</p>
-        <div v-for="field in requiredFields" :key="field.name">
-            <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <textarea v-model="field.value" :placeholder="placeholders[field.name]"></textarea>
+        <h1 id="title">Submit Order Form</h1>
+        <hr class="title">
+        
+        <div v-for="field in fields.required" :key="field.name">
+            <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
+                <span class="inline">{{field.name}}</span>
+                <span style="color: red">*</span>
+                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="args.specialInput"></SpecialInput>
             </div>
-        </div>
-
-        <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
-        <div v-for="field in optionalFields" :key="field.name">
-            <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <textarea v-model="field.value" :placeholder="placeholders[field.name]"></textarea>
-            </div>
-        </div>
-
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
-
-        <b-modal v-model = "modalVisible" hide-footer lazy>
-            <template slot="modal-title">
-                Order Submitted!
-            </template>
-            <div class="d-block text-center">
-                <h3>Your order has been received and will be reviewed by staff!</h3>
-            </div>
-            <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
-        </b-modal>
-
-        <b-modal v-model = "errorModalVisible" hide-footer lazy>
-            <template slot="modal-title">
-                Error!
-            </template>
-            <div class="d-block text-center">
-                <h3>The following fields have errors!</h3>
-                <h4 v-for="errors in errorFields" :key="errors">{{errors}}</h4>
-            </div>
-            <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
-        </b-modal>
-
-        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
-            <template slot="modal-title">
-                Loading
-            </template>
-            <div class="d-block text-center">
-                <div slot="table-busy" class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                    <strong> Loading...</strong>
+            <div v-else>
+                <div class="idInput">
+                    <h4>Enter your ID</h4>
+                    <YouthIDSelector @selected="selectedID" periods="current" ref="selector" @ready="selectorReady"/>
+                    <p class="separator">Or enter manually if not found</p>
+                    <div style="width: 80%; margin: 0 auto">
+                        <SpecialInput inputType="String" v-model="fields.required[youthIDFieldIndex].value" v-if="allReady" :arguments="args.specialInput"></SpecialInput>
+                    </div>
+                    
                 </div>
             </div>
-        </b-modal>
+        </div>
 
+        <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
+            <p>{{field.name}}</p>
+            <SpecialInput :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
+        </div>
+
+        <b-button variant="success" @click="handleSubmit" style="margin-top:10px">Submit!</b-button>
     </div>
 
+    <!-- Loading Modal -->
+    <b-modal v-model="modal.loading.visible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+        <template slot="modal-title">
+            Loading
+        </template>
+        <div class="d-block text-center">
+            <div slot="table-busy" class="text-center text-danger my-2">
+                <b-spinner class="align-middle"></b-spinner>
+                <strong> Loading...</strong>
+            </div>
+        </div>
+    </b-modal>
+
+    <!-- Error Modal -->
+
+    <!-- Message Modal -->
+
+    
+    
+</div>
 </template>
 
 <script>
-    import {db} from '../../firebase';
-    import {rb} from '../../firebase';
-    import YouthIDSelector from "../../components/YouthIDSelector";
-    import {Timestamp} from '@/firebase.js';
-    import moment from 'moment';
+import {db} from '../../firebase';
+import {rb} from '../../firebase';
+import YouthIDSelector from '../../components/YouthIDSelector';
+import {Timestamp} from '@/firebase.js';
+import moment from 'moment';
+import SpecialInput from '../../components/SpecialInput'
 
-    let YouthFieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
-
-    export default {
-        name: 'YouthSubmitOrders',
-        components: {
-            YouthIDSelector
-        },
-        data() {
-            return {
-                requiredFields: [], //[{name: "YouthID", value =""}, {name: "ItemID", value = ""}]
-                optionalFields: [],
-                hiddenFields: [],
-                loadingModalVisible: false,
-                modalVisible: false,
-                errorModalVisible: false,
-                errorFields: [], //list of messages to be shown as errors
-                YouthProfile: {}, //The current Youth profile trying to submit
-                placeholders: {}
-            };
-
-        },
-        methods: {
-            async getFields() {
-                let f = await YouthFieldsRef.get();
-                return f.data();
+export default {
+    name: 'YouthSubmitOrders',
+    components: {
+        YouthIDSelector,
+        SpecialInput
+    },
+    data() {
+        return {
+            allReady: false,
+            ready: {
+                selector: false,
+                placeholders: false,
+                fields: false
             },
-
-            selectedID(value) {
-
-                // No ID selected - do nothing
-                if (value == null) {
-                    return;
-                }
-                for (let i = 0; i < this.requiredFields.length; i ++) {
-                    let fieldName = this.requiredFields[i]["name"];
-                    if (fieldName === "First Name") this.requiredFields[i]["value"] = value["First Name"];
-                    else if (fieldName === "Last Name") this.requiredFields[i]["value"] = value["Last Name"];
-                    else if (fieldName === "Youth ID") this.requiredFields[i]["value"] = value["ID"];
+            fields: {
+                required: [], // {name: "", value: null}
+                optional: [],
+                hidden: []
+            }, 
+            placeholders: {},
+            args: {
+                specialInput: {
+                    style: "text-align: center"
                 }
             },
+<<<<<<< HEAD
 
             async submit() {
                 this.loadingModalVisible = true;
@@ -212,137 +182,279 @@ Once a submission goes through firebase should have the following changes:
                     }).catch(error => {
                         window.alert(error);
                     });
+=======
+            modal: {
+                loading: {
+                    visible: false
+                },
+                error: {
+                    visible: false,
+                    errors: []
+                },
+                msg: {
+                    visible: false,
+                    title: "",
+                    message: ""
+>>>>>>> c81aaad810123d8fb3be778b97ed6ec47b486d9a
                 }
             },
-
-            resetFields() {
-
-                for (let f = 0; f < this.requiredFields.length; f ++) {
-                    this.requiredFields[f]["value"] = "";
-                }
-                for (let f = 0; f < this.optionalFields.length; f ++) {
-                    this.optionalFields[f]["value"] = "";
-                }
-            },
-
-            //returns an array of fields that are not valid
-            async checkValid() {
-                let ret = [];
-                //loop over required fields, check that they are at least filled in
-                for (let i = 0; i < this.requiredFields.length; i++) {
-                    let currentField = this.requiredFields[i];
-                    //if it is of length 0
-                    if (!currentField["value"].length || currentField["value"] == null) ret.push(currentField["name"]);
-                }
-
-                //Total cost must be a valid number
-                let ITC = this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost");
-                if (isNaN(ITC["value"])) ret.push(ITC["name"] + " has to be a number!");
-                if (ITC["value"] < 0) ret.push("Item Total Cost has to be a positive number!")
-
-                //checking if you have enough hours
-                let currentHours = parseFloat(this.YouthProfile["Hours Earned"]) - parseFloat(this.YouthProfile["Hours Spent"]);
-                if (currentHours < parseFloat(ITC["value"])) {
-                    ret.push("Not enough hours, you have " + currentHours);
-                }
-                return ret;
-            },
-
-            find(key, arr) {
-                for (let i = 0; i < arr.length; i++) {
-                    if (arr[i]["name"] === key) return arr[i];
-                }
-                return false;
-            },
-
-            parse(item) {
-                return JSON.parse(JSON.stringify(item));
-            },
-
-            showModal() {
-                this.modalVisible = true;
-            },
-
-            closeModal() {
-                this.modalVisible = false;
-            },
-            showErrorModal() {
-                this.errorModalVisible = true;
-            },
-
-            closeErrorModal() {
-                this.errorModalVisible = false;
-                //return scrolling ability
-            }
-        },
-        async mounted() {
-            let fields = await this.getFields();
-            await rb.ref("Submit Orders Placeholders").once('value').then(snapshot => {
-                this.placeholders = snapshot.val();
-                console.log('p', this.placeholders)
-            })
-
-            if (this.placeholders === {}) {
-                window.alert("Error on getting placeholder text values");
-                return null;
-            }
-
-            for (let i = 0; i < fields["required"].length; i ++) {
-                this.requiredFields.push({
-                    name: Object.keys(fields["required"][i])[0],
-                    value: "",
-                    placeholder: this.placeholders[fields["required"][i]]
-                });
-            }
-            for (let i = 0; i < fields["optional"].length; i ++) {
-                this.optionalFields.push({
-                    name: Object.keys(fields["optional"][i])[0],
-                    value: "",
-                    placeholder: this.placeholders[fields["optional"][i]]
-                })
-            }
-            for (let i = 0; i <fields["hidden"].length; i ++) {
-                this.hiddenFields.push({
-                    name: Object.keys(fields["hidden"][i])[0],
-                    value: ""
-                })
+            form: {
+                YouthProfile: {}
             }
 
         }
-    }
+    },
+    computed: {
+        youthIDFieldIndex: function() {
+            let index = this.getFieldIndex('Youth ID', 'required');
+            return index;
+        }
+    },
+    watch: {
+        ready: {
+            handler: function() {
+                this.checkReady();
+            },
+            deep: true
+        }
+    },
+    methods: {
+        //helpers for readiness/////////////////////////////////////////////////////
+        checkReady() {
+            if (!Object.values(this.ready).includes(false)) {
+                this.allReady = true;
+            }
+        },
+        selectorReady() {
+            this.ready.selector = true;
+        },
+
+        //mounted helpers///////////////////////////////////////////////////////////
+        async queryFields() {
+            let f = await db.collection("GlobalFieldsCollection")
+                            .doc("Youth Order Form").get();
+            return f.data();
+        },
+        async queryPlaceholders() {
+            let snapshot = await rb.ref("Submit Orders Placeholders")
+                                    .once('value');
+            return snapshot.val();
+        },
+        async setFields(fields) {
+            let fieldTypes = ["required", "optional", "hidden"];
+            fieldTypes.forEach(fieldType => {
+                fields[fieldType].forEach(field => {
+                    this.fields[fieldType].push({
+                        type: Object.values(field)[0],
+                        name: Object.keys(field)[0],
+                        value: null,
+                    });
+                });
+            });
+            console.log(this.fields);
+            this.ready.fields = true;
+        },
+        async setPlaceholders(placeholders) {
+            this.placeholders = placeholders;
+            this.ready.placeholders = true;
+        },
+
+        //other/////////////////////////////////////////////////////
+        getFieldIndex(fieldName, fieldType) {
+            let ret = -1;
+            for (let i = 0; i < this.fields[fieldType].length; i++) {
+                if (this.fields[fieldType][i].name === fieldName) {
+                    ret = i;
+                    return ret;
+                }
+            }
+            return ret;
+        },
+        selectedID(value) {
+            if (value == null) {
+                this.fields.required[this.getFieldIndex("Youth ID", "required")]
+                    .value = "";
+                this.fields.required[this.getFieldIndex("First Name", "required")]
+                    .value = "";
+                this.fields.required[this.getFieldIndex("Last Name", "required")]
+                    .value = "";
+
+            } else {
+                this.fields.required[this.getFieldIndex("Youth ID", "required")]
+                    .value = value.ID;
+                this.fields.required[this.getFieldIndex("First Name", "required")]
+                    .value = value["First Name"];
+                this.fields.required[this.getFieldIndex("Last Name", "required")]
+                    .value = value["Last Name"];
+            }
+        },
+
+        //Error Handling//////////////////////////////////////////////
+        handleError(errmsg) {
+            window.alert("Apologies, Backend Error: " + errmsg +".\n Please refresh page to try again. If problem persists, let staff know")
+        },
+
+        //Modal helpers//////////////////////////////////////
+        showErrorModal() {
+            this.modal.loading.visible = false;
+            this.modal.error.visible = true;
+        },
+
+        //Form Submission/////////////////////////////////////////////////////////
+        async handleSubmit() {
+            console.log('submit clicked')
+            this.modal.loading.visible = true;
+            if (!this.hasValidFields())
+                return;
+            console.log('hasValidFields');
+
+            let res = await this.getYouthProfile()
+            console.log('res', res);
+            if (!(res)) 
+                return;
+            console.log('p',this.form.YouthProfile);
+
+            if (!(await this.hasSufficientHours()))
+                return;
+            console.log('hasSufficientHours');
+
+            if (!(await this.submitOrder()))
+                return ;
+            console.log("Successfully executed handleSubmit");
+            this.resetPage();
+        },
+        async getYouthProfile() {
+            let youthID = this.fields.required
+                            .find(field => field.name === "Youth ID").value;
+            let youthQuery = await db.collection("GlobalYouthProfile")
+                .doc(youthID).get();
+
+            if (youthQuery instanceof Error) {
+                this.handleError(error);
+                return false;
+            }
+            if (youthQuery.exists) {
+                this.form.YouthProfile = youthQuery.data();
+                return true;
+            }
+            else {
+                this.modal.error.errors.push("YouthID not found :(, please check that it exists or whether you've made a typo");
+                this.showErrorModal();
+                return false;
+            }
+
+        },
+        async hasValidFields() {
+            let badFields = [];
+
+            //non emptyg
+            this.fields.required.forEach(field => {
+                if (field.value == null || !field.value.length)
+                    badFields.push(field.name);
+            })
+            
+            this.modal.error.errors.push("The following fields are required: " + badFields.toString());
+            console.log(this.modal.error.errors);
+            this.showErrorModal();
+        },
+        async hasSufficientHours() {
+            let cost = this.fields.required
+                .find(f => f.name === "Item Total Cost").value
+            let youthCurrentHours = parseFloat(this.form.YouthProfile["Hours Earned"] - parseFloat(this.form.YouthProfile["Hours Spent"]));
+            if (youthCurrentHours < cost) {
+                this.modal.error.errors.push("You don't have enough hours! You have " + youthCurrentHours + " but the Item Total Cost is " + cost);
+            }
+            return true;
+        },
+        async submitOrder() {
+            //Submit Order to GlobalPendingOrders
+            let payload = await this.constructSubmitPaylod();
+            let submitResponse = await db.collection("GlobalPendingOrders").doc().set(payload);
+            if (submitResponse) {
+                window.alert("Submit wasn't successful, please refresh, check your connection and try again");
+                return false;
+            }
+
+            //Update Youth Profile
+            //TODO:
+            let updateYouthProfileStatus = await this.updateYouthProfile(payload);
+            if (!updateYouthProfileStatus)
+                return false; 
+
+            return true;
+        
+        },
+        async constructSubmitPaylod() {
+            //TODO: this builds the payload for GlobalPendingOrders
+            let payload = {};
+            console.log('f', this.fields);
+            this.fields.required.forEach(field => {
+                payload[field.name] = field.value;
+            })
+            this.fields.optional.forEach(field => {
+                payload[field.name] = field.value;
+            })
+            this.fields.hidden.forEach(field => {
+                payload[field.name] = field.value;
+            })
+
+            let periodQuery = await db.collection("GlobalPeriods").doc('metadata').get();
+            payload["Period"] = periodQuery.data().CurrentPeriod
+            return payload;
+        },
+        updateYouthProfile(payload) {
+            //TODO:
+        },
+        resetPage() {
+            //TODO:
+
+        }
+
+    },
+    async mounted() {
+        let fieldQuery = await this.queryFields();
+        let placeholderQuery = await this.queryPlaceholders();
+        await this.setFields(fieldQuery);
+        await this.setPlaceholders(placeholderQuery);
+    },
+
+    
+}
+
 </script>
 
 <style scoped>
-    p a {
-        text-decoration: underline;
-        cursor: pointer;
-    }
-    textarea{
-        outline-color: cadetblue;
-        text-align: center;
-        border: 1px solid;
-        border-radius: 4px;
-        width: 30%;
-        margin-bottom: 5px;
-    }
-    ::placeholder span{
-        color: red;
-        opacity: 1;
-    }
-    .field_msg{
-        text-decoration: underline;
-    }
+.YouthSubmitOrders {
+    margin: 0 auto;
+}
+hr.title {
+    width: 80%
+}
 
-    .separator{
-        color:grey;
-        margin-top:2px;
-        margin-bottom:2px;
-        font-style:italic;
-    }
+.idInput {
+    border: 1px solid grey;
+    width: 80%;
+    margin: 0 auto;
+    margin-bottom: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
 
-    .field_header{
-        margin-bottom:1px;
+textarea.id {
+    width: 60%;
+    text-align: center;
+}
 
-    }
+.spinner {
+    margin: 25% auto;
+}
+
+span.inline {
+    display: inline
+}
+.specialInputFields {
+    width:  70%;
+    margin: 0 auto;
+}
 
 </style>
