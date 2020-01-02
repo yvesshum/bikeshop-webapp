@@ -91,7 +91,6 @@ export default {
                     style: "text-align: center"
                 }
             },
-<<<<<<< HEAD
 
             async submit() {
                 this.loadingModalVisible = true;
@@ -182,20 +181,6 @@ export default {
                     }).catch(error => {
                         window.alert(error);
                     });
-=======
-            modal: {
-                loading: {
-                    visible: false
-                },
-                error: {
-                    visible: false,
-                    errors: []
-                },
-                msg: {
-                    visible: false,
-                    title: "",
-                    message: ""
->>>>>>> c81aaad810123d8fb3be778b97ed6ec47b486d9a
                 }
             },
             form: {
