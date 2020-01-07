@@ -308,6 +308,7 @@ export default {
         var val = option.toDate();
         var hour = val.getHours().toString();
         var mins = val.getMinutes().toString();
+        var time = [hour, mins];
 
         // Initialize variables to tell whether option is too early or too late
         var above = true, below = true;
@@ -315,17 +316,35 @@ export default {
         // If a minimum range was passed, compare it to the current option
         if (search_range.min != null) {
           let min = search_range.min.split(":");
-          above = hour >= parseInt(min[0]) && mins >= parseInt(min[1]);
+          above = time_strings_leq(min, time);
         }
 
         // If a maximum range was passed, compare it to the current option
         if (search_range.max != null) {
           let max = search_range.max.split(":");
-          above = hour <= parseInt(max[0]) && mins <= parseInt(max[1]);
+          below = time_strings_leq(time, max);
         }
 
+        // If the maximum is earlier than the minimum, then the range extends through midnight
+        // from one day into the next, essentially
+        // In this case we invert the search space - anything after the min OR before the max
+        // For example, given the range 9PM to 2AM, the times 10PM and 1AM are both valid,
+        // even though technically 10PM is after the max of 2AM, and 1AM is before the min 9PM
+        var inverted = search_range.min != null
+          && search_range.max != null
+          && search_range.min > search_range.max;
+
         // Return true if the option is at earliest the min value and at latest the max value
-        return above && below;
+        return inverted ? (above || below) : (above && below);
+
+
+        // Helper functions - return true if t1 <= t2
+        // Takes arguments of the form ["01", "00"] for 1AM
+        function time_strings_leq(t1, t2) {
+          let h1 = parseInt(t1[0]), h2 = parseInt(t2[0]);
+          let m1 = parseInt(t1[1]), m2 = parseInt(t2[1]);
+          return (h1 < h2) || (h1 == h2 && m1 <= m2);
+        }
       },
     }
 }
