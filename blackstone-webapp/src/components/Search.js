@@ -398,3 +398,105 @@ function arr_indices(arr, sub) {
 
     return indices;
 }
+
+
+
+
+
+
+
+export function make_range_editor(type) {
+    return (cell, onRendered, success, cancel, editorParams) => {
+
+		// Create the container element for the inputs
+		var container = document.createElement("div");
+
+		// Create the minimum input
+		var edit1 = document.createElement("input");
+		edit1.type = type;
+		edit1.placeholder = "min...";
+		edit1.style = "padding: 3px; width: 50%; box-sizing: border-box;";
+		edit1.classList.add("tabulator-header-filter");
+
+		// Create the maximum input
+		var edit2 = document.createElement("input");
+		edit2.type = type;
+		edit2.placeholder = "max...";
+		edit2.style = "padding: 3px; width: 50%; box-sizing: border-box;";
+		edit2.classList.add("tabulator-header-filter");
+
+		// Set the minimum possible value, if applicable
+		if (editorParams.minimum != undefined) {
+			edit1.min = editorParams.minimum;
+			edit2.min = editorParams.minimum;
+		}
+
+		// Set the maximum possible value, if applicable
+		if (editorParams.maximum != undefined) {
+			edit1.max = editorParams.maximum;
+			edit2.max = editorParams.maximum;
+		}
+
+		// Add the inputs to the the container div
+		container.appendChild(edit1);
+		container.appendChild(edit2);
+
+		// Minor adjustments after div loads
+		onRendered(function () {
+	        container.focus();
+	        container.style.height = "100%";
+		});
+
+		// Callback to submit the new range for filtering when it changes
+		function onChange(e) {
+
+			// Get the new range from the inputs, replacing blank inputs with null
+	        let min = edit1.value !== "" ? edit1.value : null;
+	        let max = edit2.value !== "" ? edit2.value : null;
+	        let new_range = {min, max};
+
+	        // Submit the new range
+	        console.log("Updating range: ", new_range);
+	        success(new_range);
+		}
+
+		// Callback to submit the new range for filtering when the enter key is pressed
+		function onEnter(e) {
+
+			// Get the new range from the inputs, replacing blank inputs with null
+	        let min = edit1.value !== "" ? edit1.value : null;
+	        let max = edit2.value !== "" ? edit2.value : null;
+	        let new_range = {min, max};
+
+	        console.log("Updating range from enter: ", new_range);
+
+	        switch (e.keyCode) {
+
+				// Enter key - Submit the new range
+		        case 13:
+		            success(new_range);
+		            break;
+
+		        // Esc key - Cancel the range
+		        case 27:
+		            cancel();
+		            break;
+	        }
+
+	        return;
+		}
+
+		// Submit new value on blur or change
+		edit1.addEventListener("change", onChange);
+		edit1.addEventListener("blur",   onChange);
+		edit2.addEventListener("change", onChange);
+		edit2.addEventListener("blur",   onChange);
+
+		// Submit new value on enter
+		edit1.addEventListener("keydown", onEnter);
+		edit2.addEventListener("keydown", onEnter);
+
+		// Return the container element
+		return container;
+    };
+}

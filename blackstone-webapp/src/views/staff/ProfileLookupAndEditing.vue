@@ -58,6 +58,7 @@ import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/components/Period.js";
 import {mapKeyVal} from "@/components/ParseDB.js";
+import {make_range_editor} from "@/components/Search.js"
 
 export default {
   name: 'profile_lookup_youth',
@@ -93,14 +94,17 @@ export default {
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
-          headerFilter: "number", headerFilterFunc: this.time_filter,
+          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_filter,
         },
         { // The check out time
           title: "Check Out", field: "Check Out", formatter: this.format_time,
-          headerFilter: "number", headerFilterFunc: this.time_filter,
+          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_filter,
         },
         { // The hours earned, broken down by category
-          title: "Hours", field: "Hours", formatter: this.format_work_hours
+          title: "Hours", field: "Hours", formatter: this.format_work_hours,
+          headerFilter: make_range_editor("number"),
+          headerFilterParams: {minimum: 0},
+          headerFilterFunc: this.numeric_range_filter,
         },
         "Notes",
       ],
@@ -118,7 +122,10 @@ export default {
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
-          formatter: (cell) => cell.getValue() + " Hours"
+          formatter: (cell) => cell.getValue() + " Hours",
+          headerFilter: make_range_editor("number"),
+          headerFilterParams: {minimum: 0},
+          headerFilterFunc: this.numeric_range_filter,
         },
         "Notes",
       ],
@@ -293,6 +300,17 @@ export default {
       get_date: function(date) {
         return date.toLocaleDateString(undefined, {dateStyle: "long"})
       },
+
+      numeric_range_filter: function(search_range, option) {
+
+        let above = search_range.min == null ? true : option >= parseInt(search_range.min);
+        let below = search_range.max == null ? true : option <= parseInt(search_range.max);
+
+        return above && below;
+      },
+
+
+
     }
 }
 </script>
