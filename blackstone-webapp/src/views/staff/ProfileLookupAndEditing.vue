@@ -94,11 +94,11 @@ export default {
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
-          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_filter,
+          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
         },
         { // The check out time
           title: "Check Out", field: "Check Out", formatter: this.format_time,
-          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_filter,
+          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
         },
         { // The hours earned, broken down by category
           title: "Hours", field: "Hours", formatter: this.format_work_hours,
@@ -279,13 +279,6 @@ export default {
         return `<div>${time}</div>`;
       },
 
-      time_filter: function(search_term, option) {
-        var val = option.toDate();
-        var hour = (val.getHours() % 12).toString();
-        console.log(hour, typeof hour, search_term, typeof search_term);
-        return hour == search_term;
-      },
-
       same_day: function(date1, date2) {
 
         return date1.getDate() === date2.getDate()
@@ -309,8 +302,31 @@ export default {
         return above && below;
       },
 
+      time_range_filter: function(search_range, option) {
 
+        // Interpret the current cell's value
+        var val = option.toDate();
+        var hour = val.getHours().toString();
+        var mins = val.getMinutes().toString();
 
+        // Initialize variables to tell whether option is too early or too late
+        var above = true, below = true;
+
+        // If a minimum range was passed, compare it to the current option
+        if (search_range.min != null) {
+          let min = search_range.min.split(":");
+          above = hour >= parseInt(min[0]) && mins >= parseInt(min[1]);
+        }
+
+        // If a maximum range was passed, compare it to the current option
+        if (search_range.max != null) {
+          let max = search_range.max.split(":");
+          above = hour <= parseInt(max[0]) && mins <= parseInt(max[1]);
+        }
+
+        // Return true if the option is at earliest the min value and at latest the max value
+        return above && below;
+      },
     }
 }
 </script>
