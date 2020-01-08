@@ -24,6 +24,7 @@
       :active_periods="active_periods"
       :seasons="season_list"
       v-bind="periodData"
+      disable_selection
       style="max-width: 50%; margin:auto"
     />
 

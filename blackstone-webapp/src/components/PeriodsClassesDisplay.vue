@@ -83,7 +83,7 @@ import {Period} from '@/components/Period.js';
 
 export default {
     name: 'period-classes-display',
-    props: ['youth', 'active_periods', 'seasons', 'cur_period', 'reg_period', "class_list", "detail_view"],
+    props: ['youth', 'active_periods', 'seasons', 'cur_period', 'reg_period', "class_list", "detail_view", 'disable_selection'],
 
     data: function () {
         return {
@@ -182,6 +182,7 @@ export default {
 
         select_cell: function(season, year) {
             if (this.is_future_period(season, year)) return;
+            if (this.disable_selection != undefined) return;
 
             var temp = Period.concat(season, year);
             this.selected = (this.selected == temp) ? "" : temp;
