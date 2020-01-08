@@ -290,6 +290,35 @@ export default {
         return `<div>${day}<br />${weekday}</div>`;
       },
 
+      format_time: function(cell) {
+        var val = cell.getValue();
+        var date = val.toDate();
+
+        var time = date.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+          timeZoneName: "short",
+        });
+
+        return `<div>${time}</div>`;
+      },
+
+      same_day: function(date1, date2) {
+
+        return date1.getDate() === date2.getDate()
+          && date1.getMonth() === date2.getMonth()
+          && date1.getFullYear() === date2.getFullYear();
+      },
+
+      get_weekday: function(date) {
+        return date.toLocaleDateString(undefined, {weekday: "long"});
+      },
+
+      get_date: function(date) {
+        return date.toLocaleDateString(undefined, {dateStyle: "long"})
+      },
+
       date_filter: function(filters, option) {
 
         var datestamp = Array.isArray(option) ? option[0] : option;
@@ -457,35 +486,6 @@ export default {
         function parse_time_str(str) {
           return str.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
         }
-      },
-
-      format_time: function(cell) {
-        var val = cell.getValue();
-        var date = val.toDate();
-
-        var time = date.toLocaleTimeString(undefined, {
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-          timeZoneName: "short",
-        });
-
-        return `<div>${time}</div>`;
-      },
-
-      same_day: function(date1, date2) {
-
-        return date1.getDate() === date2.getDate()
-          && date1.getMonth() === date2.getMonth()
-          && date1.getFullYear() === date2.getFullYear();
-      },
-
-      get_weekday: function(date) {
-        return date.toLocaleDateString(undefined, {weekday: "long"});
-      },
-
-      get_date: function(date) {
-        return date.toLocaleDateString(undefined, {dateStyle: "long"})
       },
 
       numeric_range_filter: function(search_range, option) {
