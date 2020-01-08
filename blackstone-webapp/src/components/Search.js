@@ -684,8 +684,8 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
       // Toggle whether dropdown is displayed
       if (dropdown.style.display == "none") {
-        align_dropdown();
         show_dropdown();
+        align_dropdown();
       }
       else {
         hide_dropdown();
@@ -706,25 +706,82 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // Helper Functions
 
+    // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
+    // can be calculated
     function align_dropdown() {
+
+      // Get the bounding rectangles for the button and the menu
       var rect = dropbtn.getBoundingClientRect();
+      var menu_rect = dropdown.getBoundingClientRect();
+
+      // Align the top of the menu with the bottom of the button
       dropdown.style.top = rect.bottom + "px";
 
+      // Calculate the difference in their widths
+      var diff = Math.abs(menu_rect.width - rect.width);
+
+      // Position the menu horizontally based on the dropdown-align parameter
       switch (editorParams.dropdown_align) {
 
-        // TODO: This math
+      	// Left if possible, right if necessary
+      	case "left-safe":
+      		if (rect.left - diff < 0) {
+        		dropdown.style.left = rect.left + "px";
+        	}
+
         case "right":
-            // dropdown.style.right = rect.right + "px";
+            dropdown.style.left = (rect.left - diff) + "px";
             break;
 
-        // TODO: This math too
-        case "center":
-            break;
+
+        // Right if possible, left if necessary
+        case "right-safe":
+        	if (rect.right + diff > window.innerWidth) {
+        		dropdown.style.left = (rect.left - diff) + "px";
+        	}
 
         case "left":
-        default:
             dropdown.style.left = rect.left + "px";
             break;
+
+
+        // Center the menu with respect to the button
+        case "center":
+        	dropdown.style.left = (rect.left - (diff / 2)) + "px";
+            break;
+
+        // If button is near enough to the center of the screen, center the menu
+        // If not, point it toward the center
+        case "center-screen":
+        	let even_space = ((window.innerWidth - menu_rect.width) / 2);
+
+        	// If this would be too far to the right, align left
+        	if (even_space > rect.left) {
+        		dropdown.style.left = rect.left + "px";
+        	}
+        	// If this would be too far to the left, align right
+        	else if (window.innerWidth - even_space < rect.right) {
+        		dropdown.style.left = (rect.left - diff) + "px";
+        	}
+        	// Otherwise, go for it
+        	else {
+        		dropdown.style.left = even_space + "px";
+        	}
+
+        	break;
+
+
+        // Left if possible, right if necessary, if both fail then centered in the window
+        default:
+        	if (rect.left - diff < 0 && rect.right + diff > window.innerWidth) {
+        		dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+        	}
+        	else if (rect.left - diff < 0) {
+        		dropdown.style.left = rect.left + "px";
+        	}
+        	else {
+        		dropdown.style.left = (rect.left - diff) + "px";
+        	}
       }
     };
 
