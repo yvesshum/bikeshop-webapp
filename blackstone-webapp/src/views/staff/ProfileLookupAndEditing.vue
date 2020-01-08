@@ -104,7 +104,7 @@ export default {
           title: "Hours", field: "Hours", formatter: this.format_work_hours,
           headerFilter: make_range_editor("number"),
           headerFilterParams: {minimum: 0},
-          headerFilterFunc: this.numeric_range_filter,
+          headerFilterFunc: this.hour_range_filter,
         },
         "Notes",
       ],
@@ -300,6 +300,11 @@ export default {
         let below = search_range.max == null ? true : option <= parseInt(search_range.max);
 
         return above && below;
+      },
+
+      hour_range_filter: function(search_range, option) {
+        let sum = Object.keys(option).reduce((a,c) => option[c] == null ? a : (a + option[c]), 0);
+        return this.numeric_range_filter(search_range, sum);
       },
 
       time_range_filter: function(search_range, option) {
