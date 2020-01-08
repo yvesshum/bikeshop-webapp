@@ -15,6 +15,20 @@
 
       <br /><br />
 
+      <h2>Work Log</h2>
+      <CollectionTable
+        ref="work_log"
+        :heading_data="work_log_headers"
+        :collection="work_log_collection"
+        groupBy="Period"
+        :groupByOptions="periods"
+        :progressiveLoad="true"
+        :doc_formatter="doc_formatter"
+        style="width:90%;margin:auto;"
+      ></CollectionTable>
+
+      <br />
+
       <h2>Order Log</h2>
       <CollectionTable
         ref="order_log"
@@ -27,18 +41,6 @@
       ></CollectionTable>
 
       <br />
-
-      <h2>Work Log</h2>
-      <CollectionTable
-        ref="work_log"
-        :heading_data="work_log_headers"
-        :collection="work_log_collection"
-        groupBy="Period"
-        :groupByOptions="periods"
-        :progressiveLoad="true"
-        :doc_formatter="doc_formatter"
-        style="width:90%;margin:auto;"
-      ></CollectionTable>
 
       <h2>Hour Transfer Log</h2>
       <CollectionTable
@@ -88,8 +90,8 @@ export default {
   data: function() {
     return {
       currentProfile: null,
-      order_log_collection: null,
       work_log_collection: null,
+      order_log_collection: null,
       trans_log_collection: null,
       header_doc: null,
 
@@ -241,8 +243,8 @@ export default {
         // No id returned - clear the page
         if (youth == null) {
           this.currentProfile = null;
-          this.order_log_collection = null;
           this.work_log_collection  = null;
+          this.order_log_collection = null;
           this.trans_log_collection = null;
         }
 
@@ -251,8 +253,8 @@ export default {
           let snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
 
           this.currentProfile = await snapshot.get();
-          this.order_log_collection = snapshot.collection("Order Log");
           this.work_log_collection  = snapshot.collection("Work Log");
+          this.order_log_collection = snapshot.collection("Order Log");
           this.trans_log_collection = snapshot.collection("Transfer Log");
         }
       },
