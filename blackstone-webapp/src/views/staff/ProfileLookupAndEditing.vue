@@ -40,6 +40,17 @@
         style="width:90%;margin:auto;"
       ></CollectionTable>
 
+      <h2>Hour Transfer Log</h2>
+      <CollectionTable
+        ref="transfer_log"
+        :heading_data="trans_log_headers"
+        :collection="trans_log_collection"
+        groupBy="Period"
+        :groupByOptions="periods"
+        :progressiveLoad="true"
+        style="width:90%;margin:auto;"
+      ></CollectionTable>
+
       <br /><br />
     </div>
   </div>
@@ -58,6 +69,7 @@ import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/components/Period.js";
 import {mapKeyVal} from "@/components/ParseDB.js";
+import {filter} from "@/components/Search.js";
 import {make_range_editor} from "@/components/Search.js"
 import {custom_filter_editor} from "@/components/Search.js"
 
@@ -78,11 +90,8 @@ export default {
       currentProfile: null,
       order_log_collection: null,
       work_log_collection: null,
+      trans_log_collection: null,
       header_doc: null,
-
-      log_headers_doc: null,
-
-      order_log_headers: [],
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
@@ -149,6 +158,39 @@ export default {
         "Notes",
       ],
 
+      trans_log_headers: [
+        { // The name of the recipient
+          title: "To Name", field: "To Name",
+          headerFilter: true, headerFilterFunc: filter
+        },
+        { // The ID of the recipient
+          title: "To ID", field: "To ID", headerFilter: true,
+        },
+        { // The number of hours transferred
+          title: "Amount Transferred", field: "Amount",
+          formatter: (cell) => cell.getValue() + " Hours",
+          headerFilter: make_range_editor("number"),
+          headerFilterParams: {minimum: 0},
+          headerFilterFunc: this.numeric_range_filter,
+        },
+        { // The date and time of the order
+          title: "Date", field: "Date", formatter: this.format_date,
+          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
+          headerFilterParams:{
+            operations: [
+              "is", "is not",
+              {name: "before", inclusive: true},
+              {name: "after",  inclusive: true},
+              {name: "between",     inclusive: true, num_inputs: 2},
+              {name: "not between", inclusive: true, num_inputs: 2}
+            ],
+            options: ["Year", "Month", "Date", "Weekday", "Time"],
+            dropdown_align: "left",
+          },
+        },
+        "Notes",
+      ],
+
       // Helper function to group document data for the table
       doc_formatter: (doc) => {
         var data = doc.data();
@@ -201,6 +243,7 @@ export default {
           this.currentProfile = null;
           this.order_log_collection = null;
           this.work_log_collection  = null;
+          this.trans_log_collection = null;
         }
 
         // Id returned - load profile for that youth
@@ -210,6 +253,7 @@ export default {
           this.currentProfile = await snapshot.get();
           this.order_log_collection = snapshot.collection("Order Log");
           this.work_log_collection  = snapshot.collection("Work Log");
+          this.trans_log_collection = snapshot.collection("Transfer Log");
         }
       },
 
