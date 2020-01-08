@@ -712,8 +712,6 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // Helper Functions
 
-    // TODO: Generate alignment function dynamically to cut down on comparisons
-
     // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
     // can be calculated
     function create_align_dropdown() {
