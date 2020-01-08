@@ -525,6 +525,9 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     // Array of functions to get the values of each filter
     var filter_list = [];
 
+    // Create the function to align the menu under the button
+    var align_dropdown = create_align_dropdown();
+
 
     // Button to add new filters
     var add_button = document.createElement("button");
@@ -557,6 +560,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       rem_button.onclick = function() {
       	check.checked = false;
         filter_div.removeChild(new_filter);
+        align_dropdown();
       };
 
       // Checkbox to enable/disable specific filters
@@ -627,6 +631,8 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
       // Add the filter to the dropdown
       filter_div.appendChild(new_filter);
+
+      align_dropdown();
     }
     dropdown.appendChild(add_button);
 
@@ -706,82 +712,153 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // Helper Functions
 
+    // TODO: Generate alignment function dynamically to cut down on comparisons
+
     // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
     // can be calculated
-    function align_dropdown() {
-
-      // Get the bounding rectangles for the button and the menu
-      var rect = dropbtn.getBoundingClientRect();
-      var menu_rect = dropdown.getBoundingClientRect();
-
-      // Align the top of the menu with the bottom of the button
-      dropdown.style.top = rect.bottom + "px";
-
-      // Calculate the difference in their widths
-      var diff = Math.abs(menu_rect.width - rect.width);
+    function create_align_dropdown() {
 
       // Position the menu horizontally based on the dropdown-align parameter
       switch (editorParams.dropdown_align) {
 
-      	// Left if possible, right if necessary
+      	case "left":
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
+
+      			align_left(btn_rect, men_rect);
+      		}
+
+      	case "right":
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
+
+      			align_right(btn_rect, men_rect);
+      		}
+
+      	case "center":
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
+
+      			align_center(btn_rect, men_rect);
+      		}
+
       	case "left-safe":
-      		if (rect.left - diff < 0) {
-        		dropdown.style.left = rect.left + "px";
-        	}
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
 
-        case "right":
-            dropdown.style.left = (rect.left - diff) + "px";
-            break;
+			    // Align left if possible, right if necessary
+      			if (btn_rect.right - men_rect.width < 0) {
+	        		align_left(btn_rect, men_rect);
+      			}
+	        	else {
+	        		align_right(btn_rect, men_rect);
+	        	}
+      		};
 
+      	case "right-safe":
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
 
-        // Right if possible, left if necessary
-        case "right-safe":
-        	if (rect.right + diff > window.innerWidth) {
-        		dropdown.style.left = (rect.left - diff) + "px";
-        	}
+      			// Align right if possible, left if necessary
+      			if (btn_rect.left + men_rect.width > window.innerWidth) {
+      				align_right(btn_rect, men_rect);
+      			}
+      			else {
+      				align_left(btn_rect, men_rect);
+      			}
+      		};
 
-        case "left":
-            dropdown.style.left = rect.left + "px";
-            break;
+      	case "center-screen":
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
 
+      			let even_space = ((window.innerWidth - men_rect.width) / 2);
 
-        // Center the menu with respect to the button
-        case "center":
-        	dropdown.style.left = (rect.left - (diff / 2)) + "px";
-            break;
+	        	// If this would be too far to the right, align left
+	        	if (even_space > btn_rect.left) {
+	        		align_left(btn_rect, men_rect);
+	        	}
+	        	// If this would be too far to the left, align right
+	        	else if (window.innerWidth - even_space < btn_rect.right) {
+	        		align_right(btn_rect, men_rect);
+	        	}
+	        	// Otherwise, go for it
+	        	else {
+	        		dropdown.style.left = even_space + "px";
+	        	}
+      		};
 
-        // If button is near enough to the center of the screen, center the menu
-        // If not, point it toward the center
-        case "center-screen":
-        	let even_space = ((window.innerWidth - menu_rect.width) / 2);
+      	case "default":
+      	default:
+      		return () => {
+      			// Get the bounding rectangles for the button and the menu
+			    var btn_rect = dropbtn.getBoundingClientRect();
+			    var men_rect = dropdown.getBoundingClientRect();
+			    
+			    // Align the top of the menu with the bottom of the button
+      			dropdown.style.top = btn_rect.bottom + "px";
 
-        	// If this would be too far to the right, align left
-        	if (even_space > rect.left) {
-        		dropdown.style.left = rect.left + "px";
-        	}
-        	// If this would be too far to the left, align right
-        	else if (window.innerWidth - even_space < rect.right) {
-        		dropdown.style.left = (rect.left - diff) + "px";
-        	}
-        	// Otherwise, go for it
-        	else {
-        		dropdown.style.left = even_space + "px";
-        	}
+      			// Align left if possible
+			    if (btn_rect.left + men_rect.width < window.innerWidth) {
+			    	align_left(btn_rect, men_rect);
+			    }
 
-        	break;
+			    // Aligh right if possible
+			    else if (btn_rect.right - men_rect.width > 0) {
+			    	align_right(btn_rect, men_rect);
+			    }
 
+			    // Align centered to the window if necessary
+			    else {
+			    	dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+			    }
+      		}
+      }
 
-        // Left if possible, right if necessary, if both fail then centered in the window
-        default:
-        	if (rect.left - diff < 0 && rect.right + diff > window.innerWidth) {
-        		dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
-        	}
-        	else if (rect.left - diff < 0) {
-        		dropdown.style.left = rect.left + "px";
-        	}
-        	else {
-        		dropdown.style.left = (rect.left - diff) + "px";
-        	}
+      function align_left(btn_rect, men_rect) {
+      	dropdown.style.left = btn_rect.left + "px";
+      }
+
+      function align_right(btn_rect, men_rect) {
+      	// Calculate the difference in their widths
+      	var diff = Math.abs(men_rect.width - btn_rect.width);
+      	dropdown.style.left = (btn_rect.left - diff) + "px";
+      }
+
+      function align_center(btn_rect, men_rect) {
+      	// Calculate the difference in their widths
+      	var diff = Math.abs(men_rect.width - btn_rect.width);
+      	dropdown.style.left = (btn_rect.left - (diff / 2)) + "px";
       }
     };
 
