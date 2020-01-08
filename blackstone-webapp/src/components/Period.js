@@ -187,6 +187,33 @@ export class Period {
 	static genPrevStr(period) {
 		return Period.makePeriod(period).getPrevStr();
 	}
+
+	static enumerate(start, end) {
+		var arr = [];
+
+
+
+		// If start earlier than end, enumerate forwards
+		if (Period.older(start, end)) {
+			for (let i = Period.makePeriod(start); Period.older(i, end); i = i.getNext()) {
+				arr.push(i);
+			}
+		}
+
+		// If end earlier than start, enumerate backwards
+		else {
+			for (let i = Period.makePeriod(start); Period.newer(i, end); i = i.getPrev()) {
+				arr.push(i);
+			}
+		}
+
+		// Return the result
+		return arr;
+	}
+
+	static enumerateStr(start, end) {
+		return Period.enumerate(start, end).map(p => p.toString());
+	}
 };
 
 Period.prototype.toString = function() {

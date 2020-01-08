@@ -7,8 +7,8 @@
     <div class="col-container">
       <div class="col-left">
         <ButtonArrayHeader
-          :left="[{name: 'First', arr: 'b'}, 'Previous']"
-          :right="['Next', {name: 'Current', arr: 'd'}, {name: 'Registration', arr: 'b'}]"
+          :left="button_header_l" :right="button_header_r" :current="display_period"
+          :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
         >
           <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
@@ -18,7 +18,9 @@
           :headingdata="headers"
           :table_data="display_youths"
           :args="args"
-          @newSelection="cur_row_selected"
+          @deselectedRow="deselected_row"
+          @replaceData="replaceData"
+          @rowClick="row_click"
         />
 
         <YouthIDSelector periods="all"
@@ -44,7 +46,13 @@
             :class_list="class_list"
             @change_period="change_period"
             detail_view
-          />
+          >
+            <span class="full_name">{{youth_name}}</span>&nbsp;
+            <span class="id_parens">(ID: {{youth_id}})</span>
+            <b-button variant="outline-danger" size="sm" style="padding: 0px 6px; float: right;" @click="deselect_youth(selected_youth)">
+              &times;
+            </b-button>
+          </PeriodsClassesDisplay>
         </div>
 
         <div v-else>
@@ -113,13 +121,25 @@
                 <th scope="col">Name</th>
                 <th scope="col">ID</th>
                 <th scope="col">{{batch_period_display}}</th>
+                <th scope="col"></th>
             </tr>
             </thead>
             <tbody>
-              <tr v-for="youth in selected_youths">
-                <td>{{youth["First Name"]}} {{youth["Last Name"]}}</td>
-                <td>{{youth["ID"]}}</td>
-                <td>{{get_youth_class_display(youth, batch_season, batch_year)}}</td>
+              <tr v-for="youth in selected_youths" style="padding-top: 0px;">
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{youth["First Name"]}} {{youth["Last Name"]}}
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{youth["ID"]}}
+                </td>
+                <td style="padding-top: 3px; padding-bottom: 3px;">
+                  {{get_youth_class_display(youth, batch_season, batch_year)}}
+                </td>
+                <td style="padding: 3px 3px;">
+                  <b-button variant="outline-danger" size="sm" style="padding: 0px 6px;" @click="deselect_youth(youth)">
+                    &times;
+                  </b-button>
+                </td>
               </tr>
             </tbody>
         </table>
@@ -147,6 +167,7 @@ import {Status} from '@/components/Status.js';
 import {filter} from "@/components/Search.js";
 import {forKeyVal} from '@/components/ParseDB.js';
 import {Period} from '@/components/Period.js';
+import {Youth} from '@/components/Youth.js';
 
 export default {
   name: 'manage_periods',
@@ -184,10 +205,7 @@ export default {
           title: "ID", field: "ID", width: 90, headerFilter: true
         },
         { // The class the youth is registered in
-          // TODO: Get filter values from the database
-          // TODO: Group by class?
           title: "Class", field: "Class", headerFilter: "select",
-          headerFilterParams: {values: ["", "Earn a bike", "Gear up one", "Geared up two"]}
         },
       ],
       args: {
@@ -196,13 +214,12 @@ export default {
 
       selected_cur: [],
       selected_bar: [],
+      selected_youths: [],
       all_youth: null,
 
       // Misc
       season_list: null,
-      period_sort_map: null,
       year_list: [],
-      year_list_records: [],
 
       period_status: null,
 
@@ -211,6 +228,17 @@ export default {
 
       display_period: null,
       display_youths: [],
+
+      button_header_l: [
+        {name: 'First', arr: 'b', val: 'min'},
+        {name: 'Previous', val: 'prev'},
+      ],
+
+      button_header_r: [
+        {name: 'Next', val: 'next'},
+        {name: 'Current', arr: 'd'},
+        {name: 'Registration', arr: 'b', val: 'max'},
+      ],
 
     };
   },
@@ -230,9 +258,6 @@ export default {
   },
 
   computed: {
-    selected_youths: function() {
-      return [...this.selected_cur, ...this.selected_bar];
-    },
 
     selected_youth: function() {
       if (this.selected_youths.length == 1) {
@@ -300,33 +325,27 @@ export default {
       // Store the list of classes
       this.classes = data["Classes"];
 
+      // Use the list of classes to set the filter options for the class column
+      var class_col = this.headers.pop();
+      class_col = {...class_col, headerFilterParams: {values: ["", ...this.class_list]}};
+      this.headers.push(class_col);
+
       // Store seasons
       this.season_list = data["Seasons"];
       Period.setSeasons(this.season_list);
 
-      this.period_sort_map = new Object();
-      this.season_list.forEach(function(element, n) {
-        this.period_sort_map[element] = n;
-      }.bind(this));
-
       // Store years
       this.year_list = [];
-      this.year_list_records = [];
-      var min_year = this.split_period_name(this.fst_period).year;
-      var max_year = this.split_period_name(this.reg_period).year;
-      var max_year_r = this.split_period_name(this.cur_period).year;
-
+      var min_year = Period.year(this.fst_period);
+      var max_year = Period.year(this.reg_period);
       for (let i = parseInt(min_year); i <= parseInt(max_year); i++) {
           this.year_list.push(i.toString());
-      }
-      for (let i = parseInt(min_year); i <= parseInt(max_year_r); i++) {
-          this.year_list_records.push(i.toString());
       }
     },
 
     load_periods: async function() {
       this.periods = {};
-      this.year_list_records.forEach(async year => {
+      this.year_list.forEach(async year => {
         this.periods[year] = (await this.periods_db.doc(year).get()).data();
       });
     },
@@ -360,9 +379,7 @@ export default {
       var full_period = this.get_period(season, year);
       if (full_period == null) return null;
 
-      let matches = full_period.filter(y => {
-        return y.ID == youth.ID && y["First Name"] == youth["First Name"] && y["Last Name"] == youth["Last Name"];
-      });
+      let matches = Youth.findMatches(full_period, youth);
 
       if (matches.length == 0) {
         return null;
@@ -405,57 +422,81 @@ export default {
 
       if (period == null) {
         this.display_youths = [];
-      }
-
-      else {
+      } else {
         this.display_youths = period.map(y => {
-          return {...y, "Full Name": y["First Name"] + " " + y["Last Name"]}
+          return {...y, "Full Name": Youth.getFullName(y)}
         });
       }
-
-      console.log(this.display_youths);
     },
 
-    split_period_name: function(period) {
-      var p = period.split(" ");
-      return {season: p[0], year: p[1]};
-    },
-
-    // Function to determine period ordering.
-    // Usage: some_period_array.sort(sort_periods)
-    sort_periods: function(a, b) {
-      let a_month = a.slice(0,-2).trim();
-      let b_month = b.slice(0,-2).trim();
-      let a_year = a.slice(-2);
-      let b_year = b.slice(-2);
-      if (a_year == b_year) {
-        return this.period_sort_map[a_month] - this.period_sort_map[b_month];
-      } else {
-        return a_year.localeCompare(b_year);
-      }
-    },
-
-    cur_row_selected: function(rows) {
-      this.selected_cur = this.row_selected(rows);
+    compare_periods: function(a, b) {
+      return Period.compare(a, b);
     },
 
     row_selected: function(rows) {
       return (rows.length == 0) ? [] : rows.map(row => row.getData());
     },
 
-    contains: function(list, youth) {
-      for (let x in list) {
-        let curr = list[x];
-        if (youth["ID"] == curr["ID"] && youth["Full Name"] == curr["Full Name"]) {
-          return true;
-        }
+    // Add a youth to the selection list if it is not already in it
+    add_to_selected: function(youth) {
+      if (!this.youth_is_selected(youth)) {
+        this.selected_youths.push(youth)
       }
-      return false;
     },
 
-    is_active: function(youth, season, year) {
-      // TODO: Use youth's profile or relevant periods document?
-      return (season == "Winter" || year == "19");
+    // Remove a youth from the selection list
+    remove_from_selected: function(youth) {
+      this.selected_youths = this.selected_youths.filter(y => !Youth.equiv(youth, y));
+    },
+
+    deselect_youth: function(youth) {
+      this.remove_from_selected(youth);
+      this.deselect_youth_row(youth);
+    },
+
+    // Deselect a youth in the table
+    deselect_youth_row: function(youth) {
+      let table = this.$refs.current_table.tabulator;
+      let rows = table.getRows().filter(r => Youth.equiv(r.getData(), youth));
+      rows.forEach(row => table.deselectRow(row));
+    },
+
+    // Event handler for tabulator deselectRow event
+    // Removes the youth from the main list
+    deselected_row: function(r) {
+      this.remove_from_selected(r.getData());
+    },
+
+    // Event handler for tabulator replaceData event
+    // Reselects all youth which are currently being edited
+    replaceData: function(data) {
+
+      // Get the table
+      let table = this.$refs.current_table.tabulator;
+
+      // Filter the table's rows down to the rows whose youth is in the selected list
+      // and select each of those rows
+      let sel_rows = table.getRows().filter(r => this.youth_is_selected(r.getData()));
+      sel_rows.forEach(r => table.selectRow(r));
+    },
+
+    // Event handler for tabulator rowClick event
+    // Have to use this instead of selected because it only fires on manual selection,
+    // not on programmatic selection
+    row_click: function({event, row, selected}) {
+
+      // If regular click (not CTRL-click or shift-click), deselect everyone
+      if (!(event.ctrlKey || event.shiftKey)) {
+        this.selected_youths = [];
+      }
+
+      // Add everyone currently selected in the table to the list
+      selected.forEach(r => this.add_to_selected(r.getData()));
+    },
+
+
+    youth_is_selected: function(youth) {
+      return Youth.contains(this.selected_youths, youth);
     },
 
     change_period: function(change) {
