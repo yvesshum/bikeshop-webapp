@@ -104,18 +104,7 @@ export default {
       work_log_headers: [
         { // The Date
           title: "Date", field: "Date", formatter: this.format_date,
-          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
-          headerFilterParams:{
-            operations: [
-              "is", "is not",
-              {name: "before", inclusive: true},
-              {name: "after",  inclusive: true},
-              {name: "between",     inclusive: true, num_inputs: 2},
-              {name: "not between", inclusive: true, num_inputs: 2}
-            ],
-            options: ["Year", "Month", "Date", "Weekday"],
-            dropdown_align: "left",
-          },
+          ...this.get_date_filter_args(false),
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
@@ -127,8 +116,7 @@ export default {
         },
         { // The hours earned, broken down by category
           title: "Hours", field: "Hours", formatter: this.format_work_hours,
-          headerFilter: make_range_editor("number"),
-          headerFilterParams: {minimum: 0},
+          ...this.get_hour_filter_args(),
           headerFilterFunc: this.hour_range_filter,
         },
         "Notes",
@@ -143,19 +131,12 @@ export default {
         },
         { // The date and time of the order
           title: "Date", field: "Order Date", formatter: this.format_date_time,
-          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
-          headerFilterParams:{
-            operations: ["is", "is not", "before", "after", "between", "not between"],
-            options: ["Year", "Month", "Date", "Weekday", "Time"],
-            dropdown_align: "center",
-          },
+          ...this.get_date_filter_args(true),
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
-          formatter: (cell) => cell.getValue() + " Hours",
-          headerFilter: make_range_editor("number"),
-          headerFilterParams: {minimum: 0},
-          headerFilterFunc: this.numeric_range_filter,
+          formatter: cell => cell.getValue() + " Hours",
+          ...this.get_hour_filter_args(),
         },
         "Notes",
       ],
@@ -170,25 +151,12 @@ export default {
         },
         { // The number of hours transferred
           title: "Amount Transferred", field: "Amount",
-          formatter: (cell) => cell.getValue() + " Hours",
-          headerFilter: make_range_editor("number"),
-          headerFilterParams: {minimum: 0},
-          headerFilterFunc: this.numeric_range_filter,
+          formatter: cell => cell.getValue() + " Hours",
+          ...this.get_hour_filter_args(),
         },
         { // The date and time of the order
           title: "Date", field: "Date", formatter: this.format_date,
-          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
-          headerFilterParams:{
-            operations: [
-              "is", "is not",
-              {name: "before", inclusive: true},
-              {name: "after",  inclusive: true},
-              {name: "between",     inclusive: true, num_inputs: 2},
-              {name: "not between", inclusive: true, num_inputs: 2}
-            ],
-            options: ["Year", "Month", "Date", "Weekday", "Time"],
-            dropdown_align: "left",
-          },
+          ...this.get_date_filter_args(false),
         },
         "Notes",
       ],
@@ -576,6 +544,34 @@ export default {
           let m1 = parseInt(t1[1]), m2 = parseInt(t2[1]);
           return (h1 < h2) || (h1 == h2 && m1 <= m2);
         }
+      },
+
+      get_date_filter_args: function(include_time) {
+        let options = ["Year", "Month", "Date", "Weekday"];
+        if (include_time) options.push("Time");
+
+        return {
+          headerFilter: custom_filter_editor,
+          headerFilterFunc: this.date_filter,
+          headerFilterParams: {
+            options,
+            operations: [
+              "is", "is not",
+              {name: "before", inclusive: true},
+              {name: "after",  inclusive: true},
+              {name: "between",     inclusive: true, num_inputs: 2},
+              {name: "not between", inclusive: true, num_inputs: 2}
+            ],
+          },
+        };
+      },
+
+      get_hour_filter_args: function() {
+        return {
+          headerFilter: make_range_editor("number"),
+          headerFilterFunc: this.numeric_range_filter,
+          headerFilterParams: {minimum: 0},
+        };
       },
     }
 }
