@@ -188,31 +188,36 @@ export class Period {
 		return Period.makePeriod(period).getPrevStr();
 	}
 
+	static forEachRange(start, end, func) {
+		// If start earlier than end, loop forwards
+		if (Period.older(start, end)) {
+			for (let i = Period.makePeriod(start); !Period.newer(i, end); i = i.getNext()) {
+				func(i);
+			}
+		}
+
+		// If end earlier than start, loop backwards
+		else {
+			for (let i = Period.makePeriod(start); !Period.older(i, end); i = i.getPrev()) {
+				func(i);
+			}
+		}
+	}
+
 	static enumerate(start, end) {
 		var arr = [];
-
-
-
-		// If start earlier than end, enumerate forwards
-		if (Period.older(start, end)) {
-			for (let i = Period.makePeriod(start); Period.older(i, end); i = i.getNext()) {
-				arr.push(i);
-			}
-		}
-
-		// If end earlier than start, enumerate backwards
-		else {
-			for (let i = Period.makePeriod(start); Period.newer(i, end); i = i.getPrev()) {
-				arr.push(i);
-			}
-		}
-
-		// Return the result
+		Period.forEachRange(start, end, period => arr.push(period));
 		return arr;
 	}
 
 	static enumerateStr(start, end) {
 		return Period.enumerate(start, end).map(p => p.toString());
+	}
+
+	static mapRange(start, end, func) {
+		var arr = [];
+		Period.forEachRange(start, end, period => arr.push(func(period)));
+		return arr;
 	}
 };
 
