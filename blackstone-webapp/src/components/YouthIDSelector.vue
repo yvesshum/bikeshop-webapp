@@ -542,22 +542,22 @@ Emits:
                 this.period_doc = await this.vars_coll.doc("metadata").get();
 
                 // Data from the retrieved doc(s) - past_data will only be retrieved if needed
-                let data = this.period_doc.data();
+                var data = this.period_doc.data();
 
                 // Set the season list for the Period object
                 await Period.setSeasons(data["Seasons"]);
 
 
                 // Names of current and next period
-                let fp = data["FirstPeriod"];
-                let ap = data["CurrentPeriod"];
-                let rp = data["CurrentRegistrationPeriod"];
+                var fp = data["FirstPeriod"];
+                var ap = data["CurrentPeriod"];
+                var rp = data["CurrentRegistrationPeriod"];
 
                 // The variable to store the results in
-                let youth_arr = [];
+                var youth_arr = [];
 
                 // Create a modified array `periods` decoding special inputs (see usage comment)
-                let periods = [];
+                var periods = [];
 
                 // Parent set prop to "all" - wants all youth
                 if (this.periods == "all") {
