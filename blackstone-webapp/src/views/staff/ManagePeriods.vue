@@ -182,7 +182,7 @@ export default {
 
   data: function() {
     return {
-      // The firebase addresses of the ActivePeriods and PreviousPeriods documents
+      // The firebase addresses of the GlobalPeriods collection and the period metadata document
       periods_db:  db.collection("GlobalPeriods"),
       metadata_db: db.collection("GlobalPeriods").doc("metadata"),
 
