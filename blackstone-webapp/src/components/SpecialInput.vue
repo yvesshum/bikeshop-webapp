@@ -1,5 +1,5 @@
 <!--
-* Usage: <SpecialInput inputType="String" args="arguments" v-model="specialInputvalue"/>
+* Usage: <SpecialInput inputType="String" :arguments="args" v-model="specialInputvalue"/>
 
 * Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race....
         The full list can be viewed in GlobalVariables/SpecialInput 
@@ -8,19 +8,19 @@
 
 Some components have properties that we would like to set through Special Input.
 
-To allow for this we can add a property in the component below e.g. :placeholder="args.placeholder", 
+To allow for this we can add a property in the component below e.g. :placeholder="arguments.placeholder", 
 
-To specify a property from the parent using args="arguments", one would just 
+To specify a property from the parent using :arguments="args", one would just 
 have to pass in an object with key=name_of_property value=value_of_property.
 
 Like this in methods: 
-arguments1: {
+args: {
     "placeholder": "0",
     "align": "center"
     "style": "text-align:center; color: #FF0000"
 }
 
-Note that if a property is not specified, "args.property_name" would just be undefined and all is well (I think). 
+Note that if a property is not specified, "arguments.property_name" would just be undefined and all is well (I think). 
 Style argument is just for the specific <b-form> components instead of the entire div
 
 * The ref is only necessary if you want to call private methods here 
@@ -53,7 +53,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value" name="Boolean">
+                <b-form-radio-group  v-model="inner_value" :name="inner_value">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -70,16 +70,18 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a ISO string-->
         <div v-else-if="input === 'Datetime'">
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
-             <!-- In progress, none of the packages seem to work so far -->     
-
             <datetime type="datetime" v-model="inner_value"/>
 
+        </div>
+        
+        <div v-else-if="input === 'Date'" style="text-align: center;">
+            <datepicker v-model="inner_value" style="display: inline-block;"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value" name="Gender">
+                <b-form-radio-group  v-model="inner_value" :name="inner_value">
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -147,6 +149,7 @@ import {db} from '@/firebase.js'
 import moment from 'moment'
 import { Datetime } from 'vue-datetime'
 import 'vue-datetime/dist/vue-datetime.css'
+import Datepicker from 'vuejs-datepicker';
 
 export default {
     name: 'SpecialInput',
@@ -326,7 +329,8 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
-        Datetime
+        Datetime,
+        Datepicker
     }
 
 }
