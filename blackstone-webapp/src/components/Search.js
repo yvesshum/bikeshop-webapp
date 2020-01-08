@@ -518,32 +518,115 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     dropbtn.innerText = "Show Filters";
 
     // Div to hold all filters
-    var filter_list = document.createElement("div");
-    filter_list.style = "display: block; margin: 6px;";
-    dropdown.appendChild(filter_list);
+    var filter_div = document.createElement("div");
+    filter_div.style = "display: block; margin: 6px;";
+    dropdown.appendChild(filter_div);
+
+    // Array of functions to get the values of each filter
+    var filter_list = [];
 
 
     // Button to add new filters
     var add_button = document.createElement("button");
     add_button.innerText = "Add Filter";
     add_button.onclick = function() {
+
+      // Create a div to contain the new filter
       let new_filter = document.createElement("div");
 
-      new_filter.innerHTML = `
-        <input type='checkbox' checked>
-        <select>${vals.map(o => `<option value='${o}'>${o}</option>`)}</select>
-        <select>${ ops.map(o => `<option value='${o}'>${o}</option>`)}</select>
-        <input></input>
-      `;
-
+      // Create all the child elements of the new filter
       let rem_button = document.createElement("button");
+      let check = document.createElement("input");
+      let select_val = document.createElement("select");
+      let select_op =  document.createElement("select");
+      let input1 = document.createElement("input");
+      let input2 = document.createElement("input");
+      let incl_div = document.createElement("div");
+
+
+      // Variable to tell whether certain inputs are needed
+      let second_input_active = false;
+      let inclusive_active = false;
+
+      // Helper function to get the name of an option
+      var getname = (option) => (typeof option == "string") ? option : option.name;
+
+
+      // X button to delete this filter
       rem_button.innerText = "×";
       rem_button.onclick = function() {
-        filter_list.removeChild(new_filter);
+      	check.checked = false;
+        filter_div.removeChild(new_filter);
       };
-      new_filter.insertBefore(rem_button, new_filter.firstChild);
 
-      filter_list.appendChild(new_filter);
+      // Checkbox to enable/disable specific filters
+      check.type = "checkbox";
+      check.style.margin = "auto 15px";
+      check.checked = true;
+
+      // Box to select which option to search
+      select_val.innerHTML = `${vals.map(o => `<option value='${getname(o)}'>${getname(o)}</option>`)}`;
+
+      // Box to select the operation to use to filter
+      select_op.innerHTML = `${ops.map(o => `<option value='${getname(o)}'>${getname(o)}</option>`)}`;
+      select_op.onchange = function() {
+      	let o = ops.filter(opt => getname(opt) == this.value)[0];
+      	if (typeof o != "string" && o.num_inputs == 2) {
+      		input1.after(input2);
+      		second_input_active = true;
+      	}
+      	else if (new_filter.contains(input2)) {
+      		new_filter.removeChild(input2);
+      		second_input_active = false;
+      	}
+
+      	if (typeof o != "string" && o.inclusive) {
+      		new_filter.appendChild(incl_div);
+      		inclusive_active = true;
+      	}
+      	else if (new_filter.contains(incl_div)) {
+      		new_filter.removeChild(incl_div);
+      		inclusive_active = false;
+      	}
+      };
+
+      select_op.style = "margin-left: 3px;";
+      input1.style = "width: 8em; margin-left: 3px;";
+      input2.style = "width: 8em; margin-left: 3px;";
+
+      // Create a checkbox for inclusive ranges
+      incl_div.style = "display: inline-block; margin-left: 6px;";
+      let incl_check = document.createElement("input");
+      incl_check.type = "checkbox";
+      let incl_message = document.createElement("div");
+      incl_message.innerHTML = " Inclusive?";
+      incl_message.style.display = "inline-block";
+      incl_div.appendChild(incl_check);
+      incl_div.appendChild(incl_message);
+
+
+      // Add a function to get the data from this filter to the master list of filters
+      filter_list.push(() => {
+      	return {
+      		active: check.checked,
+      		option: select_val.value,
+      		op:     select_op.value,
+      		value:  input1.value,
+      		value2: second_input_active ? input2.value : undefined,
+      		inclusive: inclusive_active ? incl_check.checked : undefined,
+      	}
+      });
+
+
+      // Apppend all the features to the filter div
+      new_filter.appendChild(rem_button);
+      new_filter.appendChild(check);
+      new_filter.appendChild(select_val);
+      new_filter.appendChild(select_op);
+      new_filter.appendChild(input1);
+
+      // Add the filter to the dropdown
+      filter_div.appendChild(new_filter);
     }
     dropdown.appendChild(add_button);
 
@@ -553,26 +636,13 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     apply_button.innerText = "Apply Filters"
     apply_button.onclick = function() {
 
-      // Collect filters
+      // Loop through filter list, which stores functions to get the value of each filter
       var filters = [];
-
-      // Loop through divs in filter list
-      Array.from(filter_list.childNodes).forEach(child => {
-
-        // Get relevant child elements
-        let check  = child.getElementsByTagName('input')[0];
-        let option = child.getElementsByTagName('select')[0];
-        let op     = child.getElementsByTagName('select')[1];
-        let value  = child.getElementsByTagName('input')[1];
-
-        // Add to list of filters if applicable
-        if (check.checked) {
-          filters.push({
-            option: option.value,
-            op    : op.value,
-            value : value.value,
-          });
-        }
+      filter_list.forEach(filter_gen => {
+      	let filter = filter_gen();
+      	if (filter.active) {
+      		filters.push(filter);
+      	}
       });
 
       // Hide the dropdown menu so the table isn't obscured

@@ -95,7 +95,13 @@ export default {
           title: "Date", field: "Date", formatter: this.format_date,
           headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
           headerFilterParams:{
-            operations: ["is", "is not", "before", "after", "between", "not between"],
+            operations: [
+              "is", "is not",
+              {name: "before", inclusive: true},
+              {name: "after",  inclusive: true},
+              {name: "between",     inclusive: true, num_inputs: 2},
+              {name: "not between", inclusive: true, num_inputs: 2}
+            ],
             options: ["Year", "Month", "Date", "Weekday"],
             dropdown_align: "left",
           },
@@ -278,64 +284,10 @@ export default {
         // Result will be true if every filter passes
         var result = filters.every(filter => {
 
-          // Initialize variables to hold value of option and of filter
-          var option_val, filter_val;
-
-          // Parse out the desired value and the actual value for both the option and the filter
-          switch (filter.option) {
-            case "Year":
-              option_val = date.getFullYear();
-              filter_val = parseInt(filter.value);
-              break;
-
-            case "Month":
-              option_val = date.getMonth();
-              filter_val = find_in(moment.months(), filter.value, "month");
-              break;
-
-            case "Date":
-              option_val = date.getDate();
-              filter_val = parseInt(filter.value);
-              break;
-
-            case "Weekday":
-              option_val = date.getDay();
-              filter_val = find_in(moment.weekdays(), filter.value, "weekday");
-              break;
-
-            // Convert to seconds to take advantage of next switch block
-            case "Time":
-
-              // Initialize option_val to 0 seconds
-              option_val = 0;
-
-              // Initialize filter_val
-              // If input string contains "PM" (case-insensitive), add 12 hours to the final count
-              // Otherwise, start from 0 seconds
-              let afternoon = filter.value.match(/[Pp](?=[Mm])/);
-              filter_val = (afternoon == null) ? 0 : (12 * 60 * 60);
-
-              // Split user input into hours, mins, and seconds
-              // Grab all groups of one or two numbers followed by valid separator character
-              let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
-
-              // Take advantage of fall-thru to convert as much of split_time as exists to seconds
-              // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
-              switch (split_time.length) {
-                case 3:
-                  option_val += date.getSeconds();
-                  filter_val += split_time[2];
-                case 2:
-                  option_val += date.getMinutes() * 60;
-                  filter_val += split_time[1]     * 60;
-                case 1:
-                  option_val += date.getHours()   * 60 * 60;
-                  filter_val += split_time[0]     * 60 * 60;
-                  break;
-              }
-
-              break;
-          }
+          // Parse desired value(s) from filter and actual value from user input
+          var option_val = parse_option_val(filter.option, date, filter.value);
+          var filter_val = parse_filter_val(filter.option, filter.value);
+          var second_val = parse_filter_val(filter.option, filter.value2);
 
           // If the search term was invalid for some reason, skip over this filter
           if (filter_val == null) return true;
@@ -354,13 +306,24 @@ export default {
               return option_val != filter_val;
 
             case "before":
-              return option_val < filter_val;
+              return filter.inclusive
+                ? (option_val <= filter_val)
+                : (option_val < filter_val);
 
             case "after":
-              return option_val > filter_val;
+              return filter.inclusive
+                ? (option_val >= filter_val)
+                : (option_val > filter_val);
 
-            // case "between":
-            // case "not between":
+            case "between":
+              return filter.inclusive
+                ? (option_val >= filter_val && option_val <= second_val)
+                : (option_val >  filter_val && option_val <  second_val);
+
+            case "not between":
+              return filter.inclusive
+                ? (option_val <= filter_val || option_val >= second_val)
+                : (option_val <  filter_val || option_val >  second_val);
           }
         });
 
@@ -392,6 +355,93 @@ export default {
               break;
           }
           return null;
+        }
+
+        function parse_filter_val(option, value) {
+
+          // Catch empty input
+          if (value == undefined) return undefined;
+
+          // Determine value based on option type
+          switch (option) {
+            case "Year":
+            case "Date":
+              return parseInt(value);
+
+            case "Month":
+              return find_in(moment.months(), value, "month");
+
+            case "Weekday":
+              return find_in(moment.weekdays(), value, "weekday");
+
+            // Convert to seconds to take advantage of comparison switch block
+            case "Time":
+
+              // If input string contains "PM" (case-insensitive), add 12 hours to the final count
+              // Otherwise, start from 0 seconds
+              let afternoon = filter.value.match(/[Pp](?=[Mm])/);
+              let result = (afternoon == null) ? 0 : (12 * 60 * 60);
+
+              // Split user input into hours, mins, and seconds
+              // Grab all groups of one or two numbers followed by valid separator character
+              let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+
+              // Take advantage of fall-thru to convert as much of split_time as exists to seconds
+              // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+              switch (split_time.length) {
+                case 3:
+                  filter_val += split_time[2];
+                case 2:
+                  filter_val += split_time[1] * 60;
+                case 1:
+                  filter_val += split_time[0] * 60 * 60;
+              }
+
+              return result;
+          }
+        }
+
+        function parse_option_val(option, date, value) {
+          switch (option) {
+            case "Year":
+              return date.getFullYear();
+
+            case "Month":
+              return date.getMonth();
+
+            case "Date":
+              return date.getDate();
+
+            case "Weekday":
+              return date.getDay();
+
+            // Convert to seconds to take advantage of next switch block
+            case "Time":
+
+              // Initialize result to 0 seconds
+              let result = 0;
+
+              // Split user input into hours, mins, and seconds
+              let split_time = parse_time_str(value);
+
+              // Take advantage of fall-thru to convert as much of split_time as exists to seconds
+              // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+              switch (split_time.length) {
+                case 3:
+                  result += date.getSeconds();
+                case 2:
+                  result += date.getMinutes() * 60;
+                case 1:
+                  result += date.getHours() * 60 * 60;
+              }
+
+              return result;
+          }
+        }
+
+        // Grab all groups of one or two numbers followed by valid separator character
+        function parse_time_str(str) {
+          return str.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
         }
       },
 
