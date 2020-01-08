@@ -91,96 +91,18 @@ export default {
                     style: "text-align: center"
                 }
             },
-
-            async submit() {
-                this.loadingModalVisible = true;
-                //Populate this.YouthProfile with the current youth trying to submit
-                let YouthID = this.parse(this.requiredFields).find(field => field["name"] === "Youth ID");
-                console.log(YouthID);
-                if (!(YouthID["value"] == null || YouthID["value"] === "")) {
-                    let YouthProfile = await db.collection("GlobalYouthProfile").doc(YouthID["value"]).get();
-                    this.YouthProfile = YouthProfile.data();
-                    if (YouthProfile == null) {
-                      this.errorFields.push("YouthID not found");
-                      this.showErrorModal();
-                    }
-                }
-
-                let badFields = await this.checkValid();
-                //if an error field has been returned
-                if (badFields.length) {
-                    this.errorFields = badFields;
-                    this.loadingModalVisible = false;
-                    this.showErrorModal();
-                }
-                else {
-                    let input = {};
-                    let data = this.parse(this.requiredFields);
-                    for (let i = 0; i < data.length; i ++) {
-                        if (data[i]["name"] === "Item Total Cost") {
-                            input[data[i]["name"]] = Math.round(parseFloat(data[i]["value"])*100) /100;
-                        }
-                        else {
-                            input[data[i]["name"]] = data[i]["value"];
-                        }
-
-                    }
-
-                    data = this.parse(this.optionalFields);
-                    for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
-                    }
-
-                    //Attaching current period
-                    let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
-                    let period = metadata.data()["CurrentPeriod"];
-                    input["Period"] = period;
-
-                    //Submit order hidden fields from realtime database
-                    //Sometimes we add hidden fields for the databases' sake
-                    await rb.ref('Submit Orders Initializers').once("value" , snapshot => {
-                        let hiddenProtectedInitializers = snapshot.val()["Protected"];
-                        let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
-                        for (let key in hiddenProtectedInitializers) {
-                            input[key] = hiddenProtectedInitializers[key]
-                        }
-                        for (let key in hiddenUnprotectedInitializers) {
-                            input[key] = hiddenUnprotectedInitializers[key]
-                        }
-                    })
-                    input["Order Date"] = Timestamp.fromDate(new Date());
-
-                    console.log('i', input);
-                    let submitRef = db.collection("GlobalPendingOrders").doc();
-                    let submitResponse = await submitRef.set(input); //if its good there should be nothing returned
-                    if (submitResponse) {
-                        window.alert("Submit wasn't successful, please check your connection and try again");
-                        return null;
-                    }
-
-                    //update youth hours with the appropriate value
-                    console.log(this.requiredFields);
-                    let ITC = Math.round((this.parse(this.requiredFields).find(field => field["name"] === "Item Total Cost").value)*100)/100;
-                    let newHoursSpent =  Math.round(((parseFloat(this.YouthProfile["Hours Spent"]) + parseFloat(ITC)))*100) / 100;
-                    let newPendingHours = Math.round(((parseFloat(this.YouthProfile["Pending Hours"]) - parseFloat(ITC)))*100)/ 100;
-                    let youthRef = db.collection("GlobalYouthProfile").doc((this.parse(this.requiredFields).find(field => field["name"] === "Youth ID"))["value"]);
-                    console.log('hours', ITC, newHoursSpent, newPendingHours);
-                    youthRef.update({
-                        "Hours Spent": newHoursSpent,
-                        "Pending Hours": newPendingHours
-                    }).then(() => {
-                        //reset youth profile
-                        this.YouthProfile = {};
-                        //reset fields
-                        this.$refs.selector.reset();
-
-
-                        this.resetFields();
-                        this.loadingModalVisible = false;
-                        this.showModal();
-                    }).catch(error => {
-                        window.alert(error);
-                    });
+            modal: {
+                loading: {
+                    visible: false
+                },
+                error: {
+                    visible: false,
+                    errors: []
+                },
+                msg: {
+                    visible: false,
+                    title: "",
+                    message: ""
                 }
             },
             form: {
@@ -388,7 +310,7 @@ export default {
             return payload;
         },
         updateYouthProfile(payload) {
-            //TODO:
+            //Subtract hours
         },
         resetPage() {
             //TODO:
