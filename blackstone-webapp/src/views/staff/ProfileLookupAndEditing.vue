@@ -23,7 +23,7 @@
         groupBy="Period"
         :groupByOptions="periods"
         :progressiveLoad="true"
-        :doc_formatter="doc_formatter"
+        :doc_formatter="work_doc_formatter"
         style="width:90%;margin:auto;"
       ></CollectionTable>
 
@@ -193,8 +193,8 @@ export default {
         "Notes",
       ],
 
-      // Helper function to group document data for the table
-      doc_formatter: (doc) => {
+      // Helper function to group document data for the work log table
+      work_doc_formatter: (doc) => {
         var data = doc.data();
         return {
           "Date": [ data["Check In"], data["Check Out"] ],
