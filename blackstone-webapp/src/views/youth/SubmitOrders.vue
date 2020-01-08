@@ -18,7 +18,7 @@
             <div v-else>
                 <div class="idInput">
                     <h4>Enter your ID</h4>
-                    <YouthIDSelector @selected="selectedID" periods="current" ref="selector" @ready="selectorReady"/>
+                    <YouthIDSelector @selected="selectedID" periods="current" ref="YouthIDSelector" @ready="selectorReady"/>
                     <p class="separator">Or enter manually if not found</p>
                     <div style="width: 80%; margin: 0 auto">
                         <SpecialInput inputType="String" v-model="fields.required[youthIDFieldIndex].value" v-if="allReady" :arguments="args.specialInput"></SpecialInput>
@@ -33,11 +33,11 @@
             <SpecialInput :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
         </div>
 
-        <b-button variant="success" @click="handleSubmit" style="margin-top:10px">Submit!</b-button>
+        <b-button variant="success" @click="handleSubmit()" style="margin-top:10px">Submit!</b-button>
     </div>
 
     <!-- Loading Modal -->
-    <b-modal v-model="modal.loading.visible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+    <b-modal v-model="this.loadingVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
         <template slot="modal-title">
             Loading
         </template>
@@ -50,6 +50,16 @@
     </b-modal>
 
     <!-- Error Modal -->
+    <b-modal v-model="this.errorVisible" hide-footer lazy hide-header-close>
+        <template slot="modal-title">
+            Error
+        </template>
+        <div class="d-block text-center">
+            <h3>Error:</h3>
+            <h4 v-for="errors in modal.error.errors" :key="errors">{{errors}}</h4>
+        </div>
+        <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Understood</b-button>
+    </b-modal>
 
     <!-- Message Modal -->
 
@@ -93,7 +103,7 @@ export default {
             },
             modal: {
                 loading: {
-                    visible: false
+                    visible: false,
                 },
                 error: {
                     visible: false,
@@ -115,7 +125,16 @@ export default {
         youthIDFieldIndex: function() {
             let index = this.getFieldIndex('Youth ID', 'required');
             return index;
+        },
+
+        loadingVisible: function() {
+            return this.modal.loading.visible;
+        },
+
+        errorVisible: function() {
+            return this.modal.error.visible;
         }
+
     },
     watch: {
         ready: {
@@ -207,10 +226,16 @@ export default {
             this.modal.error.visible = true;
         },
 
+        closeErrorModal() {
+            this.modal.error.visible = false;
+            this.modal.error.errors = [];
+        },
+
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
             console.log('submit clicked')
             this.modal.loading.visible = true;
+            console.log('e', this.modal.error);
             if (!this.hasValidFields())
                 return;
             console.log('hasValidFields');
@@ -228,7 +253,11 @@ export default {
             if (!(await this.submitOrder()))
                 return ;
             console.log("Successfully executed handleSubmit");
+
             this.resetPage();
+            this.modal.loading.visible = false;
+            //TODO success message
+            //TODO placeholders
         },
         async getYouthProfile() {
             let youthID = this.fields.required
@@ -253,16 +282,34 @@ export default {
         },
         async hasValidFields() {
             let badFields = [];
+            this.modal.error.errors = [];
 
-            //non emptyg
+            //non empty
             this.fields.required.forEach(field => {
-                if (field.value == null || !field.value.length)
+                if (this.isNonValidField(field.value)) {
+                    console.log('bad field', field.name, field.value, field.value == null, field.value.length)
                     badFields.push(field.name);
+                }
+                    
             })
             
-            this.modal.error.errors.push("The following fields are required: " + badFields.toString());
-            console.log(this.modal.error.errors);
-            this.showErrorModal();
+            if (badFields.length) {
+                this.modal.error.errors.push("The following fields are required: " + badFields.toString());
+                console.log(this.modal.error.errors);
+                this.modal.loading.visible = false;
+                this.showErrorModal();
+                return false;
+            }
+            return true;
+            
+        },
+        isNonValidField(value) {
+            if (typeof(value) === "number") {
+                return false;
+            }
+            else {
+                return (value == null || !value.length)
+            }
         },
         async hasSufficientHours() {
             let cost = this.fields.required
@@ -292,7 +339,6 @@ export default {
         
         },
         async constructSubmitPaylod() {
-            //TODO: this builds the payload for GlobalPendingOrders
             let payload = {};
             console.log('f', this.fields);
             this.fields.required.forEach(field => {
@@ -309,11 +355,34 @@ export default {
             payload["Period"] = periodQuery.data().CurrentPeriod
             return payload;
         },
-        updateYouthProfile(payload) {
+        async updateYouthProfile(payload) {
             //Subtract hours
+            //profile: this.form.YouthProfile
+            console.log('p', payload);
+            console.log('yp', this.form.YouthProfile);
+            this.form.YouthProfile["Hours Spent"] = 
+                parseFloat(this.form.YouthProfile["Hours Spent"]) + payload["Item Total Cost"]
+            this.form.YouthProfile["Pending Hours"] = 
+                parseFloat(this.form.YouthProfile["Pending Hours"]) - payload["Item Total Cost"];
+            // console.warn(this.form.YouthProfile);
+            let updateStatus = await db.collection("GlobalYouthProfile").doc(payload["Youth ID"]).update(this.form.YouthProfile);
+            if (updateStatus) {
+                return false
+            }
+            return true;
         },
+
         resetPage() {
-            //TODO:
+            this.form.YouthProfile = {};
+
+            console.log('c', Object.entries(this.$refs.YouthIDSelector[0]));
+            this.$refs.YouthIDSelector[0].reset();
+            for (let fieldType in this.fields) {
+                this.fields[fieldType].forEach(element => {
+                    element.value = null;
+                })
+            }
+            return true;
 
         }
 
