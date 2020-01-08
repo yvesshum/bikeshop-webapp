@@ -110,6 +110,7 @@ Emits:
     import {firebase} from '../firebase'
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
+    import {Period} from '@/components/Period.js';
 
     const SPECIAL_CHARS = [
         // Reasonable Vowels
@@ -174,8 +175,8 @@ Emits:
                 options: [],
                 search_term: "",
 
-                vars_coll: db.collection("GlobalVariables"),
-                active_periods_doc: null,
+                vars_coll: db.collection("GlobalPeriods"),
+                period_doc: null,
                 past_periods_doc: null,
 
                 using_past: false,
@@ -538,15 +539,19 @@ Emits:
 
                 // Load active periods from the database
                 // TODO: Attach as a listener? If not, only load the one time?
-                this.active_periods_doc = await this.vars_coll.doc("ActivePeriods").get();
+                this.period_doc = await this.vars_coll.doc("metadata").get();
 
                 // Data from the retrieved doc(s) - past_data will only be retrieved if needed
-                let data = this.active_periods_doc.data();
-                let past_data = null;
+                let data = this.period_doc.data();
+
+                // Set the season list for the Period object
+                await Period.setSeasons(data["Seasons"]);
+
 
                 // Names of current and next period
+                let fp = data["FirstPeriod"];
                 let ap = data["CurrentPeriod"];
-                let fp = data["FuturePeriod"];
+                let rp = data["CurrentRegistrationPeriod"];
 
                 // The variable to store the results in
                 let youth_arr = [];
@@ -556,8 +561,7 @@ Emits:
 
                 // Parent set prop to "all" - wants all youth
                 if (this.periods == "all") {
-                    periods = [ap, fp, "none", ...data["PastPeriods"]];
-                    this.using_past = true;
+                    periods = Period.enumerate(fp, rp);
                 }
 
                 // Replace instances of "current" and "next" with the appropriate names
@@ -572,54 +576,42 @@ Emits:
                         }
                         return item;
                     });
-
-                    this.using_past = periods.filter(item => item != ap && item != fp).length > 0;
                 };
 
-                // Load data from the past periods doc, only if necessary (as determined above)
-                if (this.using_past) {
-                    this.past_periods_doc = await this.vars_coll.doc("PastPeriods").get();
-                    past_data = this.past_periods_doc.data();
-                }
+                // Get the years
+                var year_matrix = Period.makeMatrix(periods);
+                var years = Object.keys(year_matrix);
 
-                // Loop through each period and add the relevant youth to the bar
-                periods.forEach(function(period) {
+                for (var i = 0; i < years.length; i++) {
+                    let year = years[i];
 
-                    // Grab the list of youth from the given period
-                    var new_profiles = [];
-                    switch (period) {
-                        case "none":
-                            new_profiles = data["NeverActiveYouths"];
-                            break;
-                        case ap:
-                            new_profiles = data["CurrentActiveYouths"];
-                            break;
-                        case fp:
-                            new_profiles = data["FutureActiveYouths"];
-                            break;
-                        default:
-                            new_profiles = past_data[period];
-                            break;
-                    }
+                    // Load the given year's document from the database
+                    let year_doc = await this.vars_coll.doc(year).get();
+                    let year_data = year_doc.data();
 
-                    // If the given period does not exist, send a warning in the console and skip to the next period
-                    if (new_profiles == undefined) {
-                        console.warn("Cannot load youths from period \"" + period + "\".");
-                        return;
-                    }
+                    // Loop through each season in this year to load youth from
+                    year_matrix[year].forEach(season => {
+                        let new_profiles = year_data[Period.concat(season, year)];
 
-                    // Add non-duplicate youth to the full array
-                    youth_arr = youth_arr.concat(new_profiles.filter(profile => {
-
-                        // If current profile matches any already in the list, don't include it
-                        for (var i = 0; i < youth_arr.length; i++) {
-                            if (profiles_equal(profile, youth_arr[i])) return false;
+                        // If the given period does not exist, send a warning in the console and skip to the next period
+                        if (new_profiles == undefined) {
+                            console.warn("Cannot load youths from period \"" + Period.concat(season, year) + "\".");
+                            return;
                         }
 
-                        // If it didn't match any, it's a new profile, so include it
-                        return true;
-                    }));
-                });
+                        // Add non-duplicate youth to the full array
+                        youth_arr = youth_arr.concat(new_profiles.filter(profile => {
+
+                            // If current profile matches any already in the list, don't include it
+                            for (var i = 0; i < youth_arr.length; i++) {
+                                if (profiles_equal(profile, youth_arr[i])) return false;
+                            }
+
+                            // If it didn't match any, it's a new profile, so include it
+                            return true;
+                        }));
+                    });
+                };
 
                 // Sort the result
                 youth_arr = youth_arr.sort();
