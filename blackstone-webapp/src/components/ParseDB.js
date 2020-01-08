@@ -66,9 +66,11 @@ export function forKeyVal(arr, op) {
 
 	...will return an array with the following elements:
 
-		func(name1, val1, 1)
-		func(name2, val2, 2)
-		func(name3, val3, 2)
+		[
+			func(name1, val1, 1),
+			func(name2, val2, 2),
+			func(name3, val3, 2)
+		]
 
 	Intended to help parse field from the database.
 
