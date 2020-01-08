@@ -500,3 +500,171 @@ export function make_range_editor(type) {
 		return container;
     };
 }
+
+
+
+export function custom_filter_editor(cell, onRendered, success, cancel, editorParams) {
+
+    // Filtering options passed in through editorParams
+    var ops = editorParams.operations;
+    var vals = editorParams.options;
+
+    // Basic components - the button to open the dropdown menu, and the menu itself
+    var dropbtn = document.createElement("button");
+    var dropdown = document.createElement("div");
+
+    // Set starting inner text
+    dropdown.innerHTML = "List of Filters:<br/>";
+    dropbtn.innerText = "Show Filters";
+
+    // Div to hold all filters
+    var filter_list = document.createElement("div");
+    filter_list.style = "display: block; margin: 6px;";
+    dropdown.appendChild(filter_list);
+
+
+    // Button to add new filters
+    var add_button = document.createElement("button");
+    add_button.innerText = "Add Filter";
+    add_button.onclick = function() {
+      let new_filter = document.createElement("div");
+
+      new_filter.innerHTML = `
+        <input type='checkbox' checked>
+        <select>${vals.map(o => `<option value='${o}'>${o}</option>`)}</select>
+        <select>${ ops.map(o => `<option value='${o}'>${o}</option>`)}</select>
+        <input></input>
+      `;
+
+      let rem_button = document.createElement("button");
+      rem_button.innerText = "×";
+      rem_button.onclick = function() {
+        filter_list.removeChild(new_filter);
+      };
+      new_filter.insertBefore(rem_button, new_filter.firstChild);
+
+      filter_list.appendChild(new_filter);
+    }
+    dropdown.appendChild(add_button);
+
+
+    // Button to apply the filters to the data
+    var apply_button = document.createElement("button");
+    apply_button.innerText = "Apply Filters"
+    apply_button.onclick = function() {
+
+      // Collect filters
+      var filters = [];
+
+      // Loop through divs in filter list
+      Array.from(filter_list.childNodes).forEach(child => {
+
+        // Get relevant child elements
+        let check  = child.getElementsByTagName('input')[0];
+        let option = child.getElementsByTagName('select')[0];
+        let op     = child.getElementsByTagName('select')[1];
+        let value  = child.getElementsByTagName('input')[1];
+
+        // Add to list of filters if applicable
+        if (check.checked) {
+          filters.push({
+            option: option.value,
+            op    : op.value,
+            value : value.value,
+          });
+        }
+      });
+
+      // Hide the dropdown menu so the table isn't obscured
+      hide_dropdown();
+
+      // Submit list of filters to Tabulator
+      success(filters);
+    }
+    dropdown.appendChild(apply_button);
+
+
+    // Button to stop filtering data
+    var remove_button = document.createElement("button");
+    remove_button.innerText = "Remove All Filters";
+    remove_button.onclick = cancel;
+    dropdown.appendChild(remove_button);
+
+
+    // Styling
+    dropbtn.style = `
+      background-color: white;
+      padding: 5px 0px;
+      border: none;
+      width: 100%;
+    `;
+
+    dropdown.style = `
+      display: none;
+      position: fixed;
+      background-color: #f1f1f1;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      text-align: left;
+      padding: 15px;
+    `;
+
+    // Function to open/close the filter dropdown
+    dropbtn.onclick = function() {
+
+      // Toggle whether dropdown is displayed
+      if (dropdown.style.display == "none") {
+        align_dropdown();
+        show_dropdown();
+      }
+      else {
+        hide_dropdown();
+      }
+    };
+
+    // Reposition the dropdown to stay under the button if the window is scrolled
+    window.addEventListener("scroll", function(e) {
+      if (dropdown.style.display == "block") {
+        align_dropdown();
+      }
+    });
+
+    // Add the dropdown to the page, and return the button to Tabulator
+    document.body.appendChild(dropdown);
+    return dropbtn;
+
+
+    // Helper Functions
+
+    function align_dropdown() {
+      var rect = dropbtn.getBoundingClientRect();
+      dropdown.style.top = rect.bottom + "px";
+
+      switch (editorParams.dropdown_align) {
+
+        // TODO: This math
+        case "right":
+            // dropdown.style.right = rect.right + "px";
+            break;
+
+        // TODO: This math too
+        case "center":
+            break;
+
+        case "left":
+        default:
+            dropdown.style.left = rect.left + "px";
+            break;
+      }
+    };
+
+    function show_dropdown() {
+      dropdown.style.display = "block";
+      dropbtn.innerText = "Hide Filters";
+    }
+
+    function hide_dropdown() {
+      dropdown.style.display = "none";
+      dropbtn.innerText = "Show Filters";
+    }
+}

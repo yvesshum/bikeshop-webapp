@@ -59,6 +59,9 @@ import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/components/Period.js";
 import {mapKeyVal} from "@/components/ParseDB.js";
 import {make_range_editor} from "@/components/Search.js"
+import {custom_filter_editor} from "@/components/Search.js"
+
+const moment = require("moment");
 
 export default {
   name: 'profile_lookup_youth',
@@ -90,7 +93,12 @@ export default {
       work_log_headers: [
         { // The Date
           title: "Date", field: "Date", formatter: this.format_date,
-          headerFilter: true, headerFilterFunc: this.date_filter,
+          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
+          headerFilterParams:{
+            operations: ["is", "is not", "before", "after", "between", "not between"],
+            options: ["Year", "Month", "Date", "Weekday"],
+            dropdown_align: "left",
+          },
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
@@ -118,7 +126,12 @@ export default {
         },
         { // The date and time of the order
           title: "Date", field: "Order Date", formatter: this.format_date_time,
-          headerFilter: true, headerFilterFunc: this.date_filter,
+          headerFilter: custom_filter_editor, headerFilterFunc: this.date_filter,
+          headerFilterParams:{
+            operations: ["is", "is not", "before", "after", "between", "not between"],
+            options: ["Year", "Month", "Date", "Weekday", "Time"],
+            dropdown_align: "center",
+          },
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
@@ -257,12 +270,129 @@ export default {
         return `<div>${day}<br />${weekday}</div>`;
       },
 
-      date_filter: function(search_term, option) {
-        var date1 = option.In.toDate();
-        var date2 = option.Out.toDate();
-        var formatted_date = this.format_date(date1, date2).replace(/<.+?>/g, " ").toLowerCase();
+      date_filter: function(filters, option) {
 
-        return formatted_date.indexOf(search_term.toLowerCase()) >= 0;
+        var datestamp = Array.isArray(option) ? option[0] : option;
+        var date = datestamp.toDate();
+
+        // Result will be true if every filter passes
+        var result = filters.every(filter => {
+
+          // Initialize variables to hold value of option and of filter
+          var option_val, filter_val;
+
+          // Parse out the desired value and the actual value for both the option and the filter
+          switch (filter.option) {
+            case "Year":
+              option_val = date.getFullYear();
+              filter_val = parseInt(filter.value);
+              break;
+
+            case "Month":
+              option_val = date.getMonth();
+              filter_val = find_in(moment.months(), filter.value, "month");
+              break;
+
+            case "Date":
+              option_val = date.getDate();
+              filter_val = parseInt(filter.value);
+              break;
+
+            case "Weekday":
+              option_val = date.getDay();
+              filter_val = find_in(moment.weekdays(), filter.value, "weekday");
+              break;
+
+            // Convert to seconds to take advantage of next switch block
+            case "Time":
+
+              // Initialize option_val to 0 seconds
+              option_val = 0;
+
+              // Initialize filter_val
+              // If input string contains "PM" (case-insensitive), add 12 hours to the final count
+              // Otherwise, start from 0 seconds
+              let afternoon = filter.value.match(/[Pp](?=[Mm])/);
+              filter_val = (afternoon == null) ? 0 : (12 * 60 * 60);
+
+              // Split user input into hours, mins, and seconds
+              // Grab all groups of one or two numbers followed by valid separator character
+              let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+
+              // Take advantage of fall-thru to convert as much of split_time as exists to seconds
+              // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+              switch (split_time.length) {
+                case 3:
+                  option_val += date.getSeconds();
+                  filter_val += split_time[2];
+                case 2:
+                  option_val += date.getMinutes() * 60;
+                  filter_val += split_time[1]     * 60;
+                case 1:
+                  option_val += date.getHours()   * 60 * 60;
+                  filter_val += split_time[0]     * 60 * 60;
+                  break;
+              }
+
+              break;
+          }
+
+          // If the search term was invalid for some reason, skip over this filter
+          if (filter_val == null) return true;
+
+          // By this point, option_val holds the appropriate value of the current cell,
+          // and filter_val holds the desired value from the filter, e.g.
+          //    option_val = 2019
+          //    filter_val = 2015
+
+          // Compare the option value and filter value based on the given operation
+          switch (filter.op) {
+            case "is":
+              return option_val == filter_val;
+
+            case "is not":
+              return option_val != filter_val;
+
+            case "before":
+              return option_val < filter_val;
+
+            case "after":
+              return option_val > filter_val;
+
+            // case "between":
+            // case "not between":
+          }
+        });
+
+        return result;
+
+
+        function find_in(arr, val, type) {
+
+          // If input is a number within the proper index, use it as the search term
+          if (typeof val == "number") {
+            if (val >= 0 && val < arr.length) {
+              return val;
+            }
+            console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
+            return null;
+          }
+
+          // Filter the array down to all entries starting with the given value
+          // Ideally the user will have entered an unambiguous shortening for the desired value
+          let fil = arr.filter(item => item.startsWith(val));
+          switch (fil.length) {
+            case 0:
+              console.warn(`Unknown ${type} "${val}".`);
+              break;
+            case 1:
+              return arr.indexOf(fil[0]);
+            default:
+              console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
+              break;
+          }
+          return null;
+        }
       },
 
       format_time: function(cell) {
