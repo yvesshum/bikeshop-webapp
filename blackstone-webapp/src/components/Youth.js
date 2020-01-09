@@ -16,6 +16,10 @@ export class Youth {
 		return ["First Name", "Last Name", "ID"];
 	}
 
+	static isRequiredVal(val) {
+		return Youth.requiredVals().includes(val);
+	}
+
 	// Return true if the given object has all the required fields of a Youth object
 	static isYouthLike(obj) {
 		for (let n in Youth.requiredVals()) {
@@ -34,6 +38,10 @@ export class Youth {
 	// Generate the full name for a given Youth-like object
 	static getFullName(youth) {
 		return `${youth["First Name"]} ${youth["Last Name"]}`;
+	}
+
+	static getNameWithID(youth) {
+		return `${youth["First Name"]} ${youth["Last Name"]} (${youth["ID"]})`;
 	}
 
 	// Check whether two Youth-like objects match

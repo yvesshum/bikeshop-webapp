@@ -111,36 +111,8 @@ Emits:
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
     import {Period} from '@/components/Period.js';
-
-    const SPECIAL_CHARS = [
-        // Reasonable Vowels
-        {special: "æ", regular: "ae", display: true,  show_caps: true},
-        {special: "œ", regular: "oe", display: true,  show_caps: true},
-        {special: "ø", regular: "o",  display: false, show_caps: true},
-
-        // Reasonable Consonants
-        {special: "ð", regular: "d",  display: true,  show_caps: true},
-        {special: "ɖ", regular: "d",  display: false, show_caps: true},
-        {special: "þ", regular: "th", display: true,  show_caps: true},
-        {special: "ß", regular: "ss", display: true,  show_caps: false},
-
-        // Letters with strokes - Not caught by diacritic filter
-        {special: "ł", regular: "l",  display: false, show_caps: true},
-        {special: "ħ", regular: "h",  display: false, show_caps: true},
-        {special: "đ", regular: "d",  display: false, show_caps: true},
-        {special: "ŧ", regular: "t",  display: false, show_caps: true},
-
-        // Questionable Letters - Probably overkill, but why not?
-        {special: "ı", regular: "i",  display: false, show_caps: false},
-        {special: "ĳ", regular: "ij", display: false, show_caps: true},
-        {special: "ŋ", regular: "ng", display: false, show_caps: true},
-        {special: "ĸ", regular: "k",  display: false, show_caps: false},
-        {special: "ſ", regular: "s",  display: false, show_caps: false},
-    ].sort(
-        (a, b) => a.regular.localeCompare(b.regular)
-    );
-
-    const FIELDS = ["First Name", "Last Name", "ID"];
+    import {Youth} from '@/components/Youth.js';
+    import {SPECIAL_CHARS} from '@/components/Search.js';
 
     export default {
         name: 'YouthIDSelector',
@@ -156,12 +128,12 @@ Emits:
             },
             sortBy: {
                 type: [String, Array],
-                default: () => FIELDS,
+                default: () => Youth.requiredVals(),
                 validator: function(value) {
                     // Get value as singleton array if passed as string
                     let s = (Array.isArray(value)) ? value : [value];
-                    // Reduce array with && to ensure all values are in FIELDS array
-                    return s.reduce((a,c) => a && FIELDS.indexOf(c) !== -1, true)
+                    // Reduce array with && to ensure all values are required vals
+                    return s.reduce((a,c) => a && Youth.isRequiredVal(c), true)
                 },
             },
             args: {
@@ -515,13 +487,13 @@ Emits:
             },
 
             // Get a filled out array of fields from the sortBy prop
-            // Pads the end of the sortBy array with any missing values from FIELDS in their default order. This ensures that all fields are considered in a sort, and allows the parent to only pass the fields it cares about sorting by, falling back on the other fields in a predefined way.
+            // Pads the end of the sortBy array with any missing values from youth fields in their default order. This ensures that all fields are considered in a sort, and allows the parent to only pass the fields it cares about sorting by, falling back on the other fields in a predefined way.
             sort_by: function() {
                 // If sortBy is a string, convert it to a singleton array
                 let arr = get_as_arr(this.sortBy);
 
-                // Combine values in arr and remaining values in FIELDS which are not in arr
-                return [...arr, ...FIELDS.filter(k => !arr.includes(k))];
+                // Combine values in arr and remaining values in youth fields which are not in arr
+                return [...arr, ...Youth.requiredVals().filter(k => !arr.includes(k))];
 
                 // Convert a non-array value to a singleton array
                 function get_as_arr(val) {
@@ -601,14 +573,7 @@ Emits:
 
                         // Add non-duplicate youth to the full array
                         youth_arr = youth_arr.concat(new_profiles.filter(profile => {
-
-                            // If current profile matches any already in the list, don't include it
-                            for (var i = 0; i < youth_arr.length; i++) {
-                                if (profiles_equal(profile, youth_arr[i])) return false;
-                            }
-
-                            // If it didn't match any, it's a new profile, so include it
-                            return true;
+                            return !Youth.contains(youth_arr, profile);
                         }));
                     });
                 };
@@ -617,30 +582,13 @@ Emits:
                 youth_arr = youth_arr.sort();
 
                 // Add display version of each youth's information to the object
-                youth_arr = youth_arr.map(y => {return {...y, Display: this.nameWithID(y)}});
+                youth_arr.forEach(y => y["Display"] = Youth.getNameWithID(y));
 
                 // Stop the loading icon
                 this.is_busy = false;
 
                 // Return the final result
                 return youth_arr;
-
-
-                // Helper function - Identify identical youth profiles
-                function profiles_equal(p1, p2) {
-                    // Check each field in FIELDS for a mismatch - if one is found, profiles are not equal
-                    for (var f in FIELDS) {
-                        if (p1[FIELDS[f]] != p2[FIELDS[f]]) return false;
-                    }
-
-                    // If all of the fields matched, profiles are equal
-                    return true;
-                };
-            },
-
-            // Package name and ID into a string
-            nameWithID (youth) {
-                return `${youth["First Name"]} ${youth["Last Name"]} (${youth["ID"]})`;
             },
 
             //Needed for Check In
