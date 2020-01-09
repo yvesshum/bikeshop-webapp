@@ -353,6 +353,7 @@ export default {
 
             let periodQuery = await db.collection("GlobalPeriods").doc('metadata').get();
             payload["Period"] = periodQuery.data().CurrentPeriod
+            payload["Order Date"] = Timestamp.fromDate(new Date());
             return payload;
         },
         async updateYouthProfile(payload) {
