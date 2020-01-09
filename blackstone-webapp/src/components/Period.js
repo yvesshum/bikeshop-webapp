@@ -219,6 +219,19 @@ export class Period {
 		Period.forEachRange(start, end, period => arr.push(func(period)));
 		return arr;
 	}
+
+	static makeMatrix(arr) {
+		var result = {};
+		arr.forEach(p => {
+			let period = Period.makePeriod(p);
+			if (result[period.getYear()] === undefined) {
+				result[period.getYear()] = [];
+			}
+			// result[period.getYear()][period.getSeason()] = true;
+			result[period.getYear()].push(period.getSeason());
+		});
+		return result;
+	}
 };
 
 Period.prototype.toString = function() {
