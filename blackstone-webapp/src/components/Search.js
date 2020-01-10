@@ -170,7 +170,7 @@ export function make_search(search_term, search_params) {
             var all_indices = concat_all(fields.map(field => field.matches));
             matches = (search_params.remove_overlap)
                 ? remove_overlap_i(all_indices)
-                : all_indices.sort(compare_i);
+                : all_indices.sort(make_compare_i(false));
         }
 
         // Construct matches object for object input
@@ -203,7 +203,7 @@ export function make_search(search_term, search_params) {
             }
             else {
                 Object.keys(matches).forEach(key => {
-                    matches[key] = matches[key].sort(compare_i);
+                    matches[key] = matches[key].sort(make_compare_i(false));
                 });
             }
         }
@@ -363,21 +363,41 @@ function unique_i(...arrs) {
 // Given an array of indices, remove any index which overlaps an earlier index
 function remove_overlap_i(indices) {
 
+    var new_indices = [];
+
     // Sort indices by the numerical values of their start positions, then filter out overlaps
-    return indices.sort(compare_i).filter((curr, n, arr) => {
+    indices.sort(make_compare_i(true)).forEach((curr, n, arr) => {
 
         // Keep the first index regardless
-        if (n == 0) return true;
+        if (n == 0) new_indices = [curr];
 
-        // Keep the current index if it is not within the length of previous index
-        let prev = arr[n-1];
-        return (curr[0] - prev[0] >= prev[1]);
+        // Keep the current index if it is not within the length of the most recent included index
+        let prev = new_indices[new_indices.length-1];
+        if (curr[0] - prev[0] >= prev[1]) {
+            new_indices.push(curr);
+        };
     });
+
+    return new_indices;
 };
 
-// Compare the numerical values of the start positions of two indices
-function compare_i([a_index, a_len], [b_index, b_len]) {
-    return a_index - b_index;
+// Compare two indices for sorting the array
+// If start positions are different, sort earlier indices first
+// If start positions are the same:
+//   - If longer_first is true, put the index with the greater length first
+//   - Otherwise, put the index with the smaller length first
+function make_compare_i(longer_first) {
+
+    // Return a comparison function
+    return ([a_index, a_len], [b_index, b_len]) => {
+        var diff = a_index - b_index;
+        if (diff === 0) {
+            return longer_first ? (b_len - a_len) : (a_len - b_len);
+        }
+        else {
+            return diff;
+        }
+    }
 }
 
 // Flatten an array of arrays into a single array with all elements
