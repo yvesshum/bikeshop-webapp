@@ -272,8 +272,6 @@ Emits:
                         var indices = valid[key].concat([[option[key].length,0]]);;
                         var new_str = [];
 
-                        console.log({indices});
-
                         // Use indices to cut the field into marked and unmarked substrings.
                         for (var i in indices) {
 
