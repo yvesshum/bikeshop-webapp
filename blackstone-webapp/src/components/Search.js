@@ -40,6 +40,10 @@ export function search(search_term, opt) {
 	return make_search(search_term)(opt);
 };
 
+// TODO: Parameters:
+//   - Fields to search
+//   - Eliminate overlaps
+//   - Just tell whether valid (don't waste time on indices)
 export function make_search(search_term) {
 
 	// Split search string into individual lowercase terms
@@ -55,76 +59,86 @@ export function make_search(search_term) {
 
 	return (opt) => {
 
-        // Split object fields into individual terms, and keep track of which new string came from which fielt with the fields array.
-        // This will catch name fields with multiple names, such as middle names.
-        // For example, the following profile object:
-        //
-        //      {First Name: "John Smith", Last Name: "Jones"}
-        //
-        // ...produces:
-        //
-        //      fields:     ["John",       "Smith",      "Jones"]
-        //      obj_fields: ["First Name", "First Name", "Last Name"]
-        //
+        // Split input into individual words/terms, along with the index where that word begins
+        // and the key it came from (if input is an object).
+        // This will catch fields with multiple words, eg a middle name.
+        // 
+        // Example result for string input "John":
+	    // 		[ {norm: "john", char: "John", index: 0}, ... ]
+	    // 
+	    // Example result for object input {"First Name": "John"}:
+	    // 		[ {norm: "john", char: "John", index: 0, key: "First Name"} ... ]
+	    // 
         var fields = [];
-        var obj_fields = [];
         if (typeof opt == "string") {
-        	fields = opt.split(" ");
+        	fields = string_to_search(opt);
         }
         else {
+
+        	// Loop through each field in the input object
 	        Object.keys(opt).forEach(key => {
-	            opt[key].split(' ').filter(s => s.length > 0).forEach(s => {
-	                fields.push(s);
-	                obj_fields.push(key);
-	            });
+
+	        	// Concatenate the results of string_to_search with existing fields,
+	        	// adding the key each came from in the original object
+	        	string_to_search(opt[key]).forEach(str => {
+	        		str["key"] = key;
+	        		fields.push(str);
+	        	});
 	        });
 	    }
 
-        // Split each field into an array of characters, both with and without accents & special characters
-        // Resulting objects have the fields:
-        //   char: The character as-is
-        //   norm: The plaintext version of the character
-        var split = fields.map(f => split_special_chars(f));
-
-        // If the number of terms exceeds the number of fields, no match
+	    // If the number of terms exceeds the number of fields, no match
         if (num_terms > fields.length) {
             return null;
         };
 
-        // Create a matrix of arrays representing which the indices at which each term can be found in each field.
-        // If the term and field don't match, the default value is an empty array.
+        // In each object, add the field "matches" to store the indices at which a term can be found
+        // Produce a boolean matrix for whether a given term matches a given field
         // Rows are fields, columns are terms
         // TODO: This will not match mixed special and plaintext characters
-        let matched_fields = match_matrix(split, terms, (field, term) => {
+        let matched_fields = match_matrix(fields, terms, (field, term) => {
 
             // Get indices of the search term in the plaintext version of the field
-            let norm = field.map(f => f.norm);
+            let norm = field.chars.map(f => f.norm);
             let norm_i = arr_indices(norm, term);
 
             // Get indices of the search term in the field with special characters and accents included
-            let char = field.map(f => f.char);
+            let char = field.chars.map(f => f.char);
             let char_i = arr_indices(char, term);
 
             // Merge these into one array, discarding duplicate values
             // Using both allows both plaintext characters and special characters in the search term to match special characters in the field, whereas special characters in the search term do not match plaintext characters in the field.
             // That is, searching for "e" should return accented "e"s as well as plain "e"s, but searching for an accented "e" should only match instances of "e" with the same accent.
-            return unique_i(norm_i, char_i);
+            let matches = unique_i(norm_i, char_i).map(([i,l]) => [i + field.index, l]);
+
+            // If the search term matched any part of the field, record those matches
+            // and mark this entry of the matrix with true
+            if (matches.length > 0) {
+            	if (field["matches"] == undefined) {
+            		field["matches"] = [];
+            	}
+            	field["matches"] = field["matches"].concat(matches);
+            	return true;
+            }
+
+            // If there were no matches, mark this entry of the matrix with false
+            return false;
         });
 
-        // console.log(opt, "Matched Fields: ", matched_fields);
-
         // Calculate how many of the fields are matched by at least one term
+        // Find how many rows of the matrix contain at least one true value
         let num_fields_matched = matched_fields.reduce(
             // Increment the accumulator for each matrix row that has at least one non-empty array
             // The 0 on the end starts the accumulator from 0 - this is important
-            (acc, curr) => acc + (concat_all(curr).length ? 1 : 0), 0
+            (acc, curr) => acc + (curr.includes(true) ? 1 : 0), 0
         );
 
         // Create an array of terms which don't match any field
+        // Find how many columns contain no true values
         let unmatched_terms = terms.filter((term, n) => {
             // Grab each matrix row's value at the current term's index (i.e. the indices where the term can be found in the row's field) and combine all these values with OR (such that if any value in this term's column is non-empty, the result will be true). Then, return it inverted for filter.
             // Equivalent to "false || matched_fields[0][n] || matched_fields[1][n] || ..."
-            return !matched_fields.reduce((acc, curr) => acc || curr[n].length, false);
+            return !matched_fields.reduce((acc, curr) => acc || curr[n], false);
         });
 
         // The current option should match the search if:
@@ -137,93 +151,51 @@ export function make_search(search_term) {
             return null;
         };
 
-        return true;
+        // All options past this point do match the search.
 
+        // Initialize a variable to store the matches
+        // This will mirror the structure of the original input:
+        //   - If input was a string, it will be an array of indices
+        //   - If input was an object, it will be an object with the same field names,
+        //       each of which will be an array of indices for the value of that field
+        var matches;
 
+        // Construct matches array for string input
+        if (typeof opt == "string") {
+        	var all_indices = concat_all(fields.map(field => field.matches));
+        	matches = remove_overlap_i(all_indices);
+        }
 
-        // // All options past this point do match the search.
+        // Construct matches object for object input
+        else {
 
-        // // Initialize a new object to store the display version of the option
-        // // The display version will be broken up to indicate where the matches are, so they can be highlighted
-        // var opt_display = {};
+        	// Initialize matches to new object
+        	matches = {};
 
-        // // Cycle through each key in the option - First Name, Last Name, ID
-        // obj_fields.forEach((key, n) => {
+        	// Set matches up to mimic the orignal object, where each key from the original
+        	// is associated with the array of all the matches found within it
+        	fields.forEach(field => {
 
-        //     // Initialize an array to store the marked field string
-        //     let new_str = [];
+        		// If matches doesn't contain this field's key yet, add it
+        		if (matches[field.key] == undefined) {
+        			matches[field.key] = [];
+        		}
 
-        //     // Combine all the match indices for the current term, removing duplicates
-        //     let all_indices = unique_i(concat_all(matched_fields[n]));
+        		// If this field had any matches, add them to matches
+        		if (field.matches != undefined) {
+        			matches[field.key] = matches[field.key].concat(field.matches);
+        		}
+        	});
 
-        //     // Strap in ladies and gents, this one is gonna be wild
-        //     // Process the indices so they are in ascending order with no overlap.
-        //     // By the end, we want to know where to start each highlight, and how long it should be.
-        //     // For processing purposes later, the length of the string (the "final index") is added with a highlight length of 0. This is so that when the field string is broken into substrings, we have one final substring which reaches to the end.
-        //     var indices = all_indices
-        //         // Sort indices by the numerical values of their start positions
-        //         .sort(([a_index, a_len], [b_index, b_len]) => a_index - b_index)
-        //         // Remove any indices which would start inside another highlighted region (i.e. get rid of overlaps)
-        //         .filter((curr, n, arr) => {
-        //             // Keep the first index regardless
-        //             if (n == 0) return true;
-        //             // Return whether current index is within term length of previous index
-        //             let prev = arr[n-1];
-        //             return (curr[0] - prev[0] >= prev[1]);
-        //         })
-        //         // Add the final index with highlight length 0
-        //         .concat([[split[n].length,0]]);
+        	// For each key, sort the indices and remove any overlaps
+        	// TODO: Should this be part of the YouthIDSelector functionality instead?
+        	Object.keys(matches).forEach(key => {
+        		matches[key] = remove_overlap_i(matches[key]);
+        	});
+        }
 
-        //     // Use indices to cut the field into marked and unmarked substrings.
-        //     for (var i in indices) {
-
-        //         // At the beginning, add an unmarked region from the start of the string to the current index
-        //         if (i == 0) {
-        //             add_segment(0, indices[i][0], false);
-        //         }
-
-        //         // Otherwise, add a marked region starting at the previous index and extending for the length of the previous index, then add the remainder up to the current index as an unmarked region.
-        //         // Note that because of the filtering above, we don't have to worry about the end of the marked region being larger than the current index.
-        //         else {
-        //             let prev_index = indices[i-1][0];
-        //             let curr_index = prev_index + indices[i-1][1];
-        //             let next_index = indices[i][0];
-
-        //             add_segment(prev_index, curr_index, true);
-        //             add_segment(curr_index, next_index, false);
-        //         }
-        //     }
-
-        //     // Set display value for this field to the cumulative new_str array.
-        //     let id = opt["ID"];
-
-        //     if (displays[id] == null) {
-        //         displays[id] = {};
-        //     }
-
-        //     if (displays[id][key] == null) {
-        //         displays[id][key] = new_str;
-        //     }
-        //     else {
-        //         displays[id][key] = displays[id][key]
-        //             .concat({seg: " ", mark: false})
-        //             .concat(new_str);
-        //     }
-
-        //     // Helper function to take a slice of the field (which is the string version broken into individual accented characters) and mark it accordingly. Note that if the slice is blank, nothing needs to be added.
-        //     // TODO: Write this more cleanly
-        //     function add_segment(start, end, mark) {
-        //         if (end - start > 0) {
-        //             new_str.push({
-        //                 seg: split[n].slice(start,end).map(c => c.char).join(""),
-        //                 mark
-        //             });
-        //         }
-        //     };
-        // });
-
-        // // Return the new option, consisting of the Real and Display fields
-        // return true;
+        // Return the matches array/object
+        return matches;
 	}
 };
 
@@ -232,6 +204,29 @@ export function make_search(search_term) {
 
 
 // =-= Helper Functions =-=-=
+
+
+function string_to_search(str) {
+	var result = [];
+
+	for (let i = 0; i < str.length; i++) {
+
+		// Set index to the start of the next word, and i to the end of that word
+		while (str[i] == ' ') i++;
+		let index = i;
+		while (str[i] != ' ' && i < str.length) i++;
+
+		// Split the word into an array of characters, both with and without accents and
+		// special characters, and add it to result. Resulting objects have the fields:
+		//   char: The character as-is
+		//   norm: The plaintext version of the character
+		result.push({
+			index, chars: split_special_chars(str.substring(index, i))
+		});
+	}
+
+	return result;
+}
 
 
 // Split a string into characters stored as objects, where each object contains:
@@ -350,6 +345,26 @@ function unique_i(...arrs) {
     // Map each key/value pair in the object (index/length) to an array
     return Object.keys(inds).map(k => [Number(k), inds[k]]).sort();
 };
+
+// Given an array of indices, remove any index which overlaps an earlier index
+function remove_overlap_i(indices) {
+
+	// Sort indices by the numerical values of their start positions, then filter out overlaps
+	return indices.sort(compare_i).filter((curr, n, arr) => {
+
+        // Keep the first index regardless
+        if (n == 0) return true;
+
+        // Keep the current index if it is not within the length of previous index
+        let prev = arr[n-1];
+        return (curr[0] - prev[0] >= prev[1]);
+    });
+};
+
+// Compare the numerical values of the start positions of two indices
+function compare_i([a_index, a_len], [b_index, b_len]) {
+	return a_index - b_index;
+}
 
 // Flatten an array of arrays into a single array with all elements
 function concat_all(arr) {
