@@ -41,9 +41,6 @@ export function search(search_term, option, search_params) {
 	return make_search(search_term, search_params)(option);
 };
 
-// TODO: Parameters:
-//   - Fields to search
-//   - Eliminate overlaps
 export function make_search(search_term, search_params) {
 
 	// Split search string into individual lowercase terms
@@ -171,7 +168,9 @@ export function make_search(search_term, search_params) {
         // Construct matches array for string input
         if (typeof opt == "string") {
         	var all_indices = concat_all(fields.map(field => field.matches));
-        	matches = remove_overlap_i(all_indices);
+			matches = (search_params.remove_overlap)
+				? remove_overlap_i(all_indices)
+				: all_indices.sort(compare_i);
         }
 
         // Construct matches object for object input
@@ -195,11 +194,18 @@ export function make_search(search_term, search_params) {
         		}
         	});
 
-        	// For each key, sort the indices and remove any overlaps
-        	// TODO: Should this be part of the YouthIDSelector functionality instead?
-        	Object.keys(matches).forEach(key => {
-        		matches[key] = remove_overlap_i(matches[key]);
-        	});
+
+        	// For each key, sort the indices and remove any overlaps if desired
+        	if (search_params.remove_overlap) {
+        		Object.keys(matches).forEach(key => {
+	        		matches[key] = remove_overlap_i(matches[key]);
+	        	});
+        	}
+        	else {
+        		Object.keys(matches).forEach(key => {
+	        		matches[key] = matches[key].sort(compare_i);
+	        	});
+        	}
         }
 
         // Return the matches array/object
