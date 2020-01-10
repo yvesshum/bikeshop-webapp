@@ -59,6 +59,9 @@ export function make_search(search_term, search_params) {
 
 	return (opt) => {
 
+		var fields_to_search = (search_params != undefined && search_params["fields"] != undefined)
+			? search_params["fields"] : Object.keys(opt);
+
         // Split input into individual words/terms, along with the index where that word begins
         // and the key it came from (if input is an object).
         // This will catch fields with multiple words, eg a middle name.
@@ -75,8 +78,8 @@ export function make_search(search_term, search_params) {
         }
         else {
 
-        	// Loop through each field in the input object
-	        Object.keys(opt).forEach(key => {
+            // Loop through each searchable field in the input object
+	        fields_to_search.forEach(key => {
 
 	        	// Concatenate the results of string_to_search with existing fields,
 	        	// adding the key each came from in the original object
