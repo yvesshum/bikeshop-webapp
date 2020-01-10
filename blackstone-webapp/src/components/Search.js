@@ -30,20 +30,20 @@ export const SPECIAL_CHARS = [
 
 // The parameter full_object is included for compliance with Tabulator
 export function filter(search_term, option, full_object, search_params) {
-	return make_filter(search_term, search_params)(option);
+    return make_filter(search_term, search_params)(option);
 }
 
 export function make_filter(search_term, search_params) {
-	return (option) => make_search(search_term, {...search_params, just_filter: true})(option);
+    return (option) => make_search(search_term, {...search_params, just_filter: true})(option);
 };
 
 export function search(search_term, option, search_params) {
-	return make_search(search_term, search_params)(option);
+    return make_search(search_term, search_params)(option);
 };
 
 export function make_search(search_term, search_params) {
 
-	// Split search string into individual lowercase terms
+    // Split search string into individual lowercase terms
     var terms = search_term.split(' ')
         .filter(s => s.length > 0)
         .map(s => s.toLowerCase());
@@ -54,40 +54,40 @@ export function make_search(search_term, search_params) {
         return (opt) => true;
     }
 
-	return (opt) => {
+    return (opt) => {
 
-		var fields_to_search = (search_params != undefined && search_params["fields"] != undefined)
-			? search_params["fields"] : Object.keys(opt);
+        var fields_to_search = (search_params != undefined && search_params["fields"] != undefined)
+            ? search_params["fields"] : Object.keys(opt);
 
         // Split input into individual words/terms, along with the index where that word begins
         // and the key it came from (if input is an object).
         // This will catch fields with multiple words, eg a middle name.
         // 
         // Example result for string input "John":
-	    // 		[ {norm: "john", char: "John", index: 0}, ... ]
-	    // 
-	    // Example result for object input {"First Name": "John"}:
-	    // 		[ {norm: "john", char: "John", index: 0, key: "First Name"} ... ]
-	    // 
+        //      [ {norm: "john", char: "John", index: 0}, ... ]
+        // 
+        // Example result for object input {"First Name": "John"}:
+        //      [ {norm: "john", char: "John", index: 0, key: "First Name"} ... ]
+        // 
         var fields = [];
         if (typeof opt == "string") {
-        	fields = string_to_search(opt);
+            fields = string_to_search(opt);
         }
         else {
 
             // Loop through each searchable field in the input object
-	        fields_to_search.forEach(key => {
+            fields_to_search.forEach(key => {
 
-	        	// Concatenate the results of string_to_search with existing fields,
-	        	// adding the key each came from in the original object
-	        	string_to_search(opt[key]).forEach(str => {
-	        		str["key"] = key;
-	        		fields.push(str);
-	        	});
-	        });
-	    }
+                // Concatenate the results of string_to_search with existing fields,
+                // adding the key each came from in the original object
+                string_to_search(opt[key]).forEach(str => {
+                    str["key"] = key;
+                    fields.push(str);
+                });
+            });
+        }
 
-	    // If the number of terms exceeds the number of fields, no match
+        // If the number of terms exceeds the number of fields, no match
         if (num_terms > fields.length) {
             return null;
         };
@@ -114,11 +114,11 @@ export function make_search(search_term, search_params) {
             // If the search term matched any part of the field, record those matches
             // and mark this entry of the matrix with true
             if (matches.length > 0) {
-            	if (field["matches"] == undefined) {
-            		field["matches"] = [];
-            	}
-            	field["matches"] = field["matches"].concat(matches);
-            	return true;
+                if (field["matches"] == undefined) {
+                    field["matches"] = [];
+                }
+                field["matches"] = field["matches"].concat(matches);
+                return true;
             }
 
             // If there were no matches, mark this entry of the matrix with false
@@ -167,50 +167,50 @@ export function make_search(search_term, search_params) {
 
         // Construct matches array for string input
         if (typeof opt == "string") {
-        	var all_indices = concat_all(fields.map(field => field.matches));
-			matches = (search_params.remove_overlap)
-				? remove_overlap_i(all_indices)
-				: all_indices.sort(compare_i);
+            var all_indices = concat_all(fields.map(field => field.matches));
+            matches = (search_params.remove_overlap)
+                ? remove_overlap_i(all_indices)
+                : all_indices.sort(compare_i);
         }
 
         // Construct matches object for object input
         else {
 
-        	// Initialize matches to new object
-        	matches = {};
+            // Initialize matches to new object
+            matches = {};
 
-        	// Set matches up to mimic the orignal object, where each key from the original
-        	// is associated with the array of all the matches found within it
-        	fields.forEach(field => {
+            // Set matches up to mimic the orignal object, where each key from the original
+            // is associated with the array of all the matches found within it
+            fields.forEach(field => {
 
-        		// If matches doesn't contain this field's key yet, add it
-        		if (matches[field.key] == undefined) {
-        			matches[field.key] = [];
-        		}
+                // If matches doesn't contain this field's key yet, add it
+                if (matches[field.key] == undefined) {
+                    matches[field.key] = [];
+                }
 
-        		// If this field had any matches, add them to matches
-        		if (field.matches != undefined) {
-        			matches[field.key] = matches[field.key].concat(field.matches);
-        		}
-        	});
+                // If this field had any matches, add them to matches
+                if (field.matches != undefined) {
+                    matches[field.key] = matches[field.key].concat(field.matches);
+                }
+            });
 
 
-        	// For each key, sort the indices and remove any overlaps if desired
-        	if (search_params.remove_overlap) {
-        		Object.keys(matches).forEach(key => {
-	        		matches[key] = remove_overlap_i(matches[key]);
-	        	});
-        	}
-        	else {
-        		Object.keys(matches).forEach(key => {
-	        		matches[key] = matches[key].sort(compare_i);
-	        	});
-        	}
+            // For each key, sort the indices and remove any overlaps if desired
+            if (search_params.remove_overlap) {
+                Object.keys(matches).forEach(key => {
+                    matches[key] = remove_overlap_i(matches[key]);
+                });
+            }
+            else {
+                Object.keys(matches).forEach(key => {
+                    matches[key] = matches[key].sort(compare_i);
+                });
+            }
         }
 
         // Return the matches array/object
         return matches;
-	}
+    }
 };
 
 
@@ -221,25 +221,25 @@ export function make_search(search_term, search_params) {
 
 
 function string_to_search(str) {
-	var result = [];
+    var result = [];
 
-	for (let i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i++) {
 
-		// Set index to the start of the next word, and i to the end of that word
-		while (str[i] == ' ') i++;
-		let index = i;
-		while (str[i] != ' ' && i < str.length) i++;
+        // Set index to the start of the next word, and i to the end of that word
+        while (str[i] == ' ') i++;
+        let index = i;
+        while (str[i] != ' ' && i < str.length) i++;
 
-		// Split the word into an array of characters, both with and without accents and
-		// special characters, and add it to result. Resulting objects have the fields:
-		//   char: The character as-is
-		//   norm: The plaintext version of the character
-		result.push({
-			index, chars: split_special_chars(str.substring(index, i))
-		});
-	}
+        // Split the word into an array of characters, both with and without accents and
+        // special characters, and add it to result. Resulting objects have the fields:
+        //   char: The character as-is
+        //   norm: The plaintext version of the character
+        result.push({
+            index, chars: split_special_chars(str.substring(index, i))
+        });
+    }
 
-	return result;
+    return result;
 }
 
 
@@ -363,8 +363,8 @@ function unique_i(...arrs) {
 // Given an array of indices, remove any index which overlaps an earlier index
 function remove_overlap_i(indices) {
 
-	// Sort indices by the numerical values of their start positions, then filter out overlaps
-	return indices.sort(compare_i).filter((curr, n, arr) => {
+    // Sort indices by the numerical values of their start positions, then filter out overlaps
+    return indices.sort(compare_i).filter((curr, n, arr) => {
 
         // Keep the first index regardless
         if (n == 0) return true;
@@ -377,7 +377,7 @@ function remove_overlap_i(indices) {
 
 // Compare the numerical values of the start positions of two indices
 function compare_i([a_index, a_len], [b_index, b_len]) {
-	return a_index - b_index;
+    return a_index - b_index;
 }
 
 // Flatten an array of arrays into a single array with all elements
@@ -437,96 +437,96 @@ function arr_indices(arr, sub) {
 export function make_range_editor(type) {
     return (cell, onRendered, success, cancel, editorParams) => {
 
-		// Create the container element for the inputs
-		var container = document.createElement("div");
+        // Create the container element for the inputs
+        var container = document.createElement("div");
 
-		// Create the minimum input
-		var edit1 = document.createElement("input");
-		edit1.type = type;
-		edit1.placeholder = "min...";
-		edit1.style = "padding: 3px; width: 50%; box-sizing: border-box;";
-		edit1.classList.add("tabulator-header-filter");
+        // Create the minimum input
+        var edit1 = document.createElement("input");
+        edit1.type = type;
+        edit1.placeholder = "min...";
+        edit1.style = "padding: 3px; width: 50%; box-sizing: border-box;";
+        edit1.classList.add("tabulator-header-filter");
 
-		// Create the maximum input
-		var edit2 = document.createElement("input");
-		edit2.type = type;
-		edit2.placeholder = "max...";
-		edit2.style = "padding: 3px; width: 50%; box-sizing: border-box;";
-		edit2.classList.add("tabulator-header-filter");
+        // Create the maximum input
+        var edit2 = document.createElement("input");
+        edit2.type = type;
+        edit2.placeholder = "max...";
+        edit2.style = "padding: 3px; width: 50%; box-sizing: border-box;";
+        edit2.classList.add("tabulator-header-filter");
 
-		// Set the minimum possible value, if applicable
-		if (editorParams.minimum != undefined) {
-			edit1.min = editorParams.minimum;
-			edit2.min = editorParams.minimum;
-		}
+        // Set the minimum possible value, if applicable
+        if (editorParams.minimum != undefined) {
+            edit1.min = editorParams.minimum;
+            edit2.min = editorParams.minimum;
+        }
 
-		// Set the maximum possible value, if applicable
-		if (editorParams.maximum != undefined) {
-			edit1.max = editorParams.maximum;
-			edit2.max = editorParams.maximum;
-		}
+        // Set the maximum possible value, if applicable
+        if (editorParams.maximum != undefined) {
+            edit1.max = editorParams.maximum;
+            edit2.max = editorParams.maximum;
+        }
 
-		// Add the inputs to the the container div
-		container.appendChild(edit1);
-		container.appendChild(edit2);
+        // Add the inputs to the the container div
+        container.appendChild(edit1);
+        container.appendChild(edit2);
 
-		// Minor adjustments after div loads
-		onRendered(function () {
-	        container.focus();
-	        container.style.height = "100%";
-		});
+        // Minor adjustments after div loads
+        onRendered(function () {
+            container.focus();
+            container.style.height = "100%";
+        });
 
-		// Callback to submit the new range for filtering when it changes
-		function onChange(e) {
+        // Callback to submit the new range for filtering when it changes
+        function onChange(e) {
 
-			// Get the new range from the inputs, replacing blank inputs with null
-	        let min = edit1.value !== "" ? edit1.value : null;
-	        let max = edit2.value !== "" ? edit2.value : null;
-	        let new_range = {min, max};
+            // Get the new range from the inputs, replacing blank inputs with null
+            let min = edit1.value !== "" ? edit1.value : null;
+            let max = edit2.value !== "" ? edit2.value : null;
+            let new_range = {min, max};
 
-	        // Submit the new range
-	        console.log("Updating range: ", new_range);
-	        success(new_range);
-		}
+            // Submit the new range
+            console.log("Updating range: ", new_range);
+            success(new_range);
+        }
 
-		// Callback to submit the new range for filtering when the enter key is pressed
-		function onEnter(e) {
+        // Callback to submit the new range for filtering when the enter key is pressed
+        function onEnter(e) {
 
-			// Get the new range from the inputs, replacing blank inputs with null
-	        let min = edit1.value !== "" ? edit1.value : null;
-	        let max = edit2.value !== "" ? edit2.value : null;
-	        let new_range = {min, max};
+            // Get the new range from the inputs, replacing blank inputs with null
+            let min = edit1.value !== "" ? edit1.value : null;
+            let max = edit2.value !== "" ? edit2.value : null;
+            let new_range = {min, max};
 
-	        console.log("Updating range from enter: ", new_range);
+            console.log("Updating range from enter: ", new_range);
 
-	        switch (e.keyCode) {
+            switch (e.keyCode) {
 
-				// Enter key - Submit the new range
-		        case 13:
-		            success(new_range);
-		            break;
+                // Enter key - Submit the new range
+                case 13:
+                    success(new_range);
+                    break;
 
-		        // Esc key - Cancel the range
-		        case 27:
-		            cancel();
-		            break;
-	        }
+                // Esc key - Cancel the range
+                case 27:
+                    cancel();
+                    break;
+            }
 
-	        return;
-		}
+            return;
+        }
 
-		// Submit new value on blur or change
-		edit1.addEventListener("change", onChange);
-		edit1.addEventListener("blur",   onChange);
-		edit2.addEventListener("change", onChange);
-		edit2.addEventListener("blur",   onChange);
+        // Submit new value on blur or change
+        edit1.addEventListener("change", onChange);
+        edit1.addEventListener("blur",   onChange);
+        edit2.addEventListener("change", onChange);
+        edit2.addEventListener("blur",   onChange);
 
-		// Submit new value on enter
-		edit1.addEventListener("keydown", onEnter);
-		edit2.addEventListener("keydown", onEnter);
+        // Submit new value on enter
+        edit1.addEventListener("keydown", onEnter);
+        edit2.addEventListener("keydown", onEnter);
 
-		// Return the container element
-		return container;
+        // Return the container element
+        return container;
     };
 }
 
@@ -587,7 +587,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // X button to delete this filter
       rem_button.innerText = "×";
       rem_button.onclick = function() {
-      	check.checked = false;
+        check.checked = false;
         filter_div.removeChild(new_filter);
         align_dropdown();
       };
@@ -603,24 +603,24 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Box to select the operation to use to filter
       select_op.innerHTML = `${ops.map(o => `<option value='${getname(o)}'>${getname(o)}</option>`)}`;
       select_op.onchange = function() {
-      	let o = ops.filter(opt => getname(opt) == this.value)[0];
-      	if (typeof o != "string" && o.num_inputs == 2) {
-      		input1.after(input2);
-      		second_input_active = true;
-      	}
-      	else if (new_filter.contains(input2)) {
-      		new_filter.removeChild(input2);
-      		second_input_active = false;
-      	}
+        let o = ops.filter(opt => getname(opt) == this.value)[0];
+        if (typeof o != "string" && o.num_inputs == 2) {
+            input1.after(input2);
+            second_input_active = true;
+        }
+        else if (new_filter.contains(input2)) {
+            new_filter.removeChild(input2);
+            second_input_active = false;
+        }
 
-      	if (typeof o != "string" && o.inclusive) {
-      		new_filter.appendChild(incl_div);
-      		inclusive_active = true;
-      	}
-      	else if (new_filter.contains(incl_div)) {
-      		new_filter.removeChild(incl_div);
-      		inclusive_active = false;
-      	}
+        if (typeof o != "string" && o.inclusive) {
+            new_filter.appendChild(incl_div);
+            inclusive_active = true;
+        }
+        else if (new_filter.contains(incl_div)) {
+            new_filter.removeChild(incl_div);
+            inclusive_active = false;
+        }
       };
 
       select_op.style = "margin-left: 3px;";
@@ -640,14 +640,14 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
       // Add a function to get the data from this filter to the master list of filters
       filter_list.push(() => {
-      	return {
-      		active: check.checked,
-      		option: select_val.value,
-      		op:     select_op.value,
-      		value:  input1.value,
-      		value2: second_input_active ? input2.value : undefined,
-      		inclusive: inclusive_active ? incl_check.checked : undefined,
-      	}
+        return {
+            active: check.checked,
+            option: select_val.value,
+            op:     select_op.value,
+            value:  input1.value,
+            value2: second_input_active ? input2.value : undefined,
+            inclusive: inclusive_active ? incl_check.checked : undefined,
+        }
       });
 
 
@@ -674,10 +674,10 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Loop through filter list, which stores functions to get the value of each filter
       var filters = [];
       filter_list.forEach(filter_gen => {
-      	let filter = filter_gen();
-      	if (filter.active) {
-      		filters.push(filter);
-      	}
+        let filter = filter_gen();
+        if (filter.active) {
+            filters.push(filter);
+        }
       });
 
       // Hide the dropdown menu so the table isn't obscured
@@ -748,144 +748,144 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Position the menu horizontally based on the dropdown-align parameter
       switch (editorParams.dropdown_align) {
 
-      	case "left":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "left":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			align_left(btn_rect, men_rect);
-      		}
+                align_left(btn_rect, men_rect);
+            }
 
-      	case "right":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "right":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			align_right(btn_rect, men_rect);
-      		}
+                align_right(btn_rect, men_rect);
+            }
 
-      	case "center":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "center":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			align_center(btn_rect, men_rect);
-      		}
+                align_center(btn_rect, men_rect);
+            }
 
-      	case "left-safe":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "left-safe":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-			    // Align left if possible, right if necessary
-      			if (btn_rect.right - men_rect.width < 0) {
-	        		align_left(btn_rect, men_rect);
-      			}
-	        	else {
-	        		align_right(btn_rect, men_rect);
-	        	}
-      		};
+                // Align left if possible, right if necessary
+                if (btn_rect.right - men_rect.width < 0) {
+                    align_left(btn_rect, men_rect);
+                }
+                else {
+                    align_right(btn_rect, men_rect);
+                }
+            };
 
-      	case "right-safe":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "right-safe":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			// Align right if possible, left if necessary
-      			if (btn_rect.left + men_rect.width > window.innerWidth) {
-      				align_right(btn_rect, men_rect);
-      			}
-      			else {
-      				align_left(btn_rect, men_rect);
-      			}
-      		};
+                // Align right if possible, left if necessary
+                if (btn_rect.left + men_rect.width > window.innerWidth) {
+                    align_right(btn_rect, men_rect);
+                }
+                else {
+                    align_left(btn_rect, men_rect);
+                }
+            };
 
-      	case "center-screen":
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "center-screen":
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			let even_space = ((window.innerWidth - men_rect.width) / 2);
+                let even_space = ((window.innerWidth - men_rect.width) / 2);
 
-	        	// If this would be too far to the right, align left
-	        	if (even_space > btn_rect.left) {
-	        		align_left(btn_rect, men_rect);
-	        	}
-	        	// If this would be too far to the left, align right
-	        	else if (window.innerWidth - even_space < btn_rect.right) {
-	        		align_right(btn_rect, men_rect);
-	        	}
-	        	// Otherwise, go for it
-	        	else {
-	        		dropdown.style.left = even_space + "px";
-	        	}
-      		};
+                // If this would be too far to the right, align left
+                if (even_space > btn_rect.left) {
+                    align_left(btn_rect, men_rect);
+                }
+                // If this would be too far to the left, align right
+                else if (window.innerWidth - even_space < btn_rect.right) {
+                    align_right(btn_rect, men_rect);
+                }
+                // Otherwise, go for it
+                else {
+                    dropdown.style.left = even_space + "px";
+                }
+            };
 
-      	case "default":
-      	default:
-      		return () => {
-      			// Get the bounding rectangles for the button and the menu
-			    var btn_rect = dropbtn.getBoundingClientRect();
-			    var men_rect = dropdown.getBoundingClientRect();
-			    
-			    // Align the top of the menu with the bottom of the button
-      			dropdown.style.top = btn_rect.bottom + "px";
+        case "default":
+        default:
+            return () => {
+                // Get the bounding rectangles for the button and the menu
+                var btn_rect = dropbtn.getBoundingClientRect();
+                var men_rect = dropdown.getBoundingClientRect();
+                
+                // Align the top of the menu with the bottom of the button
+                dropdown.style.top = btn_rect.bottom + "px";
 
-      			// Align left if possible
-			    if (btn_rect.left + men_rect.width < window.innerWidth) {
-			    	align_left(btn_rect, men_rect);
-			    }
+                // Align left if possible
+                if (btn_rect.left + men_rect.width < window.innerWidth) {
+                    align_left(btn_rect, men_rect);
+                }
 
-			    // Aligh right if possible
-			    else if (btn_rect.right - men_rect.width > 0) {
-			    	align_right(btn_rect, men_rect);
-			    }
+                // Aligh right if possible
+                else if (btn_rect.right - men_rect.width > 0) {
+                    align_right(btn_rect, men_rect);
+                }
 
-			    // Align centered to the window if necessary
-			    else {
-			    	dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
-			    }
-      		}
+                // Align centered to the window if necessary
+                else {
+                    dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+                }
+            }
       }
 
       function align_left(btn_rect, men_rect) {
-      	dropdown.style.left = btn_rect.left + "px";
+        dropdown.style.left = btn_rect.left + "px";
       }
 
       function align_right(btn_rect, men_rect) {
-      	// Calculate the difference in their widths
-      	var diff = Math.abs(men_rect.width - btn_rect.width);
-      	dropdown.style.left = (btn_rect.left - diff) + "px";
+        // Calculate the difference in their widths
+        var diff = Math.abs(men_rect.width - btn_rect.width);
+        dropdown.style.left = (btn_rect.left - diff) + "px";
       }
 
       function align_center(btn_rect, men_rect) {
-      	// Calculate the difference in their widths
-      	var diff = Math.abs(men_rect.width - btn_rect.width);
-      	dropdown.style.left = (btn_rect.left - (diff / 2)) + "px";
+        // Calculate the difference in their widths
+        var diff = Math.abs(men_rect.width - btn_rect.width);
+        dropdown.style.left = (btn_rect.left - (diff / 2)) + "px";
       }
     };
 
