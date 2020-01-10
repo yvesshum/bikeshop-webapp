@@ -28,23 +28,23 @@ export const SPECIAL_CHARS = [
 
 
 
-export function filter(search_term, opt) {
-	return make_filter(search_term)(opt);
+// The parameter full_object is included for compliance with Tabulator
+export function filter(search_term, option, full_object, search_params) {
+	return make_filter(search_term, search_params)(option);
 }
 
-export function make_filter(search_term) {
-	return (opt) => make_search(search_term)(opt) != null
+export function make_filter(search_term, search_params) {
+	return (option) => make_search(search_term, {...search_params, just_filter: true})(option);
 };
 
-export function search(search_term, opt) {
-	return make_search(search_term)(opt);
+export function search(search_term, option, search_params) {
+	return make_search(search_term, search_params)(option);
 };
 
 // TODO: Parameters:
 //   - Fields to search
 //   - Eliminate overlaps
-//   - Just tell whether valid (don't waste time on indices)
-export function make_search(search_term) {
+export function make_search(search_term, search_params) {
 
 	// Split search string into individual lowercase terms
     var terms = search_term.split(' ')
@@ -148,10 +148,15 @@ export function make_search(search_term) {
         //
         // If either of these conditions is not met, filter this option out.
         if ((unmatched_terms.length !== 0) || (num_fields_matched < num_terms)) {
-            return null;
+            return search_params.just_filter ? false : null;
         };
 
         // All options past this point do match the search.
+
+        // If user just wants to filter options, return true now instead of performing the following calculations
+        if (search_params.just_filter) {
+            return true;
+        }
 
         // Initialize a variable to store the matches
         // This will mirror the structure of the original input:
