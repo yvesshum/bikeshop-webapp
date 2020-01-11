@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import {Period} from '@/components/Period.js';
+import {Period} from '@/scripts/Period.js';
 
 export default {
     name: 'period-classes-display',

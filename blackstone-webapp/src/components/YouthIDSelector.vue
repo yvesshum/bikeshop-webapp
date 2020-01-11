@@ -110,8 +110,8 @@ Emits:
     import {firebase} from '../firebase'
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
-    import {Period} from '@/components/Period.js';
-    import {Youth} from '@/components/Youth.js';
+    import {Period} from '@/scripts/Period.js';
+    import {Youth}  from '@/scripts/Youth.js';
     import {SPECIAL_CHARS} from '@/components/Search.js';
     import {search} from '@/components/Search.js';
 

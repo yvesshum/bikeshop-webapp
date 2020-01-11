@@ -69,7 +69,7 @@ import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
-import {Period} from "@/components/Period.js";
+import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/components/ParseDB.js";
 import {filter} from "@/components/Search.js";
 import {make_range_editor} from "@/components/Search.js"

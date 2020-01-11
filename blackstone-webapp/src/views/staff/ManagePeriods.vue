@@ -166,8 +166,8 @@ import ButtonArrayHeader from '@/components/ButtonArrayHeader';
 import {Status} from '@/components/Status.js';
 import {filter} from "@/components/Search.js";
 import {forKeyVal} from '@/components/ParseDB.js';
-import {Period} from '@/components/Period.js';
-import {Youth} from '@/components/Youth.js';
+import {Period} from '@/scripts/Period.js';
+import {Youth} from  '@/scripts/Youth.js';
 
 export default {
   name: 'manage_periods',
