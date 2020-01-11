@@ -441,65 +441,6 @@ Emits:
                 this.value = null;
             },
 
-            // Format special characters in a string based on options:
-            //   - accents:
-            //      "none"      - No accents
-            //      "separated" - Accents are separate characters
-            //      "all"       - Accents included
-            //   - special:
-            //      true  - Keep special characters
-            //      false - Replace special characters with keyboard equivalents
-            //   - case:
-            //      "lower" - Make the result lowercase
-            //      "upper" - Make the result uppercase
-            //      "keep"  - Don't change case
-            parse_text(str, options) {
-                var ret = str.slice();
-
-                let defaults = {
-                    accents: "none",
-                    special: false,
-                    case: "keep",
-                };
-
-                let opts = {...defaults, ...options};
-
-                switch (opts.accents) {
-                    case "none":
-                        // Source: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript
-                        ret = normalize(ret).replace(/[\u0300-\u036f]/g, "");
-                        break;
-                    case "separate":
-                        ret = normalize(ret);
-                        break;
-                    default:
-                        break;
-                };
-
-                if (!opts.special) {
-                    SPECIAL_CHARS.forEach(obj => {
-                        ret = ret.replace(new RegExp(obj.special, "g"), obj.regular);
-                    })
-                }
-
-                switch (opts.case) {
-                    case "lower":
-                        ret = ret.toLowerCase();
-                        break;
-                    case "upper":
-                        ret = ret.toUpperCase();
-                        break;
-                    default:
-                        break;
-                }
-
-                return ret;
-
-                function normalize(str) {
-                    return str.normalize("NFD");
-                };
-            },
-
             // Create a function to sort options by relevance
             // Sort Order:
             //   - By relevance to search(number of marked segments in display)
@@ -571,37 +512,6 @@ Emits:
                         (acc, curr) => acc + displays[v.ID][curr].filter(s => s.mark).length, 0
                     );
                 }
-            },
-
-            // Split a string into characters stored as objects, where each object contains:
-            //   char: The character as-is, along with all accents
-            //   norm: The lowercase plaintext version of the character
-            split_special_chars(str) {
-
-                // Initialize the return array
-                let ret = [];
-
-                // Split the input string into an array of characters, and loop through each
-                Array.from(str).forEach(char => {
-
-                    // If the current character is an accent, include it in the previous char
-                    // This catches accents which are separated from the base character for some reason, as well as characters with multiple accents, such as those in the Vietnamese alphabet
-                    if (char.match(/[\u0300-\u036f]/)) {
-                        ret[ret.length-1].char += char;
-                    }
-
-                    // Otherwise, add the character in plaintext and as-is
-                    else {
-                        let norm = this.parse_text(char.toLowerCase(), {
-                            accents: "none",
-                            special: false
-                        });
-                        ret.push({char, norm});
-                    }
-                });
-
-                // Return the return array
-                return ret;
             },
         },
 
