@@ -416,10 +416,16 @@ Emits:
                             return;
                         }
 
+                        // If there are any duplicates within the period, send a warning
+                        let duplicates = Youth.duplicates(new_profiles);
+                        if (duplicates.length > 0) {
+                            console.warn("Duplicate profiles found in \"" + Period.concat(season, year) + "\": ", duplicates);
+                        }
+
                         // Add non-duplicate youth to the full array
-                        youth_arr = youth_arr.concat(new_profiles.filter(profile => {
-                            return !Youth.contains(youth_arr, profile);
-                        }));
+                        // Note that this filters out duplicates within new_profiles as well as
+                        // between youth_arr and new_profiles
+                        youth_arr = Youth.concat_unique(youth_arr, new_profiles);
                     });
                 };
 

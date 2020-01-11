@@ -70,4 +70,39 @@ export class Youth {
 	static findMatches(list, youth) {
 		return list.filter(y => Youth.equiv(youth, y));
 	}
+
+	static unique(list) {
+		return list.filter((youth, i) => {
+			for (let j = 0; j < i; j++) {
+				if (Youth.equiv(youth, list[j])) {
+					return false;
+				}
+			}
+			return true;
+		});
+	}
+
+	static duplicates(list) {
+		return list.filter((youth, i) => {
+			for (let j = 0; j < i; j++) {
+				if (Youth.equiv(youth, list[j])) {
+					return true;
+				}
+			}
+			return false;
+		});
+	}
+
+	static concat_unique(list, new_youth) {
+		// Doing it this way prevents duplicates within new_youth itself from being added more than once
+		new_youth.forEach(youth => {
+			if (!Youth.contains(list, youth)) {
+				list.push(youth);
+			}
+		});
+		return list;
+
+		// This one is simpler, but if new_youth contains any duplicates, they'll be added more than once
+		// return list.concat( new_youth.filter(youth => !Youth.contains(list, youth)) );
+	}
 }
