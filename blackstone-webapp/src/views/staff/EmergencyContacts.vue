@@ -21,7 +21,7 @@
 import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
-import {filter} from "@/components/Search.js";
+import {filter} from "@/scripts/Search.js";
 
 export default {
   name: 'profile_lookup_youth',

@@ -112,8 +112,8 @@ Emits:
     import Multiselect from 'vue-multiselect'
     import {Period} from '@/scripts/Period.js';
     import {Youth}  from '@/scripts/Youth.js';
-    import {SPECIAL_CHARS} from '@/components/Search.js';
-    import {search} from '@/components/Search.js';
+    import {search} from '@/scripts/Search.js';
+    import {SPECIAL_CHARS} from '@/scripts/Search.js';
 
     export default {
         name: 'YouthIDSelector',

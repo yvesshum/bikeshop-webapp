@@ -105,7 +105,7 @@
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
-    import { forKeyVal } from '../../components/ParseDB.js';
+    import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");

@@ -163,9 +163,9 @@ import ToggleButton from '@/components/ToggleButton';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
-import {Status} from '@/components/Status.js';
-import {filter} from "@/components/Search.js";
-import {forKeyVal} from '@/components/ParseDB.js';
+import {Status} from '@/scripts/Status.js';
+import {filter} from "@/scripts/Search.js";
+import {forKeyVal} from '@/scripts/ParseDB.js';
 import {Period} from '@/scripts/Period.js';
 import {Youth} from  '@/scripts/Youth.js';
 

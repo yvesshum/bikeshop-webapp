@@ -12,7 +12,7 @@
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import Table from '@/components/Table';
-import {Status} from '@/components/Status';
+import {Status} from '@/scripts/Status';
 
 export default {
   name: 'match_table',

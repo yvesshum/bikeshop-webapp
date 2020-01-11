@@ -70,10 +70,10 @@ import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/scripts/Period.js";
-import {mapKeyVal} from "@/components/ParseDB.js";
-import {filter} from "@/components/Search.js";
-import {make_range_editor} from "@/components/Search.js"
-import {custom_filter_editor} from "@/components/Search.js"
+import {mapKeyVal} from "@/scripts/ParseDB.js";
+import {filter} from "@/scripts/Search.js";
+import {make_range_editor} from "@/scripts/Search.js"
+import {custom_filter_editor} from "@/scripts/Search.js"
 
 const moment = require("moment");
 

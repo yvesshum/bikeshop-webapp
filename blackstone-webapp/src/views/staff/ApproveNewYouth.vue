@@ -134,7 +134,7 @@
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
-    import { forKeyVal } from '../../components/ParseDB.js';
+    import { forKeyVal } from '@/scripts/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     

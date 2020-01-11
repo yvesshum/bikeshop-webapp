@@ -205,7 +205,7 @@ import 'vue-datetime/dist/vue-datetime.css'
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
-import {filter} from '@/components/Search.js'
+import {filter} from '@/scripts/Search.js'
 let setOrder = function(field) {
   var fieldVal = 0;
   if (field == "Check In") {
