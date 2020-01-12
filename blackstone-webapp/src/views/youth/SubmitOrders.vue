@@ -13,7 +13,8 @@
             <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
                 <span class="inline">{{field.name}}</span>
                 <span style="color: red">*</span>
-                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="args.specialInput"></SpecialInput>
+                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="{...args.specialInput, ...{placeholder: placeholders[field.name]}}"></SpecialInput>
+
             </div>
             <div v-else>
                 <div class="idInput">
@@ -62,6 +63,15 @@
     </b-modal>
 
     <!-- Message Modal -->
+    <b-modal v-model="this.messageVisible" hide-footer lazy hide-header-close>
+        <template slot="modal-title">
+            {{this.modal.msg.title}}
+        </template>
+        <div class="d-block text-center">
+            <h4>{{this.modal.msg.message}}</h4>
+        </div>
+        <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
+    </b-modal>
 
     
     
@@ -133,6 +143,10 @@ export default {
 
         errorVisible: function() {
             return this.modal.error.visible;
+        },
+
+        messageVisible: function() {
+            return this.modal.msg.visible;
         }
 
     },
@@ -182,6 +196,7 @@ export default {
         },
         async setPlaceholders(placeholders) {
             this.placeholders = placeholders;
+            console.log('p', this.placeholders);
             this.ready.placeholders = true;
         },
 
@@ -231,33 +246,42 @@ export default {
             this.modal.error.errors = [];
         },
 
+        closeMsgModal() {
+            this.modal.msg.visible = false;
+            this.modal.msg.title = "";
+            this.modal.msg.message = "";
+        },
+
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
-            console.log('submit clicked')
             this.modal.loading.visible = true;
-            console.log('e', this.modal.error);
-            if (!this.hasValidFields())
-                return;
-            console.log('hasValidFields');
+
+            let hasValidFields = await this.hasValidFields();
+            if (!hasValidFields) {
+                return false
+
+            }
 
             let res = await this.getYouthProfile()
-            console.log('res', res);
+
             if (!(res)) 
                 return;
-            console.log('p',this.form.YouthProfile);
+
 
             if (!(await this.hasSufficientHours()))
                 return;
-            console.log('hasSufficientHours');
+
 
             if (!(await this.submitOrder()))
                 return ;
-            console.log("Successfully executed handleSubmit");
+
 
             this.resetPage();
             this.modal.loading.visible = false;
-            //TODO success message
-            //TODO placeholders
+            this.modal.msg.title = "Success!";
+            this.modal.msg.message = "Your order has been placed and will be reviewed by staff."
+            this.modal.msg.visible = true;
+
         },
         async getYouthProfile() {
             let youthID = this.fields.required
@@ -281,34 +305,45 @@ export default {
 
         },
         async hasValidFields() {
+            
             let badFields = [];
             this.modal.error.errors = [];
 
             //non empty
-            this.fields.required.forEach(field => {
-                if (this.isNonValidField(field.value)) {
-                    console.log('bad field', field.name, field.value, field.value == null, field.value.length)
+            await this.fields.required.forEach(async (field) => {
+
+                let isNonValid = await this.isNonValidField(field.value)
+
+                if (isNonValid) {
                     badFields.push(field.name);
+
                 }
+
                     
             })
-            
+
+
             if (badFields.length) {
                 this.modal.error.errors.push("The following fields are required: " + badFields.toString());
-                console.log(this.modal.error.errors);
+
                 this.modal.loading.visible = false;
                 this.showErrorModal();
                 return false;
             }
+
             return true;
             
         },
         isNonValidField(value) {
-            if (typeof(value) === "number") {
+
+            if (value == null) {
+                return true;
+            }
+            else if (typeof(value) === "number") {
                 return false;
             }
             else {
-                return (value == null || !value.length)
+                return (!value.length)
             }
         },
         async hasSufficientHours() {
@@ -330,7 +365,6 @@ export default {
             }
 
             //Update Youth Profile
-            //TODO:
             let updateYouthProfileStatus = await this.updateYouthProfile(payload);
             if (!updateYouthProfileStatus)
                 return false; 
