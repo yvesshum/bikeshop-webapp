@@ -99,7 +99,7 @@ export default {
 
         viewProfile() {
             let YouthID = this.selected[0]["Youth ID"];
-            window.alert("This has not been implemented yet")
+            window.alert("This is an upcoming feature :) look forward to it!")
         },
 
     },
