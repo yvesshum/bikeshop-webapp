@@ -524,7 +524,7 @@ export default {
       return {
         headerFilter: make_range_editor("number"),
         headerFilterFunc: this.numeric_range_filter,
-        headerFilterParams: {minimum: 0},
+        headerFilterParams: {minimum: 0, step: 0.5},
       };
     },
 

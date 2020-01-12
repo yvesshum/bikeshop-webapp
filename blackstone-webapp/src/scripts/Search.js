@@ -486,6 +486,11 @@ export function make_range_editor(type) {
             edit2.max = editorParams.maximum;
         }
 
+        if (editorParams.step != undefined) {
+            edit1.step = editorParams.step;
+            edit2.step = editorParams.step;
+        }
+
         // Add the inputs to the the container div
         container.appendChild(edit1);
         container.appendChild(edit2);
