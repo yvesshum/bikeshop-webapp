@@ -69,30 +69,23 @@
       </tbody></tbody>
     </table>
 
-    <ToggleButton
-      v-show="allow_edits" v-model="edit_mode" class="profile_buttons"
-      :onVariant="submit_edits_variant" offVariant="primary"
-      onText="Submit Edits" offText="Edit Profile Information"
-      :switchOff="confirm_save_edits"
-    ></ToggleButton>
-
-    <b-button @click="discard_changes()" v-show="edit_mode" class="profile_buttons" :variant="discard_changes_variant">
-      Discard Changes
-    </b-button>
-
-    <b-button @click="reset_changes()" v-show="edit_mode" class="profile_buttons" :variant="reset_changes_variant">
-      Reset All Changes
+    <b-button v-show="allow_edits && !edit_mode" variant="primary" @click="set_edit_mode(true)">
+      Edit Profile Information
     </b-button>
 
     <br />
 
-    <b-modal size="lg" v-model="confirmModalVisible" hide-footer lazy>
-      <template slot="modal-title">
-          Please Confirm the Following Changes
-      </template>
-      <div class="d-block text-center">
-          <h3>The following changes will be saved:</h3>
-          <br />
+    <SaveBar
+      :show="edit_mode" :initModal="create_confirm_modal"
+      :hasChanges="has_changes_strict" :hasUnsaveableChanges="has_changes"
+      @save="save_edits" @reset="reset_changes" @discard="discard_changes"
+    >
+      <template slot="saveBody"><h3>The following changes will be saved:</h3></template>
+      <template slot="resetBody"><h3>The following changes will be discarded:</h3></template>
+      <template slot="discardBody"><h3>The following changes will be discarded:</h3></template>
+
+      <template slot="bodyFooter">
+        <br />
           <table style="margin: auto;">
             <tr>
               <th></th>
@@ -140,18 +133,8 @@
               <p>Please consider merging the information in the above fields into standard fields.</p>
             </div>
           </div>
-      </div>
-      <b-button class="mt-3" block @click="acceptConfirmModal" variant="primary">Confirm</b-button>
-      <b-button class="mt-3" block @click="cancelConfirmModal" variant="primary">Cancel</b-button>
-    </b-modal>
-
-    <b-modal v-model="noEditsModalVisible" hide-footer>
-      <template slot="modal-title">
-        No changes have been made.
       </template>
-      <b-button class="mt-3" block @click="cancelNoEditsModal" variant="primary">Continue Editing</b-button>
-      <b-button class="mt-3" block @click="acceptNoEditsModal" variant="primary">Return to Display</b-button>
-    </b-modal>
+    </SaveBar>
 
   </div>
 </template>
@@ -167,6 +150,7 @@ import {forKeyVal} from '@/scripts/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
 import InputDisplayToggle from '@/components/InputDisplayToggle';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
+import SaveBar from '@/components/SaveBar';
 
 export default {
   name: 'profile_fields',
@@ -175,6 +159,7 @@ export default {
     ToggleButton,
     InputDisplayToggle,
     PeriodsClassesDisplay,
+    SaveBar,
   },
 
   data: function() {
@@ -328,31 +313,6 @@ export default {
       return this.profile.data()["ActivePeriods"];
     },
 
-    submit_edits_variant: function() {
-      if (this.edit_mode) {
-        if (this.has_changes_strict) {
-          return 'success';
-        }
-        return 'outline-success';
-      }
-      return 'outline-secondary';
-      // return (this.edit_mode && this.has_changes_strict) ? 'success' : 'outline-secondary';
-    },
-
-    discard_changes_variant: function() {
-      if (this.edit_mode) {
-        if (this.has_changes) {
-          return 'danger';
-        }
-        return 'outline-danger';
-      }
-      return 'outline-secondary';
-    },
-
-    reset_changes_variant: function() {
-      return (this.edit_mode && this.has_changes) ? 'warning' : 'outline-warning';
-    },
-
     has_changes: function() {
       return this.check_edits(false);
     },
@@ -499,27 +459,6 @@ export default {
       return (input_field == null) ? false : input_field.changed;
     },
 
-    // Checks if changes have been made, then looks for user input accordingly
-    // If changes, ask to save them; if not, alert user and stay in edit mode 
-    // Run by the edit ToggleButton when clicked off edit mode
-    confirm_save_edits: function() {
-      // Check if edits have been made
-      let changed = this.check_edits(true);
-
-      // Check for user input based on results
-      if (changed) {
-        this.create_confirm_modal();
-        this.confirmModalVisible = true;
-      }
-      else {
-        this.noEditsModalVisible = true;
-      }
-
-      // Return false to prevent the edit ToggleButton from switching off edit mode just yet
-      // If the confirm modal is accepted, it will manually change edit mode instead
-      return false;
-    },
-
     //FUNCTION to check if form changes with edit
     check_edits: function(strict) {
 
@@ -599,7 +538,7 @@ export default {
     // FUNCTION that saves edits to firebase, called by check_edits upon
     // determination that actual edits were made
     // Parameters: ID of youth
-    save_edits: async function(){
+    save_edits: async function(accept_func) {
       // creates an object to store edited values
       var changes = new Object();
 
@@ -623,6 +562,7 @@ export default {
       // Saves edits to firebase
       // db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
       //   window.alert("Error: " + err);
+      //   accept_func(false);
       //   return null;
       // });
 
@@ -644,6 +584,9 @@ export default {
       // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
       this.row_status.update();
+
+      // Return a success to the modal
+      accept_func(true);
     },
 
 
@@ -656,7 +599,7 @@ export default {
       });
     },
 
-    discard_changes: function() {
+    discard_changes: function(accept_func) {
       // Reset any local fields
       this.reset_changes();
 
@@ -665,34 +608,20 @@ export default {
 
       // Switch out of edit mode
       this.set_edit_mode(false);
+
+      // Close the modal
+      accept_func();
     },
 
-    reset_changes: function() {
+    reset_changes: function(accept_func) {
       this.row_status.reset();
       this.row_status.unfilter(Status.IMM).forEach(field => {
         this.input_fields[field].reset();
         this.fields_used[field] = this.row_status.is_status(field, Status.O);
       });
-    },
 
-    acceptConfirmModal: function() {
-      this.confirmModalVisible = false;
-      this.save_edits();
-      this.set_edit_mode(false);
+      if (accept_func !== undefined) accept_func();
     },
-
-    cancelConfirmModal: function() {
-      this.confirmModalVisible = false;
-    },
-
-    cancelNoEditsModal: function() {
-      this.noEditsModalVisible = false;
-    },
-
-    acceptNoEditsModal: function() {
-      this.discard_changes();
-      this.noEditsModalVisible = false;
-    }
   }
 }
 </script>

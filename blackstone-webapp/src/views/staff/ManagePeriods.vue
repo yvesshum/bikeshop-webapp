@@ -147,6 +147,37 @@
         </div>
       </div>
     </div>
+
+    <SaveBar
+      showIfChanges
+      :hasChanges="has_changes"
+      @save="save_changes"
+      @reset="reset_changes"
+      @discard="discard_changes"
+    >
+      <template slot="bodyFooter">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Name & ID</th>
+              <th scope="col">Period</th>
+              <th scope="col">Old Class</th>
+              <th scope="col">New Class</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="change in change_array" style="padding-top: 0px;">
+              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
+                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
+              </td>
+              <td>{{change.period}}</td>
+              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
+              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </template>
+    </SaveBar>
   </div>
 </template>
 
@@ -159,10 +190,11 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
-import ToggleButton from '@/components/ToggleButton';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
+import SaveBar from '@/components/SaveBar';
+
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -174,10 +206,10 @@ export default {
   components: {
     TopBar,
     Table,
-    ToggleButton,
     PeriodsClassesDisplay,
     YouthIDSelector,
     ButtonArrayHeader,
+    SaveBar,
   },
 
   data: function() {
@@ -568,6 +600,21 @@ export default {
 
     youth_num_changes: function(youth) {
       return Object.keys(this.changes[youth['ID']].periods).length;
+    },
+
+    save_changes: function(accept_func) {
+      console.log("Changes will be saved!");
+      accept_func(true);
+    },
+
+    reset_changes: function(accept_func) {
+      console.log("Changes will be reset!");
+      accept_func(true);
+    },
+
+    discard_changes: function(accept_func) {
+      console.log("Changes will be discarded!");
+      accept_func(true);
     },
 
   },
