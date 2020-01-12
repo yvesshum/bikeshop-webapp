@@ -119,7 +119,7 @@ use v-model. Whenever one of these is changed, it updates the other.
               :step="0.5"
               placeholder="Hours"
               align="center"
-              style="width: 20rem"
+              style="width: 100%; margin: 0 auto"
               controls
               :inputtable="false"
             />
