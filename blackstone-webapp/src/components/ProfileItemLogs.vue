@@ -458,8 +458,7 @@ export default {
     },
 
     hour_range_filter: function(search_range, option) {
-      let sum = Object.keys(option).reduce((a,c) => option[c] == null ? a : (a + option[c]), 0);
-      return this.numeric_range_filter(search_range, sum);
+      return this.numeric_range_filter(search_range, this.get_hours_sum(option));
     },
 
     time_range_filter: function(search_range, option) {
@@ -559,6 +558,10 @@ export default {
     // Get the string representation of a date
     get_date: function(date) {
       return date.toLocaleDateString(undefined, {dateStyle: "long"})
+    },
+
+    get_hours_sum: function(hours) {
+      return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
   }
 }
