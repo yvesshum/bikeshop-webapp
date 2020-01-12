@@ -368,15 +368,22 @@ export default {
     display_youths: function() {
       if (this.display_period == undefined) return [];
 
-      var period = this.get_period(Period.makePeriod(this.display_period));
+      var display_p = Period.makePeriod(this.display_period);
+      var period = this.get_period(display_p);
 
       if (period == null) {
         return [];
       } else {
         return period.map(y => {
-          let new_class = this.get_youth_class_edited(y, Period.makePeriod(this.display_period));
-          return {...y, Class: new_class ? new_class : y.Class, "Full Name": Youth.getFullName(y)}
-        });
+          if (this.class_changed(y, display_p)) {
+            let new_class = this.get_youth_class_edited(y, display_p);
+            if (new_class == null) return null;
+            return {...y, Class: new_class, "Full Name": Youth.getFullName(y)};
+          }
+          else {
+            return {...y, "Full Name": Youth.getFullName(y)};
+          }
+        }).filter(p => p != null);
       }
     },
   },
