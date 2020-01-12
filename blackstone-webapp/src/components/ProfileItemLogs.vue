@@ -527,7 +527,6 @@ export default {
             {name: "between",     inclusive: true, num_inputs: 2},
             {name: "not between", inclusive: true, num_inputs: 2}
           ],
-          dropdown_align: "left",
         },
       };
     },
