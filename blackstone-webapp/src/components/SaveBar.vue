@@ -1,10 +1,7 @@
 <template>
 	<div class="save_bar">
 
-		<div v-show="show_bar">
-		</div>
-
-		<div class="navbarbottom" v-show="show_bar">
+		<div ref="bottom_bar" class="bottom-bar" v-show="show_bar">
 			<b-button
 				:variant="discard_variant"
 				:disabled="disableIfNoChanges && !has_any_changes"
@@ -166,7 +163,6 @@ export default {
 		},
 
 		show_bar: function() {
-			console.log({showIfChanges: this.showIfChanges});
 			return this.show_if_changes ? this.has_any_changes : this.show;
 		}
 	},
@@ -264,13 +260,14 @@ export default {
 </script>
  
 <style scoped>
-	.navbarbottom {
+	.bottom-bar {
 		background-color: #333;
 		overflow: hidden;
 		position: fixed;
 		bottom: 0;
 		width: 100%;
 		padding: 10px;
+		z-index: 10;
 	}
 
 	.change_button {
