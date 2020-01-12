@@ -164,7 +164,9 @@ export default {
         },
 
         set_class: function(period, new_class) {
-            this.$emit("change_period", {youth: this.youth, period, new_class});
+            let period_obj = Period.makePeriod(period);
+            let old_class = this.get_class(period_obj.getSeason(), period_obj.getYear());
+            this.$emit("change_period", {youth: this.youth, period, new_class, old_class});
         },
 
         hover_cell: function(season, year) {
