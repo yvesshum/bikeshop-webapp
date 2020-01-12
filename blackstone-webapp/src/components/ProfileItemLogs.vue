@@ -162,16 +162,6 @@ export default {
     };
   },
 
-  computed: {
-    // work_log_table: function() {
-    //   console.log(this.$refs.work_log);
-    //   console.log(this.$refs.work_log["table"]);
-    //   console.log(this.$refs.work_log.$data);
-    //   console.log(this.$refs.work_log.$data.table);
-    //   return this.$refs.work_log.table;
-    // },
-  },
-
   watch: {
     snapshot: function(snapshot) {
       console.log(snapshot);
