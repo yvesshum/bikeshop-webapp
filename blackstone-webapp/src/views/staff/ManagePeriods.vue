@@ -261,7 +261,6 @@ export default {
       batch_year: null,
 
       display_period: null,
-      display_youths: [],
 
       button_header_l: [
         {name: 'First', arr: 'b', val: 'min'},
@@ -365,6 +364,19 @@ export default {
       });
       return result;
     },
+
+    display_youths: function() {
+      var period = this.get_period(Period.season(this.display_period), Period.year(this.display_period));
+
+      if (period == null) {
+        return [];
+      } else {
+        return period.map(y => {
+          let new_class = this.get_youth_class_edited(y, Period.season(this.display_period), Period.year(this.display_period));
+          return {...y, Class: new_class ? new_class : y.Class, "Full Name": Youth.getFullName(y)}
+        });
+      }
+    },
   },
 
 
@@ -432,6 +444,17 @@ export default {
     },
 
     get_youth_class(youth, season, year) {
+      let edited = this.get_youth_class_edited(youth, season, year);
+      return (edited !== undefined)
+        ? edited
+        : this.get_youth_class_original(youth, season, year);
+    },
+
+    get_youth_class_edited(youth, season, year) {
+      return this.get_descendant(this.changes, [youth.ID, "periods", Period.concat(season, year), "new_class"]);
+    },
+
+    get_youth_class_original(youth, season, year) {
       var full_period = this.get_period(season, year);
       if (full_period == null) return null;
 
@@ -455,6 +478,10 @@ export default {
       return (val != null) ? val : "n/a";
     },
 
+    class_changed: function(youth, season, year) {
+      return this.get_descendant(this.changes, [youth.ID, "periods", Period.concat(season, year)]) != undefined;
+    },
+
     switch_to: function(change_code) {
       switch (change_code) {
         case "Current":
@@ -472,16 +499,6 @@ export default {
         case "Next":
           this.display_period = Period.genNextStr(this.display_period);
           break;
-      }
-
-      var period = this.get_period(Period.season(this.display_period), Period.year(this.display_period));
-
-      if (period == null) {
-        this.display_youths = [];
-      } else {
-        this.display_youths = period.map(y => {
-          return {...y, "Full Name": Youth.getFullName(y)}
-        });
       }
     },
 
@@ -617,6 +634,20 @@ export default {
       accept_func(true);
     },
 
+
+
+
+
+
+    get_child: function(parent, child) {
+      return (parent == undefined || child == undefined) ? undefined : parent[child];
+    },
+
+    get_descendant: function(parent, child_arr) {
+      let p = parent;
+      child_arr.forEach(c => p = this.get_child(p, c));
+      return p;
+    },
   },
 
 }
