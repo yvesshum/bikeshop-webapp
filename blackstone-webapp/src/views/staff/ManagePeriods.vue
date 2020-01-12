@@ -366,13 +366,15 @@ export default {
     },
 
     display_youths: function() {
-      var period = this.get_period(Period.season(this.display_period), Period.year(this.display_period));
+      if (this.display_period == undefined) return [];
+
+      var period = this.get_period(Period.makePeriod(this.display_period));
 
       if (period == null) {
         return [];
       } else {
         return period.map(y => {
-          let new_class = this.get_youth_class_edited(y, Period.season(this.display_period), Period.year(this.display_period));
+          let new_class = this.get_youth_class_edited(y, Period.makePeriod(this.display_period));
           return {...y, Class: new_class ? new_class : y.Class, "Full Name": Youth.getFullName(y)}
         });
       }
@@ -436,26 +438,33 @@ export default {
       return result;
     },
 
-    get_period(season, year) {
+    get_period(a, b) {
+
+      // Handle season/year or period inputs
+      let [season, year] = (b == undefined) ? [a.getSeason(), a.getYear()] : [a, b];
+
       if (this.periods == null || this.periods[year] == null) {
         return null;
       }
       return this.periods[year][season + " " + year];
     },
 
-    get_youth_class(youth, season, year) {
-      let edited = this.get_youth_class_edited(youth, season, year);
+    get_youth_class(youth, a, b) {
+      let edited = this.get_youth_class_edited(youth, a, b);
       return (edited !== undefined)
         ? edited
-        : this.get_youth_class_original(youth, season, year);
+        : this.get_youth_class_original(youth, a, b);
     },
 
-    get_youth_class_edited(youth, season, year) {
+    get_youth_class_edited(youth, a, b) {
+      // Handle season/year or period inputs
+      let [season, year] = (b === undefined) ? [a.getSeason(), a.getYear()] : [a, b];
+
       return this.get_descendant(this.changes, [youth.ID, "periods", Period.concat(season, year), "new_class"]);
     },
 
-    get_youth_class_original(youth, season, year) {
-      var full_period = this.get_period(season, year);
+    get_youth_class_original(youth, a, b) {
+      var full_period = this.get_period(a, b);
       if (full_period == null) return null;
 
       let matches = Youth.findMatches(full_period, youth);
@@ -478,8 +487,11 @@ export default {
       return (val != null) ? val : "n/a";
     },
 
-    class_changed: function(youth, season, year) {
-      return this.get_descendant(this.changes, [youth.ID, "periods", Period.concat(season, year)]) != undefined;
+    class_changed: function(youth, a, b) {
+      // Handle season/year or period inputs
+      let period = (b == undefined) ? a : Period.concat(a, b);
+
+      return this.get_descendant(this.changes, [youth.ID, "periods", period]) != undefined;
     },
 
     switch_to: function(change_code) {
@@ -608,7 +620,7 @@ export default {
           youth,
           period: this.batch_period,
           new_class: change,
-          old_class: this.get_youth_class(youth, Period.season(this.batch_period), Period.year(this.batch_period)),
+          old_class: this.get_youth_class(youth, Period.makePeriod(this.batch_period)),
         };
       });
 
