@@ -1,12 +1,18 @@
+//TODO: figure out how to do multiple hour logs.
+// Plan: 
+// Rewrite the functional routine for doing 1 approval
+// Write an outer function to traverse selection, applying that functional routine
+// If 1 fails, break out of it and say which ones were successful
+// If successful, just display a modal of the successful ones 
 <template>
     <div class = ApproveHourLogs>
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-                    <b-button variant="info" @click="editHours" style="margin: 1%;">Edit Hours</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" >Approve</b-button>
+                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1">Edit Hours</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1">Edit note</b-button>
                     <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel Log</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
@@ -17,7 +23,7 @@
             hover
             selectable
             responsive
-            select-mode="single"
+            select-mode="multi"
             selectedVaraint = "success"
             :items="items"
             :fields="fields"
@@ -147,6 +153,8 @@
                 fields: [],
                 items: [],
                 selected: [],
+                shouldRefreshTable: true,
+
                 modalHeader: "",
                 modalMsg: "",
                 modalVisible: false,
@@ -157,11 +165,14 @@
                 rejectingID: "",
                 editModalVisible: false,
                 editMsg: "",
-                isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                deleteAmount: 0,
                 hoursModalVisible: false,
+
+                isBusy: true,
+                
+                deleteAmount: 0,
+                
                 editSelectedHours: {}
             };
 
@@ -232,13 +243,61 @@
 
 
             async accept() {
-                let row = this.selected[0];
-                //change remotely
+                //loop through selected 
+                let documentIDs = [];
+            
+                let selectedLength = this.selected.length;
+                this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
+                for (let i = 0; i < selectedLength; i++) {
+                    let currentRow = this.selected[i];
+                    documentIDs.push(currentRow["Document ID"]);
+
+                    let approveStatus = await this.approvehours(currentRow);
+                    if (!approveStatus) {
+                        documentIDs.pop();
+                        for (let j = 0; i < documentIDs.length; j++) {
+                            this.removeLocally(documentIDs[j]);
+                        }
+
+                        //error message
+                        let msg = "Error, something went wrong."
+                        if (i > 0) {
+                            msg += "The first " + i + "was approved though.";
+                        }
+                        //calculate successful fields 
+                        this.showModal(msg);
+                        this.$root.$emit('bv::refresh::table', 'transfer-table'); 
+                        break;
+                    }
+                }
+
+                console.log('d', documentIDs);
+                console.log('b', this.items.length);
+                //TODO: Table not updating properly after deleting
+                for (let i = 0; i < documentIDs.length; i++) {
+                    this.removeLocally(documentIDs[i]);
+                }
+                console.log('a', this.items.length);
+                this.$root.$emit('bv::refresh::table', 'transfer-table'); 
+                this.shouldRefreshTable = true;
+
+                this.closeLoadingModal();
+                if (selectedLength > 1) {
+                    this.showModal("Success", "Successfully approved " + selectedLength + " hour log requests");
+                }
+                else {
+                    // was hoping to make a more personal message but oh well
+                     this.showModal("Success", "Successfully approved 1 hour log request")
+                }
+
+            },
+
+            async approvehours(row) {
                 let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).get();
                 console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + row["Youth ID"]);
-                    return null;
+                    return false;
                 }
 
                 this.showLoadingModal("Doing some work in the background...");
@@ -255,6 +314,8 @@
 
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
+                
+                console.log(newPendingHours, newHoursEarned);
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
                     "Pending Hours": newPendingHours,
                     "Hours Earned": newHoursEarned
@@ -262,21 +323,23 @@
 
                 if (acceptStatus) {
                     window.alert("Error, unable to change sender's profile hours")
+                    return false;
                 }
 
-                this.removeLocally(row["Document ID"]);
 
                 let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
                 if (status3 == null) {
                     window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
-                    return null;
+                    return false;;
                 }
-
+                console.log('w', worklog);
+                console.log('r', row);
                 let worklog = row;
                 delete worklog["Document ID"];
+                console.log('w', worklog);
+                console.log('r', row);
                 worklog["Check In"] = Timestamp.fromDate(moment(worklog["Check In"], "YYYY-MM-DD hh:mm a").toDate());
                 worklog["Check Out"] = Timestamp.fromDate(moment(worklog["Check Out"], "YYYY-MM-DD hh:mm a").toDate());
-
 
                 let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(worklog);
 
@@ -285,16 +348,18 @@
                     return null;
                 }
 
-                this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
+                return true;
 
             },
 
             removeLocally(ID) {
                 for (let i =0; i < this.items.length; i++) {
+                    console.log(this.items[i]["Document ID"], ID)
                     if (this.items[i]["Document ID"] === ID) {
                         this.items.splice(i, 1);
-                        this.$root.$emit('bv::refresh::table', 'transfer-table');
+                        if (this.shouldRefreshTable) {
+                            this.$root.$emit('bv::refresh::table', 'transfer-table');
+                        }
                         break;
                     }
                 }
