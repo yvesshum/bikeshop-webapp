@@ -31,7 +31,7 @@
 <script>
 import SpecialInput from '@/components/SpecialInput';
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const moment = require("moment");
 
 export default {
   name: 'input_display_toggle',
@@ -154,7 +154,7 @@ export default {
             month: Number(val.substring(val.indexOf("-")+1, val.lastIndexOf("-")))-1,
             day: val.substring(val.lastIndexOf("-")+1),
           };
-          return `${months[date.month]} ${date.day}, ${date.year}`;
+          return `${moment.months()[date.month]} ${date.day}, ${date.year}`;
 
         // Everything else is fine as is
         default:
