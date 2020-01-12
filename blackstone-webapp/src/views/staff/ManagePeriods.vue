@@ -195,6 +195,8 @@ export default {
       fst_period: null,
       classes: [],
 
+      changes: {},
+
       // The column headers for the table
       headers: [
         { // The name of the youth
@@ -308,6 +310,28 @@ export default {
 
     batch_period_display: function() {
       return (this.batch_period != null) ? `Class in ${this.batch_period}` : "Choose a period";
+    },
+
+    has_changes: function() {
+      return Object.keys(this.changes).length > 0;
+    },
+
+    change_array: function() {
+      let result = [];
+      Object.keys(this.changes).forEach(youth_id => {
+
+        // Get a sorted list of changed periods for this youth
+        let periods = Period.sort(Object.keys(this.changes[youth_id].periods));
+        periods.forEach((period, n) => {
+          result.push({
+            youth: n == 0 ? this.changes[youth_id].youth : undefined,
+            period,
+            old_class: this.changes[youth_id].periods[period].old_class,
+            new_class: this.changes[youth_id].periods[period].new_class
+          });
+        });
+      });
+      return result;
     },
   },
 
@@ -500,15 +524,50 @@ export default {
     },
 
     change_period: function(change) {
-      console.log("Changing period: ", change);
+
+      // If changing to the same class, do nothing
+      if (change.old_class == change.new_class) return;
+
+      // The new change will use the period as the key and store the old and new classes
+      // Goal is to get an object like:
+      // 12345: {
+      //    youth: {First Name: ...}
+      //    periods: {
+      //      "Spring 19": {old_class: ..., new_class: ...}
+      //      "Summer 19": {old_class: ..., new_class: ...}
+      //    }
+      // },
+      // ...
+      //
+      let new_change = { old_class: change.old_class, new_class: change.new_class };
+
+      // If changes doesn't exist yet, create it
+      if (this.changes == null) this.changes = {};
+
+      // If this youth doesn't have any changes yet, initialize an object for it
+      if (this.changes[change.youth.ID] == null) {
+        this.$set(this.changes, change.youth.ID, {youth: change.youth, periods: {}});
+      }
+
+      // Store the changes
+      this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
     },
 
     change_periods_selected: function(change) {
-      var change_list = this.selected_youths.map(youth => {
-        return {youth, period: this.batch_period, new_class: change}
+      var new_change_list = this.selected_youths.map(youth => {
+        return {
+          youth,
+          period: this.batch_period,
+          new_class: change,
+          old_class: this.get_youth_class(youth, Period.season(this.batch_period), Period.year(this.batch_period)),
+        };
       });
 
-      console.log("Changes: ", change_list);
+      new_change_list.forEach(this.change_period);
+    },
+
+    youth_num_changes: function(youth) {
+      return Object.keys(this.changes[youth['ID']].periods).length;
     },
 
   },
