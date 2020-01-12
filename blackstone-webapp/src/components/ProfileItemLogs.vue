@@ -90,7 +90,7 @@ export default {
           headerFilterFunc: this.hour_range_filter,
         },
         { // Notes
-          title: "Notes", field: "Notes", formatter: cell => `<i>${cell.getValue()}</i>`,
+          title: "Notes", field: "Notes", formatter: this.format_notes,
           headerFilter: true,
         },
       ],
@@ -112,7 +112,7 @@ export default {
           ...this.get_hour_filter_args(),
         },
         { // Notes
-          title: "Notes", field: "Notes", formatter: cell => `<i>${cell.getValue()}</i>`,
+          title: "Notes", field: "Notes", formatter: this.format_notes,
           headerFilter: true,
         },
       ],
@@ -135,7 +135,7 @@ export default {
           ...this.get_date_filter_args(false),
         },
         { // Notes
-          title: "Notes", field: "Notes", formatter: cell => `<i>${cell.getValue()}</i>`,
+          title: "Notes", field: "Notes", formatter: this.format_notes,
           headerFilter: true,
         },
       ],
@@ -269,6 +269,11 @@ export default {
       });
 
       return `<div>${time}</div>`;
+    },
+
+    format_notes: function(cell) {
+      let val = cell.getValue();
+      return `<i>${val == null ? "" : val}</i>`
     },
 
 
