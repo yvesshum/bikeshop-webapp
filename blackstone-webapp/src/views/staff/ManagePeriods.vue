@@ -132,7 +132,7 @@
                 <td style="padding-top: 3px; padding-bottom: 3px;">
                   {{youth["ID"]}}
                 </td>
-                <td style="padding-top: 3px; padding-bottom: 3px;">
+                <td style="padding-top: 3px; padding-bottom: 3px;" :class="{changed: class_changed(youth, batch_season, batch_year)}">
                   {{get_youth_class_display(youth, batch_season, batch_year)}}
                 </td>
                 <td style="padding: 3px 3px;">
@@ -240,6 +240,7 @@ export default {
         },
         { // The class the youth is registered in
           title: "Class", field: "Class", headerFilter: "select",
+          formatter: this.class_formatter,
         },
       ],
       args: {
@@ -667,6 +668,15 @@ export default {
       child_arr.forEach(c => p = this.get_child(p, c));
       return p;
     },
+
+    class_formatter: function(cell, formatterParams, onRendered) {
+      let data = cell.getRow().getData();
+      if (this.class_changed(data, Period.makePeriod(this.display_period))) {
+        return `<b>${cell.getValue()}</b>`;
+      }
+      return cell.getValue();
+    },
+
   },
 
 }
@@ -702,5 +712,9 @@ export default {
     width: 55%;
     padding-left: 1.5%;
     padding-right: 3%;
+  }
+
+  .changed {
+    font-weight: bold;
   }
 </style>
