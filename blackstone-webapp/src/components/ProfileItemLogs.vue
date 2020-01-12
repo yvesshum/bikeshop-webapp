@@ -192,6 +192,8 @@ export default {
 
   methods: {
 
+    // =-= Formatters =-=-=
+
     // Formatting for the hours column of the Work Log goes here
     format_work_hours: function(cell) {
       var val = cell.getValue();
@@ -269,20 +271,9 @@ export default {
       return `<div>${time}</div>`;
     },
 
-    same_day: function(date1, date2) {
 
-      return date1.getDate() === date2.getDate()
-        && date1.getMonth() === date2.getMonth()
-        && date1.getFullYear() === date2.getFullYear();
-    },
 
-    get_weekday: function(date) {
-      return date.toLocaleDateString(undefined, {weekday: "long"});
-    },
-
-    get_date: function(date) {
-      return date.toLocaleDateString(undefined, {dateStyle: "long"})
-    },
+    // =-= Filters =-=-=
 
     date_filter: function(filters, option) {
 
@@ -511,6 +502,10 @@ export default {
       }
     },
 
+
+
+    // Predefined column arguments for dates and for hours
+
     get_date_filter_args: function(include_time) {
       let options = ["Year", "Month", "Date", "Weekday"];
       if (include_time) options.push("Time");
@@ -537,6 +532,28 @@ export default {
         headerFilterFunc: this.numeric_range_filter,
         headerFilterParams: {minimum: 0},
       };
+    },
+
+
+
+    // Helper functions for dealing with time
+
+    // Check whether two datetimes occur on the same date
+    same_day: function(date1, date2) {
+
+      return date1.getDate() === date2.getDate()
+        && date1.getMonth() === date2.getMonth()
+        && date1.getFullYear() === date2.getFullYear();
+    },
+
+    // Get the string representation of the weekday of a date
+    get_weekday: function(date) {
+      return date.toLocaleDateString(undefined, {weekday: "long"});
+    },
+
+    // Get the string representation of a date
+    get_date: function(date) {
+      return date.toLocaleDateString(undefined, {dateStyle: "long"})
     },
   }
 }
