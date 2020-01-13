@@ -75,19 +75,23 @@ export default {
         { // The Date
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
+          sorter: this.time_sorter,
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
           headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
+          sorter: this.time_sorter,
         },
         { // The check out time
           title: "Check Out", field: "Check Out", formatter: this.format_time,
           headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
+          sorter: this.time_sorter,
         },
         { // The hours earned, broken down by category
           title: "Hours", field: "Hours", formatter: this.format_work_hours,
           ...this.get_hour_filter_args(),
           headerFilterFunc: this.hour_range_filter,
+          sorter: this.work_hours_sorter
         },
         { // Notes
           title: "Notes", field: "Notes", formatter: this.format_notes,
@@ -105,11 +109,13 @@ export default {
         { // The date and time of the order
           title: "Date", field: "Order Date", formatter: this.format_date_time,
           ...this.get_date_filter_args(true),
+          sorter: this.time_sorter,
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
           formatter: cell => cell.getValue() + " Hours",
           ...this.get_hour_filter_args(),
+          sorter: this.hour_sorter,
         },
         { // Notes
           title: "Notes", field: "Notes", formatter: this.format_notes,
@@ -129,10 +135,12 @@ export default {
           title: "Amount Transferred", field: "Amount",
           formatter: cell => cell.getValue() + " Hours",
           ...this.get_hour_filter_args(),
+          sorter: this.hour_sorter,
         },
         { // The date and time of the order
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
+          sorter: this.time_sorter,
         },
         { // Notes
           title: "Notes", field: "Notes", formatter: this.format_notes,
@@ -494,6 +502,23 @@ export default {
         let m1 = parseInt(t1[1]), m2 = parseInt(t2[1]);
         return (h1 < h2) || (h1 == h2 && m1 <= m2);
       }
+    },
+
+
+
+    // =-= Sorters =-=-=
+
+    time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+      let sec_diff = a.seconds - b.seconds
+      return sec_diff ? sec_diff : (a.nanoseconds - b.nanoseconds);
+    },
+
+    hour_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+      return a - b;
+    },
+
+    work_hours_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+      return this.get_hours_sum(a) - this.get_hours_sum(b);
     },
 
 
