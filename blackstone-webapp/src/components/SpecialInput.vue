@@ -278,9 +278,10 @@ export default {
         },
 
         async getClassOptions() {
-            let classes = await db.collection("GlobalVariables").doc("Classes").get();
+            let query = await db.collection("GlobalPeriods").doc("metadata").get();
             // { value: "12", text: '12' },
-            Object.entries(classes.data()).forEach(c => {
+            let classes = query.data().Classes
+            Object.entries(classes).forEach(c => {
                 this.classOptions.push({
                     value: c[0],
                     text: c[0] + ": " + c[1]
