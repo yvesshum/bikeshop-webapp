@@ -10,10 +10,10 @@
         <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;" >Approve</b-button>
-                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1">Edit Hours</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="this.selected.length > 1">Reject/Cancel Log</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="this.selected.length == 0">Approve</b-button>
+                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit Hours</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Reject/Cancel Log</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
@@ -248,6 +248,7 @@
                 let documentIDs = [];
             
                 let selectedLength = this.selected.length;
+
                 this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
                 for (let i = 0; i < selectedLength; i++) {
                     console.log('A', this.selected[i], this.selected[i]["Document ID"])
