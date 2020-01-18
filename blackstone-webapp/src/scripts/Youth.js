@@ -66,6 +66,10 @@ export class Youth {
 	      return false;
 	}
 
+	static replace_in_array(list, youth) {
+		return list.map(y => Youth.equiv(youth, y) ? youth : y);
+	}
+
 	// Get all matches for a Youth-like object in a given array
 	static findMatches(list, youth) {
 		return list.filter(y => Youth.equiv(youth, y));
@@ -104,5 +108,17 @@ export class Youth {
 
 		// This one is simpler, but if new_youth contains any duplicates, they'll be added more than once
 		// return list.concat( new_youth.filter(youth => !Youth.contains(list, youth)) );
+	}
+
+	static concat_overwrite(list, new_youth) {
+		new_youth.forEach(youth => {
+			if (Youth.contains(list, youth)) {
+				Youth.replace_in_array(list, youth);
+			}
+			else {
+				list.push(youth);
+			}
+		});
+		return list;
 	}
 }

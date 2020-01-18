@@ -177,6 +177,11 @@
           </tbody>
         </table>
       </template>
+
+      <template slot="failureModalBody">
+        The following changes could not be saved...
+        {{}}
+      </template>
     </SaveBar>
   </div>
 </template>
@@ -273,6 +278,10 @@ export default {
         {name: 'Current', arr: 'd'},
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
+
+      // Array to store the results of updating the database
+      // TODO: Does this need to exist at the data level? Could be local to the function
+      update_results: [],
 
     };
   },
@@ -639,19 +648,138 @@ export default {
       return Object.keys(this.changes[youth['ID']].periods).length;
     },
 
-    save_changes: function(accept_func) {
-      console.log("Changes will be saved!");
-      accept_func(true);
+    save_changes: async function(accept_func) {
+
+      // Construct the changes for the period object
+      // Want an object where each key is a year, and each entry is object with fields for each season that needs to change
+      // Each season field in turn is a list of youth
+      let period_obj = {};
+      Object.keys(this.changes).forEach(youth_id => {
+        Object.keys(this.changes[youth_id].periods).forEach(period => {
+
+          // Get the year - this will identify the doc in the database
+          let year = Period.year(period);
+
+          // Initialize any null parent values for the year and the period
+          if (period_obj[year] == null) period_obj[year] = [];
+          if (period_obj[year][period] == null) period_obj[year][period] = [];
+
+          // Construct a new entry for the youth by taking all the required Youth values
+          // and the new class from the list of changes
+          let new_val = {};
+          Youth.requiredVals().forEach(val => new_val[val] = this.changes[youth_id].youth[val]);
+          new_val["Class"] = this.changes[youth_id].periods[period].new_class;
+
+          // Add the new youth onto the appropriate period array in the appropriate year object
+          period_obj[year][period].push(new_val);
+        });
+      });
+
+      // Get lists of youth_ids and periods which need to be updated
+      let youth_id_list = Object.keys(this.changes);
+      let year_list = Object.keys(period_obj);
+
+      // Initialize the update results
+      this.update_results = [];
+      for (var i = 0; i < youth_id_list.length + year_list.length; i++) {
+        this.update_results.push(null);
+      }
+
+      // Update the database for each youth_id
+      for (let i = 0; i < youth_id_list.length; i++) {
+
+        // Grab the data from the database
+        let youth_id = youth_id_list[i];
+        let youth_db = db.collection("GlobalYouthProfile").doc(youth_id);
+        let youth_doc = await youth_db.get();
+        let youth_data = youth_doc.data();
+
+        // Initialize a new active_periods array which will be changed
+        let new_active_periods = youth_data["ActivePeriods"];
+
+        // Make the changes to the grabbed array
+        Object.keys(this.changes[youth_id].periods).forEach(period => {
+          new_active_periods[period] = this.changes[youth_id].periods[period].new_class;
+        });
+
+        // Send the changes back to the database
+        youth_db.update({ActivePeriods: new_active_periods}).then((error) => {
+          if (error) {
+            this.update_results[i] = this.changes[youth_id];
+          }
+          else {
+            this.update_results[i] = true;
+          }
+          check_for_completion(this.update_results);
+        });
+      }
+
+      for (let i = 0; i < year_list.length; i++) {
+        let j = i + youth_id_list.length;
+
+        // Grab the data from the database
+        let year = year_list[i];
+        let period_db = db.collection("GlobalPeriods").doc(year);
+        let period_doc = await period_db.get();
+        let period_data = period_doc.data();
+
+        // Initialize object to store all db changes for the current year
+        let periods_to_update = {};
+
+        // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
+        Object.keys(period_obj[year]).forEach(period => {
+          periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
+        });
+
+        period_db.update(periods_to_update).then(error => {
+          if (error) {
+            this.update_results[j] = period_obj[year];
+          }
+          else {
+            this.update_results[j] = true;
+          }
+          check_for_completion(this.update_results);
+        });
+      }
+
+
+      // This runs at the end of each callback to the database
+      // Waits until all the changes have returned, then does something with the results
+      // If everything succeeded, results will be an array of "true"
+      // Any update that failed will be the object that we were trying to update
+      function check_for_completion(results) {
+
+        // If there are no results yet, quit
+        if (results.length == 0) return;
+
+        // If there are any null values, quit
+        for (let i in results) {
+          if (results[i] == null) return;
+        }
+
+        // Filter out failed updates - object value rather than "true"
+        let failures = results.filter(x => x != true);
+
+        // If any of the updates failed, show that to the user
+        if (failures.length > 0) {
+          accept_func(false);
+        }
+
+        // If not, give the success modal
+        else {
+          accept_func(true);
+        }
+      }
     },
 
     reset_changes: function(accept_func) {
-      console.log("Changes will be reset!");
-      accept_func(true);
+      this.changes = new Object();
+      accept_func();
     },
 
     discard_changes: function(accept_func) {
-      console.log("Changes will be discarded!");
-      accept_func(true);
+      this.changes = new Object();
+      accept_func();
     },
 
 
