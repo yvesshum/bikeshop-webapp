@@ -10,10 +10,10 @@
         <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;" >Approve</b-button>
-                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1">Edit Hours</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel Log</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="this.selected.length == 0">Approve</b-button>
+                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit Hours</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Reject/Cancel Log</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
@@ -243,12 +243,15 @@
 
 
             async accept() {
+                
                 //loop through selected 
                 let documentIDs = [];
             
                 let selectedLength = this.selected.length;
+
                 this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
                 for (let i = 0; i < selectedLength; i++) {
+                    console.log('A', this.selected[i], this.selected[i]["Document ID"])
                     let currentRow = this.selected[i];
                     documentIDs.push(currentRow["Document ID"]);
 
@@ -266,22 +269,21 @@
                         }
                         //calculate successful fields 
                         this.showModal(msg);
-                        this.$root.$emit('bv::refresh::table', 'transfer-table'); 
+                        this.$root.$emit('bv::refresh::table', 'transfer_table'); 
                         break;
                     }
                 }
-
-                console.log('d', documentIDs);
-                console.log('b', this.items.length);
                 //TODO: Table not updating properly after deleting
+                
                 for (let i = 0; i < documentIDs.length; i++) {
                     this.removeLocally(documentIDs[i]);
                 }
-                console.log('a', this.items.length);
-                this.$root.$emit('bv::refresh::table', 'transfer-table'); 
                 this.shouldRefreshTable = true;
-
+                console.log('a', this.items.length);
+                
                 this.closeLoadingModal();
+                this.$root.$emit('bv::refresh::table', 'transfer_table');                 
+
                 if (selectedLength > 1) {
                     this.showModal("Success", "Successfully approved " + selectedLength + " hour log requests");
                 }
@@ -294,7 +296,7 @@
 
             async approvehours(row) {
                 let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).get();
-                console.log(forYouthProfile.data());
+                // console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + row["Youth ID"]);
                     return false;
@@ -308,6 +310,9 @@
                         let addAmount = parseFloat(this.selected[0][key]);
                         if(!isNaN(addAmount)){
                             amount += addAmount;
+                        }
+                        else {
+                            window.alert("Error line 309 in ApproveHourLogs.vue, addAmount is NaN")
                         }
                     }
                 }
@@ -334,7 +339,8 @@
                 }
                 console.log('w', worklog);
                 console.log('r', row);
-                let worklog = row;
+                let worklog = row; //soft copy
+                let docID = worklog["Document ID"]; //to restore ID for local deletion
                 delete worklog["Document ID"];
                 console.log('w', worklog);
                 console.log('r', row);
@@ -342,6 +348,8 @@
                 worklog["Check Out"] = Timestamp.fromDate(moment(worklog["Check Out"], "YYYY-MM-DD hh:mm a").toDate());
 
                 let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(worklog);
+
+                worklog["Document ID"] = docID
 
                 if (logStatus) {
                     window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
@@ -353,12 +361,12 @@
             },
 
             removeLocally(ID) {
-                for (let i =0; i < this.items.length; i++) {
-                    console.log(this.items[i]["Document ID"], ID)
+                for (let i = 0; i < this.items.length; i++) {
+                    // console.log(this.items[i]["Document ID"], ID)
                     if (this.items[i]["Document ID"] === ID) {
                         this.items.splice(i, 1);
                         if (this.shouldRefreshTable) {
-                            this.$root.$emit('bv::refresh::table', 'transfer-table');
+                            this.$root.$emit('bv::refresh::table', 'transfer_table');
                         }
                         break;
                     }
@@ -375,7 +383,7 @@
 
             async getNewData() {
                 await this.getTData();
-                this.$root.$emit('bv::refresh::table', 'transfer-table');
+                this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
 
             },
@@ -444,7 +452,7 @@
                 }
                 this.items.splice(itemIndex, 1);
 
-                this.$root.$emit('bv::refresh::table', 'transfer-table');
+                this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.closeLoadingModal();
                 this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
@@ -526,6 +534,8 @@
                 console.log(this.editSelectedHours);
 
                 let newTotalHours = 0;
+
+                //will probably need to refactor this at some point
                 var newHours = '{'
                 for(let i = 0; i < this.editSelectedHours.length; i++){
                     let category = this.editSelectedHours[i]["Category"];

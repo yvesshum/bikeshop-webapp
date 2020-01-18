@@ -1,4 +1,6 @@
 // TODO: Field names must not have symbols
+//TODO:  Adding and deleting not working well
+//TODO: Initial value must have something in it, cannot be undefined 
 
 <template><div>
     <b-button-group style="margin-bottom:10px">
@@ -129,7 +131,7 @@
             max-rows="3"
         ></b-form-textarea> -->
         <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
-        <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName">Add a new field and change all existing documents to have this field and value</b-button>
+        <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName && modal.add.initial_value == null">Add a new field and change all existing documents to have this field and value</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
 
     </b-modal>
@@ -200,7 +202,7 @@ export default {
     },
     mounted() {
         this.field_data = this.elements;
-        this.field_data_initial_copy = this.parse(this.field_data);
+        this.field_data_initial_copy = this.field_data;
 
         // Grab input types
         db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
@@ -318,7 +320,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
@@ -329,7 +331,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
                             await db.doc(path).set(data);
@@ -377,7 +379,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.field_name]
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
@@ -387,7 +389,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.field_name]
                             await db.doc(path).set(data);
                         })
@@ -434,12 +436,12 @@ export default {
                 
                 query.forEach(async doc => {
                     let id = doc.id;
-                    let data = this.parse(doc.data());
+                    let data = doc.data();
 
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
 
                     // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                    await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
                 })
             }
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
@@ -448,10 +450,10 @@ export default {
                 query.forEach(async doc => {
                     let id = doc.id;
                     let path = doc.ref.path
-                    let data = this.parse(doc.data());
+                    let data = doc.data();
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
                     // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.doc(path).set(data);
+                    await db.doc(path).update(data);
                 })
             }
 
