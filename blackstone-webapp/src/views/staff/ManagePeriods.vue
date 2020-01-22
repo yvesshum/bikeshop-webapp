@@ -475,9 +475,11 @@ export default {
 
     load_periods: async function() {
       this.periods = {};
-      this.year_list.forEach(async year => {
-        this.periods[year] = (await this.periods_db.doc(year).get()).data();
-      });
+      for (let i = 0; i < this.year_list.length; i++) {
+        let year = this.year_list[i];
+        let snapshot = await this.periods_db.doc(year).get();
+        this.periods[year] = snapshot.data();
+      }
     },
 
     // Format: {'Fall 18': 'Gear Up 2', 'Winter 20': 'Gear Up 2', 'Spring 17': 'Earn a Bike', 'Summer 18': 'Gear Up 1'}
