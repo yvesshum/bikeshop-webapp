@@ -475,6 +475,8 @@ export default {
 
     load_periods: async function() {
       this.periods = {};
+
+      // This has to be a for loop to ensure any parent function calling await load_periods() will be run after all async calls within this function are made
       for (let i = 0; i < this.year_list.length; i++) {
         let year = this.year_list[i];
         let snapshot = await this.periods_db.doc(year).get();
