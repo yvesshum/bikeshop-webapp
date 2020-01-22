@@ -73,8 +73,11 @@
 			<h3>Success!</h3>
 		</b-modal>
 
-		<b-modal v-model="failure_modal_visible" hide-header>
-			<h3>Failure!</h3>
+		<b-modal v-model="failure_modal_visible" ok-only ok-variant="outline-danger">
+			<template slot="modal-title">
+				<slot name="failureModalHeader"><h4>Save Failed</h4></slot>
+			</template>
+			<slot name="failureModalBody">Something went wrong updating the database.</slot>
 		</b-modal>
 	</div>
 </template>
