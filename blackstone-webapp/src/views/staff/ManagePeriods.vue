@@ -179,8 +179,32 @@
       </template>
 
       <template slot="failureModalBody">
-        The following changes could not be saved...
-        {{}}
+        Something went wrong updating the database. The following changes could not be saved:
+        <br />
+
+        <h4 style="color: black;">Unsaved Youth Profiles</h4>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Name & ID</th>
+              <th scope="col">Period</th>
+              <th scope="col">Old Class</th>
+              <th scope="col">New Class</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="change in error_array_youth" style="padding-top: 0px;">
+              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
+                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
+              </td>
+              <td>{{change.period}}</td>
+              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
+              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        Please take note of these and try again.
       </template>
     </SaveBar>
   </div>
@@ -373,6 +397,25 @@ export default {
         });
       });
       return result;
+    },
+
+    error_array_youth: function() {
+      if (this.update_results == null || this.update_results.youth == null) return null;
+      let result_array = [];
+
+      this.update_results.youth.filter(x => x != true && x != null).forEach(result => {
+        let periods = Period.sort(Object.keys(result.periods));
+        periods.forEach((period, n) => {
+          result_array.push({
+            youth: n == 0 ? result.youth : undefined,
+            period,
+            old_class: result.periods[period].old_class,
+            new_class: result.periods[period].new_class
+          })
+        })
+      });
+
+      return result_array;
     },
 
     display_youths: function() {
@@ -680,12 +723,16 @@ export default {
       let year_list = Object.keys(period_obj);
 
       // Initialize the update results
-      this.update_results = [];
-      for (var i = 0; i < youth_id_list.length + year_list.length; i++) {
-        this.update_results.push(null);
+      this.update_results = {youth: [], years: []};
+      for (var i = 0; i < youth_id_list.length; i++) {
+        this.update_results.youth.push(null);
+      }
+      for (var i = 0; i < year_list.length; i++) {
+        this.update_results.years.push(null);
       }
 
       // Update the database for each youth_id
+      // TODO: Is there a way to specify a change to be made to an array without .get() ing it?
       for (let i = 0; i < youth_id_list.length; i++) {
 
         // Grab the data from the database
@@ -705,17 +752,16 @@ export default {
         // Send the changes back to the database
         youth_db.update({ActivePeriods: new_active_periods}).then((error) => {
           if (error) {
-            this.update_results[i] = this.changes[youth_id];
+            this.$set(this.update_results.youth, i, this.changes[youth_id]);
           }
           else {
-            this.update_results[i] = true;
+            this.$set(this.update_results.youth, i, true);
           }
           check_for_completion(this.update_results);
         });
       }
 
       for (let i = 0; i < year_list.length; i++) {
-        let j = i + youth_id_list.length;
 
         // Grab the data from the database
         let year = year_list[i];
@@ -733,10 +779,10 @@ export default {
 
         period_db.update(periods_to_update).then(error => {
           if (error) {
-            this.update_results[j] = period_obj[year];
+            this.$set(this.update_results.years, i, period_obj[year]);
           }
           else {
-            this.update_results[j] = true;
+            this.$set(this.update_results.years, i, true);
           }
           check_for_completion(this.update_results);
         });
@@ -747,7 +793,9 @@ export default {
       // Waits until all the changes have returned, then does something with the results
       // If everything succeeded, results will be an array of "true"
       // Any update that failed will be the object that we were trying to update
-      function check_for_completion(results) {
+      function check_for_completion(results_object) {
+
+        let results = results_object.youth.concat(results_object.years);
 
         // If there are no results yet, quit
         if (results.length == 0) return;
