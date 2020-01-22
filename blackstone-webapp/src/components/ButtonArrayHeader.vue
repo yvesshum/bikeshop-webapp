@@ -79,7 +79,7 @@ export default {
 
     computed: {
         rev_right: function() {
-            return this.right.reverse();
+            return this.right.slice().reverse();
         },
     },
 }
