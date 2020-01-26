@@ -188,6 +188,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },*/
+        /*
         {
             path: '/manage-periods',
             name: '/manage-periods',
@@ -197,6 +198,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        */
         /*
         {
             path: '/admin-panel',
