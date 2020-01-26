@@ -2,13 +2,13 @@
 <template>
   <div>
     <top-bar />
-    <h1 style="margin-top: 5px; margin-bot: 5px">Currently Checked-In Youth</h1>
+    <h1 class="title">Currently Checked-In Youth</h1>
 
-    <b-button
+    <!-- <b-button
       @click="viewProfile"
-      style="margin-top: 5px; margin-bot: 5px"
+      style="margin-bottom: 1rem"
       variant="info"
-    >View Profile</b-button>
+    >View Profile</b-button> -->
 
     <b-table
       :items="items"
@@ -170,3 +170,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.title {
+margin-bottom: 1rem;
+}
+</style>

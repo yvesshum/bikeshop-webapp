@@ -1,6 +1,7 @@
 <template>
   <div class="profile_lookup_staff">
-    <TopBar/>
+    <top-bar />
+    <h1 class="title">Profile Lookup and Editing</h1>
     <p>This is the staff view of the youth profile lookup page</p>
 
     <YouthIDSelector @selected="load_youth"/>
@@ -103,3 +104,9 @@ export default {
     }
 }
 </script>
+
+<style>
+.title {
+margin-bottom: 1rem;
+}
+</style>
