@@ -428,7 +428,7 @@ export default {
     format_hours: function(field, dp) {
       if (this.local_values == null) return "";
       let hours = this.local_values[field];
-      if(hours == 0){
+      if(hours == undefined){
           return Number(0).toFixed(dp);
       } else {
           return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
