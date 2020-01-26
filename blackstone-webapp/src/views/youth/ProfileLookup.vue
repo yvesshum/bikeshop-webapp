@@ -4,7 +4,8 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
 <template>
   <div class="profile_lookup_youth">
-    <TopBar/>
+    <top-bar/>
+    <h1 class="title">Profile Lookup</h1>
     <YouthIDSelector @selected="load_youth"/>
 
     <div ref="body_fields" v-show="currentProfile != null">
@@ -121,3 +122,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.title {
+margin-bottom: 1rem;
+}
+</style>
