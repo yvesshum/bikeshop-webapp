@@ -205,7 +205,7 @@ import 'vue-datetime/dist/vue-datetime.css'
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
-import {filter} from '@/components/Search.js'
+import {filter} from '@/scripts/Search.js'
 let setOrder = function(field) {
   var fieldVal = 0;
   if (field == "Check In") {
@@ -289,7 +289,7 @@ export default {
       total_Hours_Spent_Loading: false,
       total_Hours_Spent: 0,
       checkbox_fields: [],
-      fields_selected: ["ID"], //Default to have ID selected
+      fields_selected: ["ID", "Name"], //Default to have ID selected
       table: {}
     };
   },
@@ -518,7 +518,9 @@ export default {
       //This looks really complicated, but it's just because Javascript is kind of annoying
       //It takes each profile, gets its headers (field names), merges that list (.flat()), and then deduplicates them (... Set)
       this.checkbox_fields = [...new Set(tableData.map(x => Object.keys(x)).flat())].sort();
-      this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"),1).unshift(["ID"])
+      this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"),1)
+      this.checkbox_fields.splice(this.checkbox_fields.indexOf("Name"),1)
+      this.checkbox_fields.unshift("ID","Name")
       this.table = new Tabulator("#table", {
         data: tableData,
         layout: "fitColumns",
@@ -558,8 +560,8 @@ export default {
 
     //Grab the Season choices e.g. summer spring fall etc.
     let seasonQuery = await db
-      .collection("GlobalVariables")
-      .doc("ActivePeriods")
+      .collection("GlobalPeriods")
+      .doc("metadata")
       .get();
     this.Earned_Period_Data.season_options = seasonQuery.data().Seasons;
     this.Spent_Period_Data.season_options = seasonQuery.data().Seasons;
@@ -569,7 +571,8 @@ export default {
     fields_selected: function(val, oldVal) {
       let nV = Object.values(Object.assign({}, val));
       nV.splice(nV.indexOf("ID"),1)
-      nV.sort().unshift("ID") //Force ID to always be leftmost column
+      nV.splice(nV.indexOf("Name"),1)
+      nV.sort().unshift("ID","Name") //Force ID to always be leftmost column
       this.table.setColumns(nV.map(x => {
           return {
             title: x,

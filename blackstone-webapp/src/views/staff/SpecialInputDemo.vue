@@ -8,7 +8,7 @@
             <hr>
 
             <p>Boolean</p>
-            <SpecialInput inputType="Boolean" ref="test"/>
+            <SpecialInput inputType="Boolean" ref="boolean"/>
             <br>
             <hr>
 
@@ -17,8 +17,12 @@
             <br><hr>
 
 
+            <p>Datetime</p>
+            <SpecialInput inputType="Datetime" ref="datetime" :arguments="{}"/>
+            <br><hr>
+
             <p>Date</p>
-            <SpecialInput inputType="Datetime" ref="date" :arguments="{}"/>
+            <SpecialInput inputType="Date" ref="date" :arguments="{}"/>
             <br><hr>
 
             <p>Gender</p>
@@ -30,19 +34,19 @@
             <br><hr>
 
             <p>Grade</p>
-            <SpecialInput inputType="Grade" ref="race"  :arguments="{}"/>
+            <SpecialInput inputType="Grade" ref="grade"  :arguments="{}"/>
             <br><hr>
 
             <p>Email</p>
-            <SpecialInput inputType="Email" ref="race"  :arguments="{}"/>
+            <SpecialInput inputType="Email" ref="email"  :arguments="{}"/>
             <br><hr>
 
             <p>Hours</p>
-            <SpecialInput inputType="Hours" ref="race"  :arguments="{}"/>
+            <SpecialInput inputType="Hours" ref="hours"  :arguments="{}"/>
             <br><hr>
 
             <p>Class</p>
-            <SpecialInput inputType="Class" ref="race"  :arguments="{}"/>
+            <SpecialInput inputType="Class" ref="class"  :arguments="{}"/>
             <br><hr>
 
             <p>Period</p>

@@ -1,5 +1,5 @@
 <!--
-* Usage: <SpecialInput inputType="String" args="arguments" v-model="specialInputvalue"/>
+* Usage: <SpecialInput inputType="String" :arguments="args" v-model="specialInputvalue"/>
 
 * Input can be of types: Integer, Boolean, Phone, Date, Time, Gender, Race....
         The full list can be viewed in GlobalVariables/SpecialInput 
@@ -8,19 +8,19 @@
 
 Some components have properties that we would like to set through Special Input.
 
-To allow for this we can add a property in the component below e.g. :placeholder="args.placeholder", 
+To allow for this we can add a property in the component below e.g. :placeholder="arguments.placeholder", 
 
-To specify a property from the parent using args="arguments", one would just 
+To specify a property from the parent using :arguments="args", one would just 
 have to pass in an object with key=name_of_property value=value_of_property.
 
 Like this in methods: 
-arguments1: {
+args: {
     "placeholder": "0",
     "align": "center"
     "style": "text-align:center; color: #FF0000"
 }
 
-Note that if a property is not specified, "args.property_name" would just be undefined and all is well (I think). 
+Note that if a property is not specified, "arguments.property_name" would just be undefined and all is well (I think). 
 Style argument is just for the specific <b-form> components instead of the entire div
 
 * The ref is only necessary if you want to call private methods here 
@@ -53,7 +53,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value" name="Boolean">
+                <b-form-radio-group  v-model="inner_value">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -67,20 +67,21 @@ use v-model. Whenever one of these is changed, it updates the other.
             <vue-tel-input v-model="inner_value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
         </div>
 
-        <!-- Returns a ISO string -->
+        <!-- Returns a ISO string-->
         <div v-else-if="input === 'Datetime'">
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
-             <!-- In progress, none of the packages seem to work so far -->   
+            <datetime type="datetime" v-model="inner_value"/>
+
+        </div>
         
-        <datetime type="datetime" v-model="inner_value"/>
-
-
+        <div v-else-if="input === 'Date'" style="text-align: center;">
+            <datepicker v-model="inner_value" style="display: inline-block;"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value" name="Gender">
+                <b-form-radio-group  v-model="inner_value" :name="inner_value">
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -118,7 +119,7 @@ use v-model. Whenever one of these is changed, it updates the other.
               :step="0.5"
               placeholder="Hours"
               align="center"
-              style="width: 20rem"
+              style="width: 100%; margin: 0 auto"
               controls
               :inputtable="false"
             />
@@ -142,12 +143,13 @@ use v-model. Whenever one of these is changed, it updates the other.
 </template>
 <script>
 import VueNumberInput from '@chenfengyuan/vue-number-input';
-import { Datetime } from 'vue-datetime'
-import 'vue-datetime/dist/vue-datetime.css'
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
+import { Datetime } from 'vue-datetime'
+import 'vue-datetime/dist/vue-datetime.css'
+import Datepicker from 'vuejs-datepicker';
 
 export default {
     name: 'SpecialInput',
@@ -164,14 +166,11 @@ export default {
             type:String,
             default: "unknown_ref"
         },
-        value: {
-
-        },
     },
     data() {
         return {
             input: null,
-            inner_value: this.value,
+            inner_value: null,
             args: {},
             ready: false,
             raceOptions: [
@@ -199,8 +198,8 @@ export default {
                 { value: "11", text: '11' },
                 { value: "12", text: '12' },
             ],
-            classOptions: [],
-            periodOptions: [],
+            classOptions: [{value: null, text: "Please wait, fetching.."}],
+            periodOptions: [{value: null, text: "Please wait, fetching.."}],
         }
     },
 
@@ -213,23 +212,30 @@ export default {
 
         // When the inner value of the input component changes, propagate that change upward
         inner_value: function(new_value) {
-            this.$emit("input", new_value);
-
-            console.log(new_value);
+            // this.$emit(this.tag, new_value);
+            //check input type 
+            // if match, parse into Timestamp 
+            if (this.inputType === "Datetime" || this.inputType === "Date") {
+                this.$emit("input", Timestamp.fromDate(new Date(new_value)));
+            }
+            else {
+                this.$emit("input", new_value);
+            }
+            
         },
 
-        // TODO: This function never actually runs if inputType is specified from the beginning, so I don't think we need it.
-        // Yves: We need this for fieldEditor >.> inputType will change 
         inputType: function() {
-            this.setValue(null);
             this.input = this.inputType;
-            if (this.inputType === "Class" && !this.classOptions.length) {
+            if (this.inputType === "Class" && this.classOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getClassOptions();
             }
-            else if (this.inputType === "Period" && !this.periodOptions.length) {
+            else if (this.inputType === "Period" && this.periodOptions[0].value == null) {
+                //only get it once, avoid api spam
                 this.getPeriodOptions();
             }
+            this.initValue();
+            
         }
     },
 
@@ -241,11 +247,13 @@ export default {
         },
 
         setValue(val) {
-            this.$emit("input", val);
-            return;
+            console.log('val', val);
+            this.inner_value = val;
         },
 
+        //defaults 
         initValue(val) {
+            console.log("init value called, input type:", this.input);
             if (val != null) {
                 this.setValue(val);
                 return;
@@ -255,8 +263,40 @@ export default {
                     this.setValue(0);
                     break;
                 case 'Boolean':
-                    this.setValue("false");
+                    this.setValue(false);
                     break;
+                case 'Phone': 
+                    this.setValue("");
+                    break;
+                case 'Datetime':
+                    this.setValue(new Date().toString())
+                    break;
+                case 'Date':
+                    this.setValue(new Date())
+                    break;
+                case 'Gender':
+                    this.setValue("M"); //leftmost element 
+                    break;
+                case 'Race': 
+                    this.setValue(null);
+                    break;
+                case 'Grade':
+                    this.setValue(null);
+                    break;
+                case 'Email':
+                    this.setValue("");
+                    break;
+                case 'Hours':
+                    this.setValue(0);
+                    break;
+                case 'Class':
+                    this.setValue(this.classOptions[0].value);
+                    break;
+                case 'Period':
+                    this.setValue(this.periodOptions[0].value);
+                    break;
+                default:
+                    this.setValue("");
             }
         },
 
@@ -276,18 +316,22 @@ export default {
         },
 
         async getClassOptions() {
-            let classes = await db.collection("GlobalVariables").doc("Classes").get();
+            let query = await db.collection("GlobalPeriods").doc("metadata").get();
+            this.classOptions = [];
             // { value: "12", text: '12' },
-            Object.entries(classes.data()).forEach(c => {
+            let classes = query.data().Classes
+            console.log(classes);
+            classes.forEach(c => {
                 this.classOptions.push({
-                    value: c[0],
-                    text: c[0] + ": " + c[1]
+                    value: Object.keys(c)[0],
+                    text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
         },
 
         async getPeriodOptions() {
             let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
+            this.periodOptions = [];
             seasons = seasons.data().Seasons;
             console.log('sget', seasons);
             let years = [];
@@ -327,7 +371,8 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
-        Datetime
+        Datetime,
+        Datepicker
     }
 
 }

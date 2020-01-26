@@ -1,13 +1,19 @@
+//TODO: figure out how to do multiple hour logs.
+// Plan: 
+// Rewrite the functional routine for doing 1 approval
+// Write an outer function to traverse selection, applying that functional routine
+// If 1 fails, break out of it and say which ones were successful
+// If successful, just display a modal of the successful ones 
 <template>
     <div class = ApproveHourLogs>
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-                    <b-button variant="info" @click="editHours" style="margin: 1%;">Edit Hours</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel Log</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="this.selected.length == 0">Approve</b-button>
+                    <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit Hours</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Reject/Cancel Log</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
@@ -17,7 +23,7 @@
             hover
             selectable
             responsive
-            select-mode="single"
+            select-mode="multi"
             selectedVaraint = "success"
             :items="items"
             :fields="fields"
@@ -147,6 +153,8 @@
                 fields: [],
                 items: [],
                 selected: [],
+                shouldRefreshTable: true,
+
                 modalHeader: "",
                 modalMsg: "",
                 modalVisible: false,
@@ -157,11 +165,14 @@
                 rejectingID: "",
                 editModalVisible: false,
                 editMsg: "",
-                isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                deleteAmount: 0,
                 hoursModalVisible: false,
+
+                isBusy: true,
+                
+                deleteAmount: 0,
+                
                 editSelectedHours: {}
             };
 
@@ -232,13 +243,63 @@
 
 
             async accept() {
-                let row = this.selected[0];
-                //change remotely
+                
+                //loop through selected 
+                let documentIDs = [];
+            
+                let selectedLength = this.selected.length;
+
+                this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
+                for (let i = 0; i < selectedLength; i++) {
+                    console.log('A', this.selected[i], this.selected[i]["Document ID"])
+                    let currentRow = this.selected[i];
+                    documentIDs.push(currentRow["Document ID"]);
+
+                    let approveStatus = await this.approvehours(currentRow);
+                    if (!approveStatus) {
+                        documentIDs.pop();
+                        for (let j = 0; i < documentIDs.length; j++) {
+                            this.removeLocally(documentIDs[j]);
+                        }
+
+                        //error message
+                        let msg = "Error, something went wrong."
+                        if (i > 0) {
+                            msg += "The first " + i + "was approved though.";
+                        }
+                        //calculate successful fields 
+                        this.showModal(msg);
+                        this.$root.$emit('bv::refresh::table', 'transfer_table'); 
+                        break;
+                    }
+                }
+                //TODO: Table not updating properly after deleting
+                
+                for (let i = 0; i < documentIDs.length; i++) {
+                    this.removeLocally(documentIDs[i]);
+                }
+                this.shouldRefreshTable = true;
+                console.log('a', this.items.length);
+                
+                this.closeLoadingModal();
+                this.$root.$emit('bv::refresh::table', 'transfer_table');                 
+
+                if (selectedLength > 1) {
+                    this.showModal("Success", "Successfully approved " + selectedLength + " hour log requests");
+                }
+                else {
+                    // was hoping to make a more personal message but oh well
+                     this.showModal("Success", "Successfully approved 1 hour log request")
+                }
+
+            },
+
+            async approvehours(row) {
                 let forYouthProfile = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).get();
-                console.log(forYouthProfile.data());
+                // console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + row["Youth ID"]);
-                    return null;
+                    return false;
                 }
 
                 this.showLoadingModal("Doing some work in the background...");
@@ -250,11 +311,16 @@
                         if(!isNaN(addAmount)){
                             amount += addAmount;
                         }
+                        else {
+                            window.alert("Error line 309 in ApproveHourLogs.vue, addAmount is NaN")
+                        }
                     }
                 }
 
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
+                
+                console.log(newPendingHours, newHoursEarned);
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
                     "Pending Hours": newPendingHours,
                     "Hours Earned": newHoursEarned
@@ -262,39 +328,46 @@
 
                 if (acceptStatus) {
                     window.alert("Error, unable to change sender's profile hours")
+                    return false;
                 }
 
-                this.removeLocally(row["Document ID"]);
 
                 let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
                 if (status3 == null) {
                     window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
-                    return null;
+                    return false;;
                 }
-
-                let worklog = row;
+                console.log('w', worklog);
+                console.log('r', row);
+                let worklog = row; //soft copy
+                let docID = worklog["Document ID"]; //to restore ID for local deletion
                 delete worklog["Document ID"];
+                console.log('w', worklog);
+                console.log('r', row);
                 worklog["Check In"] = Timestamp.fromDate(moment(worklog["Check In"], "YYYY-MM-DD hh:mm a").toDate());
                 worklog["Check Out"] = Timestamp.fromDate(moment(worklog["Check Out"], "YYYY-MM-DD hh:mm a").toDate());
 
-
                 let logStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).collection("Work Log").doc().set(worklog);
+
+                worklog["Document ID"] = docID
 
                 if (logStatus) {
                     window.alert("Error on creating a log entry in Global Youth Profile -> Work Log of Youth ID: " + row["Youth ID"]);
                     return null;
                 }
 
-                this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s log")
+                return true;
 
             },
 
             removeLocally(ID) {
-                for (let i =0; i < this.items.length; i++) {
+                for (let i = 0; i < this.items.length; i++) {
+                    // console.log(this.items[i]["Document ID"], ID)
                     if (this.items[i]["Document ID"] === ID) {
                         this.items.splice(i, 1);
-                        this.$root.$emit('bv::refresh::table', 'transfer-table');
+                        if (this.shouldRefreshTable) {
+                            this.$root.$emit('bv::refresh::table', 'transfer_table');
+                        }
                         break;
                     }
                 }
@@ -310,7 +383,7 @@
 
             async getNewData() {
                 await this.getTData();
-                this.$root.$emit('bv::refresh::table', 'transfer-table');
+                this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
 
             },
@@ -379,7 +452,7 @@
                 }
                 this.items.splice(itemIndex, 1);
 
-                this.$root.$emit('bv::refresh::table', 'transfer-table');
+                this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.closeLoadingModal();
                 this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
                 this.rejectingDocumentID = "";
@@ -461,6 +534,8 @@
                 console.log(this.editSelectedHours);
 
                 let newTotalHours = 0;
+
+                //will probably need to refactor this at some point
                 var newHours = '{'
                 for(let i = 0; i < this.editSelectedHours.length; i++){
                     let category = this.editSelectedHours[i]["Category"];

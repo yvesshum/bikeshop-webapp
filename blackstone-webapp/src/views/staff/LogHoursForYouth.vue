@@ -176,9 +176,8 @@ export default {
                 //Grab Period Data
                 let period = ""
                 try {
-                    period = await db.collection("GlobalVariables").doc("ActivePeriods").get();
-                    period = period.data();
-                    period = period["CurrentPeriod"]
+                    let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
+                    period = metadata.data()["CurrentPeriod"];
                 } catch(err) {
                     window.alert("Unable to get current period, err: " + err);
                     return null;

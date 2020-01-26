@@ -28,7 +28,7 @@ import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
 import Stats from './views/staff/Stats.vue';
 import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
-
+import PeriodSettings from './views/admin/PeriodSettings.vue'
 Vue.use(Router);
 
 const router = new Router({
@@ -288,6 +288,16 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        {
+            path: '/period-settings',
+            name: 'period-settings',
+            component: PeriodSettings,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+
 
 
         ]

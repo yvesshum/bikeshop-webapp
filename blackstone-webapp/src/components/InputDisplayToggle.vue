@@ -17,15 +17,10 @@
     </div>
 
     <div ref="edit_container" v-else>
-      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value">
+      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
       </SpecialInput>
-      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()">
-        <div v-if="changed">
-          <span v-if="get_original_string().length > 0">
-            Reset to {{get_original_string()}}
-          </span>
-          <span v-else>Clear</span>
-        </div>
+      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block;" v-b-tooltip.hover.html="tooltip_data">
+        <div v-if="get_original_string().length == 0">Clear</div>
         <div v-else>Reset</div>
       </b-button>
     </div>
@@ -36,7 +31,7 @@
 <script>
 import SpecialInput from '@/components/SpecialInput';
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const moment = require("moment");
 
 export default {
   name: 'input_display_toggle',
@@ -73,6 +68,12 @@ export default {
         value: this.defaultValue,
         align: "center",
       };
+    },
+
+    tooltip_data: function() {
+      return (this.changed && this.get_original_string().length > 0)
+        ? `Reset to ${this.get_original_string()}`
+        : "";
     },
   },
 
@@ -153,7 +154,7 @@ export default {
             month: Number(val.substring(val.indexOf("-")+1, val.lastIndexOf("-")))-1,
             day: val.substring(val.lastIndexOf("-")+1),
           };
-          return `${months[date.month]} ${date.day}, ${date.year}`;
+          return `${moment.months()[date.month]} ${date.day}, ${date.year}`;
 
         // Everything else is fine as is
         default:
@@ -162,7 +163,7 @@ export default {
     },
 
     is_blank: function() {
-      return this.edit_value === null || this.edit_value === "";
+      return this.edit_value === undefined || this.edit_value === null || this.edit_value === "";
     },
 
 

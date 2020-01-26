@@ -23,7 +23,8 @@
             // update table if data changes
             tableData: {
                 handler: function (newData) {
-                    this.tabulator.replaceData(newData)
+                    this.tabulator.replaceData(newData);
+                    this.$emit("replaceData", newData);
                 },
                 deep: true
             },
@@ -50,6 +51,10 @@
                             rowSelected:   row => this.$emit('selectedRow',   row),
                             rowDeselected: row => this.$emit('deselectedRow', row),
                             rowSelectionChanged: (data, rows) => this.$emit('newSelection', rows),
+                            rowClick: (event, row) => {
+                                let selected = this.tabulator.getSelectedRows();
+                                this.$emit('rowClick', {event, row, selected});
+                            },
             };
 
             this.tabulator = new Tabulator(this.$refs.table, {...defaultArgs, ...this.args});

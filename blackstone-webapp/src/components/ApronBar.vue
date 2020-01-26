@@ -120,7 +120,7 @@ import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
 import MatchTable from '@/components/MatchTable';
-import {Status} from '@/components/Status.js';
+import {Status} from '@/scripts/Status.js';
 
 export default {
   name: 'apron_bar',

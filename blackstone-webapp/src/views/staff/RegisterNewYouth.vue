@@ -1,52 +1,62 @@
 <template>
     <div class = "RegisterYouth">
         <top-bar omitEmail/>
-        <h3 style="margin: 20px">Register a new Youth here!</h3>
+        
+        <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
+        
+        <div class = "specialDiv">
+          <b-form-select v-model="returningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
+        </div>
+        
+        <h3 v-if="returningYouth == 'New Youth'" style="margin: 20px">Register a new Youth here!</h3>
+        
+        <h3 v-if="returningYouth == 'Returning Youth'" style="margin: 20px">Register a returning Youth here!</h3>
+
+        <div v-if="returningYouth != '-'">
 
         <h4 class = "field_msg">Required fields:</h4>
+        
+        <div v-if="returningYouth == 'Returning Youth'">
+        
+          <p class="field_header">Enter Your Youth ID:</p>
+        
+          <div class = "specialDiv">
+            <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
+            </br>
+            <h4 class = "field_msg">Optional fields:</h4>
+            <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
+            <hr>
+          </div>
+        
+      </div>
         
 
         <div v-for="field in requiredFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                
-                <!-- <div v-if="field.type == 'Date'">
-
-                </div> -->
-                <div v-if="field.type == 'radio'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
-                    </RadioGroupOther>
+                <div class = "specialDiv">
+                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                  </SpecialInput>
                 </div>
-                <!--  -->
-                <input v-else size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
-                <br><br>
-                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
+                <br>
             </div>
         </div>
 
-        <h4 class = "field_msg" style="margin-top: 20px">Optional fields:</h4>
+        <h4 class = "field_msg" v-if="returningYouth == 'New Youth'">Optional fields:</h4>
         <div v-for="field in optionalFields">
             <div class="each_field">
                 <p class="field_header">{{field.name}}</p>
-                <input v-if="field.type != 'radioOther' && field.type != 'radio' && field.type != 'tel'" size="35" v-model="field.value" :type="field.type" :placeholder="field.placeholder">
-                <div v-if="field.type == 'tel'" class = "telDiv">
-                  <vue-tel-input v-model="field.value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
+                <div class = "specialDiv">
+                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                  </SpecialInput>
                 </div>
-                <div v-if="field.type == 'radioOther'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" nullOption>
-                    </RadioGroupOther>
-                </div>
-                <div v-if="field.type == 'radio'" class = "radioDiv">
-                    <RadioGroupOther v-bind:name="field.name" v-model="field.value" :options="field.id" omitOtherOption>
-                    </RadioGroupOther>
-                </div>
-                <br><br>
-                <!-- <textarea v-model="field.value" :placeholder="field.name + '*'"></textarea> -->
+                <br>
             </div>
         </div>
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
+        </div>
 
 
         <b-modal v-model = "modalVisible" hide-footer lazy>
@@ -54,7 +64,8 @@
                 New Youth registered!
             </template>
             <div class="d-block text-center">
-                <h3>A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
+                <h3 v-if="returningYouth == 'New Youth'">A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
+                <h3 v-if="returningYouth == 'Returning Youth'">A returning Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -71,7 +82,7 @@
         </b-modal>
 
          <!-- Loading Modal -->
-        <b-modal v-model = "loadingModalVisbile" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
             <template slot="modal-title">
                 Doing some work...
             </template>
@@ -89,11 +100,12 @@
 
 <script>
     import { VueTelInput } from 'vue-tel-input'
+    import SpecialInput from '@/components/SpecialInput';
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
-    import { forKeyVal } from '../../components/ParseDB.js';
+    import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
@@ -106,6 +118,7 @@
         components: {
             RadioGroupOther,
             VueTelInput,
+            SpecialInput,
         },
         data() {
             return {
@@ -114,12 +127,22 @@
                 optionalFields: [],
                 hiddenFields: [],
                 modalVisible: false,
-                loadingModalVisible: true,
+                loadingModalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
                 newID: "123",
-                placeholders: {}
+                placeholders: {},
+                arguments: {
+                    "placeholder": "0"
+                },
+                returningYouth: "-",
+                returningOptions: [
+                    { value: '-', text: '-' },
+                    { value: 'New Youth', text: 'New Youth' },
+                    { value: "Returning Youth", text: 'Returning Youth' }
+                ],
+                returningYouthID: null,
             };
         },
         methods: {
@@ -184,21 +207,36 @@
                     // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                     
                     var input = {};
-                    //hidden field initializers
-                    await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
-                        console.log("Hidden listener")
-                        console.log(snapshot.val())
-                        let hiddenProtectedInitializers = snapshot.val()["Protected"];
-                        let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
-                        for (let key in hiddenProtectedInitializers) {
-                            console.log("Protected hidden")
-                            input[key] = hiddenProtectedInitializers[key]
+                    
+                    if(this.returningYouth == "Returning Youth"){
+                        let selectedYouth = await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
+                        input = selectedYouth.data();
+                        if (input == null) {
+                            this.errorFields = ["Returning Youth ID"];
+                            this.loadingModalVisible = false;
+                            this.showErrorModal();
+                            return null;
                         }
-                        for (let key in hiddenUnprotectedInitializers) { 
-                            console.log("Unprotected hidden")
-                            input[key] = hiddenUnprotectedInitializers[key]
-                        }
-                    })
+                        input["New or Returning"] = "Returning Youth";
+                        input["ReturningID"] = this.returningYouthID;
+                    } else {
+                        input["New or Returning"] = "New Youth";
+                        //hidden field initializers
+                        await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
+                            console.log("Hidden listener")
+                            console.log(snapshot.val())
+                            let hiddenProtectedInitializers = snapshot.val()["Protected"];
+                            let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
+                            for (let key in hiddenProtectedInitializers) {
+                                console.log("Protected hidden")
+                                input[key] = hiddenProtectedInitializers[key]
+                            }
+                            for (let key in hiddenUnprotectedInitializers) { 
+                                console.log("Unprotected hidden")
+                                input[key] = hiddenUnprotectedInitializers[key]
+                            }
+                        })
+                    }
                     
                     var today = new Date();
                     var date = Timestamp.fromDate(new Date());
@@ -206,12 +244,30 @@
                 
                     let data = this.parse(this.requiredFields);
                     for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
+                        if(data[i]["value"] == undefined){
+                            if(this.returningYouth != "Returning Youth"){
+                                data[i]["value"] = "";
+                            }
+                        } else if(this.returningYouth == "Returning Youth") {
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
+                        if(this.returningYouth != "Returning Youth"){
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
                     }
                     
                     data = this.parse(this.optionalFields);
                     for (let i = 0; i < data.length; i ++) {
-                        input[data[i]["name"]] = data[i]["value"];
+                        if(data[i]["value"] == undefined){
+                            if(this.returningYouth != "Returning Youth"){
+                                data[i]["value"] = "";
+                            }
+                        } else if(this.returningYouth == "Returning Youth") {
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
+                        if(this.returningYouth != "Returning Youth"){
+                            input[data[i]["name"]] = data[i]["value"];
+                        }
                     }
                     
                     console.log(input);
@@ -219,13 +275,27 @@
 
                     //detach RTD listener
                     // rb.ref('Youth Profile Initializers').off("value", this.listenerRef);
-                    
                     let submitStatus = await submitRef.set(input)
-                    if (submitStatus) {
-                        window.alert("Error Adding new registration");
+                    if(this.returningYouth == "Returning Youth"){
+                        if (submitStatus) {
+                            window.alert("Error adding returning registration");
+                        }
+                    } else {
+                        if (submitStatus) {
+                            window.alert("Error adding new registration");
+                        }
                     }
                         // console.log("Document written with ID: ", submitRef.id);
                     this.newID = submitRef.id;
+                    
+                    // Clear the fields
+                    for (let i = 0; i < this.requiredFields.length; i ++) {
+                        this.requiredFields[i]["value"] = undefined;
+                    }
+                    for (let i = 0; i < this.optionalFields.length; i ++) {
+                        this.optionalFields[i]["value"] = undefined;
+                    }
+                          
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
                         // });
@@ -259,10 +329,14 @@
             async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
-                for (let i = 0; i < this.requiredFields.length; i++) {
-                    let currentField = this.requiredFields[i];
-                    //if it is of length 0
-                    if (!currentField["value"].length) ret.push(currentField["name"]);
+                if(this.returningYouth == "New Youth"){
+                  for (let i = 0; i < this.requiredFields.length; i++) {
+                      let currentField = this.requiredFields[i];
+                      //if it is of length 0
+                      if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
+                  }
+                } else {
+                  if (!this.returningYouthID.length) ret.push("Returning Youth ID");
                 }
                 return ret;
             },
@@ -353,110 +427,37 @@
                 window.alert("Error on getting placeholder text values");
                 return null;
             }
-            var getType = function (val) {
-                var type = "";
-                if (val == "String"){
-                    type = "textarea";
-                } else if (val == "Boolean"){
-                    type = "radio";
-                } else if (val == "Grade"){
-                    type = "number";
-                } else if (val == "Date"){
-                    type = "date";
-                } else if (val == "Gender"){
-                    type = "radioOther";
-                } else if (val == "Phone"){
-                    type = "tel";
-                } else if (val == "Race"){
-                    type = "radioOther";
-                } else if (val == "Period"){
-                    type = "radio";
-                } else {
-                    type = "textarea";
-                }
-                return type;
-            };
-            var getLabels = function (val, fields) {
-                console.log(val)
-                var labels = null;
-                if (val == "Boolean"){
-                    labels = ["Yes", "No"];
-                }
-                if (val == "Period"){
-                    labels = seasons;
-                }
-                if (val == "Race"){
-                    labels = options["Races"];
-                }
-                if (val == "Gender"){
-                    labels = options["Genders"];
-                }
-                console.log(labels)
-                return labels;
-            };
             var req_keys = [];
-            var req_types = [];
-            var req_labels = [];
+            var req_vals = [];
             forKeyVal(fields["required"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
-                var labels = getLabels(val, fields);
                 req_keys.push(name);
-                req_types.push(type);
-                req_labels.push(labels)
+                req_vals.push(val);
             });
             for (let i = 0; i < req_keys.length; i ++) {
-                if(req_labels[i] == null){
-                    this.requiredFields.push({
-                        name: req_keys[i],
-                        value: "",
-                        type: req_types[i],
-                        placeholder: this.placeholders[req_keys[i]]
-                    });
-                } else {
-                    this.requiredFields.push({
-                        name: req_keys[i],
-                        value: "",
-                        values: req_labels[i],
-                        id: req_labels[i],
-                        type: req_types[i]
-                    });
-                }
-                
+                this.requiredFields.push({
+                    name: req_keys[i],
+                    value: "",
+                    type: req_vals[i],
+                    placeholder: this.placeholders[req_keys[i]]
+                });
             }
             var opt_keys = [];
-            var opt_types = [];
-            var opt_labels = [];
+            var opt_vals = [];
             forKeyVal(fields["optional"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
-                var labels = getLabels(val, fields);
                 opt_keys.push(name);
-                opt_types.push(type);
-                opt_labels.push(labels)
+                opt_vals.push(val);
             });
             for (let i = 0; i < opt_keys.length; i ++) {
-                if(opt_labels[i] == null){
-                  this.optionalFields.push({
-                      name: opt_keys[i],
-                      value: "",
-                      type: opt_types[i],
-                      placeholder: this.placeholders[opt_keys[i]]
-                  });
-                } else {
-                    this.optionalFields.push({
-                        name: opt_keys[i],
-                        value: "",
-                        values: opt_labels[i],
-                        id: opt_labels[i],
-                        type: opt_types[i]
-                    });
-                }
+                this.optionalFields.push({
+                    name: opt_keys[i],
+                    value: "",
+                    type: opt_vals[i],
+                    placeholder: this.placeholders[opt_keys[i]]
+                });
             }
             var hidden_keys = [];
             forKeyVal(fields["hidden"], function(name, val, n) {
                 // console.log(`${n}: ${name},  ${val}`);
-                var type = getType(val);
                 hidden_keys.push(name);
             });
             for (let i = 0; i <hidden_keys.length; i ++) {
@@ -498,21 +499,10 @@
 
     .field_header{
         margin-bottom:1px;
-        
     }
     
-    .radioDiv{
+    .specialDiv{
         width: 35%;
-        display: flex;
-        margin-left: auto;
-        margin-right: auto;
-        justify-content: center;
-        border: 1px solid black;
-    }
-    
-    .telDiv{
-        width: 35%;
-        display: flex;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;

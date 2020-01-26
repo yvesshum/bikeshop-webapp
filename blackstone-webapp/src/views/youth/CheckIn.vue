@@ -193,8 +193,8 @@ export default {
             }
 
             //add to GlobbalPendingHours
-            let period = await db.collection("GlobalVariables").doc("ActivePeriods").get()
-            period = period.data()["CurrentPeriod"]
+            let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
+            let period = metadata.data()["CurrentPeriod"];
 
             let val = {
                 "First Name": this.FirstName,

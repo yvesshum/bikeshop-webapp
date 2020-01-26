@@ -15,30 +15,11 @@
 
       <br /><br />
 
-      <h2>Order Log</h2>
-      <CollectionTable
-        ref="order_log"
-        :heading_data="order_log_headers"
-        :collection="order_log_collection"
-        groupBy="Period"
-        :groupByOptions="periods"
-        :progressiveLoad="true"
-        style="width:90%;margin:auto;"
-      ></CollectionTable>
-
-      <br />
-
-      <h2>Work Log</h2>
-      <CollectionTable
-        ref="work_log"
-        :heading_data="work_log_headers"
-        :collection="work_log_collection"
-        groupBy="Period"
-        :groupByOptions="periods"
-        :progressiveLoad="true"
-        :doc_formatter="doc_formatter"
-        style="width:90%;margin:auto;"
-      ></CollectionTable>
+      <ProfileItemLogs
+        :snapshot="profile_snapshot"
+        :periods="periods"
+        :visible="currentProfile != null"
+      ></ProfileItemLogs>
 
       <br /><br />
     </div>
@@ -55,7 +36,9 @@ import TopBar from '@/components/TopBar';
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
-import CollectionTable from "@/components/CollectionTable.vue"
+import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
+import {Period} from "@/scripts/Period.js";
+import {mapKeyVal} from "@/scripts/ParseDB.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -64,82 +47,19 @@ export default {
     YouthIDSelector,
     ProfileFields,
     ApronBar,
-    CollectionTable,
+    ProfileItemLogs,
   },
 
   data: function() {
     return {
       currentProfile: null,
-      order_log_collection: null,
-      work_log_collection: null,
+      profile_snapshot: null,
       header_doc: null,
-
-      log_headers_doc: null,
-
-      order_log_headers: [],
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
       period_data: null,
       periods: [],
-
-
-      work_log_headers: [
-        { // The Date
-          title: "Date", field: "Date", formatter: this.format_date,
-          headerFilter: true, headerFilterFunc: this.date_filter,
-        },
-        { // The check in time
-          title: "Check In", field: "Check In", formatter: this.format_time,
-          headerFilter: "number", headerFilterFunc: this.time_filter,
-        },
-        { // The check out time
-          title: "Check Out", field: "Check Out", formatter: this.format_time,
-          headerFilter: "number", headerFilterFunc: this.time_filter,
-        },
-        { // The hours earned, broken down by category
-          title: "Hours", field: "Hours", formatter: this.format_work_hours
-        },
-        "Notes",
-      ],
-
-      order_log_headers: [
-        { // The name of the item
-          title: "Item Name", field: "Item Name", headerFilter: true,
-        },
-        { // The ID number of the item
-          title: "Item ID", field: "Item ID", headerFilter: true,
-        },
-        { // The date and time of the order
-          title: "Date", field: "Order Date", formatter: this.format_date_time,
-          headerFilter: true, headerFilterFunc: this.date_filter,
-        },
-        { // The cost of the item (in hours)
-          title: "Cost", field: "Item Total Cost",
-          formatter: (cell) => cell.getValue() + " Hours"
-        },
-        "Notes",
-      ],
-
-      // Helper function to group document data for the table
-      doc_formatter: (doc) => {
-        var data = doc.data();
-        return {
-          "Date": [ data["Check In"], data["Check Out"] ],
-          "Check In": data["Check In"],
-          "Check Out": data["Check Out"],
-          "Hours": {
-            "Class": data["Class"],
-            "Elective": data["Elective"],
-            "Bike Riding or Cycling": data["Bike Riding or Cycling"],
-            "Shop Support": data["Shop Support"],
-            "Other": data["Other"],
-            "Misc": data["Misc"],
-          },
-          "Notes": data["Notes"],
-          "Period": data["Period"],
-        };
-      },
     };
   },
 
@@ -155,14 +75,14 @@ export default {
         this.periods_doc = await this.periods_db.doc("metadata").get();
         var data = this.periods_doc.data();
 
-        var class_list = data["Classes"].map(c => Object.keys(c)[0]);
+        await Period.setSeasons(data["Seasons"]);
+        this.periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
 
-        this.periods = data["All Periods"];
         this.period_data = {
           cur_period: data["CurrentPeriod"],
           reg_period: data["CurrentRegistrationPeriod"],
           seasons:    data["Seasons"],
-          class_list,
+          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
         };
       },
 
@@ -170,126 +90,15 @@ export default {
 
         // No id returned - clear the page
         if (youth == null) {
+          this.profile_snapshot = null;
           this.currentProfile = null;
-          this.order_log_collection = null;
-          this.work_log_collection  = null;
         }
 
         // Id returned - load profile for that youth
         else {
-          let snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
-
-          this.currentProfile = await snapshot.get();
-          this.order_log_collection = snapshot.collection("Order Log");
-          this.work_log_collection  = snapshot.collection("Work Log");
+          this.profile_snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
+          this.currentProfile = await this.profile_snapshot.get();
         }
-      },
-
-      // Formatting for the hours column of the Work Log goes here
-      format_work_hours: function(cell) {
-        var val = cell.getValue();
-        var keys = Object.keys(val);
-        var msg = "<table>";
-        var sum = 0;
-
-        keys.forEach(f => {
-          if (val[f] > 0) {
-            msg += `<tr><td>${f}:</td><td>${val[f]}</td></tr>`;
-            sum += val[f];
-          }
-        });
-        msg += "<tr><td>Total:</td><td>" + sum + "</td></tr>";
-        msg += "</table>";
-
-        return msg;
-      },
-
-      format_date_time: function(cell) {
-        var val = cell.getValue();
-        var date = val.toDate();
-
-        var day     = this.get_date(date);
-        var weekday = this.get_weekday(date);
-        var time    = date.toLocaleTimeString(undefined, {
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-          timeZoneName: "short",
-        });
-
-        return `<div>${day}<br />${weekday} &emsp; ${time}</div>`;
-      },
-
-      format_date: function(cell) {
-        var day, weekday;
-        var val = cell.getValue();
-
-        if (Array.isArray(val)) {
-          let date1 = val[0].toDate();
-          let date2 = val[1].toDate();
-
-          if (this.same_day(date1, date2)) {
-            day     = this.get_date(date1);
-            weekday = this.get_weekday(date1);
-          }
-          else {
-            day = date1.toLocaleDateString(undefined, {month: "short", day: "numeric"}) + " - " + date2.toLocaleDateString(undefined, {month: "short", day: "numeric", year: "numeric"});
-            weekday = `${this.get_weekday(date1)} - ${this.get_weekday(date2)}`;
-          }
-
-        }
-
-        else {
-          let date = val.toDate();
-          day     = this.get_date(date);
-          weekday = this.get_weekday(date);
-        }
-
-        return `<div>${day}<br />${weekday}</div>`;
-      },
-
-      date_filter: function(search_term, option) {
-        var date1 = option.In.toDate();
-        var date2 = option.Out.toDate();
-        var formatted_date = this.format_date(date1, date2).replace(/<.+?>/g, " ").toLowerCase();
-
-        return formatted_date.indexOf(search_term.toLowerCase()) >= 0;
-      },
-
-      format_time: function(cell) {
-        var val = cell.getValue();
-        var date = val.toDate();
-
-        var time = date.toLocaleTimeString(undefined, {
-          hour: "numeric",
-          minute: "numeric",
-          hour12: true,
-          timeZoneName: "short",
-        });
-
-        return `<div>${time}</div>`;
-      },
-
-      time_filter: function(search_term, option) {
-        var val = option.toDate();
-        var hour = (val.getHours() % 12).toString();
-        console.log(hour, typeof hour, search_term, typeof search_term);
-        return hour == search_term;
-      },
-
-      same_day: function(date1, date2) {
-
-        return date1.getDate() === date2.getDate()
-          && date1.getMonth() === date2.getMonth()
-          && date1.getFullYear() === date2.getFullYear();
-      },
-
-      get_weekday: function(date) {
-        return date.toLocaleDateString(undefined, {weekday: "long"});
-      },
-
-      get_date: function(date) {
-        return date.toLocaleDateString(undefined, {dateStyle: "long"})
       },
     }
 }

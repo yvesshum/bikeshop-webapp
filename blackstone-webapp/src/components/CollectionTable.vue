@@ -64,7 +64,7 @@ Emits:
 
     export default {
         name: 'CollectionTable',
-        props: ['heading_data', 'collection', 'args', 'groupBy', 'groupByOptions', 'progressiveLoad', 'doc_formatter'],
+        props: ['heading_data', 'collection', 'args', 'groupBy', 'groupByOptions', 'progressiveLoad', 'doc_formatter', 'visible'],
 
         data: function () {
             return {
@@ -204,6 +204,10 @@ Emits:
                         this.loaded_groups[group.getKey()] = group.LOADED;
                     });
                 }
+
+                this.$emit("table", this.table);
+
+                this.table.redraw();
             },
 
             // If the table headers change, replace them in the Tabulator object
@@ -214,6 +218,12 @@ Emits:
             // If the table data changes, replace it in the Tabulator object
             tableData: function(new_data) {
                 if (this.table != null) this.table.replaceData(new_data);
+
+                this.table.redraw();
+            },
+
+            visible: function(val) {
+                this.table.redraw();
             },
         },
 
@@ -267,6 +277,10 @@ Emits:
 
                 // Return results
                 return ret;
+            },
+
+            redraw: function() {
+                this.table.redraw();
             },
         }
     }
