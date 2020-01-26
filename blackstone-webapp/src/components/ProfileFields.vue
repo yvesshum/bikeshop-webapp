@@ -428,7 +428,11 @@ export default {
     format_hours: function(field, dp) {
       if (this.local_values == null) return "";
       let hours = this.local_values[field];
-      return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
+      if(hours == 0){
+          return Number(0).toFixed(dp);
+      } else {
+          return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
+      }
     },
 
     // Set the status of a given field in the Status object and make appropriate changes
