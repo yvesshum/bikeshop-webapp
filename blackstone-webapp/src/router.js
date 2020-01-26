@@ -10,25 +10,25 @@ import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue';
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue';
 import ApproveOrders from './views/staff/ApproveOrders.vue';
 import YouthCheckOrders from './views/youth/CheckOrders.vue';
-import ManageApronSkills from './views/staff/ManageApronSkills.vue';
+//import ManageApronSkills from './views/staff/ManageApronSkills.vue';
 import CheckedIn from './views/staff/CheckedIn.vue';
 import RegisterYouth from './views/staff/RegisterNewYouth.vue';
-import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
-import HourTransfer from './views/youth/TransferCurrentHours';
-import ApproveTransfers from './views/staff/ApproveTransferHours';
-import AdminPanel from './views/staff/AdminPanel.vue';
-import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
+//import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
+//import HourTransfer from './views/youth/TransferCurrentHours';
+//import ApproveTransfers from './views/staff/ApproveTransferHours';
+//import AdminPanel from './views/staff/AdminPanel.vue';
+//import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
-import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
-import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
-import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
-import ManagePeriods from './views/staff/ManagePeriods.vue';
+//import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
+//import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
+//import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
+//import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
-import Stats from './views/staff/Stats.vue';
+//import Stats from './views/staff/Stats.vue';
 import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
-import PeriodSettings from './views/admin/PeriodSettings.vue'
+//import PeriodSettings from './views/admin/PeriodSettings.vue'
 Vue.use(Router);
 
 const router = new Router({
@@ -121,6 +121,7 @@ const router = new Router({
                 requiresStaff: false
             }
         },
+        /*
         {
             path: '/manage-skills-staff',
             name: 'manage-skills-staff',
@@ -129,7 +130,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },
+        },*/
         {
             path: '/checked-in',
             name: 'checked-in',
@@ -139,6 +140,7 @@ const router = new Router({
                 requiresStaff: false
             }
         },
+        /*
         {
             path: '/transfer-hours',
             name: 'transfer-hours',
@@ -147,7 +149,8 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: false
             }
-        },
+        },*/
+        /*
         {
             path: '/approve-transfers',
             name: 'approve-transfers',
@@ -156,7 +159,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },
+        },*/
         {
             path: '/register-new-youth',
             name: 'register-new-youth',
@@ -175,6 +178,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        /*
         {
             path: '/approve-new-youth',
             name: 'approve-new-youth',
@@ -183,7 +187,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },
+        },*/
         {
             path: '/manage-periods',
             name: '/manage-periods',
@@ -193,6 +197,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        /*
         {
             path: '/admin-panel',
             name: 'admin-panel',
@@ -201,7 +206,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },
+        },*/
         {
             path: '/add-subtract-hours',
             name: 'add-subtract-hours',
@@ -220,6 +225,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        /*
         {
             path: '/stats',
             name: 'stats',
@@ -228,7 +234,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },
+        }, */
         {
             path: '/emergency-contacts',
             name: 'emergency-contacts',
@@ -251,7 +257,7 @@ const router = new Router({
 
 
         // Admin Panels
-
+/*
         {
             path: '/youth-order-settings',
             name: 'youth-order-settings',
@@ -299,7 +305,7 @@ const router = new Router({
         },
 
 
-
+*/
         ]
 });
 

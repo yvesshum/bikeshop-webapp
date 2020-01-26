@@ -15,7 +15,7 @@
             <b-card-body>
                 <button onclick="location.href='/check-in'" class="btn btn-outline-info btn-block" type="button">Check In/Check Out</button>
                 <button onclick="location.href='/profile-lookup'" class="btn btn-outline-info btn-block" type="button">Profile Lookup</button>
-                <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button>
+                <!-- <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button> -->
             </b-card-body>
           </b-collapse>
         </b-card>
@@ -38,7 +38,10 @@
       <div class="heading">
           <h1>Staff</h1>
       </div>
+
+
       <div role="tablist" >
+        <!--
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-1>Youth Activity Management</h5>
@@ -46,12 +49,13 @@
           <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
             <b-card-body>
                 <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
-                <!--- <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button> -->
+                <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
                 <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button>
                 <button onclick="location.href='/manage-periods'" class="btn btn-outline-info btn-block" type="button">Manage Youth Activity Periods</button>
             </b-card-body>
           </b-collapse>
         </b-card>
+      -->
 
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
@@ -60,7 +64,7 @@
           <b-collapse id="accordion-2" accordion="my-accordion" role="tabpanel">
             <b-card-body>
               <button onclick="location.href='/approve-orders'" class="btn btn-outline-info btn-block" type="button">Approve Orders</button>
-              <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button>
+              <!-- <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button> -->
               <button onclick="location.href='/approve-hours'" class="btn btn-outline-info btn-block" type="button">Approve Hour Logs</button>
             </b-card-body>
           </b-collapse>
@@ -90,6 +94,7 @@
           </b-collapse>
         </b-card>
 
+        <!--
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-5>Statistics</h5>
@@ -100,6 +105,7 @@
             </b-card-body>
           </b-collapse>
         </b-card>
+      -->
     </div>
 
     <div class="heading">
