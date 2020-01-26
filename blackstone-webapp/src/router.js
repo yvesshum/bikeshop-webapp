@@ -307,7 +307,8 @@ router.beforeEach(async (to, from, next) => {
     const currentUser = await firebase.auth().currentUser;
     let isStaff = false;
     if (currentUser) {
-        if (currentUser.email === "yvesshum@uchicago.edu") {
+        if (currentUser.email === "staff@blackstonebikes.com") {
+            console.log("isStaff")
             isStaff = true;
         }
     }
@@ -320,7 +321,9 @@ router.beforeEach(async (to, from, next) => {
         window.alert("You do not have permissions to see this page!");
         next('Home');
     }
-    else next();
+    else {
+        next();
+    }
 });
 
 

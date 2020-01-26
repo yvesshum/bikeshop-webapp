@@ -152,7 +152,7 @@ export default {
         const currentUser = await firebase.auth().currentUser;
         console.log('c', currentUser.email);
         if (currentUser) {
-            if (currentUser.email === "yvesshum@uchicago.edu") {
+            if (currentUser.email === "staff@blackstonebikes.com") {
                 this.isStaff = true;
             }
         }
