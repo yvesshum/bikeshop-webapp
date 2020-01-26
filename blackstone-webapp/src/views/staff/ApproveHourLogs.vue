@@ -454,7 +454,8 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted hour log request", "successfully deleted request with ID of " 
+                    + this.rejectingDocumentID + "\n You may safely disregard this message");
                 this.rejectingDocumentID = "";
 
 

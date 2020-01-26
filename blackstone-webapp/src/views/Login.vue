@@ -39,7 +39,8 @@
                         this.$emit("logged-in");
                     },
                     err => {
-                        alert("oops, something went wrong: " + err);
+                        alert("Oops, something went wrong. You probably entered the wrong password.");
+                        console.log(err);
                     }
                 )
             }

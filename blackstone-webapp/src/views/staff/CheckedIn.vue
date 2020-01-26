@@ -4,11 +4,11 @@
     <top-bar />
     <h1 style="margin-top: 5px; margin-bot: 5px">Currently Checked-In Youth</h1>
 
-    <b-button
+    <!-- <b-button
       @click="viewProfile"
       style="margin-top: 5px; margin-bot: 5px"
       variant="info"
-    >View Profile</b-button>
+    >View Profile</b-button> -->
 
     <b-table
       :items="items"
