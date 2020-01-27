@@ -17,11 +17,11 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
         showOptionalFields
       />
 
-      <br />
+      <!-- <br />
 
       <ApronBar
         :profile="currentProfile"
-      />
+      /> -->
 
       <br /><br />
 
