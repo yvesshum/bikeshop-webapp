@@ -11,6 +11,7 @@
           variant="primary"
           @click="decrement_apron"
           v-b-tooltip.hover.html="'Decrement Apron Color'"
+          v-if="allow_edits"
         >-</b-button>
         <ApronProgressBar
           style="display: inline-block;"
@@ -23,6 +24,7 @@
           variant="primary"
           @click="increment_apron"
           v-b-tooltip.hover.html="'Increment Apron Color'"
+          v-if="allow_edits"
         >+</b-button>
       </div>
 
@@ -67,12 +69,14 @@
       <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
       <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
     </div> -->
-    <div v-if="has_changes">
-      <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
-      <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
-    </div>
-    <div v-else>
-      <b-button disabled>Select skills to add or remove</b-button>
+    <div v-if="allow_edits">
+      <div v-if="has_changes">
+        <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
+        <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
+      </div>
+      <div v-else>
+        <b-button disabled>Select skills to add or remove</b-button>
+      </div>
     </div>
 
     <b-modal v-model="change_skills_modal">
@@ -131,7 +135,7 @@ export default {
     MatchTable,
   },
 
-  props: ['profile'],
+  props: ['profile', 'allowEdits'],
 
   data: function() {
     return {
@@ -223,6 +227,10 @@ export default {
 
     skills_to_remove: function() {
       return (this.changed_skills == null) ? [] : this.changed_skills.rem;
+    },
+
+    allow_edits: function() {
+      return this.allowEdits != undefined;
     },
   },
 

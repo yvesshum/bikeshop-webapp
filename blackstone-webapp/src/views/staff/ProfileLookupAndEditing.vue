@@ -11,7 +11,7 @@
 
       <br />
 
-      <ApronBar :profile="currentProfile" />
+      <ApronBar :profile="currentProfile" allowEdits />
 
       <br /><br />
 
