@@ -172,7 +172,6 @@ export default {
 
   watch: {
     snapshot: function(snapshot) {
-      console.log(snapshot);
 
       if (snapshot == null) {
         this.work_log_collection  = null;
@@ -232,8 +231,8 @@ export default {
       var val = cell.getValue();
 
       if (Array.isArray(val)) {
-        let date1 = val[0].toDate();
-        let date2 = val[1].toDate();
+        let date1 = this.get_as_date(val[0]);
+        let date2 = this.get_as_date(val[1]);
 
         if (this.same_day(date1, date2)) {
           day     = this.get_date(date1);
@@ -247,7 +246,7 @@ export default {
       }
 
       else {
-        let date = val.toDate();
+        let date = this.get_as_date(val);
         day     = this.get_date(date);
         weekday = this.get_weekday(date);
       }
@@ -257,7 +256,7 @@ export default {
 
     format_time: function(cell) {
       var val = cell.getValue();
-      var date = val.toDate();
+      var date = this.get_as_date(val);
 
       var time = date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -281,7 +280,7 @@ export default {
     date_filter: function(filters, option) {
 
       var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = datestamp.toDate();
+      var date = this.get_as_date(datestamp);
 
       // Result will be true if every filter passes
       var result = filters.every(filter => {
@@ -578,6 +577,15 @@ export default {
     get_hours_sum: function(hours) {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
+
+
+    // Error checking to get a Date object from the database
+    // Should be a Timestamp, but handles error in case it isn't
+    get_as_date: function(date_obj) {
+      return (date_obj.toDate == undefined)
+        ? new Date(date_obj.seconds * 1000)
+        : date_obj.toDate();
+    }
   }
 }
 </script>
