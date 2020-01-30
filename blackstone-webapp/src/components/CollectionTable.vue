@@ -119,8 +119,6 @@ Emits:
                         if (should_load(this.loaded_groups[key])) {
                             this.loaded_groups[key] = GROUP.LOADING;
 
-                            console.log("Group:", group);
-
                             // Query the database for all docs in this group
                             this.collection.where(this.groupBy, "==", key).get().then(
 
