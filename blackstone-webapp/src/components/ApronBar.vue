@@ -75,7 +75,7 @@
         <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
       </div>
       <div v-else>
-        <b-button disabled>Select skills to add or remove</b-button>
+        <b-button disabled>Use the left column above to add & remove skills</b-button>
       </div>
     </div>
 
