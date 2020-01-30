@@ -309,7 +309,6 @@ export default {
 
     active_periods: function() {
       if (this.profile == null) return [];
-      console.log(this.profile.data()["ActivePeriods"]);
       return this.profile.data()["ActivePeriods"];
     },
 
