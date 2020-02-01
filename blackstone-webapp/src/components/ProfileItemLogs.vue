@@ -75,7 +75,7 @@ export default {
         { // The Date
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
@@ -109,7 +109,7 @@ export default {
         { // The date and time of the order
           title: "Date", field: "Order Date", formatter: this.format_date_time,
           ...this.get_date_filter_args(true),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
@@ -140,7 +140,7 @@ export default {
         { // The date and time of the order
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // Notes
           title: "Notes", field: "Notes", formatter: this.format_notes,
@@ -212,7 +212,7 @@ export default {
 
     format_date_time: function(cell) {
       var val = cell.getValue();
-      var date = val.toDate();
+      var date = this.get_as_date(val);
 
       var day     = this.get_date(date);
       var weekday = this.get_weekday(date);
@@ -461,7 +461,7 @@ export default {
     time_range_filter: function(search_range, option) {
 
       // Interpret the current cell's value
-      var val = option.toDate();
+      var val = this.get_as_date(option);
       var hour = val.getHours().toString();
       var mins = val.getMinutes().toString();
       var time = [hour, mins];
@@ -506,6 +506,12 @@ export default {
 
 
     // =-= Sorters =-=-=
+
+    date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+      let a_date = (Array.isArray(a)) ? this.get_as_date(a[0]) : this.get_as_date(a);
+      let b_date = (Array.isArray(b)) ? this.get_as_date(b[0]) : this.get_as_date(b);
+      return a_date.getTime() - b_date.getTime();
+    },
 
     time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
       let sec_diff = a.seconds - b.seconds
