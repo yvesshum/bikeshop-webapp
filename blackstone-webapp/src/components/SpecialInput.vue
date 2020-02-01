@@ -133,12 +133,6 @@ use v-model. Whenever one of these is changed, it updates the other.
         </div>
 
         <div v-else-if="input === 'Essay'">
-            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
-        </div>
-
-        <!-- String Input -->
-        <div v-else>
-            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
             <b-form-textarea
                 id="textarea"
                 v-model="inner_value"
@@ -148,7 +142,10 @@ use v-model. Whenever one of these is changed, it updates the other.
             ></b-form-textarea>
         </div>
 
-
+        <!-- String Input -->
+        <div v-else>
+            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+        </div>
     </div>
 </template>
 <script>
