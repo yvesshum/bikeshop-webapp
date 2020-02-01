@@ -291,7 +291,6 @@ export default {
       checkbox_fields: [],
       fields_selected: ["ID", "Name"], //Default to have ID selected
       table: {},
-      numberFields: ["Hours Earned","Hours Spent", "Pending Hours"]
     };
   },
   methods: {
@@ -531,10 +530,10 @@ export default {
             field: x,
             headerFilter: (x==="ID"||x==="Name"),
             headerFilterFunc: filter,
-            topCalc: this.numberFields.includes(x) ? "sum" : "",
+            topCalc: !isNaN(tableData[0][x]) ? "sum" : "", //Check if the first user's field for this is a number- if so run total
             topCalcParams:{precision:1},
-            topCalcFormatter:"plaintext",
-            topCalcFormatterParams: (cell, formatterParams, onRendered) =>"Total: " + cell.getValue(),
+            topCalcFormatter:  !isNaN(tableData[0][x]) ? (cell, formatterParams, onRendered) =>"Total: " + cell.getValue() : ()=>{},
+
           };
         }),
         pagination: "local",
@@ -585,11 +584,9 @@ export default {
             field: x,
             headerFilter: true,
             headerFilterFunc:  (x==="ID"||x==="Name") ? filter : "like",
-            topCalc: this.numberFields.includes(x) ? "sum" : "",
+            topCalc: !isNaN(this.table.getData()[0][x]) ? "sum" : "", //Check if the first user's field for this is a number- if so run total
             topCalcParams:{precision:1},
-            topCalcFormatter:  this.numberFields.includes(x) ? (cell, formatterParams, onRendered) =>"Total: " + cell.getValue() : ()=>{},
-
-
+            topCalcFormatter: !isNaN(this.table.getData()[0][x]) ? (cell, formatterParams, onRendered) =>"Total: " + cell.getValue() : ()=>{},
           };
         })
       );
