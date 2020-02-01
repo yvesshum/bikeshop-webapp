@@ -2,6 +2,11 @@
     <div>
         <top-bar/>
         <div class="Special-input-demo">
+            <p>String</p>
+            <SpecialInput inputType="String"/>
+            <br>
+            <hr>
+
             <p>Integer</p>
             <SpecialInput inputType="Integer"/>
             <br>
