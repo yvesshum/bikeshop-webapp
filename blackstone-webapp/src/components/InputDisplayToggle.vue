@@ -154,15 +154,6 @@ export default {
       return this.edit_value === undefined || this.edit_value === null || this.edit_value === "";
     },
 
-
-    // set_all_input_vals: function(input, val) {
-    //   if (input != null) {
-    //     input.placeholder  = val;
-    //     input.value        = val;
-    //     input.defaultValue = val;
-    //   };
-    // },
-
     // Error checking to get a Date object from the database
     // Should be a Timestamp, but handles error in case it isn't
     get_as_date: function(date_obj) {
