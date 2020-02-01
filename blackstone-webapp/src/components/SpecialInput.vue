@@ -58,7 +58,6 @@ use v-model. Whenever one of these is changed, it updates the other.
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
             </b-form-group>
-
         </div>
 
         <!-- Returns a 10 digit string -->
@@ -133,9 +132,20 @@ use v-model. Whenever one of these is changed, it updates the other.
             <b-form-select v-model="inner_value" :options="periodOptions" :style="args.style"></b-form-select>
         </div>
 
+        <div v-else-if="input === 'Essay'">
+            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+        </div>
+
         <!-- String Input -->
         <div v-else>
             <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+            <b-form-textarea
+                id="textarea"
+                v-model="inner_value"
+                :placeholder="args.placeholder"
+                rows="3"
+                max-rows="6"
+            ></b-form-textarea>
         </div>
 
 
