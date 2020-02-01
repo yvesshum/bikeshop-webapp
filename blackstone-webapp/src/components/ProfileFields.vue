@@ -291,7 +291,6 @@ export default {
           Decimal: hours.substring(hours.indexOf('.')+1),
         });
       });
-      console.log(temp);
       return temp;
     },
 
@@ -331,12 +330,52 @@ export default {
     if (this.hideFields != null) {
       this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
     };
+
+    if (this.headerDoc != undefined) {
+      this.load_header_doc(this.headerDoc);
+    };
+
+    if (this.profile != undefined) {
+      this.load_profile(this.profile);
+    };
   },
 
   watch: {
 
     headerDoc: function(new_header) {
+      this.load_header_doc(new_header);
+    },
 
+    profile: function(doc) {
+      this.load_profile(doc);
+    },
+  },
+
+  methods: {
+
+    init_row_status(data, field, stat) {
+      forKeyVal(data[field], (name, val) => {
+        if (!this.is_hidden(name)) {
+          this.row_status.add_vue(this, name, stat);
+        }
+      });
+    },
+
+    show_section: function(section) {
+      if (section == "Non-Standard") return this.temp_fields.length > 0;
+      return !(this.edit_mode && section == '');
+    },
+
+    show_container: function(key) {
+      if (this.edit_mode) {
+        return true;
+      }
+      else {
+        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
+      }
+    },
+
+    load_header_doc: function(new_header) {
       let data = new_header.data();
 
       this.row_status = new Status();
@@ -354,8 +393,7 @@ export default {
       });
     },
 
-    profile: function(doc) {
-
+    load_profile: function(doc) {
       // If for some reason the row_status hasn't been initialized yet, do so now
       if (this.row_status == null) this.row_status = new Status();
 
@@ -396,31 +434,6 @@ export default {
         // TODO: This might have to be more sophisticated for different data types
         return field != "";
       };
-    }
-  },
-
-  methods: {
-
-    init_row_status(data, field, stat) {
-      forKeyVal(data[field], (name, val) => {
-        if (!this.is_hidden(name)) {
-          this.row_status.add_vue(this, name, stat);
-        }
-      });
-    },
-
-    show_section: function(section) {
-      if (section == "Non-Standard") return this.temp_fields.length > 0;
-      return !(this.edit_mode && section == '');
-    },
-
-    show_container: function(key) {
-      if (this.edit_mode) {
-        return true;
-      }
-      else {
-        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
-      }
     },
 
     // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
