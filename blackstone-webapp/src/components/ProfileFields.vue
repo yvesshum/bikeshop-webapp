@@ -11,8 +11,8 @@
     <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
       <div class="hours_div" v-for="item in hour_fields">
         <p class="hours_num">
-          <span class="hours_whole">{{item.Whole}}</span>
-          <span class="hours_decimal">.{{item.Decimal}}</span>
+          <span class="hours_whole">{{item.Whole!=""? item.Whole : "0"}}</span>
+          <span class="hours_decimal" v-show="item.Decimal != 'NaN'">.{{item.Decimal}}</span>
         </p>
         <p class="hours_name"> {{item.Name}} </p>
       </div>
@@ -291,7 +291,7 @@ export default {
           Decimal: hours.substring(hours.indexOf('.')+1),
         });
       });
-
+      console.log(temp);
       return temp;
     },
 
