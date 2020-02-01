@@ -597,6 +597,9 @@ export default {
       this.discard_empty_fields();
       this.row_status.update();
 
+      // Switch out of edit mode
+      this.set_edit_mode(false);
+
       // Return a success to the modal
       accept_func(true);
     },
