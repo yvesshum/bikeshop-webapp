@@ -290,7 +290,7 @@ export default {
       total_Hours_Spent: 0,
       checkbox_fields: [],
       fields_selected: ["ID", "Name"], //Default to have ID selected
-      table: {}
+      table: {},
     };
   },
   methods: {
@@ -514,7 +514,7 @@ export default {
     },
     async displayTable() {
       var tableData = await this.getProfileData();
-      console.log(tableData);
+
       //This looks really complicated, but it's just because Javascript is kind of annoying
       //It takes each profile, gets its headers (field names), merges that list (.flat()), and then deduplicates them (... Set)
       this.checkbox_fields = [...new Set(tableData.map(x => Object.keys(x)).flat())].sort();
@@ -529,13 +529,18 @@ export default {
             title: x,
             field: x,
             headerFilter: (x==="ID"||x==="Name"),
-            headerFilterFunc: filter
+            headerFilterFunc: filter,
+            topCalc: !isNaN(tableData[0][x]) ? "sum" : "", //Check if the first user's field for this is a number- if so run total
+            topCalcParams:{precision:1},
+            topCalcFormatter:  !isNaN(tableData[0][x]) ? (cell, formatterParams, onRendered) =>"Total: " + cell.getValue() : ()=>{},
+
           };
         }),
         pagination: "local",
         paginationSize: "20",
         selectable: 1,
-        selectableRangeMode: "click"
+        selectableRangeMode: "click",
+        columnCalcs:"both"
       });
 
       table.set;
@@ -578,7 +583,10 @@ export default {
             title: x,
             field: x,
             headerFilter: true,
-            headerFilterFunc:  (x==="ID"||x==="Name") ? filter : "like"
+            headerFilterFunc:  (x==="ID"||x==="Name") ? filter : "like",
+            topCalc: !isNaN(this.table.getData()[0][x]) ? "sum" : "", //Check if the first user's field for this is a number- if so run total
+            topCalcParams:{precision:1},
+            topCalcFormatter: !isNaN(this.table.getData()[0][x]) ? (cell, formatterParams, onRendered) =>"Total: " + cell.getValue() : ()=>{},
           };
         })
       );
