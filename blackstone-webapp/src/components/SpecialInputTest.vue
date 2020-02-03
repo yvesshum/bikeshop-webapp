@@ -144,7 +144,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+            <b-form-input v-bind:value="value" v-on:input="value = $event.currentTarget.value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
         </div>
     </div>
 </template>
@@ -161,6 +161,9 @@ import Datepicker from 'vuejs-datepicker';
 export default {
     name: 'SpecialInput',
     props: {
+        value: {
+            default: ""
+        },
         inputType: {
             type: String,
             default: "String",
@@ -168,10 +171,6 @@ export default {
         arguments: {    
             type: Object,
             default: function (){ return {} }
-        },
-        tag: {
-            type:String,
-            default: "unknown_ref"
         },
     },
     data() {
@@ -212,22 +211,22 @@ export default {
 
     watch: {
         // When the value is changed by the parent, update the inner_value for the input component
-        value: function(new_value) {
-            this.inner_value = new_value;
-        },
+        // value: function(new_value) {
+        //     this.inner_value = new_value;
+        // },
 
         // When the inner value of the input component changes, propagate that change upward
-        inner_value: function(new_value) {
-            // this.$emit(this.tag, new_value);
-            //check input type 
-            // if match, parse into Timestamp 
-            if (this.inputType === "Datetime" || this.inputType === "Date") {
-                this.$emit("input", Timestamp.fromDate(new Date(new_value)));
-            }
-            else {
-                this.$emit("input", new_value);
-            }
-        },
+        // inner_value: function(new_value) {
+        //     // this.$emit(this.tag, new_value);
+        //     //check input type 
+        //     // if match, parse into Timestamp 
+        //     if (this.inputType === "Datetime" || this.inputType === "Date") {
+        //         this.$emit("input", Timestamp.fromDate(new Date(new_value)));
+        //     }
+        //     else {
+        //         this.$emit("input", new_value);
+        //     }
+        // },
 
         inputType: function() {
             this.input = this.inputType;
@@ -244,6 +243,10 @@ export default {
     },
 
     methods: {
+        updateValue: function (value) {
+            this.$emit('input', value)
+        },
+
         sanitizeArgs() {
 
         },

@@ -29,6 +29,7 @@ import Stats from './views/staff/Stats.vue';
 import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
+import Testing from './views/admin/Testing.vue'
 Vue.use(Router);
 
 const router = new Router({
@@ -292,6 +293,16 @@ const router = new Router({
             path: '/period-settings',
             name: 'period-settings',
             component: PeriodSettings,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+
+        {
+            path: '/testing',
+            name: 'tesitng',
+            component: Testing,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true
