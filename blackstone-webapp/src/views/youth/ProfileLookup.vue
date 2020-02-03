@@ -4,10 +4,10 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
 <template>
   <div class="profile_lookup_youth">
-    <top-bar/>
-    <h1 class="title">Profile Lookup</h1>
+    <TopBar/>
     <YouthIDSelector @selected="load_youth"/>
 
+    <!-- This has to be v-show, not v-if, so that the components are actually loaded -->
     <div ref="body_fields" v-show="currentProfile != null">
 
       <ProfileFields
@@ -33,6 +33,12 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
       <br /><br />
     </div>
+
+    <div v-show="currentProfile == null">
+      <br>
+      <p>To see your profile, start typing your name or ID into the bar above and select your name when it comes up.</p>
+    </div>
+
   </div>
 </template>
 
@@ -122,9 +128,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.title {
-margin-bottom: 1rem;
-}
-</style>

@@ -56,6 +56,11 @@
             </tr>
             </thead>
             <tbody @mouseleave="dehover_cell">
+            <tr v-if="years.length == 0">
+                <td :colspan="seasons.length + 1" style="font-style: italic;">
+                    This youth does not appear to have been registered for any classes.
+                </td>
+            </tr>
             <tr v-for="year in years">
                 <th scope="row" :class="get_header_classes(year)" @mouseover="dehover_cell()">20{{year}}</th>
                 <td v-for="s in seasons"

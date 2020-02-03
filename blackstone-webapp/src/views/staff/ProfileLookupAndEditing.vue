@@ -1,8 +1,6 @@
 <template>
   <div class="profile_lookup_staff">
-    <top-bar />
-    <h1 class="title">Profile Lookup and Editing</h1>
-    <p>This is the staff view of the youth profile lookup page</p>
+    <TopBar/>
 
     <YouthIDSelector @selected="load_youth"/>
     <br />
@@ -12,7 +10,7 @@
 
       <br />
 
-      <ApronBar :profile="currentProfile" />
+      <!-- <ApronBar :profile="currentProfile" allowEdits /> -->
 
       <br /><br />
 
@@ -23,6 +21,11 @@
       ></ProfileItemLogs>
 
       <br /><br />
+    </div>
+
+    <div v-show="currentProfile == null">
+      <br>
+      <p>Search the bar above to view a youth's profile information.</p>
     </div>
   </div>
 </template>
@@ -104,9 +107,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.title {
-margin-bottom: 1rem;
-}
-</style>

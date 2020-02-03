@@ -11,8 +11,8 @@
     <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
       <div class="hours_div" v-for="item in hour_fields">
         <p class="hours_num">
-          <span class="hours_whole">{{item.Whole}}</span>
-          <span class="hours_decimal">.{{item.Decimal}}</span>
+          <span class="hours_whole">{{item.Whole!=""? item.Whole : "0"}}</span>
+          <span class="hours_decimal" v-show="item.Decimal != 'NaN'">.{{item.Decimal}}</span>
         </p>
         <p class="hours_name"> {{item.Name}} </p>
       </div>
@@ -30,16 +30,16 @@
 
     <br />
 
-    <table id="fields_table" ref="fields_table" v-show="profile!=null">
+    <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-      <tbody v-for="section in table_sections"><tbody v-if="show_section(section.Name)">
+      <tbody v-for="section in table_sections">
 
-        <tr v-show="edit_mode">
-          <td class="section_name" colspan="2"> {{section.Name}}: </td>
+        <tr v-if="show_section(section.Name)" v-show="edit_mode">
+          <td class="section_name" colspan="3"> {{section.Name}}: </td>
         </tr>
 
-        <tr v-for="field in section.Data" v-show="show_container(field)">
-          <td v-show="edit_mode">
+        <tr v-if="show_section(section.Name)" v-for="field in section.Data" v-show="show_container(field)">
+          <td v-show="edit_mode" style="margin: auto; padding: 3px;">
             <ToggleButton
               onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
@@ -49,10 +49,10 @@
           </td>
 
           <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">
-            {{field}}{{field_types[field] === "Boolean" ? "?" : ":"}}
+            {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
           </td>
 
-          <td>
+          <td style="padding: 3px;">
             <InputDisplayToggle
               v-show="is_used(field)"
               :defaultValue="local_values[field]"
@@ -64,9 +64,7 @@
 
         </tr>
 
-        <tr><td>&nbsp;</td></tr>
-
-      </tbody></tbody>
+      </tbody>
     </table>
 
     <b-button v-show="allow_edits && !edit_mode" variant="primary" @click="set_edit_mode(true)">
@@ -185,6 +183,7 @@ export default {
         "Order Log",
         "Registration Period",
         "Class",
+        "DOB",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
@@ -291,7 +290,6 @@ export default {
           Decimal: hours.substring(hours.indexOf('.')+1),
         });
       });
-
       return temp;
     },
 
@@ -309,7 +307,6 @@ export default {
 
     active_periods: function() {
       if (this.profile == null) return [];
-      console.log(this.profile.data()["ActivePeriods"]);
       return this.profile.data()["ActivePeriods"];
     },
 
@@ -332,12 +329,52 @@ export default {
     if (this.hideFields != null) {
       this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
     };
+
+    if (this.headerDoc != undefined) {
+      this.load_header_doc(this.headerDoc);
+    };
+
+    if (this.profile != undefined) {
+      this.load_profile(this.profile);
+    };
   },
 
   watch: {
 
     headerDoc: function(new_header) {
+      this.load_header_doc(new_header);
+    },
 
+    profile: function(doc) {
+      this.load_profile(doc);
+    },
+  },
+
+  methods: {
+
+    init_row_status(data, field, stat) {
+      forKeyVal(data[field], (name, val) => {
+        if (!this.is_hidden(name)) {
+          this.row_status.add_vue(this, name, stat);
+        }
+      });
+    },
+
+    show_section: function(section) {
+      if (section == "Non-Standard") return this.temp_fields.length > 0;
+      return !(this.edit_mode && section == '');
+    },
+
+    show_container: function(key) {
+      if (this.edit_mode) {
+        return true;
+      }
+      else {
+        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
+      }
+    },
+
+    load_header_doc: function(new_header) {
       let data = new_header.data();
 
       this.row_status = new Status();
@@ -355,8 +392,7 @@ export default {
       });
     },
 
-    profile: function(doc) {
-
+    load_profile: function(doc) {
       // If for some reason the row_status hasn't been initialized yet, do so now
       if (this.row_status == null) this.row_status = new Status();
 
@@ -397,42 +433,13 @@ export default {
         // TODO: This might have to be more sophisticated for different data types
         return field != "";
       };
-    }
-  },
-
-  methods: {
-
-    init_row_status(data, field, stat) {
-      forKeyVal(data[field], (name, val) => {
-        if (!this.is_hidden(name)) {
-          this.row_status.add_vue(this, name, stat);
-        }
-      });
-    },
-
-    show_section: function(section) {
-      if (section == "Non-Standard") return this.temp_fields.length > 0;
-      return !(this.edit_mode && section == '');
-    },
-
-    show_container: function(key) {
-      if (this.edit_mode) {
-        return true;
-      }
-      else {
-        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
-      }
     },
 
     // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
     format_hours: function(field, dp) {
       if (this.local_values == null) return "";
       let hours = this.local_values[field];
-      if(hours == undefined){
-          return Number(0).toFixed(dp);
-      } else {
-          return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
-      }
+      return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
     },
 
     // Set the status of a given field in the Status object and make appropriate changes
@@ -588,6 +595,9 @@ export default {
       // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
       this.row_status.update();
+
+      // Switch out of edit mode
+      this.set_edit_mode(false);
 
       // Return a success to the modal
       accept_func(true);

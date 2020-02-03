@@ -75,7 +75,7 @@ export default {
         { // The Date
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
@@ -109,7 +109,7 @@ export default {
         { // The date and time of the order
           title: "Date", field: "Order Date", formatter: this.format_date_time,
           ...this.get_date_filter_args(true),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // The cost of the item (in hours)
           title: "Cost", field: "Item Total Cost",
@@ -140,7 +140,7 @@ export default {
         { // The date and time of the order
           title: "Date", field: "Date", formatter: this.format_date,
           ...this.get_date_filter_args(false),
-          sorter: this.time_sorter,
+          sorter: this.date_sorter,
         },
         { // Notes
           title: "Notes", field: "Notes", formatter: this.format_notes,
@@ -172,7 +172,6 @@ export default {
 
   watch: {
     snapshot: function(snapshot) {
-      console.log(snapshot);
 
       if (snapshot == null) {
         this.work_log_collection  = null;
@@ -213,7 +212,7 @@ export default {
 
     format_date_time: function(cell) {
       var val = cell.getValue();
-      var date = val.toDate();
+      var date = this.get_as_date(val);
 
       var day     = this.get_date(date);
       var weekday = this.get_weekday(date);
@@ -232,8 +231,8 @@ export default {
       var val = cell.getValue();
 
       if (Array.isArray(val)) {
-        let date1 = val[0].toDate();
-        let date2 = val[1].toDate();
+        let date1 = this.get_as_date(val[0]);
+        let date2 = this.get_as_date(val[1]);
 
         if (this.same_day(date1, date2)) {
           day     = this.get_date(date1);
@@ -247,7 +246,7 @@ export default {
       }
 
       else {
-        let date = val.toDate();
+        let date = this.get_as_date(val);
         day     = this.get_date(date);
         weekday = this.get_weekday(date);
       }
@@ -257,7 +256,7 @@ export default {
 
     format_time: function(cell) {
       var val = cell.getValue();
-      var date = val.toDate();
+      var date = this.get_as_date(val);
 
       var time = date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -281,7 +280,7 @@ export default {
     date_filter: function(filters, option) {
 
       var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = datestamp.toDate();
+      var date = this.get_as_date(datestamp);
 
       // Result will be true if every filter passes
       var result = filters.every(filter => {
@@ -462,7 +461,7 @@ export default {
     time_range_filter: function(search_range, option) {
 
       // Interpret the current cell's value
-      var val = option.toDate();
+      var val = this.get_as_date(option);
       var hour = val.getHours().toString();
       var mins = val.getMinutes().toString();
       var time = [hour, mins];
@@ -507,6 +506,12 @@ export default {
 
 
     // =-= Sorters =-=-=
+
+    date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+      let a_date = (Array.isArray(a)) ? this.get_as_date(a[0]) : this.get_as_date(a);
+      let b_date = (Array.isArray(b)) ? this.get_as_date(b[0]) : this.get_as_date(b);
+      return a_date.getTime() - b_date.getTime();
+    },
 
     time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
       let sec_diff = a.seconds - b.seconds
@@ -578,6 +583,15 @@ export default {
     get_hours_sum: function(hours) {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
+
+
+    // Error checking to get a Date object from the database
+    // Should be a Timestamp, but handles error in case it isn't
+    get_as_date: function(date_obj) {
+      return (date_obj.toDate == undefined)
+        ? new Date(date_obj.seconds * 1000)
+        : date_obj.toDate();
+    }
   }
 }
 </script>
