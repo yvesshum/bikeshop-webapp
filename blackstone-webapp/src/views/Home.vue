@@ -77,7 +77,7 @@
           <b-collapse id="accordion-3" accordion="my-accordion" role="tabpanel">
             <b-card-body>
               <button onclick="location.href='/checked-in'" class="btn btn-outline-info btn-block" type="button">Currently Checked In</button>
-              <!-- <button onclick="location.href='/profile-lookup-staff'" class="btn btn-outline-info btn-block" type="button">Profile Lookup and Editing</button> -->
+              <button onclick="location.href='/profile-lookup-staff'" class="btn btn-outline-info btn-block" type="button">Profile Lookup and Editing</button>
             </b-card-body>
           </b-collapse>
         </b-card>
@@ -132,7 +132,7 @@
     </div>
 </div>
 <footer>
-    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1a</p>
+    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1b</p>
 </footer>
 </div>
 

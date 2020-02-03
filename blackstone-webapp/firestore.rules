@@ -1,7 +1,39 @@
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write;
+    		allow read, write:  if request.auth.uid != null ;
     }
+    
+    match /GlobalFieldsCollection/Youth%20Profile {
+    		 allow read;
+    }
+    
+//     match /GlobalYouthProfile/{document} {
+//     		 allow read;
+//     }
+    
+    match /GlobalVariables/Profile%20Options {
+    		 allow read;
+    }
+    
+    match/GlobalPendingRegistrations/{document} {
+    			allow create;
+    }
+    
+    match/GlobalVariables/ActivePeriods {
+    			allow read;
+    }
+    
+    match/GlobalVariables/Classes {
+    			allow read;
+    }
+    
+//     match/GlobalFieldsCollection {
+//     			allow write: if isAdmin();
+          
+//           function isAdmin() {
+//           		return get(/databases/GlobalVariables/documents/user_roles).admin.includes(request.auth.uid)
+//           }
+//     }
   }
 }
