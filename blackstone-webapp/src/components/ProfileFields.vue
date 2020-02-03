@@ -183,6 +183,7 @@ export default {
         "Order Log",
         "Registration Period",
         "Class",
+        "DOB",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
