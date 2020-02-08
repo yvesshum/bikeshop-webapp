@@ -19,7 +19,7 @@
     <div ref="edit_container" v-else>
       <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
       </SpecialInput>
-      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block;" v-b-tooltip.hover.html="tooltip_data">
+      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
         <div v-if="get_original_string().length == 0">Clear</div>
         <div v-else>Reset</div>
       </b-button>
@@ -138,23 +138,11 @@ export default {
 
           return `${h}:${time[1]} ${pm ? "PM" : "AM"}`;
 
-        // Display a date in "Month DD, YYYY" format
+        // Display a date in standard datestring format
         // TODO: Native js Date() is setting one day behind, for some reason
         case "Date":
-          // let d = new Date(val);
-          // console.log("Date val: ", val);
-          // console.log("Date: ", d);
-          // return d.toLocaleDateString(undefined, {
-          //   day:     'numeric',
-          //   month:   'long',
-          //   year:    'numeric'
-          // });
-          let date = {
-            year: val.substring(0, val.indexOf("-")),
-            month: Number(val.substring(val.indexOf("-")+1, val.lastIndexOf("-")))-1,
-            day: val.substring(val.lastIndexOf("-")+1),
-          };
-          return `${moment.months()[date.month]} ${date.day}, ${date.year}`;
+          let date = this.get_as_date(val);
+          return date.toDateString();
 
         // Everything else is fine as is
         default:
@@ -166,14 +154,13 @@ export default {
       return this.edit_value === undefined || this.edit_value === null || this.edit_value === "";
     },
 
-
-    // set_all_input_vals: function(input, val) {
-    //   if (input != null) {
-    //     input.placeholder  = val;
-    //     input.value        = val;
-    //     input.defaultValue = val;
-    //   };
-    // },
+    // Error checking to get a Date object from the database
+    // Should be a Timestamp, but handles error in case it isn't
+    get_as_date: function(date_obj) {
+      return (date_obj.toDate == undefined)
+        ? new Date(date_obj.seconds * 1000)
+        : date_obj.toDate();
+    },
   },
 }
 </script>

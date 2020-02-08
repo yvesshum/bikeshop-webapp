@@ -1,7 +1,6 @@
 <template>
   <div class="profile_lookup_staff">
     <TopBar/>
-    <p>This is the staff view of the youth profile lookup page</p>
 
     <YouthIDSelector @selected="load_youth"/>
     <br />
@@ -22,6 +21,11 @@
       ></ProfileItemLogs>
 
       <br /><br />
+    </div>
+
+    <div v-show="currentProfile == null">
+      <br>
+      <p>Search the bar above to view a youth's profile information.</p>
     </div>
   </div>
 </template>

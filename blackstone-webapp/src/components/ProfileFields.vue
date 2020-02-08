@@ -30,16 +30,16 @@
 
     <br />
 
-    <table id="fields_table" ref="fields_table" v-show="profile!=null">
+    <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-      <tbody v-for="section in table_sections"><tbody v-if="show_section(section.Name)">
+      <tbody v-for="section in table_sections">
 
-        <tr v-show="edit_mode">
-          <td class="section_name" colspan="2"> {{section.Name}}: </td>
+        <tr v-if="show_section(section.Name)" v-show="edit_mode">
+          <td class="section_name" colspan="3"> {{section.Name}}: </td>
         </tr>
 
-        <tr v-for="field in section.Data" v-show="show_container(field)">
-          <td v-show="edit_mode">
+        <tr v-if="show_section(section.Name)" v-for="field in section.Data" v-show="show_container(field)">
+          <td v-show="edit_mode" style="margin: auto; padding: 3px;">
             <ToggleButton
               onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
               @Toggle="status => set_row_status(field, status)"
@@ -49,10 +49,10 @@
           </td>
 
           <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">
-            {{field}}{{field_types[field] === "Boolean" ? "?" : ":"}}
+            {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
           </td>
 
-          <td>
+          <td style="padding: 3px;">
             <InputDisplayToggle
               v-show="is_used(field)"
               :defaultValue="local_values[field]"
@@ -64,9 +64,7 @@
 
         </tr>
 
-        <tr><td>&nbsp;</td></tr>
-
-      </tbody></tbody>
+      </tbody>
     </table>
 
     <b-button v-show="allow_edits && !edit_mode" variant="primary" @click="set_edit_mode(true)">
@@ -185,6 +183,7 @@ export default {
         "Order Log",
         "Registration Period",
         "Class",
+        "DOB",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
@@ -596,6 +595,9 @@ export default {
       // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
       this.row_status.update();
+
+      // Switch out of edit mode
+      this.set_edit_mode(false);
 
       // Return a success to the modal
       accept_func(true);
