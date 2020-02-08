@@ -22,6 +22,7 @@ import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
 import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
 import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
+import EssayQuestionsSettings from './views/admin/EssayQuestionsSettings.vue';
 import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
@@ -284,6 +285,15 @@ const router = new Router({
             path: '/hour-logging-categories-settings',
             name: 'hour-logging-categories-settings',
             component: HourLoggingCategoriesSettings,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/essay-questions-settings',
+            name: 'essay-questions-settings',
+            component: EssayQuestionsSettings,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true
