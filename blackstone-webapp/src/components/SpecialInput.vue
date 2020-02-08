@@ -39,7 +39,8 @@ use v-model. Whenever one of these is changed, it updates the other.
         <div v-if="input === 'Integer'">
             <VueNumberInput 
               center
-              v-model="inner_value"
+              :value="value" 
+              @input="$emit('input', $event)"
               :min="0"
               :step="1"
               align="center"
@@ -53,7 +54,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value">
+                <b-form-radio-group  :value="value" @input="$emit('input', $event)">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -63,24 +64,24 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a 10 digit string -->
         <div v-else-if="input === 'Phone'">
             <!-- <b-form-input v-model="value" type="text" :state="isValidPhoneNumber()" :style="args.style"></b-form-input> -->
-            <vue-tel-input v-model="inner_value" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
+            <vue-tel-input :value="value" @input="$emit('input', $event)" v-bind:maxLen="14" v-bind:validCharactersOnly="true"></vue-tel-input>
         </div>
 
         <!-- Returns a ISO string-->
         <div v-else-if="input === 'Datetime'">
              <!-- <datetime format="YYYY-MM-DD H:i:s" width="100%" v-model="value"/> -->
-            <datetime type="datetime" v-model="inner_value"/>
+            <datetime :value="value" @input="$emit('input', $event)"/>
 
         </div>
         
         <div v-else-if="input === 'Date'" style="text-align: center;">
-            <datepicker v-model="inner_value" style="display: inline-block;"></datepicker>
+            <datepicker :value="value" @input="$emit('input', $event)" style="display: inline-block;"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  v-model="inner_value" :name="inner_value">
+                <b-form-radio-group  :value="value" @input="$emit('input', $event)" >
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -96,24 +97,24 @@ use v-model. Whenever one of these is changed, it updates the other.
             "Black or African American", 
             "White" -->
         <div v-else-if="input === 'Race'">
-            <b-form-select v-model="inner_value" :options="raceOptions" :style="args.style"></b-form-select>
+            <b-form-select :value="value" @input="$emit('input', $event)" :options="raceOptions" :style="args.style"></b-form-select>
         </div>
 
         <!-- Returns 'K', '1,12' -->
         <div v-else-if="input === 'Grade'">
-            <b-form-select v-model="inner_value" :options="gradeOptions" :style="args.style"></b-form-select>
+            <b-form-select :value="value" @input="$emit('input', $event)" :options="gradeOptions" :style="args.style"></b-form-select>
         </div>
 
         <!-- Returns an email string -->
         <div v-else-if="input === 'Email'">
-            <b-form-input v-model="inner_value" type="email" :state="isValidEmail()" :style="args.style"></b-form-input>
+            <b-form-input :value="value" @input="$emit('input', $event)" type="email" :state="isValidEmail()" :style="args.style"></b-form-input>
         </div>
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
             <VueNumberInput 
               center
-              v-model="inner_value"
+              :value="value" @input="$emit('input', $event)"
               :min="0"
               :step="0.5"
               placeholder="Hours"
@@ -125,17 +126,18 @@ use v-model. Whenever one of these is changed, it updates the other.
         </div>
 
         <div v-else-if="input === 'Class'">
-            <b-form-select v-model="inner_value" :options="classOptions" :style="args.style"></b-form-select>
+            <b-form-select :value="value" @input="$emit('input', $event)" :options="classOptions" :style="args.style"></b-form-select>
         </div>
 
         <div v-else-if="input === 'Period'">
-            <b-form-select v-model="inner_value" :options="periodOptions" :style="args.style"></b-form-select>
+            <b-form-select :value="value" @input="$emit('input', $event)" :options="periodOptions" :style="args.style"></b-form-select>
         </div>
 
         <div v-else-if="input === 'Essay'">
             <b-form-textarea
                 id="textarea"
-                v-model="inner_value"
+                :value="value" 
+                @input="$emit('input', $event)"
                 :placeholder="args.placeholder"
                 rows="3"
                 max-rows="6"
@@ -144,7 +146,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input v-model="inner_value" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+            <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
         </div>
     </div>
 </template>
@@ -154,13 +156,17 @@ import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
-import { Datetime } from 'vue-datetime'
+// import { Datetime } from 'vue-datetime'
+import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
-import Datepicker from 'vuejs-datepicker';
+import Datepicker from '../components/datepickerTimestamp';
 
 export default {
     name: 'SpecialInput',
     props: {
+        value: {
+            default: ""
+        },
         inputType: {
             type: String,
             default: "String",
@@ -169,15 +175,10 @@ export default {
             type: Object,
             default: function (){ return {} }
         },
-        tag: {
-            type:String,
-            default: "unknown_ref"
-        },
     },
     data() {
         return {
             input: null,
-            inner_value: null,
             args: {},
             ready: false,
             raceOptions: [
@@ -211,24 +212,6 @@ export default {
     },
 
     watch: {
-        // When the value is changed by the parent, update the inner_value for the input component
-        value: function(new_value) {
-            this.inner_value = new_value;
-        },
-
-        // When the inner value of the input component changes, propagate that change upward
-        inner_value: function(new_value) {
-            // this.$emit(this.tag, new_value);
-            //check input type 
-            // if match, parse into Timestamp 
-            if (this.inputType === "Datetime" || this.inputType === "Date") {
-                this.$emit("input", Timestamp.fromDate(new Date(new_value)));
-            }
-            else {
-                this.$emit("input", new_value);
-            }
-        },
-
         inputType: function() {
             this.input = this.inputType;
             if (this.inputType === "Class" && this.classOptions[0].value == null) {
@@ -249,8 +232,38 @@ export default {
         },
 
         setValue(val) {
-            console.log('val', val);
-            this.inner_value = val;
+            /**
+             * BUG (problem when switching between input types, especially in FieldEditor)
+             * 
+             * Since items are currently bound to a parent's v-model, setting a value from this SpecialInput
+             * component is challenging .
+             * 
+             * 1. We can do $emit('input', value), however by doing so the emitted value is not propagated back into
+             * this SpecialInput component, and switching between inputTypes would hence not lead to correctly reinitialized 
+             * values 
+             * 
+             * 2. We can do $emit('some other tag', value), and force the parent to have a handler to update the v-model
+             * on their side. However, a race condition happens where this SpecialInput component changes the type, but 
+             * still having the original v-model value, as it waits for the parent to receive the emission and changes the value.
+             * i.e. 
+             * I want to change type Integer -> String
+             * initial v-model value: 0
+             * Input type is changed to String
+             * SpecialInput emits a v-model update request 
+             * SpecialInput changes type to String, gets error as v-model is of type: Integer     <-- PROBLEM LIES HERE 
+             * Parent receives request and updates the v-model
+             * Things are happy for now 
+             * 
+             * 3. We can directly change the value of `this.value`, but vue is unhappy about this, and will give an error
+             * saying that you shouldn't mutate props like this. For the sake of this component's usage, I think it's fine 
+             * to go with this "anti-pattern" and don't care about the warning. 
+             * 
+             * If whoever is reading this has an idea to fix SpecialInput, please do!!!
+             * 
+             */
+            // this.$emit('update_value', val);
+            this.value = val;
+            // this.$emit('input', val);
         },
 
         //defaults 
@@ -271,10 +284,10 @@ export default {
                     this.setValue("");
                     break;
                 case 'Datetime':
-                    this.setValue(new Date().toString())
+                    this.setValue(Timestamp.fromDate(new Date()))
                     break;
                 case 'Date':
-                    this.setValue(new Date())
+                    this.setValue(Timestamp.fromDate(new Date()))
                     break;
                 case 'Gender':
                     this.setValue("M"); //leftmost element 
