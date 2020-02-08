@@ -260,6 +260,9 @@ export default {
              * 
              * If whoever is reading this has an idea to fix SpecialInput, please do!!!
              * 
+             * - Actually I just got an idea ^ pls wait for a fix 
+             * Meanwhile you should be able to use Special Input as usual for other pages (except admin)
+             * 
              */
             // this.$emit('update_value', val);
             this.value = val;
