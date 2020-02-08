@@ -202,9 +202,6 @@ export default {
             }
         }
     },
-    watch: {
-        modal: {}
-    },
     mounted() {
         this.field_data = this.elements;
         this.field_data_initial_copy = this.field_data;
