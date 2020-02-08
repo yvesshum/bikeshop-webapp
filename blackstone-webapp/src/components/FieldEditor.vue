@@ -119,6 +119,7 @@
             placeholder="Edit here.."
             rows="1"
             max-rows="3"
+            @change="handle_field_type_change"
         ></b-form-select>
 
         <p style="margin-bottom: 0">Initial Value</p>
@@ -145,6 +146,7 @@ import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
+import { initSpecialInputVal } from '../scripts/SpecialInit';
 
 export default {
     name: 'fieldEditor',
@@ -195,10 +197,13 @@ export default {
                     visible: false,
                     field_name: "",
                     field_type: "String",
-                    initial_value: ""
+                    initial_value: null
                 }
             }
         }
+    },
+    watch: {
+        modal: {}
     },
     mounted() {
         this.field_data = this.elements;
@@ -209,9 +214,15 @@ export default {
             this.modal.edit.options = query.data().types
         })
     },
-    methods: {
-        parse(item) {
-            return JSON.parse(JSON.stringify(item));
+    methods: { 
+
+        handle_field_type_change(type) {
+            console.log('handle field type change called', type);
+            this.modal.add.initial_value = initSpecialInputVal(type);
+            console.log('set modal initial value to:', this.modal.add.initial_value);
+            console.log('calling updateInputType on ', type);
+
+            this.$refs.addInput.updateInputType(type);
         },
 
         editButtonClicked(data) {
