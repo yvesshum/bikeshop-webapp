@@ -40,6 +40,9 @@ export function initSpecialInputVal(type) {
         case 'Essay':
             return "";
             break;
+        case 'Price':
+            return 0;
+            break;
         default:
             return "";
     

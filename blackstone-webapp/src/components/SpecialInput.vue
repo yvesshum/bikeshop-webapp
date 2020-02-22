@@ -35,7 +35,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
 <template>
     <div v-if="ready">
-        <!-- Returns an String that is an integer -->
+        <!-- Returns an integer -->
         <div v-if="input === 'Integer'">
             <VueNumberInput 
               center
@@ -47,8 +47,16 @@ use v-model. Whenever one of these is changed, it updates the other.
               style="width: 20rem"
               controls
               :inputtable="false"
-            />
 
+            />
+        </div>
+
+        <!-- Returns an integer with step 0.01 -->
+        <div v-else-if="input === 'Price'">
+            <SpecialNumberInput
+                :value="value"
+                @input="$emit('input', $event)"
+            />
         </div>
 
         <!-- Returns a string "true" or "false" -->
@@ -75,7 +83,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         </div>
         
         <div v-else-if="input === 'Date'" style="text-align: center;">
-            <datepicker :value="value" @input="$emit('input', $event)" style="display: inline-block;"></datepicker>
+            <datepicker :value="value" @input="$emit('input', $event)" style="display: inline-block; text-align: center"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
@@ -114,7 +122,8 @@ use v-model. Whenever one of these is changed, it updates the other.
         <div v-else-if="input === 'Hours'">
             <VueNumberInput 
               center
-              :value="value" @input="$emit('input', $event)"
+              :value="value" 
+              @input="$emit('input', $event)"
               :min="0"
               :step="0.5"
               placeholder="Hours"
@@ -160,6 +169,8 @@ import moment from 'moment'
 import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
 import Datepicker from '../components/datepickerTimestamp';
+import SpecialNumberInput from '../components/SpecialNumberInput'
+
 
 export default {
     name: 'SpecialInput',
@@ -299,7 +310,8 @@ export default {
         VueTelInput,
         VueNumberInput,
         Datetime,
-        Datepicker
+        Datepicker,
+        SpecialNumberInput,
     }
 
 }
