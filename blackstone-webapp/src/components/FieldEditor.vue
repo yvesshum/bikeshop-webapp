@@ -204,7 +204,7 @@ export default {
     },
     mounted() {
         this.field_data = this.elements;
-        this.field_data_initial_copy = this.field_data;
+        this.field_data_initial_copy = JSON.parse(JSON.stringify((this.field_data))); // Native type clone
 
         // Grab input types
         db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
@@ -212,7 +212,6 @@ export default {
         })
     },
     methods: { 
-
         handle_field_type_change(type) {
             console.log('handle field type change called', type);
             this.modal.add.initial_value = initSpecialInputVal(type);
@@ -301,6 +300,8 @@ export default {
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
+            //TODO: 
+            // This doesn't work yet. Name changes lead to errors
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
@@ -465,14 +466,18 @@ export default {
                 })
             }
 
+
             //Updating Locally 
             let localUpdateObject = {
                 data: {},
                 isProtected: false
             }
             localUpdateObject.data[this.modal.add.field_name] = this.modal.add.field_type;
+
             this.field_data.push(localUpdateObject);
+
             this.field_data_initial_copy.push(localUpdateObject);
+
 
             // Reset
             this.modal.add.field_name = "";
@@ -481,6 +486,7 @@ export default {
 
             this.closeLoadingModal();
             this.showMsgModal("Success!", "Added a new field in GlobalFieldsCollection and corresponding documents.");
+
         }
 
     }
