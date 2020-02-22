@@ -30,6 +30,7 @@ import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
 import Testing from './views/admin/Testing.vue'
+import ClassSettings from './views/admin/ClassSettings';
 Vue.use(Router);
 
 const router = new Router({
@@ -298,7 +299,15 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-
+        {
+          path: '/class-settings',
+          name: 'class-settings',
+          component: ClassSettings,
+          meta: {
+              requiresAuth: true,
+              requiresStaff: true
+          }
+      },
         {
             path: '/testing',
             name: 'tesitng',
