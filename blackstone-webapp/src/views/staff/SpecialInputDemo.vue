@@ -23,11 +23,11 @@
 
 
             <p>Datetime</p>
-            <SpecialInput inputType="Datetime" ref="datetime" :arguments="{}"/>
+            <SpecialInput inputType="Datetime" ref="datetime" :arguments="{}" v-model="datetime"/>
             <br><hr>
 
             <p>Date</p>
-            <SpecialInput inputType="Date" ref="date" :arguments="{}"/>
+            <SpecialInput inputType="Date" ref="date" :arguments="{}" v-model="date"/>
             <br><hr>
 
             <p>Gender</p>
@@ -71,6 +71,7 @@
 <script>
 import moment from 'moment'
 import SpecialInput from '../../components/SpecialInput.vue'
+import { initSpecialInputVal } from '../../scripts/SpecialInit';
 
 export default {
     name: 'Stats',
@@ -79,9 +80,16 @@ export default {
     },
     data() {
         return {
-            test: 0
+            test: 0,
+            date: null,
+            datetime: null
         }
     },
+
+    mounted() {
+        this.date = initSpecialInputVal('Date');
+        this.datetime = initSpecialInputVal('Datetime')
+    }
     
 }
 </script>

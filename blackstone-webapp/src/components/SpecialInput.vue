@@ -47,11 +47,12 @@ use v-model. Whenever one of these is changed, it updates the other.
               style="width: 20rem"
               controls
               :inputtable="false"
+
             />
         </div>
 
         <!-- Returns an integer with step 0.01 -->
-        <div v-if="input === 'Price'">
+        <div v-else-if="input === 'Price'">
             <SpecialNumberInput
                 :value="value"
                 @input="$emit('input', $event)"
