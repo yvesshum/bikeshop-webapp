@@ -281,10 +281,12 @@ export default {
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
+
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
             let newFieldType = this.modal.edit.field_type;
+            console.log(this.modal.edit.original_field_name);
             for (let i = 0; i < this.field_data.length; i++) {
                 if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection
@@ -304,27 +306,38 @@ export default {
                     }
 
                     // Updating all the collections that needs an update
-                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
+                    let query = await db.collection("GlobalPeriods").doc(new Date().getFullYear().toString().substr(-2)).get();
+                    var seasons = ["Summer ", "Winter ", "Spring "].map(x=>x+new Date().getFullYear().toString().substr(-2));
+                    seasons.forEach(season=>{
+                      if(!!query.data()[season]) query.data()[season].forEach(async (doc, index)=>{
+                        if(doc.Class === this.modal.edit.original_field_name) {
+                          doc.Class = newFieldName;
+                          let updateValue = {};
+                          updateValue[season] = [];
+                          updateValue[season][index] = doc;
+                          await db.collection("GlobalPeriods").doc(new Date().getFullYear().toString().substr(-2)).update(updateValue)
+                        }
+                      })
+                    })
+
+                    let essays = await db.collection("GlobalVariables").doc("EssayQuestions").get();
+                    var dat = essays.data();
+                    for(var key in dat){
+                      if(key === this.modal.edit.original_field_name){
+                        dat[newFieldName] = dat[key];
+                        delete dat[key];
+                      }
                     }
-                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-                            await db.doc(path).set(data);
-                        })
-                    }
+                    db.collection("GlobalVariables").doc("EssayQuestions").set(dat);
+                    // query.forEach(async doc => {
+                    //     let id = doc.id;
+                    //     let data = doc.data();
+                    //     if(data.)
+                    //     data[newFieldName] = data[this.modal.edit.original_field_name]
+                    //     delete data[this.modal.edit.original_field_name];
+                    //     await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                    // })
+                  
 
                     //Local Update
                     let newVal = {};
@@ -417,32 +430,6 @@ export default {
             if (updateStatus) {
                 window.alert("Error on updating Classes on firebase. " + updateStatus);
                 return null;
-            }
-            //Update Collections
-            for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                let query = await db.collection(this.collectionsToEdit[j]).get();
-                
-                query.forEach(async doc => {
-                    let id = doc.id;
-                    let data = doc.data();
-
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-
-                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
-                })
-            }
-            for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-
-                query.forEach(async doc => {
-                    let id = doc.id;
-                    let path = doc.ref.path
-                    let data = doc.data();
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.doc(path).update(data);
-                })
             }
 
             //Updating Locally 
