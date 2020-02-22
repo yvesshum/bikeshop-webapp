@@ -10,7 +10,7 @@
                 </b-button-group>
                 
                 <b-button-group>
-                    <b-button variant="info" @click="editFields">Edit Question</b-button>
+                    <b-button variant="info" @click="showEditModal">Edit Question</b-button>
                 </b-button-group>
                 
                 <b-button-group>
@@ -66,15 +66,22 @@
         </b-modal>
 
         <b-modal v-model = "rejectModalVisible" hide-footer lazy >
-          
+            <template slot="modal-title">Remove Question</template>
+            <div class="d-block text-center">
+                <h3>{{rejectModalMsg}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="closeRejectModal" variant = "secondary">cancel</b-button>
+            <b-button class="mt-3" block @click="closeRejectModal(); confirmedDelete();" variant = "danger">proceed</b-button>
         </b-modal>
 
         <b-modal v-model = "editModalVisible" hide-footer lazy>
-            
-        </b-modal>
-        
-        <b-modal v-model = "editModalVisible" hide-footer lazy>
-            
+          <template slot="modal-title">Edit essay question</template>
+          Select the class this question goes to
+          <SpecialInput v-model="editNewClass" inputType="Class" :args="arguments"></SpecialInput>
+          What's your question?
+          <SpecialInput v-model="editNewQuestion" inputType="Essay" :args="arguments"></SpecialInput>
+          <b-button class="mt-3" block @click="confirmEdit(); closeEditModal();" variant = "primary">Confirm edit</b-button>
+          <b-button class="mt-3" block @click="closeEditModal()" variant="warning">Cancel</b-button>
         </b-modal>
 
         <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
@@ -127,12 +134,15 @@
                 rejectingQuestion: "",
                 rejectingID: "",
                 editModalVisible: false,
-                editMsg: "",
+                editOldQuestion: "",
+                editOldClass: "",
+                editNewQuestion: "",
+                editNewClass: "",
                 isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                editModalVisible: false,
-                editSelected: {}
+                rejectingClass: "",
+                rejectingQuestion: "",
             };
 
         },
@@ -201,25 +211,14 @@
                         window.alert("Err could not add question");
                         return null;
                     }
-                    console.log("What now?")
                     var single_question = {};
                     single_question["Question"] = this.newQuestion;
                     single_question["Class"] = this.newClass;
                     this.items.push(single_question);
-                    console.log("Aboit to close loading?")
+                    console.log("About to close loading?")
                 }
                 this.closeLoadingModal();
                 this.showModal("Success", "Successfully added a question")
-            },
-
-            removeLocally(ID) {
-                for (let i =0; i < this.items.length; i++) {
-                    if (this.items[i]["Document ID"] === ID) {
-                        this.items.splice(i, 1);
-                        this.$root.$emit('bv::refresh::table', 'transfer-table');
-                        break;
-                    }
-                }
             },
 
             closeModal() {
@@ -245,8 +244,8 @@
                 let curRow = this.selected[0];
                 this.rejectingClass = curRow["Class"];
                 this.rejectingQuestion = curRow["Question"];
-                this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                    + curRow["First Name"] + " " + curRow["Last Name"] + "'s youth registration");
+                this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete the question \""
+                    + curRow["Question"] + "\" for the class " + curRow["Class"]);
             },
             
 
@@ -257,28 +256,34 @@
                 
                 this.showLoadingModal("Doing some work in the background...");
 
-                let status = db.collection("GlobalPendingRegistrations").doc(this.rejectingDocumentID).delete();
-                if (status == null) {
-                    window.alert("Err, unable to delete youth registration ID: " + this.rejectingDocumentID)
+                let qs = await questionsRef.get();
+                let data = qs.data();
+                for(var i = 0; i < data[this.rejectingClass].length; i++){
+                    if(data[this.rejectingClass][i] === this.rejectingQuestion){
+                        data[this.rejectingClass].splice(i, 1);
+                    }
+                }
+                let status = await questionsRef.update(data);
+                if (status) {
+                    window.alert("Err could not delete question");
                     return null;
                 }
 
 
                 //remove locally
-                let itemIndex = 0;
-                for (let i = 0; i < this.items.length; i++) {
-                    if (this.items[i]["Document ID"] === this.rejectingDocumentID) {
-                        itemIndex = i;
+                for (let i =0; i < this.items.length; i++) {
+                    if (this.items[i]["Class"] === this.rejectingClass && this.items[i]["Question"] === this.rejectingQuestion) {
+                        this.items.splice(i, 1);
+                        this.$root.$emit('bv::refresh::table', 'transfer-table');
                         break;
                     }
                 }
-                this.items.splice(itemIndex, 1);
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted registration", "successfully deleted registration with ID of " + this.rejectingDocumentID);
-                this.rejectingDocumentID = "";
-
+                this.showModal("Successfully deleted question", "successfully deleted the question");
+                this.rejectingClass = "";
+                this.rejectingQuestion = "";
             },
             
             async editFields() {
@@ -286,19 +291,15 @@
             },
             
             showEditModal() {
+                let curRow = this.selected[0];
+                this.editOldClass = curRow["Class"];
+                this.editOldQuestion = curRow["Question"];
+                this.editNewClass = curRow["Class"];
+                this.editNewQuestion = curRow["Question"];
                 this.editModalVisible = true;
             },
             
             closeEditModal() {
-                this.editModalVisible = false;
-            },
-
-            showEditModal() {
-                this.editModalVisible = true;
-            },
-
-            closeEditModal() {
-                this.editMsg = "";
                 this.editModalVisible = false;
             },
             
