@@ -39,6 +39,16 @@
                   </SpecialInput>
                 </div>
                 <br>
+                <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                    <div v-for="question in essayQuestions[field.value]">
+                      <p class="field_header">{{question}}</p>
+                      <div class = "specialDiv">
+                        <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                        </SpecialInput>
+                      </div>
+                      <br>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -111,6 +121,7 @@
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
+    let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
     
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
@@ -143,12 +154,18 @@
                     { value: "Returning Youth", text: 'Returning Youth' }
                 ],
                 returningYouthID: null,
+                essayQuestions : {},
+                answers : {},
             };
         },
         methods: {
             async getFields() {
                 let f = await fieldsRef.get();
                 this.loadingModalVisible = false;
+                return f.data();
+            },
+            async getEssays() {
+                let f = await essayRef.get();
                 return f.data();
             },
             async getSeasons() {
@@ -268,6 +285,12 @@
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
                         }
+                    }
+                    
+                    let currentClass = data["Class"]["value"];
+                    console.log("Current class " + currentClass);
+                    for(var question in answers[currentClass]){
+                        input[question] = answers[currentClass][question];
                     }
                     
                     console.log(input);
@@ -418,6 +441,13 @@
             let fields = await this.getFields();
             let seasons = await this.getSeasons();
             let options = await this.getOptions();
+            this.essayQuestions = await this.getEssays();
+            for (var className in this.essayQuestions) {
+                this.answers[className] = {};
+                for(var i = 0; i < this.essayQuestions[className].length; i++){
+                    this.answers[className][this.essayQuestions[className][i]] = "";
+                }
+            }
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
