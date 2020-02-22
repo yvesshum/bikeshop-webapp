@@ -32,6 +32,7 @@
             selectedVaraint = "success"
             :items="items"
             @row-selected="rowSelected"
+            sort-by="Class"
             :sort-by.sync="sortBy"
             :sort-desc.sync="sortDesc"
             id="transfer_table"
@@ -80,7 +81,7 @@
           <SpecialInput v-model="editNewClass" inputType="Class" :args="arguments"></SpecialInput>
           What's your question?
           <SpecialInput v-model="editNewQuestion" inputType="Essay" :args="arguments"></SpecialInput>
-          <b-button class="mt-3" block @click="confirmEdit(); closeEditModal();" variant = "primary">Confirm edit</b-button>
+          <b-button class="mt-3" block @click="saveEdits(); closeEditModal();" variant = "primary">Confirm edit</b-button>
           <b-button class="mt-3" block @click="closeEditModal()" variant="warning">Cancel</b-button>
         </b-modal>
 
@@ -216,6 +217,8 @@
                     single_question["Class"] = this.newClass;
                     this.items.push(single_question);
                     console.log("About to close loading?")
+                    this.newQuestion = "";
+                    this.newClass = "";
                 }
                 this.closeLoadingModal();
                 this.showModal("Success", "Successfully added a question")
@@ -286,10 +289,6 @@
                 this.rejectingQuestion = "";
             },
             
-            async editFields() {
-                
-            },
-            
             showEditModal() {
                 let curRow = this.selected[0];
                 this.editOldClass = curRow["Class"];
@@ -304,7 +303,48 @@
             },
             
             async saveEdits() {
+                this.closeEditModal();
+                this.showLoadingModal("Deleting...");
+                let curRow = this.selected[0];
                 
+                this.showLoadingModal("Doing some work in the background...");
+                
+                let qs = await questionsRef.get();
+                let data = qs.data();
+                for(var i = 0; i < data[this.editOldClass].length; i++){
+                    if(data[this.editOldClass][i] === this.editOldQuestion){
+                        data[this.editOldClass].splice(i, 1);
+                    }
+                }
+                if(!(this.editNewClass in data)){
+                    data[this.editNewClass] = [];
+                }
+                data[this.editNewClass].push(this.editNewQuestion);
+                let status = await questionsRef.update(data);
+                if (status) {
+                    window.alert("Err could not edit question");
+                    return null;
+                }
+
+                //remove and add locally
+                for (let i =0; i < this.items.length; i++) {
+                    if (this.items[i]["Class"] === this.editOldClass && this.items[i]["Question"] === this.editOldQuestion) {
+                        this.items.splice(i, 1);
+                        this.$root.$emit('bv::refresh::table', 'transfer-table');
+                        break;
+                    }
+                }
+                var single_question = {};
+                single_question["Question"] = this.editNewQuestion;
+                single_question["Class"] = this.editNewClass;
+                this.items.push(single_question);
+
+                this.$root.$emit('bv::refresh::table', 'transfer-table');
+                this.closeLoadingModal();
+                this.editOldClass = "";
+                this.editOldQuestion = "";
+                this.editNewClass = "";
+                this.editNewQuestion = "";
             },
 
             toggleBusy() {
