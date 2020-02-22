@@ -58,6 +58,11 @@
             <SpecialInput inputType="Period"/>
             <br><hr>
 
+            <p>Price</p>
+            <SpecialInput inputType="Price" v-model="test"/>
+            <br><hr>
+
+
         </div>
     </div>
     
@@ -74,6 +79,7 @@ export default {
     },
     data() {
         return {
+            test: 0
         }
     },
     
