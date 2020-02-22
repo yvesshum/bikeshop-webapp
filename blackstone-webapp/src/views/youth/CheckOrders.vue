@@ -14,6 +14,7 @@
             <strong>Loading...</strong>
             </div>
         </b-table>
+        <p v-if="!items.length">No orders found!</p>
     </div>
 
 </template>
