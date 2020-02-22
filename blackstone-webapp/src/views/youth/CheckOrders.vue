@@ -1,6 +1,7 @@
 <template>
     <div>
         <top-bar/>
+        <h1 class="title">Check Orders</h1>
         <b-table
             :items="items"
             :fields="fields"
@@ -79,3 +80,8 @@ export default {
 }
 
 </script>
+<style>
+.title {
+margin-bottom: 1rem;
+}
+</style>

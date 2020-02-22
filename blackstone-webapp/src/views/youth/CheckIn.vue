@@ -1,7 +1,7 @@
 <template>
   <div>
     <top-bar/>
-    <h2 style="margin-top: 20px;">
+    <h2 style="margin-top: 20px; margin: 0px 10px;">
         Check In/Out: {{ date }}
     </h2>
     <br>

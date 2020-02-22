@@ -1,14 +1,14 @@
 //TODO: figure out how to do multiple hour logs.
-// Plan: 
+// Plan:
 // Rewrite the functional routine for doing 1 approval
 // Write an outer function to traverse selection, applying that functional routine
 // If 1 fails, break out of it and say which ones were successful
-// If successful, just display a modal of the successful ones 
+// If successful, just display a modal of the successful ones
 <template>
-    <div class = ApproveHourLogs>
+    <div>
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
-        <div class="toolbar_wrapper">
+        <div class="toolbarwrapper">
             <b-button-toolbar style="justify-content: center;">
                     <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="this.selected.length == 0">Approve</b-button>
                     <b-button variant="info" @click="editHours" style="margin: 1%;" :disabled="this.selected.length > 1 || this.selected.length == 0">Edit Hours</b-button>
@@ -22,7 +22,6 @@
             striped
             hover
             selectable
-            responsive
             select-mode="multi"
             selectedVaraint = "success"
             :items="items"
@@ -170,9 +169,9 @@
                 hoursModalVisible: false,
 
                 isBusy: true,
-                
+
                 deleteAmount: 0,
-                
+
                 editSelectedHours: {}
             };
 
@@ -243,10 +242,10 @@
 
 
             async accept() {
-                
-                //loop through selected 
+
+                //loop through selected
                 let documentIDs = [];
-            
+
                 let selectedLength = this.selected.length;
 
                 this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
@@ -267,22 +266,22 @@
                         if (i > 0) {
                             msg += "The first " + i + "was approved though.";
                         }
-                        //calculate successful fields 
+                        //calculate successful fields
                         this.showModal(msg);
-                        this.$root.$emit('bv::refresh::table', 'transfer_table'); 
+                        this.$root.$emit('bv::refresh::table', 'transfer_table');
                         break;
                     }
                 }
                 //TODO: Table not updating properly after deleting
-                
+
                 for (let i = 0; i < documentIDs.length; i++) {
                     this.removeLocally(documentIDs[i]);
                 }
                 this.shouldRefreshTable = true;
                 console.log('a', this.items.length);
-                
+
                 this.closeLoadingModal();
-                this.$root.$emit('bv::refresh::table', 'transfer_table');                 
+                this.$root.$emit('bv::refresh::table', 'transfer_table');
 
                 if (selectedLength > 1) {
                     this.showModal("Success", "Successfully approved " + selectedLength + " hour log requests");
@@ -319,7 +318,7 @@
 
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
-                
+
                 console.log(newPendingHours, newHoursEarned);
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
                     "Pending Hours": newPendingHours,
@@ -625,13 +624,9 @@
 </script>
 
 <style>
-.toolbar_wrapper {
-margin-bottom: 1rem;
-position: sticky;
-}
+
 .title {
 margin-bottom: 1rem;
-padding: 0 1rem;
 }
 
 </style>
