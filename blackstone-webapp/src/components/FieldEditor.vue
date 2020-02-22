@@ -68,17 +68,6 @@
                 max-rows="1"
         ></b-form-textarea>
         <br>
-        <p>Field Type:</p>
-        <b-form-select
-                id="textarea"
-                v-model="modal.edit.field_type"
-                :options="modal.edit.options"
-                placeholder="Edit here.."
-                rows="1"
-                max-rows="1"
-        ></b-form-select>
-        <br>
-        <br>
         <strong style="color: red">Please check if you have a duplicate field name before saving so bad things won't happen.</strong>
         <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
