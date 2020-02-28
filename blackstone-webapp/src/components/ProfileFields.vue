@@ -113,23 +113,25 @@
 
       <br />
       <table style="margin: auto;">
-        <tr style="text-align: center;">
+        <tr class="change_modal_header">
           <th></th>
-          <th class="change_modal_header">Original Value</th>
-          <th class="change_modal_header">New Value</th>
+          <th>Original Value</th>
+          <th>New Value</th>
         </tr>
+
         <tr v-for="(change, field) in changes_list">
           <td class="change_modal_cell_title">
             The {{temp_fields.includes(field) ? "non-standard " : ""}}field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
           </td>
-          <td class="change_modal_cell_remove">
+          <td :class="change_modal_cell_type_old">
             <div v-if="change.message !== 'created'">{{change.old_val}}</div>
           </td>
-          <td class="change_modal_cell_add">
+          <td :class="change_modal_cell_type_new">
             <div v-if="change.message !== 'removed'">{{change.new_val}}</div>
           </td>
         </tr>
-        <tr>
+
+        <tr class="change_modal_footer">
           <td></td>
           <td v-if="confirm_mode == 'save'"></td>
           <td style="text-align: center; font-style: oblique;"><b>&uarr;</b><br/>This column will be kept</td>
@@ -377,6 +379,18 @@ export default {
     season_list: function() {
       if (this.periodData == null) return undefined;
       return this.periodData.seasons;
+    },
+
+    change_modal_cell_type_old: function() {
+      return this.confirm_mode == 'save'
+        ? 'change_modal_cell_remove'
+        : 'change_modal_cell_add';
+    },
+
+    change_modal_cell_type_new: function() {
+      return this.confirm_mode == 'save'
+        ? 'change_modal_cell_add'
+        : 'change_modal_cell_remove';
     },
   },
 
@@ -797,9 +811,14 @@ export default {
     /*outline: 5px solid black;*/
   }
 
-  .change_modal_header {
+  .change_modal_header > th {
     border-bottom: 2px solid #000;
     padding: 3pt;
+    text-align: center;
+  }
+
+  .change_modal_footer > td {
+    border-top: 2px solid #000;
   }
 
   .change_modal_field {
@@ -811,6 +830,7 @@ export default {
   .change_modal_cell_title {
     text-align: left;
     width: 50%;
+    padding: 3pt;
   }
 
   .change_modal_cell_remove {
