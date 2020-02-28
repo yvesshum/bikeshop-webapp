@@ -514,8 +514,17 @@ export default {
     },
 
     time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-      let sec_diff = a.seconds - b.seconds
-      return sec_diff ? sec_diff : (a.nanoseconds - b.nanoseconds);
+
+      // Get both as dates
+      let a_date = this.get_as_date(a);
+      let b_date = this.get_as_date(b);
+
+      // Get differences in hours, minutes, and seconds
+      let h_diff = a_date.getHours() - b_date.getHours();
+      let m_diff = a_date.getMinutes() - b_date.getMinutes();
+      let s_diff = a_date.getSeconds() - b_date.getSeconds();
+
+      return h_diff ? h_diff : (m_diff ? m_diff : s_diff);
     },
 
     hour_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
