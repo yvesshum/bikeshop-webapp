@@ -2,31 +2,17 @@
 	<div class="save_bar">
 
 		<div ref="bottom_bar" class="bottom-bar" v-show="show_bar">
-			<b-button
-				:variant="discard_variant"
-				:disabled="disableIfNoChanges && !has_any_changes"
-				@click="discard"
-				class="change_button"
+			<DiscardResetSave
+				:hasChanges="hasChanges"
+				:hasUnsaveableChanges="hasUnsaveableChanges"
+				:hideReset="hideReset"
+				:disableIfNoChanges="disableIfNoChanges"
+				:saveVariant="saveVariant"
+				:resetVariant="resetVariant"
+				:discardVariant="discardVariant"
+				@save="save" @reset="reset" @discard="discard"
 			>
-				Discard Changes
-			</b-button>
-			<b-button
-				v-if="!hideReset"
-				:variant="reset_variant"
-				:disabled="disableIfNoChanges && !has_any_changes"
-				@click="reset"
-				class="change_button"
-			>
-				Reset Changes
-			</b-button>
-			<b-button
-				:variant="save_variant"
-				:disabled="disableIfNoChanges && !has_saveable_changes"
-				@click="save"
-				class="change_button"
-			>
-				Save Changes
-			</b-button>
+			</DiscardResetSave>
 		</div>
 
 		<b-modal size="lg" v-model="modal_visible" hide-footer lazy>
@@ -84,6 +70,7 @@
  
 <script>
 import {Status} from "@/scripts/Status.js";
+import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
 	name: 'save_bar',
@@ -119,6 +106,7 @@ export default {
 		// 	default: () => {},
 		// },
 	},
+	components: {DiscardResetSave},
 
 	data: function() {
 		return {
@@ -132,27 +120,6 @@ export default {
 	},
 
 	computed: {
-		save_variant: function() {
-			if (this.saveVariant != undefined) {
-				return this.saveVariant;
-			}
-			return this.has_saveable_changes ? "success" : "outline-success";
-		},
-
-		reset_variant: function() {
-			if (this.resetVariant != undefined) {
-				return this.resetVariant;
-			}
-			return this.has_any_changes ? "warning" : "outline-warning";
-		},
-
-		discard_variant: function() {
-			if (this.discardVariant != undefined) {
-				return this.discardVariant;
-			}
-			return this.has_any_changes ? "danger" : "outline-danger";
-		},
-
 		has_saveable_changes: function() {
 			return this.hasChanges;
 		},
