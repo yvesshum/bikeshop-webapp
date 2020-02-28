@@ -121,7 +121,9 @@
 
         <tr v-for="(change, field) in changes_list">
           <td class="change_modal_cell_title">
-            The {{temp_fields.includes(field) ? "non-standard " : ""}}field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
+            The {{field_type(field)}}field
+            <span class="change_modal_field">{{field}}</span>
+            {{confirm_mode == "save" ? "will be" : "had been"}} {{change.message}}.
           </td>
           <td :class="change_modal_cell_type_old">
             <div v-if="change.message !== 'created'">{{change.old_val}}</div>
@@ -139,23 +141,38 @@
         </tr>
       </table>
 
+      <div v-if="blank_required_fields.length > 0">
+        <br />
+        <b-button block squared variant="warning"><h3>Warning: Blank Required Fields</h3></b-button>
+        <br />
+        <p>The following fields are required for every youth profile, but have not been set for {{youth_name}}.  This is most likely due to a change in which fields are required, or is the result of an out-of-date profile.</p>
+
+        <div style="margin: auto; text-align: center; font-size: 1.25em;">
+          {{blank_required_fields.toString().replace("\"", "").replace(",",", ")}}
+        </div>
+        <br />
+
+        <p>Please fill in these fields if at all possible. Certain features of this site, <b>including the Emergency Contact page</b>, may not work properly if these are not filled.</p>
+      </div>
+
       <div v-if="temp_fields.length > 0">
         <br />
-        <h3>Warning: Non-Standard Fields</h3>
-        <p >Please note that non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
-
+        <b-button block squared variant="warning"><h3>Warning: Non-Standard Fields</h3></b-button>
+        <br />
         <div v-if="unremoved_temp_fields.length > 0">
           This profile contains the following non-standard fields:</p>
           <table style="margin: auto; text-align: center; min-width: 80%">
-            <tr>
-              <th class="change_modal_header" style="border-right: 1px solid #000">
+            <tr class="change_modal_header">
+              <th style="border-right: 1px solid #000">
                 Field Name
               </th>
-              <th class="change_modal_header" style="">Field Value</th>
+              <th>Field Value</th>
             </tr>
             <tr v-for="field in unremoved_temp_fields">
-              <td style="border-right: 1px solid #000">{{field}}</td>
-              <td>
+              <td class="change_modal_cell_temp" style="border-right: 1px solid #000">
+                {{field}}
+              </td>
+              <td class="change_modal_cell_temp">
                 {{
                   (changes_list != null && Object.keys(changes_list).includes(field))
                     ? changes_list[field].new_val
@@ -165,6 +182,7 @@
             </tr>
           </table>
           <br />
+          <p>Non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
           <p>Please consider merging the information in the above fields into standard fields.</p>
         </div>
       </div>
@@ -318,6 +336,14 @@ export default {
       return this.temp_fields.filter(k =>
         this.changes_list[k] == null || this.changes_list[k].message != 'removed'
       );
+    },
+
+    blank_required_fields: function() {
+      if (this.changes_list == null) return [];
+      return this.row_status.filter(Status.REQ).filter(k => {
+        console.log(k, this.changes_list[k])
+        return this.changes_list[k] != undefined && this.changes_list[k].message == "left blank";
+      });
     },
 
     field_types: function() {
@@ -740,7 +766,17 @@ export default {
     noEditsReturn: function() {
       this.discard_changes();
       this.noEditsModalVisible = false;
-    }
+    },
+
+    field_type: function(field) {
+      if (this.temp_fields.includes(field)) {
+        return "non-standard ";
+      }
+      if (this.row_status.is_status(field, Status.REQ)) {
+        return "required ";
+      }
+      return "";
+    },
   }
 }
 </script>
@@ -846,6 +882,15 @@ export default {
     width: 25%;
     background-color: #D5F5E3;
     color:#1D8348;
+    text-align: center;
+  }
+
+  .change_modal_cell_temp {
+    border-top: 1px solid #000;
+    /*width: 25%;*/
+    /*background-color: #F9FFb3;*/
+    background-color: #EEF2BD;
+    color:#636928;
     text-align: center;
   }
 </style>
