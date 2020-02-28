@@ -111,61 +111,61 @@
 
       You are about to <b>{{confirm_mode}}</b> the following changes:
 
+      <br />
+      <table style="margin: auto;">
+        <tr style="text-align: center;">
+          <th></th>
+          <th class="change_modal_header">Original Value</th>
+          <th class="change_modal_header">New Value</th>
+        </tr>
+        <tr v-for="(change, field) in changes_list">
+          <td class="change_modal_cell_title">
+            The {{temp_fields.includes(field) ? "non-standard " : ""}}field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
+          </td>
+          <td class="change_modal_cell_remove">
+            <div v-if="change.message !== 'created'">{{change.old_val}}</div>
+          </td>
+          <td class="change_modal_cell_add">
+            <div v-if="change.message !== 'removed'">{{change.new_val}}</div>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td v-if="confirm_mode == 'save'"></td>
+          <td style="text-align: center; font-style: oblique;"><b>&uarr;</b><br/>This column will be kept</td>
+          <td v-if="confirm_mode == 'discard'"></td>
+        </tr>
+      </table>
+
+      <div v-if="temp_fields.length > 0">
         <br />
-          <table style="margin: auto;">
-            <tr style="text-align: center;">
-              <th></th>
-              <th class="change_modal_header">Original Value</th>
-              <th class="change_modal_header">New Value</th>
-            </tr>
-            <tr v-for="(change, field) in changes_list">
-              <td class="change_modal_cell_title">
-                The {{temp_fields.includes(field) ? "non-standard " : ""}}field <span class="change_modal_field">{{field}}</span> has been {{change.message}}.
-              </td>
-              <td class="change_modal_cell_remove">
-                <div v-if="change.message !== 'created'">{{change.old_val}}</div>
-              </td>
-              <td class="change_modal_cell_add">
-                <div v-if="change.message !== 'removed'">{{change.new_val}}</div>
-              </td>
-            </tr>
+        <h3>Warning: Non-Standard Fields</h3>
+        <p >Please note that non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
+
+        <div v-if="unremoved_temp_fields.length > 0">
+          This profile contains the following non-standard fields:</p>
+          <table style="margin: auto; text-align: center; min-width: 80%">
             <tr>
-              <td></td>
-              <td v-if="confirm_mode == 'save'"></td>
-              <td style="text-align: center; font-style: oblique;"><b>&uarr;</b><br/>This column will be kept</td>
-              <td v-if="confirm_mode == 'discard'"></td>
+              <th class="change_modal_header" style="border-right: 1px solid #000">
+                Field Name
+              </th>
+              <th class="change_modal_header" style="">Field Value</th>
+            </tr>
+            <tr v-for="field in unremoved_temp_fields">
+              <td style="border-right: 1px solid #000">{{field}}</td>
+              <td>
+                {{
+                  (changes_list != null && Object.keys(changes_list).includes(field))
+                    ? changes_list[field].new_val
+                    : local_values[field]
+                }}
+              </td>
             </tr>
           </table>
-
-          <div v-if="temp_fields.length > 0">
-            <br />
-            <h3>Warning: Non-Standard Fields</h3>
-            <p >Please note that non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
-
-            <div v-if="unremoved_temp_fields.length > 0">
-              This profile contains the following non-standard fields:</p>
-              <table style="margin: auto; text-align: center; min-width: 80%">
-                <tr>
-                  <th class="change_modal_header" style="border-right: 1px solid #000">
-                    Field Name
-                  </th>
-                  <th class="change_modal_header" style="">Field Value</th>
-                </tr>
-                <tr v-for="field in unremoved_temp_fields">
-                  <td style="border-right: 1px solid #000">{{field}}</td>
-                  <td>
-                    {{
-                      (changes_list != null && Object.keys(changes_list).includes(field))
-                        ? changes_list[field].new_val
-                        : local_values[field]
-                    }}
-                  </td>
-                </tr>
-              </table>
-              <br />
-              <p>Please consider merging the information in the above fields into standard fields.</p>
-            </div>
-          </div>
+          <br />
+          <p>Please consider merging the information in the above fields into standard fields.</p>
+        </div>
+      </div>
     </b-modal>
 
 
