@@ -1,29 +1,13 @@
 <template>
-  <div class="input_display_toggle">
+  <div class="special_input_reset">
 
-    <div ref="display" v-if="!editMode">
+    <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
+    </SpecialInput>
 
-      <!-- Display each item in an array -->
-      <div v-if="type === 'Array'">
-        <div v-for="item in get_original_value()" class="field_list_element">
-          {{ item }}
-        </div>
-      </div>
-
-      <!-- Display the string version of the value -->
-      <div v-else>
-        {{ get_original_string() }}
-      </div>
-    </div>
-
-    <div ref="edit_container" v-else>
-      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
-      </SpecialInput>
-      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
-        <div v-if="get_original_string().length == 0">Clear</div>
-        <div v-else>Reset</div>
-      </b-button>
-    </div>
+    <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
+      <div v-if="get_original_string().length == 0">Clear</div>
+      <div v-else>Reset</div>
+    </b-button>
 
   </div>
 </template>
@@ -34,8 +18,8 @@ import SpecialInput from '@/components/SpecialInput';
 const moment = require("moment");
 
 export default {
-  name: 'input_display_toggle',
-  props: ['editMode', 'name', 'type', 'defaultValue'],
+  name: 'special_input_reset',
+  props: ['name', 'type', 'defaultValue'],
   components: {
     SpecialInput
   },
@@ -48,7 +32,14 @@ export default {
 
   mounted: function() {
     this.edit_value = this.defaultValue;
+    console.log("Mounted", name, this);
     this.$emit("Mounted", this);
+  },
+
+  watch: {
+    defaultValue: function(new_val) {
+      this.edit_value = new_val;
+    },
   },
 
   computed: {
@@ -164,13 +155,3 @@ export default {
   },
 }
 </script>
-
-<style>
-  .field_list_element {
-    border-radius: 10px;
-    border: 2px solid green;
-    background-color: lightgreen;
-    text-align: center;
-  }
-</style>
-

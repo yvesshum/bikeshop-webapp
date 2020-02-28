@@ -32,60 +32,88 @@
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-      <tbody v-for="section in table_sections">
+      <tbody v-for="section in table_sections_show">
 
-        <tr v-if="show_section(section.Name)" v-show="edit_mode">
-          <td class="section_name" colspan="3"> {{section.Name}}: </td>
-        </tr>
-
-        <tr v-if="show_section(section.Name)" v-for="field in section.Data" v-show="show_container(field)">
-          <td v-show="edit_mode" style="margin: auto; padding: 3px;">
-            <ToggleButton
-              onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
-              @Toggle="status => set_row_status(field, status)"
-              v-model="fields_used[field]"
-              v-show="section.Name != 'Required'"
-            ></ToggleButton>
-          </td>
-
-          <td :class="{changed_title: edit_mode && is_changed(field) && is_used(field)}">
+        <tr v-for="field in section.Data" v-show="show_container(field)">
+          <td>
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
           </td>
-
           <td style="padding: 3px;">
-            <InputDisplayToggle
-              v-show="is_used(field)"
-              :defaultValue="local_values[field]"
-              :editMode="edit_mode"
-              :name="field" :type="field_types[field]"
-              @Mounted="i => input_fields[field] = i"
-            ></InputDisplayToggle>
+            {{local_values[field]}}
           </td>
-
         </tr>
 
       </tbody>
     </table>
 
-    <b-button v-show="allow_edits && !edit_mode" variant="primary" @click="set_edit_mode(true)">
+    <b-button v-show="allow_edits" variant="primary" @click="set_edit_mode(true)">
       Edit Profile Information
     </b-button>
 
+    <b-modal size="lg" v-model="show_edit_modal" no-close-on-backdrop no-close-on-esc hide-header-close>
+      <template slot="modal-header">
+        <h2>Edit Profile for {{youth_name}} <span class="id_parens">(ID: {{youth_id}})</span></h2>
+      </template>
+      <div class="d-block text-center">
+
+        <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
+
+          <tbody v-for="section in table_sections_show">
+
+            <tr v-if="show_section(section.Name)">
+              <td class="section_name" colspan="3"> {{section.Name}}: </td>
+            </tr>
+
+            <tr v-if="show_section(section.Name)" v-for="field in section.Data">
+              <td style="margin: auto; padding: 3px;">
+                <ToggleButton
+                  onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
+                  @Toggle="status => set_row_status(field, status)"
+                  v-model="fields_used[field]"
+                  v-show="section.Name != 'Required'"
+                ></ToggleButton>
+              </td>
+
+              <td :class="{changed_title: is_changed(field) && is_used(field)}">
+                {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
+              </td>
+
+              <td style="padding: 3px;">
+                <SpecialInputReset
+                  v-show="section.Name == 'required' || is_used(field)"
+                  :defaultValue="local_values[field]"
+                  :name="field" :type="field_types[field]"
+                  @Mounted="i => input_fields[field] = i"
+                ></SpecialInputReset>
+              </td>
+
+            </tr>
+
+          </tbody>
+        </table>
+
+      </div>
+
+      <template slot="modal-footer">
+        <DiscardResetSave
+          :hasChanges="has_changes_strict" :hasUnsaveableChanges="has_changes"
+          @discard="confirm_edits('discard')" @reset="reset_changes" @save="confirm_edits('save')"
+        ></DiscardResetSave>
+      </template>
+    </b-modal>
+
     <br />
 
-    <SaveBar
-      :show="edit_mode" :initModal="create_confirm_modal"
-      :hasChanges="has_changes_strict" :hasUnsaveableChanges="has_changes"
-      @save="save_edits" @reset="reset_changes" @discard="discard_changes"
-    >
-      <template slot="saveBody"><h3>The following changes will be saved:</h3></template>
-      <template slot="resetBody"><h3>The following changes will be discarded:</h3></template>
-      <template slot="discardBody"><h3>The following changes will be discarded:</h3></template>
+    <b-modal size="lg" v-model="confirmModalVisible" @ok="accept_confirm_modal">
+      <template slot="modal-header">
+          <h3>Confirm Changes</h3>
+      </template>
 
-      <template slot="bodyFooter">
+      You are about to <b>{{confirm_mode}}</b> the following changes:
+
         <br />
           <table style="margin: auto;">
-            <tr>
+            <tr style="text-align: center;">
               <th></th>
               <th class="change_modal_header">Original Value</th>
               <th class="change_modal_header">New Value</th>
@@ -101,9 +129,16 @@
                 <div v-if="change.message !== 'removed'">{{change.new_val}}</div>
               </td>
             </tr>
+            <tr>
+              <td></td>
+              <td v-if="confirm_mode == 'save'"></td>
+              <td style="text-align: center; font-style: oblique;"><b>&uarr;</b><br/>This column will be kept</td>
+              <td v-if="confirm_mode == 'discard'"></td>
+            </tr>
           </table>
-          <br />
+
           <div v-if="temp_fields.length > 0">
+            <br />
             <h3>Warning: Non-Standard Fields</h3>
             <p >Please note that non-standard fields are preserved for backwards-compatibility only, and should be removed if at all possible. As such, it will not be possible to add a non-standard field back to a profile after it has been removed.</p>
 
@@ -131,8 +166,20 @@
               <p>Please consider merging the information in the above fields into standard fields.</p>
             </div>
           </div>
+    </b-modal>
+
+
+    <b-modal v-model="noEditsModalVisible" hide-footer>
+      <template slot="modal-header">
+        No changes have been made.
       </template>
-    </SaveBar>
+      <b-button class="mt-3" block @click="noEditsContinue" variant="primary">
+        Continue Editing
+      </b-button>
+      <b-button class="mt-3" block @click="noEditsReturn" variant="primary">
+        Return to Display
+      </b-button>
+    </b-modal>
 
   </div>
 </template>
@@ -146,18 +193,20 @@ import firebase_auth from 'firebase/auth';
 import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
-import InputDisplayToggle from '@/components/InputDisplayToggle';
+import SpecialInputReset from '@/components/SpecialInputReset';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import SaveBar from '@/components/SaveBar';
+import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
   name: 'profile_fields',
   props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields"],
   components: {
     ToggleButton,
-    InputDisplayToggle,
+    SpecialInputReset,
     PeriodsClassesDisplay,
     SaveBar,
+    DiscardResetSave,
   },
 
   data: function() {
@@ -190,12 +239,15 @@ export default {
       confirmModalVisible: false,
       noEditsModalVisible: false,
       changes_list: null,
+      confirm_mode: null,
 
       local_values: {},
 
       input_fields: {},
 
       fields_used: {},
+
+      show_edit_modal: false,
     }
   },
 
@@ -251,6 +303,12 @@ export default {
         // Add fields to array of sections
         temp.push({Name, Data});
       };
+    },
+
+    table_sections_show: function() {
+      return this.table_sections.filter(section => {
+        return this.show_section(section);
+      });
     },
 
     unremoved_temp_fields: function() {
@@ -346,6 +404,10 @@ export default {
     profile: function(doc) {
       this.load_profile(doc);
     },
+
+    show_edit_modal: function(new_val) {
+      this.edit_mode = new_val;
+    }
   },
 
   methods: {
@@ -360,16 +422,11 @@ export default {
 
     show_section: function(section) {
       if (section == "Non-Standard") return this.temp_fields.length > 0;
-      return !(this.edit_mode && section == '');
+      return section != '';
     },
 
     show_container: function(key) {
-      if (this.edit_mode) {
-        return true;
-      }
-      else {
-        return (this.row_status.is_status(key, Status.O) && !this.specially_displayed_fields.includes(key));
-      }
+      return (this.row_status.is_status(key, Status.U) && !this.specially_displayed_fields.includes(key));
     },
 
     load_header_doc: function(new_header) {
@@ -453,6 +510,7 @@ export default {
 
     set_edit_mode: function(val) {
       this.edit_mode = val;
+      this.show_edit_modal = val;
     },
 
     is_used: function(field) {
@@ -466,6 +524,29 @@ export default {
     is_changed: function(field) {
       let input_field = this.input_fields[field];
       return (input_field == null) ? false : input_field.changed;
+    },
+
+    // Checks if changes have been made, then looks for user input accordingly
+    // If changes, ask to save them; if not, alert user and stay in edit mode
+    // Run by the edit ToggleButton when clicked off edit mode
+    confirm_edits: function(mode) {
+      // Check if edits have been made
+      let changed = this.check_edits(true);
+
+      this.confirm_mode = mode;
+
+      // Check for user input based on results
+      if (changed) {
+        this.create_confirm_modal();
+        this.confirmModalVisible = true;
+      }
+      else if (mode == "save") {
+        this.noEditsModalVisible = true;
+      }
+      else {
+        this.set_edit_mode(false);
+      }
+
     },
 
     //FUNCTION to check if form changes with edit
@@ -542,12 +623,22 @@ export default {
       });
     },
 
+    accept_confirm_modal: function() {
+      if (this.confirm_mode == "discard") {
+        this.discard_changes();
+      }
+      else if (this.confirm_mode == "save") {
+        this.save_edits();
+      }
+      this.confirm_mode = null;
+    },
+
 
 
     // FUNCTION that saves edits to firebase, called by check_edits upon
     // determination that actual edits were made
     // Parameters: ID of youth
-    save_edits: async function(accept_func) {
+    save_edits: async function() {
       // creates an object to store edited values
       var changes = new Object();
 
@@ -596,9 +687,6 @@ export default {
 
       // Switch out of edit mode
       this.set_edit_mode(false);
-
-      // Return a success to the modal
-      accept_func(true);
     },
 
 
@@ -611,7 +699,8 @@ export default {
       });
     },
 
-    discard_changes: function(accept_func) {
+    discard_changes: function() {
+
       // Reset any local fields
       this.reset_changes();
 
@@ -620,20 +709,24 @@ export default {
 
       // Switch out of edit mode
       this.set_edit_mode(false);
-
-      // Close the modal
-      accept_func();
     },
 
-    reset_changes: function(accept_func) {
+    reset_changes: function() {
       this.row_status.reset();
       this.row_status.unfilter(Status.IMM).forEach(field => {
         this.input_fields[field].reset();
         this.fields_used[field] = this.row_status.is_status(field, Status.O);
       });
-
-      if (accept_func !== undefined) accept_func();
     },
+
+    noEditsContinue: function() {
+      this.noEditsModalVisible = false;
+    },
+
+    noEditsReturn: function() {
+      this.discard_changes();
+      this.noEditsModalVisible = false;
+    }
   }
 }
 </script>
@@ -725,6 +818,7 @@ export default {
     width: 25%;
     background-color: #FADBD8;
     color:#7B241C;
+    text-align: center;
   }
 
   .change_modal_cell_add {
@@ -732,5 +826,6 @@ export default {
     width: 25%;
     background-color: #D5F5E3;
     color:#1D8348;
+    text-align: center;
   }
 </style>
