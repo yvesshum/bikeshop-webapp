@@ -298,7 +298,7 @@
             async getNewData() {
                 await this.getTData();
                 this.$root.$emit('bv::refresh::table', 'order-table');
-                this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
+                this.showModal("Table Refreshed!", "If you don't see something you expect, check the firebase backend console!")
 
             },
 

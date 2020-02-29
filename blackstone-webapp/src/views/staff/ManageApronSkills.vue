@@ -1,19 +1,20 @@
 <template>
     <div class = "StaffManageSkills">
         <top-bar/>
-        <h3 style="margin: 20px">Manage Apron skills here!</h3>
+        <h1 style="margin: 20px">Manage Apron Skills</h1>
+        <div class ="selection">
         <b>Add category: </b>
-        <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px"> 
-        <b-button variant="success" @click="add_category" style="margin-top:10px">Add Category</b-button></br>
-        <div>
+        <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin:0 10px; padding: 5px;">
+        <b-button variant="success" @click="add_category" style="margin: 10px 0">Add Category</b-button></br>
+        <br/>
             <b>Add skill: </b>
-            <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
+            <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2" style="margin-left: 10px;">
                 <div v-for="category in uniqueCategories">
                     <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
                 </div>
             </b-dropdown>
-            <input v-model="new_skill" type="text" id="new_skill_field" aria-describedby="emailHelp" placeholder="Skill Name" style="margin-top:10px">
-            <b-button variant="success" @click="add_skill" style="margin-top:10px">Add Skill</b-button>
+            <input v-model="new_skill" type="text" id="new_skill_field" aria-describedby="emailHelp" placeholder="Skill Name" style="margin:10px; padding: 5px;">
+            <b-button variant="success" @click="add_skill" style="margin: 10px 0">Add Skill</b-button>
         </div>
         <div>
           <b-button-group>
@@ -22,6 +23,7 @@
         </div>
         <br>
         <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skills']" @rowSelected="updateSelected"/>
+        <br>
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button>
         <b-modal v-model = "modalVisible" hide-footer lazy >
@@ -40,9 +42,9 @@
     import EditTable from '../../components/EditTable';
     import {db} from '../../firebase';
     import {firebase} from '../../firebase';
-    
+
     let ApronSkillsRef = db.collection("ApronSkills").doc("Categories");
-    
+
     export default {
         name: 'StaffManageSkills',
         components: {
@@ -156,7 +158,7 @@
                     new_data_text += '"'
                     + category
                     + '" : '
-                    + 
+                    +
                     skill_arrays[category]
                     + "], "
                 }
@@ -172,7 +174,7 @@
                     }
                     return null;
                 });
-                
+
             }
         },
         async mounted() {
@@ -210,5 +212,12 @@
     }
     .field_msg{
         text-decoration: underline;
+    }
+    .StaffManageSkills
+    {
+      margin-bottom: 2rem;
+    }
+    .selection {
+
     }
 </style>
