@@ -778,6 +778,7 @@ export default {
 
         // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
         Object.keys(period_obj[year]).forEach(period => {
+          if (period_data[period] == undefined) period_data[period] = [];
           periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
         });
 
