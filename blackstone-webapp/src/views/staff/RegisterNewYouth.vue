@@ -111,6 +111,7 @@
 <script>
     import { VueTelInput } from 'vue-tel-input'
     import SpecialInput from '@/components/SpecialInput';
+    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
@@ -120,7 +121,6 @@
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
-    let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
     let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
     
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
@@ -172,28 +172,6 @@
             async getEssays() {
                 let f = await essayRef.get();
                 return f.data();
-            },
-            async getSeasons() {
-                let s = await periodRef.get();
-                let activePeriods = s.data()
-                var seasons = activePeriods["Seasons"]
-                var current = activePeriods["CurrentPeriod"]
-                let curSeason = current.split(" ")[0];
-                var curYear = current.split(" ")[1];
-                var new_seasons = [];
-                var i = seasons.indexOf(curSeason);
-                while(new_seasons.length < seasons.length){
-                    new_seasons.push(seasons[i] + " " + curYear);
-                    if(seasons[i] == "Fall"){
-                        curYear = (parseInt(curYear) + 1).toString();
-                    }
-                    i += 1;
-                    if(i >= seasons.length){
-                        i = 0
-                    }
-                }
-                new_seasons.push("None");
-                return new_seasons;
             },
             async getOptions() {
                 let o = await optionsRef.get();
@@ -264,7 +242,7 @@
                     var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
-                    let data = this.parse(this.requiredFields);
+                    let data = this.requiredFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
@@ -278,7 +256,7 @@
                         }
                     }
                     
-                    data = this.parse(this.optionalFields);
+                    data = this.optionalFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
@@ -292,10 +270,11 @@
                         }
                     }
                     
-                    let currentClass = data["Class"]["value"];
+                    let currentClass = input["Class"];
                     console.log("Current class " + currentClass);
-                    for(var question in answers[currentClass]){
-                        input[question] = answers[currentClass][question];
+                    input["Essay"] = {}
+                    for(var question in this.answers[currentClass]){
+                        input["Essay"][question] = this.answers[currentClass][question];
                     }
                     
                     console.log(input);
@@ -444,7 +423,6 @@
         async mounted() {
             this.loadingModalVisible = true;
             let fields = await this.getFields();
-            let seasons = await this.getSeasons();
             let options = await this.getOptions();
             this.essayQuestions = await this.getEssays();
             for (var className in this.essayQuestions) {
@@ -471,7 +449,7 @@
             for (let i = 0; i < req_keys.length; i ++) {
                 this.requiredFields.push({
                     name: req_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(req_vals[i]),
                     type: req_vals[i],
                     placeholder: this.placeholders[req_keys[i]]
                 });
@@ -485,7 +463,7 @@
             for (let i = 0; i < opt_keys.length; i ++) {
                 this.optionalFields.push({
                     name: opt_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(opt_vals[i]),
                     type: opt_vals[i],
                     placeholder: this.placeholders[opt_keys[i]]
                 });
