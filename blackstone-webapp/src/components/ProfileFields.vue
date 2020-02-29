@@ -341,7 +341,6 @@ export default {
     blank_required_fields: function() {
       if (this.changes_list == null) return [];
       return this.row_status.filter(Status.REQ).filter(k => {
-        console.log(k, this.changes_list[k])
         return this.changes_list[k] != undefined && this.changes_list[k].message == "left blank";
       });
     },
