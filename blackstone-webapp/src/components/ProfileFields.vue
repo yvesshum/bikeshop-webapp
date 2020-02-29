@@ -37,6 +37,7 @@
         <tr v-for="field in section.Data" v-show="show_container(field)">
           <td>
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
+            <b-badge v-show="needs_warning(field)" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
           </td>
           <td style="padding: 3px;">
             {{local_values[field]}}
@@ -571,6 +572,20 @@ export default {
       return (input_field == null) ? false : input_field.changed;
     },
 
+    needs_warning: function(field) {
+      return this.unremoved_temp_fields.includes(field) || this.blank_required_fields.includes(field);
+    },
+
+    warning_msg: function(field) {
+      if (this.blank_required_fields.includes(field)) {
+        return "Required Fields cannot be blank.";
+      }
+      else if (this.unremoved_temp_fields.includes(field)) {
+        return "This is a non-standard field.";
+      }
+      return "";
+    },
+
     // Checks if changes have been made, then looks for user input accordingly
     // If changes, ask to save them; if not, alert user and stay in edit mode
     // Run by the edit ToggleButton when clicked off edit mode
@@ -895,5 +910,10 @@ export default {
     background-color: #EEF2BD;
     color:#636928;
     text-align: center;
+  }
+
+  .warning_icon {
+    cursor: pointer;
+    float: right;
   }
 </style>
