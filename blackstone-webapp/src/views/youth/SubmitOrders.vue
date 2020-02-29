@@ -31,7 +31,7 @@
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
-            <SpecialInput :inputType="field.type" :arguments="args.specialInput" class = "input"></SpecialInput>
+            <SpecialInput :inputType="field.type" :arguments="args.specialInput" class="input" v-model="field.value"></SpecialInput>
         </div>
 
         <b-button variant="success" @click="handleSubmit()" style="margin-top:10px">Submit!</b-button>
@@ -51,7 +51,7 @@
     </b-modal>
 
     <!-- Error Modal -->
-    <b-modal v-model="this.errorVisible" hide-footer lazy hide-header-close>
+    <b-modal v-model="this.errorVisible" hide-footer hide-header-close id="errorModal">
         <template slot="modal-title">
             Error
         </template>
@@ -72,9 +72,6 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
-
-
-
 </div>
 </template>
 
@@ -84,7 +81,8 @@ import {rb} from '../../firebase';
 import YouthIDSelector from '../../components/YouthIDSelector';
 import {Timestamp} from '@/firebase.js';
 import moment from 'moment';
-import SpecialInput from '../../components/SpecialInput'
+import SpecialInput from '../../components/SpecialInput';
+import { initSpecialInputVal } from '../../scripts/SpecialInit';
 
 export default {
     name: 'YouthSubmitOrders',
@@ -142,6 +140,7 @@ export default {
         },
 
         errorVisible: function() {
+            console.log('computed errorVisible called', this.modal.error.visible)
             return this.modal.error.visible;
         },
 
@@ -156,6 +155,12 @@ export default {
                 this.checkReady();
             },
             deep: true
+        },
+        fields: {
+            deep: true,
+            handler: function() {
+                console.log(this.fields);
+            }
         }
     },
     methods: {
@@ -187,7 +192,7 @@ export default {
                     this.fields[fieldType].push({
                         type: Object.values(field)[0],
                         name: Object.keys(field)[0],
-                        value: null,
+                        value: initSpecialInputVal(Object.values(field)[0]),
                     });
                 });
             });
@@ -244,6 +249,7 @@ export default {
         closeErrorModal() {
             this.modal.error.visible = false;
             this.modal.error.errors = [];
+            // this.$bvModal.hide("errorModal")
         },
 
         closeMsgModal() {
@@ -254,7 +260,7 @@ export default {
 
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
-            console.log(this.fields)
+            console.log('submission', this.fields)
             this.modal.loading.visible = true;
 
             let hasValidFields = await this.hasValidFields();
@@ -313,13 +319,12 @@ export default {
             //non empty
             await this.fields.required.forEach(async (field) => {
 
-                let isNonValid = await this.isNonValidField(field.value)
+                let isNonValid = this.isNonValidField(field.value)
 
                 if (isNonValid) {
                     badFields.push(field.name);
 
                 }
-
 
             })
 
@@ -336,15 +341,12 @@ export default {
 
         },
         isNonValidField(value) {
-
             if (value == null) {
                 return true;
             }
-            else if (typeof(value) === "number") {
-                return false;
-            }
             else {
-                return (!value.length)
+                console.log(typeof(value))
+                return (!(value.length || typeof(value) == "number" || typeof(value) == "object"))
             }
         },
         async hasSufficientHours() {
