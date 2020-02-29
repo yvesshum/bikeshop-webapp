@@ -80,7 +80,7 @@
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
-        <b-modal v-model = "errorModalVisible" hide-footer lazy>
+        <b-modal v-model = "errorModalIsVisible" hide-footer lazy>
             <template slot="modal-title">
                 Error!
             </template>
@@ -157,6 +157,11 @@
                 essayQuestions : {},
                 answers : {},
             };
+        },
+        computed:{
+            errorModalIsVisible: function () {
+              return this.errorModalVisible
+            }
         },
         methods: {
             async getFields() {
