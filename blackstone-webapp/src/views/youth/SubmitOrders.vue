@@ -31,7 +31,7 @@
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
-            <SpecialInput :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
+            <SpecialInput :inputType="field.type" :arguments="args.specialInput" v-model="field.value"></SpecialInput>
         </div>
 
         <b-button variant="success" @click="handleSubmit()" style="margin-top:10px">Submit!</b-button>
@@ -254,6 +254,7 @@ export default {
 
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
+            console.log(this.fields)
             this.modal.loading.visible = true;
 
             let hasValidFields = await this.hasValidFields();
