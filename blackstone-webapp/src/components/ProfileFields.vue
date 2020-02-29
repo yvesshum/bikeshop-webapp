@@ -25,7 +25,7 @@
       :seasons="season_list"
       v-bind="periodData"
       disable_selection
-      style="max-width: 50%; margin:auto"
+      style="max-width: 95%; margin:auto"
     />
 
     <br />
@@ -35,11 +35,11 @@
       <tbody v-for="section in table_sections_show">
 
         <tr v-for="field in section.Data" v-show="show_container(field)">
-          <td>
+          <td style="width: 35%">
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
             <b-badge v-show="needs_warning(field)" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
           </td>
-          <td style="padding: 3px;">
+          <td style="width: 65%">
             {{local_values[field]}}
           </td>
         </tr>
