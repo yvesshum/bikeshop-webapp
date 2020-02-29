@@ -465,7 +465,10 @@ export default {
     },
 
     show_container: function(key) {
-      return (this.row_status.is_status(key, Status.U) && !this.specially_displayed_fields.includes(key));
+      return (
+        (this.row_status.is_status(key, Status.U) || this.row_status.is_status(key, Status.USE_T))
+        && !this.specially_displayed_fields.includes(key)
+      );
     },
 
     load_header_doc: function(new_header) {
