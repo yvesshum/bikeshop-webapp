@@ -254,6 +254,7 @@ export default {
 
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
+            console.log(this.fields)
             this.modal.loading.visible = true;
 
             let hasValidFields = await this.hasValidFields();
