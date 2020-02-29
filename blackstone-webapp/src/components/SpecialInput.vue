@@ -37,7 +37,7 @@ use v-model. Whenever one of these is changed, it updates the other.
     <div v-if="ready">
         <!-- Returns an integer -->
         <div v-if="input === 'Integer'">
-            <VueNumberInput 
+            <!-- <VueNumberInput 
               center
               :value="value" 
               @input="$emit('input', $event)"
@@ -48,6 +48,12 @@ use v-model. Whenever one of these is changed, it updates the other.
               controls
               :inputtable="false"
 
+            /> -->
+            <VueNumericInput
+                :value="value"
+                @input="$emit('input', $event)"
+                :min="0"
+                :step="1"
             />
         </div>
 
@@ -120,7 +126,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
-            <VueNumberInput 
+            <!-- <VueNumberInput 
               center
               :value="value" 
               @input="$emit('input', $event)"
@@ -131,6 +137,12 @@ use v-model. Whenever one of these is changed, it updates the other.
               style="width: 100%; margin: 0 auto"
               controls
               :inputtable="false"
+            /> -->
+            <VueNumericInput
+                :value="value"
+                @input="$emit('input', $event)"
+                :min="0"
+                :step="1"
             />
         </div>
 
@@ -161,6 +173,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 </template>
 <script>
 import VueNumberInput from '@chenfengyuan/vue-number-input';
+import VueNumericInput from 'vue-numeric-input'
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
@@ -309,6 +322,7 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
+        VueNumericInput,
         Datetime,
         Datepicker,
         SpecialNumberInput,
