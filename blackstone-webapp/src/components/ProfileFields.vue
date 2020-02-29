@@ -123,7 +123,8 @@
           <td class="change_modal_cell_title">
             The {{field_type(field)}}field
             <span class="change_modal_field">{{field}}</span>
-            {{confirm_mode == "save" ? "will be" : "had been"}} {{change.message}}.
+            will <span v-if="confirm_mode == 'discard' && change.message != 'left blank'">not</span> be
+            {{change.message}}.
           </td>
           <td :class="change_modal_cell_type_old">
             <div v-if="change.message !== 'created'">{{change.old_val}}</div>
