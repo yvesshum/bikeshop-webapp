@@ -696,14 +696,12 @@ export default {
         }
       });
 
-      console.log("New profile:", changes);
 
       // Saves edits to firebase
-      // db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
-      //   window.alert("Error: " + err);
-      //   accept_func(false);
-      //   return null;
-      // });
+      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
+        window.alert("Error: " + err);
+        return null;
+      });
 
       // If no error updating database, change the field data on the page
       for (var key in changes) {
