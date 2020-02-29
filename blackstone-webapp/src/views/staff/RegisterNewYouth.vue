@@ -23,7 +23,22 @@
           <div class = "specialDiv">
             <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
             </br>
-            <h4 class = "field_msg">Optional fields:</h4>
+            <div v-for="field in requiredFields">
+                  <div v-if="field.name == 'Class'">
+                      <p class="field_header">{{field.name}}</p>
+                        <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                        </SpecialInput>
+                      <br>
+                  </div>
+                  <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                      <div v-for="question in essayQuestions[field.value]">
+                        <p class="field_header">{{question}}</p>
+                          <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                          </SpecialInput>
+                        <br>
+                      </div>
+                  </div>
+            </div>
             <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
             <hr>
           </div>
@@ -33,13 +48,15 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <div class = "specialDiv">
-                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                  </SpecialInput>
+                <div v-if="!(field.name == 'Class' && returningYouth != 'Returning Youth')">
+                  <p class="field_header">{{field.name}}</p>
+                  <div class = "specialDiv">
+                    <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                    </SpecialInput>
+                  </div>
                 </div>
                 <br>
-                <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
                     <div v-for="question in essayQuestions[field.value]">
                       <p class="field_header">{{question}}</p>
                       <div class = "specialDiv">
@@ -249,7 +266,9 @@
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
@@ -263,7 +282,9 @@
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
@@ -297,10 +318,10 @@
                     
                     // Clear the fields
                     for (let i = 0; i < this.requiredFields.length; i ++) {
-                        this.requiredFields[i]["value"] = undefined;
+                        this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
                     }
                     for (let i = 0; i < this.optionalFields.length; i ++) {
-                        this.optionalFields[i]["value"] = undefined;
+                        this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
                     }
                           
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
