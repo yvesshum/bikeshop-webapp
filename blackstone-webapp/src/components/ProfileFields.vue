@@ -578,7 +578,7 @@ export default {
 
     warning_msg: function(field) {
       if (this.blank_required_fields.includes(field)) {
-        return "Required Fields cannot be blank.";
+        return "Required fields cannot be blank.";
       }
       else if (this.unremoved_temp_fields.includes(field)) {
         return "This is a non-standard field.";
