@@ -333,16 +333,18 @@ export default {
     },
 
     unremoved_temp_fields: function() {
-      if (this.changes_list == null) return [];
+      if (this.changes_list == null) {
+        return this.temp_fields;
+      }
       return this.temp_fields.filter(k =>
         this.changes_list[k] == null || this.changes_list[k].message != 'removed'
       );
     },
 
     blank_required_fields: function() {
-      if (this.changes_list == null) return [];
-      return this.row_status.filter(Status.REQ).filter(k => {
-        return this.changes_list[k] != undefined && this.changes_list[k].message == "left blank";
+      if (this.row_status == undefined) return [];
+      return this.row_status.filter(Status.REQ).filter(field => {
+        return this.local_values[field] == undefined;
       });
     },
 
