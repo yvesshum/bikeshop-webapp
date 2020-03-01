@@ -48,7 +48,7 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <div v-if="!(field.name == 'Class' && returningYouth != 'Returning Youth')">
+                <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
                   <p class="field_header">{{field.name}}</p>
                   <div class = "specialDiv">
                     <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
