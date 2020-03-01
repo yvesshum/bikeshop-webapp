@@ -252,6 +252,9 @@
                     Object.assign(input, row);
                     delete input["Document ID"];
                     delete input["Birthdate"];
+                    delete input["Timestamp"];
+                    delete input["New or Returning"];
+                    delete input["ReturningID"];
                     input["ActivePeriods"][this.currentSeason] = input["Class"];
                     console.log(input)
 
@@ -292,6 +295,8 @@
                     Object.assign(input, row);
                     delete input["Document ID"];
                     delete input["Birthdate"];
+                    delete input["Timestamp"];
+                    delete input["New or Returning"];
 
                     input["ActivePeriods"] = {};
                     input["ActivePeriods"][this.currentSeason] = input["Class"];
