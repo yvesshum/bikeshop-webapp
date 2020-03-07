@@ -238,7 +238,7 @@ export default {
       // Track whether currently in edit mode
       edit_mode: false,
 
-      // Lists of special fields
+      // Fields which are displayed outside the general table, but which should still be editable from the popup modal
       specially_displayed_fields: [
         "First Name",
         "Last Name",
@@ -246,8 +246,9 @@ export default {
         "Hours Spent",
         "Pending Hours",
         "ActivePeriods",
-        "Class",
       ],
+
+      // Fields which should not be editable from the popup modal
       hidden_fields: [
         "Apron Color",
         "Apron Skills",
@@ -257,7 +258,9 @@ export default {
         "Registration Period",
         "Essay",
         "New or Returning",
+        "Class",
       ],
+
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
 
@@ -502,11 +505,16 @@ export default {
       if (this.row_status == null) this.row_status = new Status();
 
       // Clear the old data from the screen
-      // TODO - confirm change profile modal if unsaved changes?
       this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
         this.local_values[key] = undefined;
       });
+
+      // Delete temporary fields from previous profile (if applicable)
+      this.temp_fields.forEach(field => {
+        this.row_status.delete(field);
+      });
+      this.temp_fields = [];
 
       // If a profile was passed, display it to the screen
       if (doc != null) {

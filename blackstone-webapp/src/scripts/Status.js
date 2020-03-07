@@ -9,6 +9,10 @@ export class Status {
     component.$set(this, field_name, start_status);
   }
 
+  delete(field_name) {
+    delete this[field_name];
+  }
+
   keys() {
     return Object.keys(this);
   }
@@ -137,7 +141,7 @@ var status_fields = [
   // Special update values
   "UPDATE", "RESET",
   // Special groupings of values
-  "X", "O", "N", "T", "C"
+  "X", "O", "U", "N", "T", "C"
 ];
 
 status_fields.forEach(k => {
@@ -156,6 +160,9 @@ const STATUS_ARRS = {
 
   // Used locally
   [Status.O]: [Status.USE, Status.ADD, Status.REQ, Status.IMM, Status.USE_T, Status.ADD_T],
+
+  // Used non-locally
+  [Status.U]: [Status.USE, Status.REQ, Status.IMM],
 
   // Status can't be changed
   [Status.N]: [Status.REQ, Status.IMM],
