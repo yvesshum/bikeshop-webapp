@@ -2,6 +2,7 @@
   <div class="profile_lookup_staff">
     <TopBar/>
 
+    <h1 class="title">Profile Lookup and Editing</h1>
     <YouthIDSelector @selected="load_youth"/>
     <br />
 
@@ -24,7 +25,6 @@
     </div>
 
     <div v-show="currentProfile == null">
-      <br>
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
   </div>
@@ -107,3 +107,9 @@ export default {
     }
 }
 </script>
+
+<style>
+    .title {
+    margin-bottom: 1rem;
+    }
+</style>
