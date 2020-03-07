@@ -41,21 +41,21 @@
 
 
       <div role="tablist" >
-        <!--
+        
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-1>Youth Activity Management</h5>
           </b-card-header>
           <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
             <b-card-body>
-                <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
+                <!-- <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
                 <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
-                <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button>
+                <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button> -->
                 <button onclick="location.href='/manage-periods'" class="btn btn-outline-info btn-block" type="button">Manage Youth Activity Periods</button>
             </b-card-body>
           </b-collapse>
         </b-card>
-      -->
+     
 
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">

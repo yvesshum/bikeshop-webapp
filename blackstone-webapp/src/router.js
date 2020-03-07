@@ -22,7 +22,7 @@ import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 //import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
 //import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
 //import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
-//import ManagePeriods from './views/staff/ManagePeriods.vue';
+import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
 //import Stats from './views/staff/Stats.vue';
@@ -188,7 +188,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },*/
-        /*
         {
             path: '/manage-periods',
             name: '/manage-periods',
@@ -198,7 +197,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-        */
         /*
         {
             path: '/admin-panel',
