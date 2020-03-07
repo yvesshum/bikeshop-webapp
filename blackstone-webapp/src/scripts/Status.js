@@ -9,6 +9,10 @@ export class Status {
     component.$set(this, field_name, start_status);
   }
 
+  delete(field_name) {
+    delete this[field_name];
+  }
+
   keys() {
     return Object.keys(this);
   }

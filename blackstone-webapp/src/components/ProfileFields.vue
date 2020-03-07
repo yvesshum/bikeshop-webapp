@@ -505,11 +505,16 @@ export default {
       if (this.row_status == null) this.row_status = new Status();
 
       // Clear the old data from the screen
-      // TODO - confirm change profile modal if unsaved changes?
       this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
         this.local_values[key] = undefined;
       });
+
+      // Delete temporary fields from previous profile (if applicable)
+      this.temp_fields.forEach(field => {
+        this.row_status.delete(field);
+      });
+      this.temp_fields = [];
 
       // If a profile was passed, display it to the screen
       if (doc != null) {
