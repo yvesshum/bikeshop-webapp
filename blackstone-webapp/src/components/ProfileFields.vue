@@ -40,7 +40,7 @@
             <b-badge v-show="needs_warning(field)" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
           </td>
           <td style="width: 65%">
-            {{local_values[field]}}
+            <ProfileFieldDisplay v-model="local_values[field]" :type="field_types[field]"></ProfileFieldDisplay>
           </td>
         </tr>
 
@@ -216,6 +216,7 @@ import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 import ToggleButton from '@/components/ToggleButton';
 import SpecialInputReset from '@/components/SpecialInputReset';
+import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import SaveBar from '@/components/SaveBar';
 import DiscardResetSave from '@/components/DiscardResetSave';
@@ -226,6 +227,7 @@ export default {
   components: {
     ToggleButton,
     SpecialInputReset,
+    ProfileFieldDisplay,
     PeriodsClassesDisplay,
     SaveBar,
     DiscardResetSave,
@@ -253,6 +255,8 @@ export default {
         "Transfer Log",
         "Order Log",
         "Registration Period",
+        "Essay",
+        "New or Returning",
       ],
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
