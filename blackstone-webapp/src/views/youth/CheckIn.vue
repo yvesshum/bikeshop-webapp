@@ -219,7 +219,7 @@ export default {
             let newPendingHours = Math.round((parseFloat(profile["Pending Hours"]) + categoryHourSum) * 100) / 100;
 
             await db.collection("GlobalYouthProfile").doc(this.ID).update({
-                "Pending Hours": newPendingHours.toString()
+                "Pending Hours": newPendingHours
             })
 
             // check user out of realtime database
