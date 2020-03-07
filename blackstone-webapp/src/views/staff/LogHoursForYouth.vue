@@ -130,6 +130,7 @@ export default {
         },
 
         closeAddModal() {
+            this.selected = [];
             this.addModalVisible = false
         },
 

@@ -1,4 +1,4 @@
-// New submit orders 
+// New submit orders
 <template>
 <div>
     <div class="spinner" v-if="!allReady">
@@ -8,7 +8,7 @@
         <top-bar/>
         <h1 id="title">Submit Order Form</h1>
         <hr class="title">
-        
+
         <div v-for="field in fields.required" :key="field.name">
             <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
                 <span class="inline">{{field.name}}</span>
@@ -24,14 +24,14 @@
                     <div style="width: 80%; margin: 0 auto">
                         <SpecialInput inputType="String" v-model="fields.required[youthIDFieldIndex].value" v-if="allReady" :arguments="args.specialInput"></SpecialInput>
                     </div>
-                    
+
                 </div>
             </div>
         </div>
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
-            <SpecialInput :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
+            <SpecialInput :inputType="field.type" :arguments="args.specialInput" class="input" v-model="field.value"></SpecialInput>
         </div>
 
         <b-button variant="success" @click="handleSubmit()" style="margin-top:10px">Submit!</b-button>
@@ -51,7 +51,7 @@
     </b-modal>
 
     <!-- Error Modal -->
-    <b-modal v-model="this.errorVisible" hide-footer lazy hide-header-close>
+    <b-modal v-model="this.errorVisible" hide-footer hide-header-close id="errorModal">
         <template slot="modal-title">
             Error
         </template>
@@ -72,9 +72,6 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
-
-    
-    
 </div>
 </template>
 
@@ -84,7 +81,8 @@ import {rb} from '../../firebase';
 import YouthIDSelector from '../../components/YouthIDSelector';
 import {Timestamp} from '@/firebase.js';
 import moment from 'moment';
-import SpecialInput from '../../components/SpecialInput'
+import SpecialInput from '../../components/SpecialInput';
+import { initSpecialInputVal } from '../../scripts/SpecialInit';
 
 export default {
     name: 'YouthSubmitOrders',
@@ -104,7 +102,7 @@ export default {
                 required: [], // {name: "", value: null}
                 optional: [],
                 hidden: []
-            }, 
+            },
             placeholders: {},
             args: {
                 specialInput: {
@@ -142,6 +140,7 @@ export default {
         },
 
         errorVisible: function() {
+            console.log('computed errorVisible called', this.modal.error.visible)
             return this.modal.error.visible;
         },
 
@@ -156,6 +155,12 @@ export default {
                 this.checkReady();
             },
             deep: true
+        },
+        fields: {
+            deep: true,
+            handler: function() {
+                console.log(this.fields);
+            }
         }
     },
     methods: {
@@ -187,7 +192,7 @@ export default {
                     this.fields[fieldType].push({
                         type: Object.values(field)[0],
                         name: Object.keys(field)[0],
-                        value: null,
+                        value: initSpecialInputVal(Object.values(field)[0]),
                     });
                 });
             });
@@ -244,6 +249,7 @@ export default {
         closeErrorModal() {
             this.modal.error.visible = false;
             this.modal.error.errors = [];
+            // this.$bvModal.hide("errorModal")
         },
 
         closeMsgModal() {
@@ -254,6 +260,7 @@ export default {
 
         //Form Submission/////////////////////////////////////////////////////////
         async handleSubmit() {
+            console.log('submission', this.fields)
             this.modal.loading.visible = true;
 
             let hasValidFields = await this.hasValidFields();
@@ -264,7 +271,7 @@ export default {
 
             let res = await this.getYouthProfile()
 
-            if (!(res)) 
+            if (!(res))
                 return;
 
 
@@ -305,21 +312,20 @@ export default {
 
         },
         async hasValidFields() {
-            
+
             let badFields = [];
             this.modal.error.errors = [];
 
             //non empty
             await this.fields.required.forEach(async (field) => {
 
-                let isNonValid = await this.isNonValidField(field.value)
+                let isNonValid = this.isNonValidField(field.value)
 
                 if (isNonValid) {
                     badFields.push(field.name);
 
                 }
 
-                    
             })
 
 
@@ -332,18 +338,15 @@ export default {
             }
 
             return true;
-            
+
         },
         isNonValidField(value) {
-
             if (value == null) {
                 return true;
             }
-            else if (typeof(value) === "number") {
-                return false;
-            }
             else {
-                return (!value.length)
+                console.log(typeof(value))
+                return (!(value.length || typeof(value) == "number" || typeof(value) == "object"))
             }
         },
         async hasSufficientHours() {
@@ -367,10 +370,10 @@ export default {
             //Update Youth Profile
             let updateYouthProfileStatus = await this.updateYouthProfile(payload);
             if (!updateYouthProfileStatus)
-                return false; 
+                return false;
 
             return true;
-        
+
         },
         async constructSubmitPaylod() {
             let payload = {};
@@ -388,6 +391,7 @@ export default {
             let periodQuery = await db.collection("GlobalPeriods").doc('metadata').get();
             payload["Period"] = periodQuery.data().CurrentPeriod
             payload["Order Date"] = Timestamp.fromDate(new Date());
+            payload["Status"] = "Pending"
             return payload;
         },
         async updateYouthProfile(payload) {
@@ -395,9 +399,9 @@ export default {
             //profile: this.form.YouthProfile
             console.log('p', payload);
             console.log('yp', this.form.YouthProfile);
-            this.form.YouthProfile["Hours Spent"] = 
+            this.form.YouthProfile["Hours Spent"] =
                 parseFloat(this.form.YouthProfile["Hours Spent"]) + payload["Item Total Cost"]
-            this.form.YouthProfile["Pending Hours"] = 
+            this.form.YouthProfile["Pending Hours"] =
                 parseFloat(this.form.YouthProfile["Pending Hours"]) - payload["Item Total Cost"];
             // console.warn(this.form.YouthProfile);
             let updateStatus = await db.collection("GlobalYouthProfile").doc(payload["Youth ID"]).update(this.form.YouthProfile);
@@ -429,7 +433,7 @@ export default {
         await this.setPlaceholders(placeholderQuery);
     },
 
-    
+
 }
 
 </script>
@@ -446,9 +450,9 @@ hr.title {
     border: 1px solid grey;
     width: 80%;
     margin: 0 auto;
-    margin-bottom: 1rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
 textarea.id {
@@ -466,6 +470,11 @@ span.inline {
 .specialInputFields {
     width:  70%;
     margin: 0 auto;
+    margin-bottom: 1rem;
+}
+
+.separator {
+  margin-top: 1rem;
 }
 
 </style>

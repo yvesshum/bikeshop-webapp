@@ -21,13 +21,9 @@ In firebase the following things happen:
 <template>
     <div id = "TransferHours">
         <top-bar/>
-        <br>
+        <h1>Transfer Hours</h1>
+        <br/>
         <b-container>
-            <b-row>
-                <b-col>
-                    <h1>Transfer Hours</h1>
-                </b-col>
-            </b-row>
             <b-row>
                 <b-col>
                     <h2>From:</h2>

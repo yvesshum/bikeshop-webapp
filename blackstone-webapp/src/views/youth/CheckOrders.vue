@@ -1,6 +1,7 @@
 <template>
     <div>
         <top-bar/>
+        <h1 class="title">Check Orders</h1>
         <b-table
             :items="items"
             :fields="fields"
@@ -14,6 +15,7 @@
             <strong>Loading...</strong>
             </div>
         </b-table>
+        <p v-if="!items.length">No orders found!</p>
     </div>
 
 </template>
@@ -78,3 +80,8 @@ export default {
 }
 
 </script>
+<style>
+.title {
+margin-bottom: 1rem;
+}
+</style>

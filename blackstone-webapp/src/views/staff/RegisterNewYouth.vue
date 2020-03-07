@@ -23,7 +23,22 @@
           <div class = "specialDiv">
             <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
             </br>
-            <h4 class = "field_msg">Optional fields:</h4>
+            <div v-for="field in requiredFields">
+                  <div v-if="field.name == 'Class'">
+                      <p class="field_header">{{field.name}}</p>
+                        <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                        </SpecialInput>
+                      <br>
+                  </div>
+                  <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                      <div v-for="question in essayQuestions[field.value]">
+                        <p class="field_header">{{question}}</p>
+                          <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                          </SpecialInput>
+                        <br>
+                      </div>
+                  </div>
+            </div>
             <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
             <hr>
           </div>
@@ -33,12 +48,24 @@
 
         <div v-for="field in requiredFields">
             <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <div class = "specialDiv">
-                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                  </SpecialInput>
+                <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
+                  <p class="field_header">{{field.name}}</p>
+                  <div class = "specialDiv">
+                    <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                    </SpecialInput>
+                  </div>
                 </div>
                 <br>
+                <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
+                    <div v-for="question in essayQuestions[field.value]">
+                      <p class="field_header">{{question}}</p>
+                      <div class = "specialDiv">
+                        <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                        </SpecialInput>
+                      </div>
+                      <br>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -70,7 +97,7 @@
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
-        <b-modal v-model = "errorModalVisible" hide-footer lazy>
+        <b-modal v-model = "errorModalIsVisible" hide-footer lazy>
             <template slot="modal-title">
                 Error!
             </template>
@@ -101,6 +128,7 @@
 <script>
     import { VueTelInput } from 'vue-tel-input'
     import SpecialInput from '@/components/SpecialInput';
+    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
@@ -110,7 +138,7 @@
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
-    let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
+    let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
     
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
@@ -143,7 +171,14 @@
                     { value: "Returning Youth", text: 'Returning Youth' }
                 ],
                 returningYouthID: null,
+                essayQuestions : {},
+                answers : {},
             };
+        },
+        computed:{
+            errorModalIsVisible: function () {
+              return this.errorModalVisible
+            }
         },
         methods: {
             async getFields() {
@@ -151,27 +186,9 @@
                 this.loadingModalVisible = false;
                 return f.data();
             },
-            async getSeasons() {
-                let s = await periodRef.get();
-                let activePeriods = s.data()
-                var seasons = activePeriods["Seasons"]
-                var current = activePeriods["CurrentPeriod"]
-                let curSeason = current.split(" ")[0];
-                var curYear = current.split(" ")[1];
-                var new_seasons = [];
-                var i = seasons.indexOf(curSeason);
-                while(new_seasons.length < seasons.length){
-                    new_seasons.push(seasons[i] + " " + curYear);
-                    if(seasons[i] == "Fall"){
-                        curYear = (parseInt(curYear) + 1).toString();
-                    }
-                    i += 1;
-                    if(i >= seasons.length){
-                        i = 0
-                    }
-                }
-                new_seasons.push("None");
-                return new_seasons;
+            async getEssays() {
+                let f = await essayRef.get();
+                return f.data();
             },
             async getOptions() {
                 let o = await optionsRef.get();
@@ -242,32 +259,43 @@
                     var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
-                    let data = this.parse(this.requiredFields);
+                    let data = this.requiredFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
                         }
                     }
                     
-                    data = this.parse(this.optionalFields);
+                    data = this.optionalFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
                         }
+                    }
+                    
+                    let currentClass = input["Class"];
+                    console.log("Current class " + currentClass);
+                    input["Essay"] = {}
+                    for(var question in this.answers[currentClass]){
+                        input["Essay"][question] = this.answers[currentClass][question];
                     }
                     
                     console.log(input);
@@ -290,10 +318,10 @@
                     
                     // Clear the fields
                     for (let i = 0; i < this.requiredFields.length; i ++) {
-                        this.requiredFields[i]["value"] = undefined;
+                        this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
                     }
                     for (let i = 0; i < this.optionalFields.length; i ++) {
-                        this.optionalFields[i]["value"] = undefined;
+                        this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
                     }
                           
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
@@ -416,8 +444,14 @@
         async mounted() {
             this.loadingModalVisible = true;
             let fields = await this.getFields();
-            let seasons = await this.getSeasons();
             let options = await this.getOptions();
+            this.essayQuestions = await this.getEssays();
+            for (var className in this.essayQuestions) {
+                this.answers[className] = {};
+                for(var i = 0; i < this.essayQuestions[className].length; i++){
+                    this.answers[className][this.essayQuestions[className][i]] = "";
+                }
+            }
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
@@ -436,7 +470,7 @@
             for (let i = 0; i < req_keys.length; i ++) {
                 this.requiredFields.push({
                     name: req_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(req_vals[i]),
                     type: req_vals[i],
                     placeholder: this.placeholders[req_keys[i]]
                 });
@@ -450,7 +484,7 @@
             for (let i = 0; i < opt_keys.length; i ++) {
                 this.optionalFields.push({
                     name: opt_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(opt_vals[i]),
                     type: opt_vals[i],
                     placeholder: this.placeholders[opt_keys[i]]
                 });

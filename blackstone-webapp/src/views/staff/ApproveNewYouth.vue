@@ -2,25 +2,11 @@
     <div class = ApproveNewYouth>
         <top-bar/>
         <h1>Approve New Youth Dashboard</h1>
-        <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-
-                <b-button-group>
-                    <b-button variant="success" @click="accept">Approve</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="info" @click="editFields">Inspect Youth</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Reject/Cancel</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
-            </b-button-toolbar>
+        <div class="toolbarwrapper">
+                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+                    <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
         </div>
 
         <b-table
@@ -86,7 +72,7 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
-        
+
         <b-modal v-model = "editModalVisible" hide-footer lazy>
             <template slot = "modal-title">
                 Editing Registration
@@ -131,15 +117,17 @@
     import { VueTelInput } from 'vue-tel-input'
     import RadioGroupOther from '../../components/RadioGroupOther';
     import SpecialInput from '@/components/SpecialInput';
+    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
     import { forKeyVal } from '@/scripts/ParseDB.js';
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
-    
+    let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
+
     let periodRef = db.collection("GlobalPeriods").doc("metadata");
-    
+
     export default {
         name: 'ApproveNewYouth',
         components: {
@@ -170,7 +158,8 @@
                 deleteAmount: 0,
                 editModalVisible: false,
                 editSelected: {},
-                currentSeason: null
+                currentSeason: null,
+                essayQuestions: {},
             };
 
         },
@@ -180,11 +169,16 @@
                 return f.data();
             },
             
+            async getEssays() {
+                let f = await essayRef.get();
+                return f.data();
+            },
+
             async getEditOptions() {
                 let o = await optionsRef.get();
                 return o.data();
             },
-            
+
             rowSelected(items){
                 this.selected = items;
             },
@@ -201,7 +195,11 @@
                 fields.push({key: "Timestamp", sortable: true});
                 fields.push({key: "New or Returning", sortable: true});
                 forKeyVal(headers, function(name, val, n) {
-                    fields.push({key: name, sortable: true});
+                    if(name != "DOB"){
+                        fields.push({key: name, sortable: true});
+                    } else {
+                        fields.push({key: "Birthdate", sortable: true});
+                    }
                 });
                 this.fields = fields;
             },
@@ -217,19 +215,13 @@
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
                     data["Timestamp"] = moment(data["Timestamp"].toDate()).format("YYYY-MM-DD hh:mm a");
-                    data["DOB"] = moment(new Date(data["DOB"])).format("YYYY-MM-DD");
+                    data["Birthdate"] = moment(data["DOB"].toDate()).format("YYYY-MM-DD");
                     if(data["New or Returning"] == "Returning Youth"){
                         data["New or Returning"] = "Returning Youth - ID: " + data["ReturningID"];
                     }
-                    // data["Check In"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
-                    // data["Check Out"] = moment(data["Check In"]).format('MM/DD, hh:mm a')
                     ret.push(data);
                 });
                 return ret;
-            },
-
-            parse(item) {
-                return JSON.parse(JSON.stringify(item));
             },
 
             showModal(header, msg) {
@@ -249,19 +241,23 @@
                 let row = this.selected[0];
 
                 this.showLoadingModal("Doing some work in the background...");
-                
+
                 var newIDs = []
-                
+
                 if(row["New or Returning"].split(" ")[0] == "Returning"){
-                    
+
                     let submitRef = db.collection("GlobalYouthProfile").doc(row["ReturningID"]);
-                    
-                    let input = JSON.parse(JSON.stringify(row));
+
+                    let input = {};
+                    Object.assign(input, row);
                     delete input["Document ID"];
-                    
-                    input["ActivePeriods"].push(this.currentSeason);
+                    delete input["Birthdate"];
+                    delete input["Timestamp"];
+                    delete input["New or Returning"];
+                    delete input["ReturningID"];
+                    input["ActivePeriods"][this.currentSeason] = input["Class"];
                     console.log(input)
-                    
+
                     let currentYear = this.currentSeason.split(" ")[1];
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
@@ -277,32 +273,36 @@
                         this.editSelected = {};
                         return null;
                     }
-                    
+
                     let logStatus = await submitRef.update(input);
-                    
+
                     if (logStatus) {
                         window.alert("Error on updating Global Youth Profile: " + row["ReturningID"]);
                         return null;
                     }
                 } else {
-                    await rb.ref('Youth ID Number').once("value", snapshot => { 
+                    await rb.ref('Youth ID Number').once("value", snapshot => {
                         console.log("Snapshot value: ")
                         console.log(snapshot.val())
                         newIDs.push(snapshot.val()["value"]);
                     })
-                    
+
                     console.log(newIDs[0])
-                    
+
                     let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
-                    
-                    let input = JSON.parse(JSON.stringify(row));
+
+                    let input = {};
+                    Object.assign(input, row);
                     delete input["Document ID"];
-                    
-                    input["ActivePeriods"] = [];
-                    input["ActivePeriods"].push(this.currentSeason);
-                    
+                    delete input["Birthdate"];
+                    delete input["Timestamp"];
+                    delete input["New or Returning"];
+
+                    input["ActivePeriods"] = {};
+                    input["ActivePeriods"][this.currentSeason] = input["Class"];
+
                     console.log(input)
-                    
+
                     let currentYear = this.currentSeason.split(" ")[1];
                     console.log("Current year: " + currentYear);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
@@ -317,38 +317,41 @@
                       "ID" : newIDs[0].toString(),
                       "Last Name" : row["Last Name"]
                     });
-                    console.log("Oh");
+                    console.log("Current season: " + this.currentSeason);
+                    console.log("Current: " + current[this.currentSeason]);
                     let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
                     if (periodStatus) {
                         window.alert("Err: Could not add to period collection");
                         this.editSelected = {};
                         return null;
                     }
-                    
+
                     let logStatus = await submitRef.set(input);
-                    
+                    console.log("Has set input")
+
                     if (logStatus) {
                         window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                         return null;
                     }
                 }
-                
+
+                console.log("About to delete registration")
                 let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
-                
+
                 if (status) {
                     window.alert("Error on deleting youth registration: " + row["Document ID"]);
                     return null;
                 }
-                
+
                 this.removeLocally(row["Document ID"]);
-                
+
                 this.closeLoadingModal();
-                
+
                 if(row["New or Returning"].split(" ")[0] != "Returning"){
                     newIDs[0] += 1;
                     await rb.ref('Youth ID Number').set({"value": newIDs[0]});
                     // await rb.ref('Youth ID Number').off("value", listener);
-                    
+
                     this.showModal("Success", "Successfully approved " + row["First Name"] + " " + row["Last Name"] + "'s registration")
                 }
             },
@@ -357,7 +360,6 @@
                 for (let i =0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === ID) {
                         this.items.splice(i, 1);
-                        this.$root.$emit('bv::refresh::table', 'transfer-table');
                         break;
                     }
                 }
@@ -385,13 +387,13 @@
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
                     + curRow["First Name"] + " " + curRow["Last Name"] + "'s youth registration");
             },
-            
+
 
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
                 let curRow = this.selected[0];
-                
+
                 this.showLoadingModal("Doing some work in the background...");
 
                 let status = db.collection("GlobalPendingRegistrations").doc(this.rejectingDocumentID).delete();
@@ -424,30 +426,37 @@
                 this.showEditModal();
 
             },
-            
+
             async editFields() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
                     return null;
                 }
                 var editSelectedLocal = [];
-                
+
                 let fields = await this.getEditFields();
                 let options = await this.getEditOptions();
-                
+
                 var req_keys = [];
                 var req_vals = [];
                 forKeyVal(fields["required"], function(name, val, n) {
                     req_keys.push(name);
                     req_vals.push(val);
                 });
+                var currentClass = "";
+                console.log("Hello?")
                 for (let i = 0; i < req_keys.length; i ++) {
                     editSelectedLocal.push({
                         Category: req_keys[i],
                         Value: curRow[req_keys[i]],
+                        NewValue: curRow[req_keys[i]],
                         Type: req_vals[i]
                     });
+                    if(req_keys[i] == "Class"){
+                        currentClass = curRow[req_keys[i]]
+                    }
                 }
+                console.log(currentClass)
                 var opt_keys = [];
                 var opt_vals = [];
                 forKeyVal(fields["optional"], function(name, val, n) {
@@ -458,18 +467,29 @@
                     editSelectedLocal.push({
                         Category: opt_keys[i],
                         Value: curRow[opt_keys[i]],
+                        NewValue: curRow[opt_keys[i]],
                         Type: opt_vals[i]
+                    });
+                }
+                var questions = this.essayQuestions[currentClass];
+                console.log(questions);
+                for (let i = 0; i < questions.length; i ++){
+                    editSelectedLocal.push({
+                        Category: questions[i],
+                        Value: curRow["Essay"][questions[i]],
+                        NewValue: curRow["Essay"][questions[i]],
+                        Type: "Essay"
                     });
                 }
                 this.editSelected = editSelectedLocal;
                 console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
-            
+
             showEditModal() {
                 this.editModalVisible = true;
             },
-            
+
             closeEditModal() {
                 this.editModalVisible = false;
             },
@@ -482,43 +502,55 @@
                 this.editMsg = "";
                 this.editModalVisible = false;
             },
-            
+
             async saveEdits() {
                 let note = this.editFields;
                 this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
                 // console.log(this.editSelected);
-                
+
                 var newValues = {}
+                newValues["Essay"] = this.selected[0]["Essay"];
+                console.log("Old Essays")
+                console.log(newValues["Essay"])
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
                       var value = this.editSelected[i]["Value"];
                       if(this.editSelected[i]["NewValue"] != undefined){
                           value = this.editSelected[i]["NewValue"];
                       }
-                      newValues[category] = value
+                      if(this.editSelected[i]["Type"] == "Essay"){
+                          newValues["Essay"][category] = value;
+                      } else{
+                          newValues[category] = value;
+                      }
                 }
                 console.log("New values: " + JSON.stringify(newValues));
-                
+
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     window.alert("Err: " +  err);
                     this.editSelected = {};
                     return null;
                 }
-                
-                
+
+
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
                         console.log(this.editSelected);
                         for(var index in this.editSelected){
                             console.log(this.editSelected[index]);
                             if(this.editSelected[index].NewValue != undefined){
-                                if(this.editSelected[index].Category == "DOB"){
-                                    this.items[i][this.editSelected[index].Category] = moment(new Date(this.editSelected[index].NewValue)).format("YYYY-MM-DD");
+                                if(this.editSelected[index].Type != "Essay"){
+                                    if(this.editSelected[index].Category == "DOB"){
+                                        this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
+                                        this.items[i]["Birthdate"] = moment(this.editSelected[index].NewValue.toDate()).format("YYYY-MM-DD");
+                                    } else {
+                                        this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
+                                    }
                                 } else {
-                                    this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
+                                    this.items[i]["Essay"][this.editSelected[index].Category] = this.editSelected[index].NewValue;
                                 }
                             }
                         }
@@ -552,17 +584,14 @@
             let s = await periodRef.get();
             this.currentSeason = s.data()["CurrentRegistrationPeriod"];
             this.toggleBusy();
+            this.essayQuestions = await this.getEssays();
         },
     }
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
+.toolbarwrapper {
+margin-bottom: 1rem;
+}
 
 </style>

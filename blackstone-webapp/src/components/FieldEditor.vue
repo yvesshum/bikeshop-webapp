@@ -68,17 +68,6 @@
                 max-rows="1"
         ></b-form-textarea>
         <br>
-        <p>Field Type:</p>
-        <b-form-select
-                id="textarea"
-                v-model="modal.edit.field_type"
-                :options="modal.edit.options"
-                placeholder="Edit here.."
-                rows="1"
-                max-rows="1"
-        ></b-form-select>
-        <br>
-        <br>
         <strong style="color: red">Please check if you have a duplicate field name before saving so bad things won't happen.</strong>
         <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
@@ -119,6 +108,7 @@
             placeholder="Edit here.."
             rows="1"
             max-rows="3"
+            @change="handle_field_type_change"
         ></b-form-select>
 
         <p style="margin-bottom: 0">Initial Value</p>
@@ -145,6 +135,7 @@ import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
+import { initSpecialInputVal } from '../scripts/SpecialInit';
 
 export default {
     name: 'fieldEditor',
@@ -195,23 +186,28 @@ export default {
                     visible: false,
                     field_name: "",
                     field_type: "String",
-                    initial_value: ""
+                    initial_value: null
                 }
             }
         }
     },
     mounted() {
         this.field_data = this.elements;
-        this.field_data_initial_copy = this.field_data;
+        this.field_data_initial_copy = JSON.parse(JSON.stringify((this.field_data))); // Native type clone
 
         // Grab input types
         db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
             this.modal.edit.options = query.data().types
         })
     },
-    methods: {
-        parse(item) {
-            return JSON.parse(JSON.stringify(item));
+    methods: { 
+        handle_field_type_change(type) {
+            console.log('handle field type change called', type);
+            this.modal.add.initial_value = initSpecialInputVal(type);
+            console.log('set modal initial value to:', this.modal.add.initial_value);
+            console.log('calling updateInputType on ', type);
+
+            this.$refs.addInput.updateInputType(type);
         },
 
         editButtonClicked(data) {
@@ -293,6 +289,8 @@ export default {
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
+            //TODO: 
+            // This doesn't work yet. Name changes lead to errors
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
@@ -457,14 +455,18 @@ export default {
                 })
             }
 
+
             //Updating Locally 
             let localUpdateObject = {
                 data: {},
                 isProtected: false
             }
             localUpdateObject.data[this.modal.add.field_name] = this.modal.add.field_type;
+
             this.field_data.push(localUpdateObject);
+
             this.field_data_initial_copy.push(localUpdateObject);
+
 
             // Reset
             this.modal.add.field_name = "";
@@ -473,6 +475,7 @@ export default {
 
             this.closeLoadingModal();
             this.showMsgModal("Success!", "Added a new field in GlobalFieldsCollection and corresponding documents.");
+
         }
 
     }

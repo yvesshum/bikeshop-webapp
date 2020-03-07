@@ -35,9 +35,9 @@ use v-model. Whenever one of these is changed, it updates the other.
 
 <template>
     <div v-if="ready">
-        <!-- Returns an String that is an integer -->
+        <!-- Returns an integer -->
         <div v-if="input === 'Integer'">
-            <VueNumberInput 
+            <!-- <VueNumberInput 
               center
               :value="value" 
               @input="$emit('input', $event)"
@@ -47,8 +47,22 @@ use v-model. Whenever one of these is changed, it updates the other.
               style="width: 20rem"
               controls
               :inputtable="false"
-            />
 
+            /> -->
+            <VueNumericInput
+                :value="value"
+                @input="$emit('input', $event)"
+                :min="0"
+                :step="1"
+            />
+        </div>
+
+        <!-- Returns an integer with step 0.01 -->
+        <div v-else-if="input === 'Price'">
+            <SpecialNumberInput
+                :value="value"
+                @input="$emit('input', $event)"
+            />
         </div>
 
         <!-- Returns a string "true" or "false" -->
@@ -75,7 +89,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         </div>
         
         <div v-else-if="input === 'Date'" style="text-align: center;">
-            <datepicker :value="value" @input="$emit('input', $event)" style="display: inline-block;"></datepicker>
+            <datepicker :value="value" @input="$emit('input', $event)" style="display: inline-block; text-align: center"></datepicker>
         </div>
 
         <!-- Returns M/F or some string -->
@@ -112,9 +126,10 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
-            <VueNumberInput 
+            <!-- <VueNumberInput 
               center
-              :value="value" @input="$emit('input', $event)"
+              :value="value" 
+              @input="$emit('input', $event)"
               :min="0"
               :step="0.5"
               placeholder="Hours"
@@ -122,6 +137,12 @@ use v-model. Whenever one of these is changed, it updates the other.
               style="width: 100%; margin: 0 auto"
               controls
               :inputtable="false"
+            /> -->
+            <VueNumericInput
+                :value="value"
+                @input="$emit('input', $event)"
+                :min="0"
+                :step="1"
             />
         </div>
 
@@ -152,6 +173,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 </template>
 <script>
 import VueNumberInput from '@chenfengyuan/vue-number-input';
+import VueNumericInput from 'vue-numeric-input'
 import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
@@ -160,6 +182,8 @@ import moment from 'moment'
 import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
 import Datepicker from '../components/datepickerTimestamp';
+import SpecialNumberInput from '../components/SpecialNumberInput'
+
 
 export default {
     name: 'SpecialInput',
@@ -211,9 +235,15 @@ export default {
         }
     },
 
-    watch: {
-        inputType: function() {
-            this.input = this.inputType;
+    methods: {
+
+        /** 
+         * PUBLIC METHOD TO BE CALLED WHEN TYPE NEEDS TO BE UPDATED 
+         */
+        updateInputType(type) {  
+            console.log("updateinput type called. type: ", type);
+            console.log("current vmodel value:", this.value);
+            this.input = type;
             if (this.inputType === "Class" && this.classOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getClassOptions();
@@ -221,103 +251,6 @@ export default {
             else if (this.inputType === "Period" && this.periodOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getPeriodOptions();
-            }
-            this.initValue();
-        }
-    },
-
-    methods: {
-        sanitizeArgs() {
-
-        },
-
-        setValue(val) {
-            /**
-             * BUG (problem when switching between input types, especially in FieldEditor)
-             * 
-             * Since items are currently bound to a parent's v-model, setting a value from this SpecialInput
-             * component is challenging .
-             * 
-             * 1. We can do $emit('input', value), however by doing so the emitted value is not propagated back into
-             * this SpecialInput component, and switching between inputTypes would hence not lead to correctly reinitialized 
-             * values 
-             * 
-             * 2. We can do $emit('some other tag', value), and force the parent to have a handler to update the v-model
-             * on their side. However, a race condition happens where this SpecialInput component changes the type, but 
-             * still having the original v-model value, as it waits for the parent to receive the emission and changes the value.
-             * i.e. 
-             * I want to change type Integer -> String
-             * initial v-model value: 0
-             * Input type is changed to String
-             * SpecialInput emits a v-model update request 
-             * SpecialInput changes type to String, gets error as v-model is of type: Integer     <-- PROBLEM LIES HERE 
-             * Parent receives request and updates the v-model
-             * Things are happy for now 
-             * 
-             * 3. We can directly change the value of `this.value`, but vue is unhappy about this, and will give an error
-             * saying that you shouldn't mutate props like this. For the sake of this component's usage, I think it's fine 
-             * to go with this "anti-pattern" and don't care about the warning. 
-             * 
-             * If whoever is reading this has an idea to fix SpecialInput, please do!!!
-             * 
-             * - Actually I just got an idea ^ pls wait for a fix 
-             * Meanwhile you should be able to use Special Input as usual for other pages (except admin)
-             * 
-             */
-            // this.$emit('update_value', val);
-            this.value = val;
-            // this.$emit('input', val);
-        },
-
-        //defaults 
-        initValue(val) {
-            console.log("init value called, input type:", this.input);
-            if (val != null) {
-                this.setValue(val);
-                return;
-            }
-            switch(this.input) {
-                case 'Integer':
-                    this.setValue(0);
-                    break;
-                case 'Boolean':
-                    this.setValue(false);
-                    break;
-                case 'Phone': 
-                    this.setValue("");
-                    break;
-                case 'Datetime':
-                    this.setValue(Timestamp.fromDate(new Date()))
-                    break;
-                case 'Date':
-                    this.setValue(Timestamp.fromDate(new Date()))
-                    break;
-                case 'Gender':
-                    this.setValue("M"); //leftmost element 
-                    break;
-                case 'Race': 
-                    this.setValue(null);
-                    break;
-                case 'Grade':
-                    this.setValue(null);
-                    break;
-                case 'Email':
-                    this.setValue("");
-                    break;
-                case 'Hours':
-                    this.setValue(0);
-                    break;
-                case 'Class':
-                    this.setValue(this.classOptions[0].value);
-                    break;
-                case 'Period':
-                    this.setValue(this.periodOptions[0].value);
-                    break;
-                case 'Essay':
-                    this.setValue("");
-                    break;
-                default:
-                    this.setValue("");
             }
         },
 
@@ -371,10 +304,8 @@ export default {
     },
 
     async mounted() {
-        this.sanitizeArgs();
         this.args = this.arguments;
         this.input = this.inputType;
-        this.setValue(this.args.value);
 
         //get Class data 
         if (this.input === "Class") {
@@ -391,8 +322,10 @@ export default {
     components: {
         VueTelInput,
         VueNumberInput,
+        VueNumericInput,
         Datetime,
-        Datepicker
+        Datepicker,
+        SpecialNumberInput,
     }
 
 }

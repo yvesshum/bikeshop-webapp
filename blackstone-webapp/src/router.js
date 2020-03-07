@@ -22,6 +22,7 @@ import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
 import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
 import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
+import EssayQuestionsSettings from './views/admin/EssayQuestionsSettings.vue';
 import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
@@ -30,6 +31,7 @@ import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
 import Testing from './views/admin/Testing.vue'
+import ClassSettings from './views/admin/ClassSettings';
 Vue.use(Router);
 
 const router = new Router({
@@ -290,6 +292,15 @@ const router = new Router({
             }
         },
         {
+            path: '/essay-questions-settings',
+            name: 'essay-questions-settings',
+            component: EssayQuestionsSettings,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
             path: '/period-settings',
             name: 'period-settings',
             component: PeriodSettings,
@@ -298,7 +309,15 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-
+        {
+          path: '/class-settings',
+          name: 'class-settings',
+          component: ClassSettings,
+          meta: {
+              requiresAuth: true,
+              requiresStaff: true
+          }
+      },
         {
             path: '/testing',
             name: 'tesitng',
