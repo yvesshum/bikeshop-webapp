@@ -51,8 +51,8 @@
         <table class="table table-bordered">
             <thead>
             <tr>
-                <th scope="col">Year</th>
-                <th scope="col" v-for="s in seasons" :class="get_header_classes(s)">{{s}}</th>
+                <th scope="col" class="main_header">Year</th>
+                <th scope="col" class="main_header" v-for="s in seasons" :class="get_header_classes(s)">{{s}}</th>
             </tr>
             </thead>
             <tbody @mouseleave="dehover_cell">
@@ -231,7 +231,8 @@ export default {
     },
 }
 </script>
-<style>
+
+<style scoped>
     table.table th.table-hov, table.table td.table-hov {
       background-color: #DFDFDF;
       /*background-color: #BBB;*/
@@ -250,6 +251,10 @@ export default {
     table.table td.table-unavailable {
         background-color: #c0c0c0;
         cursor: pointer;
+    }
+
+    table.table thead tr th.main_header {
+        width: 1%;
     }
 
 </style>
