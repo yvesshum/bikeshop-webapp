@@ -116,15 +116,14 @@
                 this.selected = items;
             },
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("StaffOrderApproval").get();
                 headers = headers.data();
                 let fields = [];
-                ['required', 'optional', 'hidden'].forEach(ftype => { //specific ordering
-                    for (let i = 0; i < headers[ftype].length; i ++) {
-                        fields.push({key: headers[ftype][i], sortable:true});
-                }})
+                for (let i = 0; i < headers.fields.length; i++) {
+                  fields.push({key: Object.keys(headers.fields[i])[0], sortable: true});
+                }
                 this.fields = fields;
-            },
+                  },
 
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();

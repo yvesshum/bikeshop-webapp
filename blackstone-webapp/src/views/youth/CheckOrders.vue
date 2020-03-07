@@ -45,7 +45,12 @@ export default {
                 for (let i = 0; i < headers.length; i++) {
                     fields.push({key: headers[i], sortable: true});
                 }
-                this.fields = fields;
+                this.fields = JSON.parse(JSON.stringify(fields)).map(el=>{
+                  return {
+                    key:Object.keys(el.key)[0],
+                    sortable:true
+                    }}
+                  );
         },
 
         async getTData() {
