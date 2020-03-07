@@ -4,14 +4,15 @@
     <h1>Manage Periods</h1>
     <br />
 
-    <div class="col-container">
+    <div class="col-container flex-direction">
       <div class="col-left">
+        <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
+
         <ButtonArrayHeader
-          :left="button_header_l" :right="button_header_r" :current="display_period"
+          :left ="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
         >
-          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
@@ -935,10 +936,13 @@ export default {
   }
 
   .col-container:after {
-    content: "";
-    display: table;
-    clear: both;
+    display:inline-flex;
+  flex-wrap:wrap;
   }
+
+  .flex-direction{
+  flex-direction:row;
+}
 
   .col-left {
     float: left;
@@ -954,7 +958,18 @@ export default {
     padding-right: 3%;
   }
 
-  .changed {
-    font-weight: bold;
+  @media screen and (max-width: 800px) {
+  .flex-direction{
+  flex-direction:column;
   }
+.col-left{
+  width:100%;
+  padding: 0 3%;
+  }
+  .col-right{
+    width:100%;
+    padding: 1rem 3%;
+  }
+
+}
 </style>
