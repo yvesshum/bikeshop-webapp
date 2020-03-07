@@ -96,3 +96,12 @@ export function mapKeyVal(arr, op) {
 	// Return the result array
 	return result;
 };
+
+
+// Error checking to get a Date object from the database
+// Should be a Timestamp, but handles error in case it isn't
+export function get_as_date(date_obj) {
+  return (date_obj.toDate == undefined)
+    ? new Date(date_obj.seconds * 1000)
+    : date_obj.toDate();
+};

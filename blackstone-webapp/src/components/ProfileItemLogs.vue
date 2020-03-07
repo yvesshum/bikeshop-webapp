@@ -51,6 +51,7 @@ import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
+import {get_as_date} from "@/scripts/ParseDB.js"
 
 const moment = require("moment");
 var Tabulator = require("tabulator-tables");
@@ -212,7 +213,7 @@ export default {
 
     format_date_time: function(cell) {
       var val = cell.getValue();
-      var date = this.get_as_date(val);
+      var date = get_as_date(val);
 
       var day     = this.get_date(date);
       var weekday = this.get_weekday(date);
@@ -231,8 +232,8 @@ export default {
       var val = cell.getValue();
 
       if (Array.isArray(val)) {
-        let date1 = this.get_as_date(val[0]);
-        let date2 = this.get_as_date(val[1]);
+        let date1 = get_as_date(val[0]);
+        let date2 = get_as_date(val[1]);
 
         if (this.same_day(date1, date2)) {
           day     = this.get_date(date1);
@@ -246,7 +247,7 @@ export default {
       }
 
       else {
-        let date = this.get_as_date(val);
+        let date = get_as_date(val);
         day     = this.get_date(date);
         weekday = this.get_weekday(date);
       }
@@ -256,7 +257,7 @@ export default {
 
     format_time: function(cell) {
       var val = cell.getValue();
-      var date = this.get_as_date(val);
+      var date = get_as_date(val);
 
       var time = date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -280,7 +281,7 @@ export default {
     date_filter: function(filters, option) {
 
       var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = this.get_as_date(datestamp);
+      var date = get_as_date(datestamp);
 
       // Result will be true if every filter passes
       var result = filters.every(filter => {
@@ -461,7 +462,7 @@ export default {
     time_range_filter: function(search_range, option) {
 
       // Interpret the current cell's value
-      var val = this.get_as_date(option);
+      var val = get_as_date(option);
       var hour = val.getHours().toString();
       var mins = val.getMinutes().toString();
       var time = [hour, mins];
@@ -508,16 +509,16 @@ export default {
     // =-= Sorters =-=-=
 
     date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-      let a_date = (Array.isArray(a)) ? this.get_as_date(a[0]) : this.get_as_date(a);
-      let b_date = (Array.isArray(b)) ? this.get_as_date(b[0]) : this.get_as_date(b);
+      let a_date = (Array.isArray(a)) ? get_as_date(a[0]) : get_as_date(a);
+      let b_date = (Array.isArray(b)) ? get_as_date(b[0]) : get_as_date(b);
       return a_date.getTime() - b_date.getTime();
     },
 
     time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
 
       // Get both as dates
-      let a_date = this.get_as_date(a);
-      let b_date = this.get_as_date(b);
+      let a_date = get_as_date(a);
+      let b_date = get_as_date(b);
 
       // Get differences in hours, minutes, and seconds
       let h_diff = a_date.getHours() - b_date.getHours();
@@ -593,14 +594,6 @@ export default {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
 
-
-    // Error checking to get a Date object from the database
-    // Should be a Timestamp, but handles error in case it isn't
-    get_as_date: function(date_obj) {
-      return (date_obj.toDate == undefined)
-        ? new Date(date_obj.seconds * 1000)
-        : date_obj.toDate();
-    }
   }
 }
 </script>
