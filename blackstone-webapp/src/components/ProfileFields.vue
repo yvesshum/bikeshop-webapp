@@ -238,7 +238,7 @@ export default {
       // Track whether currently in edit mode
       edit_mode: false,
 
-      // Lists of special fields
+      // Fields which are displayed outside the general table, but which should still be editable from the popup modal
       specially_displayed_fields: [
         "First Name",
         "Last Name",
@@ -246,8 +246,9 @@ export default {
         "Hours Spent",
         "Pending Hours",
         "ActivePeriods",
-        "Class",
       ],
+
+      // Fields which should not be editable from the popup modal
       hidden_fields: [
         "Apron Color",
         "Apron Skills",
@@ -257,7 +258,9 @@ export default {
         "Registration Period",
         "Essay",
         "New or Returning",
+        "Class",
       ],
+
       hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
 
