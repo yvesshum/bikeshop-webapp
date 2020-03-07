@@ -4,11 +4,11 @@
     <top-bar />
     <h1 class="title">Currently Checked-In Youth</h1>
 
-    <!-- <b-button
+    <b-button
       @click="viewProfile"
       style="margin-bottom: 1rem"
       variant="info"
-    >View Profile</b-button> -->
+    >View Profile</b-button>
 
     <b-table
       :items="items"
@@ -34,10 +34,6 @@
           :headerDoc="header_doc"
           :periodData="period_data"
         />
-
-        <br />
-
-        <ApronBar :profile="currentProfile" />
 
         <br />
         <br />
@@ -169,10 +165,13 @@ export default {
     this.toggleBusy();
   }
 };
+
 </script>
 
 <style>
+
 .title {
 margin-bottom: 1rem;
 }
+
 </style>

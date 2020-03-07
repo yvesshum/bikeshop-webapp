@@ -1,14 +1,10 @@
 <template>
   <div >
   <top-bar/>
+  <h1 class="title">Add or take away hours for Youth</h1>
+  <p style="margin: 0 1rem; padding-top: 0.5rem;">Note: This changes Hours Earned and does not show up as a record</p>
   <br>
     <b-container>
-      <b-row>
-        <b-col>
-          <h1>Add or take away hours for Youth</h1>   
-          <p>Note: This changes Hours Earned and does not show up as a record</p> 
-        </b-col>
-      </b-row>
       <b-row>
         <b-col>
           <YouthIDSelector @selected="handleSelect" @ready="idSelectorReady"/>
@@ -41,7 +37,7 @@
         </b-col>
       </b-row>
     </b-container>
-      
+
 
       <!-- Modals -->
     <b-modal v-model = "modalVisible" hide-footer lazy>
@@ -65,7 +61,7 @@
         </div>
       </div>
     </b-modal>
-  </div>  
+  </div>
 </template>
 
 <script>
@@ -111,7 +107,7 @@ export default {
             }
             profile = profile.data();
             let newHoursEarned = Math.round((parseFloat(profile["Hours Earned"]) + this.value) * 100) / 100
-            try { 
+            try {
                 await db.collection("GlobalYouthProfile").doc(this.id).update({
                     "Hours Earned": newHoursEarned.toString()
                 });
@@ -132,7 +128,7 @@ export default {
             }
             profile = profile.data();
             let newHoursEarned = Math.round((parseFloat(profile["Hours Earned"]) - this.value) * 100) / 100
-            try { 
+            try {
                 await db.collection("GlobalYouthProfile").doc(this.id).update({
                     "Hours Earned": newHoursEarned
                 });
@@ -158,13 +154,17 @@ export default {
         },
 
 
-        
-        
+
+
 
     },
 }
 </script>
 
 <style>
+
+.title {
+margin-bottom: 1rem;
+}
 
 </style>

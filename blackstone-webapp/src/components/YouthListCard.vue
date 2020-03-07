@@ -1,19 +1,19 @@
 <template>
-    <div>
+    <div class = "youth_listcard">
         <b-button-group>
-            <div class="youth">
+            <div class="youth_card_name">
                 <b-button squared disabled block variant="light">{{youth["First Name"]}}</b-button>
             </div>
-            <div class="youth">
+            <div class="youth_card_name">
                 <b-button squared disabled block variant="light">{{youth["Last Name"]}}</b-button>
             </div>
-            <div class="youth">
+            <div class="youth_card_id">
                 <b-button squared disabled block variant="light">{{youth["ID"]}}</b-button>
             </div>
             <div class="button">
                 <b-button
-                    squared 
-                    block 
+                    squared
+                    block
                     variant="danger"
                     @click="onDeleteClicked"
                 >
@@ -23,7 +23,7 @@
         </b-button-group>
     </div>
 
-    
+
 </template>
 
 <script>
@@ -44,8 +44,12 @@ export default {
 </script>
 
 <style>
-.youth{
+.youth_card_name{
     width: 8rem;
-} 
+}
+.youth_card_id{
+    text-align: center;
+    width: 5rem;
+}
 
 </style>

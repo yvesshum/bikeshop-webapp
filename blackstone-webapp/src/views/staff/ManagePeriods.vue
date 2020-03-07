@@ -23,10 +23,10 @@
           @rowClick="row_click"
         />
 
-        <YouthIDSelector periods="all"
+        <!-- <YouthIDSelector periods="all"
           :args="{multiple: true, hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
           @selected="s => selected_bar = s"
-        />
+        /> -->
       </div>
 
       <div class="col-right">
