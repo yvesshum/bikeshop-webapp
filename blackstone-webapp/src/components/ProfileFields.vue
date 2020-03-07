@@ -37,7 +37,11 @@
         <tr v-for="field in section.Data" v-show="show_container(field)">
           <td style="width: 35%">
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
-            <b-badge v-show="needs_warning(field)" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
+            <b-badge
+              v-show="hideWarnings == undefined && needs_warning(field)"
+              pill variant="warning" class="warning_icon"
+              v-b-tooltip.hover.html="warning_msg(field)"
+            >!</b-badge>
           </td>
           <td style="width: 65%">
             <ProfileFieldDisplay v-model="local_values[field]" :type="field_types[field]"></ProfileFieldDisplay>
@@ -223,7 +227,7 @@ import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields"],
+  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields", "hideWarnings"],
   components: {
     ToggleButton,
     SpecialInputReset,
