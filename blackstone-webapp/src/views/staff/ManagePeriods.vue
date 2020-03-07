@@ -37,6 +37,7 @@
           :profile="currentProfile"
           :headerDoc="header_doc"
           :periodData="profile_period_data"
+          hideWarnings
         />
         <br />
         <br />

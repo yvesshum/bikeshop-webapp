@@ -32,7 +32,6 @@ export default {
 
   mounted: function() {
     this.edit_value = this.defaultValue;
-    console.log("Mounted", name, this);
     this.$emit("Mounted", this);
   },
 
