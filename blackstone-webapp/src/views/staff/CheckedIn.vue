@@ -36,10 +36,6 @@
         />
 
         <br />
-
-        <ApronBar :profile="currentProfile" />
-
-        <br />
         <br />
       </div>
     </b-modal>
