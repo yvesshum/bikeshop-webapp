@@ -15,7 +15,7 @@
             <b-card-body>
                 <button onclick="location.href='/check-in'" class="btn btn-outline-info btn-block" type="button">Check In/Check Out</button>
                 <button onclick="location.href='/profile-lookup'" class="btn btn-outline-info btn-block" type="button">Profile Lookup</button>
-                <!-- <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button> -->
+                <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button>
             </b-card-body>
           </b-collapse>
         </b-card>
