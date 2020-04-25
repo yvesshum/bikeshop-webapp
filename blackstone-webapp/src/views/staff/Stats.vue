@@ -24,6 +24,19 @@
 
             <br />
 
+            <div v-if="dailyAttendanceLoading">
+                <b-row>
+                    <b-col>
+                        <b-spinner type="grow"></b-spinner>
+                    </b-col>
+                </b-row>
+                <b-row>
+                    <b-col>
+                        <strong>Doing some work...</strong>
+                    </b-col>
+                </b-row>
+            </div>
+
             <b-row>
                 <b-col>
                     <p v-if="this.dailyAttendanceTableItems.length === 0">No Entries found</p>
@@ -177,6 +190,9 @@
             <div v-if="this.total_Hours_Spent_Data.length !== 0">
                 <p>Total: {{total_Hours_Spent}}</p>
             </div>
+
+
+            <!-- Query ALl user data -->
             <b-row>
                 <b-col>
                     <h3>Query All User Data</h3>
@@ -278,6 +294,7 @@ export default {
             },
             datePicker_date: "",
             dailyAttendanceTableItems: [],
+            dailyAttendanceLoading: false,
 
             Earned_Period_Data: {
                 season_options: [],
@@ -321,7 +338,7 @@ export default {
             // reset view 
             this.dailyAttendanceTableItems = [];
 
-            this.showLoadingModal();
+            this.dailyAttendanceLoading = true;
             let unprocessed_profiles = await this.getDailyAttendace();
             if (unprocessed_profiles == null) {
                 // Display no values found 
@@ -333,7 +350,7 @@ export default {
                     entry["Check Out"] = entry["Check Out"].toDate().toLocaleString();
                 });
             }
-            this.closeLoadingModal();
+            this.dailyAttendanceLoading = false
         },
         async getDailyAttendace() {
             let query_start_datetime = moment(this.datePicker_date).utcOffset(-6).toDate()
@@ -397,8 +414,8 @@ export default {
             }
             query.forEach(doc => {
                 var data = doc.data();
-                data["Check In"] = data["Check In"].toDate();
-                data["Check Out"] = data["Check Out"].toDate();
+                data["Check In"] = data["Check In"].toDate().toLocaleString();
+                data["Check Out"] = data["Check Out"].toDate().toLocaleString();
                 const ordered = {};
                 Object.keys(data)
                     .sort(function(a, b) {
