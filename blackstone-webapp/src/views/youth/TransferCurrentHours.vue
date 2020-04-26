@@ -5,9 +5,7 @@ for a staff member to approve.
 
 (As it is current configure, it is possible to transfer hours to yourself, at the expense of your own Hours)
 
-Youths have the ability to select their hours from a incrementer (There's a bug in this, where if a user types in
-a non-numerical character, bad things will happen, but we're working on a new incrementer component, so don't fret)
-
+Youths have the ability to select their hours from a incrementer
 Youth can also put down an optional note for staff to see.
 
 When the submit button is clicked, a modal should appear to indicate the status of their action. This page makes sure that
@@ -129,7 +127,6 @@ In firebase the following things happen:
         components: {
             YouthIDSelector,
             VueNumberInput
-
         },
 
         data() {
@@ -171,6 +168,10 @@ In firebase the following things happen:
 
                 if (fromID == null || toID == null) {
                     this.showModal("Error", "Please select/enter an ID for both 'To' and 'From'");
+                    return null;
+                } else if (fromID === toID) {
+                    this.showModal("Error", "You can't transfer to yourself!");
+                    return null;
                 }
                 else {
                     this.showLoadingModal("Checking if this transaction is valid...");
@@ -198,8 +199,7 @@ In firebase the following things happen:
                         //Attaching current period
                         let metadata = await db.collection("GlobalPeriods").doc("metadata").get();
                         let period = metadata.data()["CurrentPeriod"];
-
-                        db.collection("GlobalTransferHours").doc().set({
+                        let request_status = await db.collection("GlobalTransferHours").doc().set({
                             "From ID": fromID,
                             "To ID": toID,
                             "From Name": fromYouthProfile["First Name"] + " " +  fromYouthProfile["Last Name"],
@@ -208,10 +208,11 @@ In firebase the following things happen:
                             "Date": Timestamp.fromDate(new Date()),
                             "Notes": this.note,
                             "Period": period
-                        }).catch(err => {
-                           window.alert("Err: " + err);
-                           return null;
-                        });
+                        })
+                        if (request_status) {
+                            window.alert("Err: ", request_status)
+                            return null;
+                        }
 
                         //transfer the hours into pending
                         let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) + amount;
@@ -219,12 +220,12 @@ In firebase the following things happen:
                         let newFromHoursSpent = parseFloat(fromYouthProfile["Hours Spent"]) + amount;
 
                         let status1 = await db.collection("GlobalYouthProfile").doc(toID).update({
-                            "Pending Hours": newToPendingHours.toString()
+                            "Pending Hours": newToPendingHours
                         });
 
                         let status2 = await db.collection("GlobalYouthProfile").doc(fromID).update({
-                            "Pending Hours": newFromPendingHours.toString(),
-                            "Hours Spent": newFromHoursSpent.toString()
+                            "Pending Hours": newFromPendingHours,
+                            "Hours Spent": newFromHoursSpent
                         });
 
                         if (status1 || status2) {
@@ -235,7 +236,7 @@ In firebase the following things happen:
                         this.closeLoadingModal();
                         this.$refs.selectedFrom.reset();
                         this.$refs.selectedTo.reset();
-                          this.$refs.hoursInput.setValue(1)
+                        this.$refs.hoursInput.setValue(1)
 
                         this.showModal("Success!", "Your request has been sent for staff approval")
                     }
@@ -243,11 +244,7 @@ In firebase the following things happen:
                         this.closeLoadingModal();
                         this.showModal("Error", "The sender does not have enough hours! They only have " + currentHours.toString() + " hours.");
                     }
-
-
-
                 }
-
             },
 
             selectedFrom(value) {
@@ -266,15 +263,7 @@ In firebase the following things happen:
             closeLoadingModal() {
                 this.loadingModalVisible = false;
             },
-
-
-
-
         },
-
-        async mounted() {
-
-        }
     }
 </script>
 

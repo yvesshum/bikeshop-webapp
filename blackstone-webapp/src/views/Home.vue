@@ -15,7 +15,7 @@
             <b-card-body>
                 <button onclick="location.href='/check-in'" class="btn btn-outline-info btn-block" type="button">Check In/Check Out</button>
                 <button onclick="location.href='/profile-lookup'" class="btn btn-outline-info btn-block" type="button">Profile Lookup</button>
-                <!-- <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button> -->
+                <button onclick="location.href='/transfer-hours'" class="btn btn-outline-info btn-block" type="button">Transfer Hours Between Youth</button>
             </b-card-body>
           </b-collapse>
         </b-card>
@@ -64,7 +64,7 @@
           <b-collapse id="accordion-2" accordion="my-accordion" role="tabpanel">
             <b-card-body>
               <button onclick="location.href='/approve-orders'" class="btn btn-outline-info btn-block" type="button">Approve Orders</button>
-              <!-- <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button> -->
+              <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button>
               <button onclick="location.href='/approve-hours'" class="btn btn-outline-info btn-block" type="button">Approve Hour Logs</button>
             </b-card-body>
           </b-collapse>
