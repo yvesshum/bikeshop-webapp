@@ -130,7 +130,7 @@
             </div>
         </b-modal>
 
-
+        <Footer/>
     </div>
 
 

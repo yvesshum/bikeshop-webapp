@@ -80,6 +80,7 @@
         <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Done</b-button>
       </div>
     </b-modal>
+    <Footer/>
   </div>
 </template>
 

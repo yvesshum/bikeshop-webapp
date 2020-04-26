@@ -72,9 +72,7 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
-
-
-
+    <Footer/>
 </div>
 </template>
 
@@ -468,7 +466,10 @@ span.inline {
     width:  70%;
     margin: 0 auto;
     margin-bottom: 1rem;
+}
 
+::v-deep .form-control {
+    background-color: #fafafa;
 }
 
 </style>

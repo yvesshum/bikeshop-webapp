@@ -131,9 +131,7 @@
 -->
     </div>
 </div>
-<footer>
-    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1b</p>
-</footer>
+<Footer/>
 </div>
 
 </template>
@@ -212,12 +210,6 @@ h5:hover {
   color: #007399;
   width: 20rem;
   height: 8rem;
-}
-
-footer {
-  background-color: #fff;
-  color: grey;
-  padding: 2rem;
 }
 
 h4 {

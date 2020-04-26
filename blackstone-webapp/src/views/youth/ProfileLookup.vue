@@ -39,9 +39,9 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
     <div v-show="currentProfile == null">
       <br>
-      <p>To see your profile, start typing your name or ID into the bar above and select your name when it comes up.</p>
+      <p style="margin: 0 2rem;">To see your profile, start typing your name or ID into the bar above and select your name when it comes up.</p>
     </div>
-
+  <Footer/>
   </div>
 </template>
 

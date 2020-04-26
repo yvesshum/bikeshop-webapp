@@ -27,6 +27,7 @@
     <div v-show="currentProfile == null">
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
+    <Footer/>
   </div>
 </template>
 

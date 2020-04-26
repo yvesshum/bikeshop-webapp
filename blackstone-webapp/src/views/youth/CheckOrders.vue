@@ -15,6 +15,7 @@
             <strong>Loading...</strong>
             </div>
         </b-table>
+        <Footer/>
     </div>
 
 </template>

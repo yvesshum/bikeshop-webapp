@@ -84,7 +84,7 @@
         </b-modal>
 
 
-
+        <Footer/>
     </div>
 </template>
 

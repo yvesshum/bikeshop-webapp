@@ -78,6 +78,7 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
+        <Footer/>
     </div>
 
 

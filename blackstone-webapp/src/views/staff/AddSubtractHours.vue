@@ -61,6 +61,7 @@
         </div>
       </div>
     </b-modal>
+    <Footer/>
   </div>
 </template>
 
