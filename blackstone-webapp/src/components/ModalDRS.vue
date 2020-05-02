@@ -1,19 +1,17 @@
 <template>
-	<div class="save_bar">
+	<div class="modal_drs">
 
-		<div ref="bottom_bar" class="bottom-bar" v-show="show_bar">
-			<DiscardResetSave
-				:hasChanges="hasChanges"
-				:hasUnsaveableChanges="hasUnsaveableChanges"
-				:hideReset="hideReset"
-				:disableIfNoChanges="disableIfNoChanges"
-				:saveVariant="saveVariant"
-				:resetVariant="resetVariant"
-				:discardVariant="discardVariant"
-				@save="save" @reset="reset" @discard="discard"
-			>
-			</DiscardResetSave>
-		</div>
+		<DiscardResetSave v-show="show_buttons"
+			:hasChanges="hasChanges"
+			:hasUnsaveableChanges="hasUnsaveableChanges"
+			:hideReset="hideReset"
+			:disableIfNoChanges="disableIfNoChanges"
+			:saveVariant="saveVariant"
+			:resetVariant="resetVariant"
+			:discardVariant="discardVariant"
+			@save="save" @reset="reset" @discard="discard"
+		>
+		</DiscardResetSave>
 
 		<b-modal size="lg" v-model="modal_visible" hide-footer lazy>
 			<template slot="modal-header">
@@ -73,7 +71,7 @@ import {Status} from "@/scripts/Status.js";
 import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
-	name: 'save_bar',
+	name: 'modal_drs',
 	props: {
 		hasChanges: Boolean,
 		hasUnsaveableChanges: Boolean,
@@ -81,12 +79,12 @@ export default {
 			default: false,
 		},
 
-		// Whether to display the bar at the bottom of the screen
+		// Whether to display the buttons
 		show: {
 			default: true,
 		},
 
-		// If set, display the bar iff there are changes
+		// If set, display the buttons iff there are changes
 		showIfChanges: {
 			default: false,
 		},
@@ -132,7 +130,7 @@ export default {
 			return this.showIfChanges === "" || this.showIfChanges == true;
 		},
 
-		show_bar: function() {
+		show_buttons: function() {
 			return this.show_if_changes ? this.has_any_changes : this.show;
 		}
 	},
@@ -230,16 +228,6 @@ export default {
 </script>
  
 <style scoped>
-	.bottom-bar {
-		background-color: #333;
-		overflow: hidden;
-		position: fixed;
-		bottom: 0;
-		width: 100%;
-		padding: 10px;
-		z-index: 10;
-	}
-
 	.change_button {
 		margin: 0px 5px;
 	}
