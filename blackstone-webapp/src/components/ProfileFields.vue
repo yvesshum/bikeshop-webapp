@@ -218,7 +218,6 @@ import ToggleButton from '@/components/ToggleButton';
 import SpecialInputReset from '@/components/SpecialInputReset';
 import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
-import SaveBar from '@/components/SaveBar';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
@@ -229,7 +228,6 @@ export default {
     SpecialInputReset,
     ProfileFieldDisplay,
     PeriodsClassesDisplay,
-    SaveBar,
     DiscardResetSave,
   },
 
