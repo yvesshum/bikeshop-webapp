@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Order Status Dashboard</h1>
         <div class="toolbarwrapper">
@@ -78,6 +79,8 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
+        </div>
+        <Footer/>
     </div>
 
 

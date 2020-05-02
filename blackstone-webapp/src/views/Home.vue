@@ -1,5 +1,6 @@
 <template>
   <div class="home" v-if="ready">
+    <div class="content">
     <top-bar :addPadding="false"/>
     <SpecialInput input="Datetime" :arguments="{}"/>
     <div id="menu_container">
@@ -131,9 +132,8 @@
 -->
     </div>
 </div>
-<footer>
-    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1b</p>
-</footer>
+</div>
+<Footer/>
 </div>
 
 </template>
@@ -212,12 +212,6 @@ h5:hover {
   color: #007399;
   width: 20rem;
   height: 8rem;
-}
-
-footer {
-  background-color: #fff;
-  color: grey;
-  padding: 2rem;
 }
 
 h4 {

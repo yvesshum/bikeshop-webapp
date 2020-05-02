@@ -1,5 +1,6 @@
 <template>
     <div class = ApproveNewYouth>
+        <div class="content">
         <top-bar/>
         <h1>Approve New Youth Dashboard</h1>
         <div class="toolbar_wrapper">
@@ -120,8 +121,8 @@
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 

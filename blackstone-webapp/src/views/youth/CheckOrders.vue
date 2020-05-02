@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Check Orders</h1>
 
@@ -19,6 +20,7 @@
                 </div>
             </b-table>
         </div>
+        <Footer/>
     </div>
 
 </template>
@@ -100,4 +102,5 @@ export default {
 .title {
 margin-bottom: 1rem;
 }
+
 </style>

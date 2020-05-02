@@ -1,5 +1,6 @@
 <template>
     <div v-if="dataLoaded">
+        <div class="content">
         <top-bar/>
         <br>
 
@@ -34,7 +35,8 @@
         <InitializerEditor v-if="dataLoaded" initializerRef="Youth Profile Initializers" doc="Youth Profile"/>
 
         <SettingsBottomNote/>
-
+        </div>
+        <Footer/>
     </div>
     
 </template>

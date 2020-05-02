@@ -18,6 +18,7 @@ In firebase the following things happen:
 -->
 <template>
     <div id = "TransferHours">
+        <div class="content">
         <top-bar/>
         <br>
         <b-container>
@@ -111,8 +112,8 @@ In firebase the following things happen:
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 </template>
@@ -266,7 +267,3 @@ In firebase the following things happen:
         },
     }
 </script>
-
-<style>
-
-</style>

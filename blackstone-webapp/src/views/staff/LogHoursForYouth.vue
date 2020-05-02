@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Log hours for one or more youth</h1>
         <div class="loghours-page">
@@ -83,8 +84,8 @@
             <b-button class="mt-3" block @click="closeSuccessModal" variant="success">Ok</b-button>
         </b-modal>
 
-
-
+        </div>
+        <Footer/>
     </div>
 </template>
 

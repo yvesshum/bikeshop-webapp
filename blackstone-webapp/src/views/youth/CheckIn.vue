@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="content">
     <top-bar/>
     <h2 style="margin-top: 20px;">
         Check In/Out: {{ date }}
@@ -80,6 +81,8 @@
         <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Done</b-button>
       </div>
     </b-modal>
+    </div>
+    <Footer/>
   </div>
 </template>
 
@@ -312,5 +315,9 @@ export default {
 
 .input-field {
     margin-bottom: 1rem
+}
+
+.content {
+  min-height: calc(100vh - 110px);
 }
 </style>
