@@ -1,6 +1,7 @@
 <!--Values in this table are naturally reactive to changes to realtime database-->
 <template>
   <div>
+    <div class="content">
     <top-bar />
     <h1 class="title">Currently Checked-In Youth</h1>
 
@@ -39,6 +40,7 @@
         <br />
       </div>
     </b-modal>
+    </div>
     <Footer/>
   </div>
 </template>

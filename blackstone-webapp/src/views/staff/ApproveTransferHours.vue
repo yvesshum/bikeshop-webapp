@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Transfer Hours Approval Dashboard</h1>
         <div class="toolbarwrapper">
@@ -84,8 +85,8 @@
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 

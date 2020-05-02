@@ -1,5 +1,6 @@
 <template>
   <div class="home" v-if="ready">
+    <div class="content">
     <top-bar :addPadding="false"/>
     <SpecialInput input="Datetime" :arguments="{}"/>
     <div id="menu_container">
@@ -130,6 +131,7 @@
   </div>
 -->
     </div>
+</div>
 </div>
 <Footer/>
 </div>

@@ -1,7 +1,7 @@
 <template>
   <div class="emergency_contacts">
+    <div class="content">
     <TopBar/>
-
     <h1>Emergency Contacts</h1>
     <br />
     <CollectionTable
@@ -12,7 +12,8 @@
       :args="table_args"
       style="width:90%;margin:auto;"
     ></CollectionTable>
-
+    </div>
+    <Footer/>
   </div>
 </template>
 

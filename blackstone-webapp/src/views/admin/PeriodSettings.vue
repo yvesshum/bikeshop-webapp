@@ -1,5 +1,6 @@
 <template>
     <div v-if="dataLoaded">
+        <div class="content">
         <top-bar/>
         <br>
         <h1>Period Settings</h1>
@@ -36,7 +37,8 @@
         </b-modal>
         
         <SettingsBottomNote/>
-
+        </div>
+        <Footer/>
     </div>
 
 </template>

@@ -1,6 +1,7 @@
 // New submit orders
 <template>
 <div>
+    <div class="content">
     <div class="spinner" v-if="!allReady">
         <b-spinner label="Loading..."></b-spinner>
     </div>
@@ -72,6 +73,7 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
+    </div>
     <Footer/>
 </div>
 </template>
