@@ -18,7 +18,7 @@
                     <Datetime auto v-model="datePicker_date" value-zone="America/Chicago" />
                 </b-col>
                 <b-col>
-                    <b-button @click="lookupDailyAttendance">See attendance</b-button>
+                    <b-button @click="lookupDailyAttendance" :disabled='datePicker_date === ""'>See attendance</b-button>
                 </b-col>
             </b-row>
 
@@ -39,7 +39,7 @@
 
             <b-row>
                 <b-col>
-                    <p v-if="this.dailyAttendanceTableItems.length === 0">No Entries found</p>
+                    <p v-if="this.noDailyAttendanceEntries">No Entries found</p>
                     <b-table hover :items="dailyAttendanceTableItems"></b-table>
                 </b-col>
             </b-row>
@@ -87,7 +87,7 @@
             <b-row>
                 <b-col>
                     <div>
-                        <p v-if="this.total_Hours_Earned_Data.length === 0">No Entries found</p>
+                        <p v-if="this.noTotalHoursEarnedEntries">No Entries found</p>
                         <b-table
                             hover
                             :items="total_Hours_Earned_Data"
@@ -183,7 +183,7 @@
             </div>
             <b-row>
                 <b-col>
-                    <p v-if="this.total_Hours_Spent_Data.length === 0">No Entries found</p>
+                    <p v-if="this.noTotalHoursSpentEntries">No Entries found</p>
                     <b-table hover :items="total_Hours_Spent_Data"></b-table>
                 </b-col>
             </b-row>
@@ -295,6 +295,7 @@ export default {
             datePicker_date: "",
             dailyAttendanceTableItems: [],
             dailyAttendanceLoading: false,
+            noDailyAttendanceEntries: null,
 
             Earned_Period_Data: {
                 season_options: [],
@@ -307,6 +308,7 @@ export default {
             total_Hours_Earned_Breakdown: {},
             total_Hours_Earned: 0,
             earned_Table_Fields: [],
+            noTotalHoursEarnedEntries: null,
 
             Spent_Period_Data: {
                 season_options: [],
@@ -320,6 +322,7 @@ export default {
             checkbox_fields: [],
             fields_selected: ["ID", "Name"], //Default to have ID selected
             table: {},
+            noTotalHoursSpentEntries: null,
 
             loadingModalVisible: false
         };
@@ -342,8 +345,10 @@ export default {
             let unprocessed_profiles = await this.getDailyAttendace();
             if (unprocessed_profiles == null) {
                 // Display no values found 
+                this.noDailyAttendanceEntries = true;
                 window.alert("Attendance by day: No entries found")
             } else {
+                this.noDailyAttendanceEntries = false
                 this.dailyAttendanceTableItems = unprocessed_profiles;
                 this.dailyAttendanceTableItems.forEach(entry => {
                     entry["Check In"] = entry["Check In"].toDate().toLocaleString();
@@ -411,6 +416,11 @@ export default {
             } catch (err) {
                 console.log(err);
                 window.alert(err);
+            }
+            if (query.size > 0) {
+                this.noTotalHoursEarnedEntries = false;
+            } else {
+                this.noTotalHoursEarnedEntries = true;
             }
             query.forEach(doc => {
                 var data = doc.data();
@@ -491,6 +501,11 @@ export default {
                 console.log(err);
                 window.alert(err);
             }
+            if (query.size > 0) {
+                this.noTotalHoursSpentEntries = false;
+            } else {
+                this.noTotalHoursSpentEntries = true;
+            }
             query.forEach(doc => {
                 let data = doc.data();
                 console.log(data);
@@ -550,17 +565,32 @@ export default {
             let profiles = await db.collection("GlobalYouthProfile").get();
             let squashed = profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
             squashed = squashed.map(x=>{
+                // Combining first and last name into 1 column 
                 var combinedName = x["Last Name"] + ", " + x["First Name"];
                 delete x["Last Name"];
                 delete x["First Name"];
                 x["Name"] = combinedName;
-                if(x.ActivePeriods){
+
+                // Flattening Active Periods array for text-based display 
+                if (x.ActivePeriods){
                     var newPeriods = [];
                     for (var el of Object.keys(x.ActivePeriods)){
                         newPeriods.push(` ${el}: ${x.ActivePeriods[el]}`)
                     }
                     x.ActivePeriods = newPeriods;
                 }
+
+                // Change Timestamp objects into localeDateStrings 
+                for (let key in x) {
+                    if (x[key].constructor.name === "Timestamp") {
+                        if (x[key].nanoseconds == 0) {
+                            x[key] = x[key].toDate().toLocaleDateString()
+                        } else {
+                            x[key] = x[key].toDate().toLocaleString()
+                        }
+                    }
+                }
+
                 return x;
             })
             return squashed
