@@ -32,7 +32,7 @@
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
-            <SpecialInput :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
+            <SpecialInput v-model="fields.optional[youthIDFieldIndex].value" v-if="allReady" :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
         </div>
 
         <b-button variant="success" @click="handleSubmit()" style="margin-top:10px">Submit!</b-button>
