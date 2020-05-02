@@ -244,6 +244,7 @@ import ApronBar from "@/components/ApronBar.vue"
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
+import {AwaitTransactions} from '@/scripts/ParseDB.js';
 import {Period} from '@/scripts/Period.js';
 import {Youth} from  '@/scripts/Youth.js';
 
@@ -326,10 +327,6 @@ export default {
         {name: 'Current', arr: 'd'},
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
-
-      // Array to store the results of updating the database
-      // TODO: Does this need to exist at the data level? Could be local to the function
-      update_results: [],
 
     };
   },
@@ -775,12 +772,16 @@ export default {
 
       // --- Update the GlobalPeriods list using this object -----
 
+      // Add all transactions to this object, which will then run them all at once
+      // and wait for the results to come back before moving on
+      var year_transactions = new AwaitTransactions(db);
+
       // Loop through each year that needs to be updated
       Object.keys(period_obj).forEach(year => {
         let current_doc = this.periods_db.doc(year);
 
         // Create a transaction object to update the document for that year
-        db.runTransaction(t => {
+        year_transactions.createTransaction(year, t => {
           
           // Grab the relevant document from the database
           return t.get(current_doc).then(doc => {
@@ -804,18 +805,27 @@ export default {
             // Apply the updates
             t.update(current_doc, update_obj);
           });
-        })
-
-        // Run this if the transaction succeeds
-        .then(result => {
-          console.log("Transaction Success!");
-        })
-
-        // Run this if the transaction fails
-        .catch(err => {
-          console.log("Transaction Failed: ", err);
         });
       });
+
+
+      // Create a function to handle the transactions when all are completed
+      // This runs at the end of each callback to the database
+      // Waits until all the changes have returned, then does something with the results
+      // If everything succeeded, results will be an array of "true"
+      // Any update that failed will be the object that we were trying to update
+      year_transactions.setReturnFunc(errs => {
+        if (errs.length > 0) {
+          accept_func(false);
+        }
+        else {
+          accept_func(true);
+        }
+      });
+
+
+      // Run the accumulated transactions and wait for all to return
+      year_transactions.runTransactions();
 
 
 
@@ -841,73 +851,15 @@ export default {
         // Send the changes back to the database
         youth_db.update({ActivePeriods: new_active_periods}).then((error) => {
           if (error) {
-            this.$set(this.update_results.youth, i, this.changes[youth_id]);
+            // this.$set(this.update_results.youth, i, this.changes[youth_id]);
           }
           else {
-            this.$set(this.update_results.youth, i, true);
+            // this.$set(this.update_results.youth, i, true);
           }
-          check_for_completion(this.update_results);
+          // check_for_completion(this.update_results);
         });
       }
 
-      // for (let i = 0; i < year_list.length; i++) {
-
-      //   // Grab the data from the database
-      //   let year = year_list[i];
-      //   let period_db = db.collection("GlobalPeriods").doc(year);
-      //   let period_doc = await period_db.get();
-      //   let period_data = period_doc.data();
-
-      //   // Initialize object to store all db changes for the current year
-      //   let periods_to_update = {};
-
-      //   // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
-      //   Object.keys(period_obj[year]).forEach(period => {
-      //     if (period_data[period] == undefined) period_data[period] = [];
-      //     periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
-      //   });
-
-      //   period_db.update(periods_to_update).then(error => {
-      //     if (error) {
-      //       this.$set(this.update_results.years, i, period_obj[year]);
-      //     }
-      //     else {
-      //       this.$set(this.update_results.years, i, true);
-      //     }
-      //     check_for_completion(this.update_results);
-      //   });
-      // }
-
-
-      // This runs at the end of each callback to the database
-      // Waits until all the changes have returned, then does something with the results
-      // If everything succeeded, results will be an array of "true"
-      // Any update that failed will be the object that we were trying to update
-      function check_for_completion(results_object) {
-
-        let results = results_object.youth.concat(results_object.years);
-
-        // If there are no results yet, quit
-        if (results.length == 0) return;
-
-        // If there are any null values, quit
-        for (let i in results) {
-          if (results[i] == null) return;
-        }
-
-        // Filter out failed updates - object value rather than "true"
-        let failures = results.filter(x => x != true);
-
-        // If any of the updates failed, show that to the user
-        if (failures.length > 0) {
-          accept_func(false);
-        }
-
-        // If not, give the success modal
-        else {
-          accept_func(true);
-        }
-      }
     },
 
     reset_changes: function(accept_func) {
