@@ -188,7 +188,7 @@
                 </b-col>
             </b-row>
             <div v-if="this.total_Hours_Spent_Data.length !== 0">
-                <p>Total: {{total_Hours_Spent}}</p>
+                <p>Total Hours Spent: {{total_Hours_Spent}}</p>
             </div>
 
 
@@ -494,7 +494,7 @@ export default {
             query.forEach(doc => {
                 let data = doc.data();
                 console.log(data);
-                data["Order Date"] = data["Order Date"].toDate();
+                data["Order Date"] = data["Order Date"].toDate().toLocaleString();
 
                 //Grabbing Youth ID from query metaadata
                 let regexp = /GlobalYouthProfile\/(\d*)\/Order Log/g;
