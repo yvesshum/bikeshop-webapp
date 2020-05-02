@@ -18,6 +18,7 @@ In firebase the following things happen:
 -->
 <template>
     <div id = "TransferHours">
+        <div class="content">
         <top-bar/>
         <br>
         <b-container>
@@ -111,8 +112,8 @@ In firebase the following things happen:
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 </template>
@@ -169,7 +170,10 @@ In firebase the following things happen:
                 if (fromID == null || toID == null) {
                     this.showModal("Error", "Please select/enter an ID for both 'To' and 'From'");
                     return null;
-                }   
+                } else if (fromID === toID) {
+                    this.showModal("Error", "You can't transfer to yourself!");
+                    return null;
+                }
                 else {
                     this.showLoadingModal("Checking if this transaction is valid...");
                     //check if from user has sufficient credits for the amount
@@ -210,7 +214,7 @@ In firebase the following things happen:
                             window.alert("Err: ", request_status)
                             return null;
                         }
-                        
+
                         //transfer the hours into pending
                         let newToPendingHours = parseFloat(toYouthProfile["Pending Hours"]) + amount;
                         let newFromPendingHours = parseFloat(fromYouthProfile["Pending Hours"]) - amount;
@@ -263,7 +267,3 @@ In firebase the following things happen:
         },
     }
 </script>
-
-<style>
-
-</style>

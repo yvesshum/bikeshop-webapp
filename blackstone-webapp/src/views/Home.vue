@@ -1,5 +1,6 @@
 <template>
   <div class="home" v-if="ready">
+    <div class="content">
     <top-bar :addPadding="false"/>
     <SpecialInput input="Datetime" :arguments="{}"/>
     <div id="menu_container">
@@ -64,7 +65,7 @@
           <b-collapse id="accordion-2" accordion="my-accordion" role="tabpanel">
             <b-card-body>
               <button onclick="location.href='/approve-orders'" class="btn btn-outline-info btn-block" type="button">Approve Orders</button>
-              <!-- <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button> -->
+              <button onclick="location.href='/approve-transfers'" class="btn btn-outline-info btn-block" type="button">Approve Hour Transfers</button>
               <button onclick="location.href='/approve-hours'" class="btn btn-outline-info btn-block" type="button">Approve Hour Logs</button>
             </b-card-body>
           </b-collapse>
@@ -131,9 +132,8 @@
 -->
     </div>
 </div>
-<footer>
-    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1b</p>
-</footer>
+</div>
+<Footer/>
 </div>
 
 </template>
@@ -212,12 +212,6 @@ h5:hover {
   color: #007399;
   width: 20rem;
   height: 8rem;
-}
-
-footer {
-  background-color: #fff;
-  color: grey;
-  padding: 2rem;
 }
 
 h4 {

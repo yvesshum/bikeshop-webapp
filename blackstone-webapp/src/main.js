@@ -7,6 +7,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import {firebase} from './firebase.js'
 import VueTabulator from 'vue-tabulator'
 import TopBar from './components/TopBar'
+import Footer from './components/Footer'
 
 
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -17,6 +18,7 @@ library.add(faCoffee, faBars, faTimes, faEdit, faPlus, faCheckCircle, faExclamat
 
 Vue.component('font-awesome-icon', FontAwesomeIcon) 
 Vue.component('top-bar', TopBar);
+Vue.component('Footer', Footer);
 
 
 Vue.use(BootstrapVue);

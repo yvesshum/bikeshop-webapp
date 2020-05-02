@@ -1,5 +1,6 @@
 <template>
     <div class = "StaffManageSkills">
+        <div class="content">
         <top-bar/>
         <h3 style="margin: 20px">Manage Apron skills here!</h3>
         <b>Add category: </b>
@@ -33,6 +34,8 @@
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">ok</b-button>
         </b-modal>
+        </div>
+        <Footer/>
     </div>
 </template>
 

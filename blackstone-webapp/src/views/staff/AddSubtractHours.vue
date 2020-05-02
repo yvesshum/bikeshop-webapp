@@ -1,5 +1,6 @@
 <template>
   <div >
+    <div class="content">
   <top-bar/>
   <h1 class="title">Add or take away hours for Youth</h1>
   <p style="margin: 0 1rem; padding-top: 0.5rem;">Note: This changes Hours Earned and does not show up as a record</p>
@@ -61,6 +62,8 @@
         </div>
       </div>
     </b-modal>
+    </div>
+    <Footer/>
   </div>
 </template>
 

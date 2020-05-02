@@ -1,20 +1,27 @@
 <template>
     <div>
-        <top-bar/>
-        <h1 class="title">Check Orders</h1>
-        <b-table
-            :items="items"
-            :fields="fields"
-            responsive="sm"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="sortDesc"
-            :busy="isBusy"
-        >
-            <div slot="table-busy" class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
+        <div class="content">
+            <top-bar/>
+            <h1 class="title">Check Orders</h1>
+
+            <p v-if="noData">No Data Found</p>
+            <div v-else>
+                <b-table
+                    :items="items"
+                    :fields="fields"
+                    responsive="sm"
+                    :sort-by.sync="sortBy"
+                    :sort-desc.sync="sortDesc"
+                    :busy="isBusy"
+                >
+                    <div slot="table-busy" class="text-center text-danger my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong>Loading...</strong>
+                    </div>
+                </b-table>
             </div>
-        </b-table>
+        </div>
+        <Footer/>
     </div>
 
 </template>
@@ -34,6 +41,7 @@ export default {
                 fields: [],
                 items: [],
                 isBusy: true,
+                noData: null,
             };
     },
 
@@ -55,6 +63,7 @@ export default {
 
         async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
+                this.noData = snapshot.empty
                 this.items = this.formatCollection(snapshot);
         },
 
@@ -90,4 +99,5 @@ export default {
 .title {
 margin-bottom: 1rem;
 }
+
 </style>

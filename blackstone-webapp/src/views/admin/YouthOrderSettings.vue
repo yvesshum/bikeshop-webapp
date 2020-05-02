@@ -6,6 +6,7 @@
 // Edit placeholder texts for Youth Orders 
 <template>
     <div v-if="dataLoaded">
+        <div class="content">
         <top-bar/>
         <br>
 
@@ -41,7 +42,8 @@
         <InitializerEditor v-if="dataLoaded" initializerRef="Submit Orders Initializers" doc="Youth Order Form"/>
 
         <SettingsBottomNote/>
-
+        </div>
+        <Footer/>
     </div>
     
 </template>

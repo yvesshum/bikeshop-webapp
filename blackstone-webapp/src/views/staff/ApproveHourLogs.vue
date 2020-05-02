@@ -6,6 +6,7 @@
 // If successful, just display a modal of the successful ones 
 <template>
     <div class = ApproveHourLogs>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
         <div class="toolbar_wrapper">
@@ -129,8 +130,8 @@
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 

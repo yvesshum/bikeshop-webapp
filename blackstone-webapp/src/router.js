@@ -15,7 +15,7 @@ import CheckedIn from './views/staff/CheckedIn.vue';
 import RegisterYouth from './views/staff/RegisterNewYouth.vue';
 //import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
 import HourTransfer from './views/youth/TransferCurrentHours';
-//import ApproveTransfers from './views/staff/ApproveTransferHours';
+import ApproveTransfers from './views/staff/ApproveTransferHours';
 //import AdminPanel from './views/staff/AdminPanel.vue';
 //import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
@@ -149,7 +149,6 @@ const router = new Router({
                 requiresStaff: false
             }
         },
-        /*
         {
             path: '/approve-transfers',
             name: 'approve-transfers',
@@ -158,7 +157,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },*/
+        },
         {
             path: '/register-new-youth',
             name: 'register-new-youth',

@@ -1,5 +1,6 @@
 <template>
   <div class="profile_lookup_staff">
+    <div class="content">
     <TopBar/>
 
     <h1 class="title">Profile Lookup and Editing</h1>
@@ -27,6 +28,8 @@
     <div v-show="currentProfile == null">
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
+    </div>
+    <Footer/>
   </div>
 </template>
 

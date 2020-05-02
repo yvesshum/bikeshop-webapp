@@ -1,5 +1,6 @@
 <template>
     <div class = "RegisterYouth">
+        <div class="content">
         <top-bar omitEmail/>
         
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
@@ -93,7 +94,8 @@
                 </div>
             </div>
         </b-modal>
-
+        </div>
+        <Footer/>
     </div>
 
 </template>
