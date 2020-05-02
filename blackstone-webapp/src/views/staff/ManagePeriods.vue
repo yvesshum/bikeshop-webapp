@@ -723,7 +723,8 @@ export default {
 
     save_changes: async function(accept_func) {
 
-      // Construct the changes for the period object
+      // --- Construct the changes for the period object -----
+
       // Want an object where each key is a year, and each entry is object with fields for each season that needs to change
       // Each season field in turn is a list of youth
       let period_obj = {};
@@ -752,14 +753,72 @@ export default {
       let youth_id_list = Object.keys(this.changes);
       let year_list = Object.keys(period_obj);
 
+
+      // --- Prepare to wait for results -----
+
+      // This piece is designed to wait for all the transactions to come back in
+      // before continuing with the program.
+      // If any of them fail, will record which ones
+
       // Initialize the update results
       this.update_results = {youth: [], years: []};
+
+      // Initialize null values for youth and years
       for (var i = 0; i < youth_id_list.length; i++) {
         this.update_results.youth.push(null);
       }
       for (var i = 0; i < year_list.length; i++) {
         this.update_results.years.push(null);
       }
+
+
+
+      // --- Update the GlobalPeriods list using this object -----
+
+      // Loop through each year that needs to be updated
+      Object.keys(period_obj).forEach(year => {
+        let current_doc = this.periods_db.doc(year);
+
+        // Create a transaction object to update the document for that year
+        db.runTransaction(t => {
+          
+          // Grab the relevant document from the database
+          return t.get(current_doc).then(doc => {
+
+            // Init object to store new state of the database
+            let update_obj = {};
+            let year_data = period_obj[year]
+
+            // Loop through each season that needs an update
+            Object.keys(year_data).forEach(season => {
+
+              // Grab the data from the database
+              // Using let binding so this is a new object for each loop
+              let data = doc.data()[season];
+
+              // Update the database's data with the new entries for each youth,
+              // and save the updated entries to the update object
+              update_obj[season] = Youth.concat_overwrite(data, year_data[season]);
+            });
+
+            // Apply the updates
+            t.update(current_doc, update_obj);
+          });
+        })
+
+        // Run this if the transaction succeeds
+        .then(result => {
+          console.log("Transaction Success!");
+        })
+
+        // Run this if the transaction fails
+        .catch(err => {
+          console.log("Transaction Failed: ", err);
+        });
+      });
+
+
+
 
       // Update the database for each youth_id
       // TODO: Is there a way to specify a change to be made to an array without .get() ing it?
@@ -791,33 +850,33 @@ export default {
         });
       }
 
-      for (let i = 0; i < year_list.length; i++) {
+      // for (let i = 0; i < year_list.length; i++) {
 
-        // Grab the data from the database
-        let year = year_list[i];
-        let period_db = db.collection("GlobalPeriods").doc(year);
-        let period_doc = await period_db.get();
-        let period_data = period_doc.data();
+      //   // Grab the data from the database
+      //   let year = year_list[i];
+      //   let period_db = db.collection("GlobalPeriods").doc(year);
+      //   let period_doc = await period_db.get();
+      //   let period_data = period_doc.data();
 
-        // Initialize object to store all db changes for the current year
-        let periods_to_update = {};
+      //   // Initialize object to store all db changes for the current year
+      //   let periods_to_update = {};
 
-        // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
-        Object.keys(period_obj[year]).forEach(period => {
-          if (period_data[period] == undefined) period_data[period] = [];
-          periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
-        });
+      //   // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
+      //   Object.keys(period_obj[year]).forEach(period => {
+      //     if (period_data[period] == undefined) period_data[period] = [];
+      //     periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
+      //   });
 
-        period_db.update(periods_to_update).then(error => {
-          if (error) {
-            this.$set(this.update_results.years, i, period_obj[year]);
-          }
-          else {
-            this.$set(this.update_results.years, i, true);
-          }
-          check_for_completion(this.update_results);
-        });
-      }
+      //   period_db.update(periods_to_update).then(error => {
+      //     if (error) {
+      //       this.$set(this.update_results.years, i, period_obj[year]);
+      //     }
+      //     else {
+      //       this.$set(this.update_results.years, i, true);
+      //     }
+      //     check_for_completion(this.update_results);
+      //   });
+      // }
 
 
       // This runs at the end of each callback to the database
