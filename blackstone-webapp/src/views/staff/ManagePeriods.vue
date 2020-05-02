@@ -31,16 +31,16 @@
 
       <div class="col-right">
         <b-modal v-model="viewProfileModalVisible" hide-footer lazy>
-      <div ref="body_fields" v-show="currentProfile != null">
-        <ProfileFields
-          :profile="currentProfile"
-          :headerDoc="header_doc"
-          :periodData="profile_period_data"
-        />
-        <br />
-        <br />
-      </div>
-    </b-modal>
+          <div ref="body_fields" v-show="currentProfile != null">
+            <ProfileFields
+              :profile="currentProfile"
+              :headerDoc="header_doc"
+              :periodData="profile_period_data"
+            />
+            <br />
+            <br />
+          </div>
+        </b-modal>
         <div v-if="selected_youths.length == 0">
           <h3>Youth Information</h3>
           Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
