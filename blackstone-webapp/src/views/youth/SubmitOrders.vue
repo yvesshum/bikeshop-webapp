@@ -1,7 +1,6 @@
 // New submit orders
 <template>
 <div>
-    <div class="content">
     <div class="spinner" v-if="!allReady">
         <b-spinner label="Loading..."></b-spinner>
     </div>
@@ -52,7 +51,7 @@
     </b-modal>
 
     <!-- Error Modal -->
-    <b-modal v-model="this.errorVisible" hide-footer lazy hide-header-close>
+    <b-modal v-model="this.errorVisible" hide-footer lazy hide-header-close no-close-on-backdrop no-close-on-esc>
         <template slot="modal-title">
             Error
         </template>
@@ -64,7 +63,7 @@
     </b-modal>
 
     <!-- Message Modal -->
-    <b-modal v-model="this.messageVisible" hide-footer lazy hide-header-close>
+    <b-modal v-model="this.messageVisible" hide-footer lazy hide-header-close no-close-on-backdrop no-close-on-esc>
         <template slot="modal-title">
             {{this.modal.msg.title}}
         </template>
@@ -73,8 +72,9 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
-    </div>
-    <Footer/>
+
+
+
 </div>
 </template>
 
@@ -85,6 +85,7 @@ import YouthIDSelector from '../../components/YouthIDSelector';
 import {Timestamp} from '@/firebase.js';
 import moment from 'moment';
 import SpecialInput from '../../components/SpecialInput'
+import { initSpecialInputVal } from '../../scripts/SpecialInit';	
 
 export default {
     name: 'YouthSubmitOrders',
@@ -101,7 +102,7 @@ export default {
                 fields: false
             },
             fields: {
-                required: [], // {name: "", value: null}
+                required: [], // {name: "", type: "", value: null}
                 optional: [],
                 hidden: []
             },
@@ -187,7 +188,7 @@ export default {
                     this.fields[fieldType].push({
                         type: Object.values(field)[0],
                         name: Object.keys(field)[0],
-                        value: null,
+                        value: initSpecialInputVal(Object.values(field)[0]),
                     });
                 });
             });
@@ -264,12 +265,18 @@ export default {
 
             let res = await this.getYouthProfile()
 
-            if (!(res))
+            if (!(res)) {
+                this.modal.loading.visible = false;
+                window.alert("Unable to get Youth Profile")
                 return;
+            }
 
 
-            if (!(await this.hasSufficientHours()))
+            if (!(await this.hasSufficientHours())) {
+                this.modal.loading.visible = false;
+                this.modal.error.visible = true;
                 return;
+            }
 
 
             if (!(await this.submitOrder()))
@@ -312,19 +319,16 @@ export default {
             //non empty
             await this.fields.required.forEach(async (field) => {
 
-                let isNonValid = await this.isNonValidField(field.value)
+                let isNonValid = await this.isNonValidField(field.type, field.value)
 
                 if (isNonValid) {
                     badFields.push(field.name);
-
                 }
-
-
             })
 
 
             if (badFields.length) {
-                this.modal.error.errors.push("The following fields are required: " + badFields.toString());
+                this.modal.error.errors.push("The following fields have bad input or have missing values: " + badFields.toString());
 
                 this.modal.loading.visible = false;
                 this.showErrorModal();
@@ -334,11 +338,14 @@ export default {
             return true;
 
         },
-        isNonValidField(value) {
+        isNonValidField(type, value) {
+            console.warn(type, value);
 
             if (value == null) {
                 return true;
-            }
+            } else if (type == "Hours" && isNaN(value)) {
+                return true
+            } 
             else if (typeof(value) === "number") {
                 return false;
             }
@@ -352,6 +359,7 @@ export default {
             let youthCurrentHours = parseFloat(this.form.YouthProfile["Hours Earned"] - parseFloat(this.form.YouthProfile["Hours Spent"]));
             if (youthCurrentHours < cost) {
                 this.modal.error.errors.push("You don't have enough hours! You have " + youthCurrentHours + " but the Item Total Cost is " + cost);
+                return false;
             }
             return true;
         },
@@ -468,10 +476,7 @@ span.inline {
     width:  70%;
     margin: 0 auto;
     margin-bottom: 1rem;
-}
 
-::v-deep .form-control {
-    background-color: #fafafa;
 }
 
 </style>
