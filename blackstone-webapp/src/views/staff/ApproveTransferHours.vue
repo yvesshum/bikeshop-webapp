@@ -5,9 +5,9 @@
         <h1 class="title">Transfer Hours Approval Dashboard</h1>
         <div class="toolbarwrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Transfer</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="selected.length == 0">Approve</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="selected.length == 0">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="selected.length == 0">Delete Transfer</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
@@ -247,7 +247,8 @@
                 }
 
                 this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"])
+
+                this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"] + " for " + row["Amount"])
 
                 let deleteStatus = db.collection("GlobalTransferHours").doc(row["Document ID"]).delete();
                 if (deleteStatus == null) {
@@ -352,7 +353,9 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                // this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted transfer", "Successfully deleted " + fromYouthProfile["First Name"] + "'s transfer to " + toYouthProfile["First Name"] + " for " + amount)
+
                 this.rejectingDocumentID = "";
             },
 
