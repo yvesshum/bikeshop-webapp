@@ -5,9 +5,9 @@
         <h1 class="title">Transfer Hours Approval Dashboard</h1>
         <div class="toolbarwrapper">
             <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-                    <b-button variant="info" @click="editNote" style="margin: 1%;">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Transfer</b-button>
+                    <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="selected.length == 0">Approve</b-button>
+                    <b-button variant="info" @click="editNote" style="margin: 1%;" :disabled="selected.length == 0">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="selected.length == 0">Delete Transfer</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
             </b-button-toolbar>
         </div>
