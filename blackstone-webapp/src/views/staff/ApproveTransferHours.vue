@@ -352,7 +352,9 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                // this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted transfer", "Successfully deleted " + fromYouthProfile["First Name"] + "'s transfer to " + toYouthProfile["First Name"] + " for " + amount)
+
                 this.rejectingDocumentID = "";
             },
 
