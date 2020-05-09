@@ -247,7 +247,8 @@
                 }
 
                 this.closeLoadingModal();
-                this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"])
+
+                this.showModal("Success", "Successfully approved " + row["From Name"] + "'s transfer to " + row["To Name"] + " for " + row["Amount"])
 
                 let deleteStatus = db.collection("GlobalTransferHours").doc(row["Document ID"]).delete();
                 if (deleteStatus == null) {
