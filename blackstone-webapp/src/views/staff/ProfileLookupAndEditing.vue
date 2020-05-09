@@ -63,7 +63,8 @@ import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
 
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
-import {Youth} from "@/scripts/Youth.js"
+import {mapObj} from "@/scripts/ParseDB.js";
+import {Youth} from "@/scripts/Youth.js";
 
 export default {
   name: 'profile_lookup_youth',
@@ -174,7 +175,7 @@ export default {
 
         // Convert each period list into the youth's class during that period
         // If youth not active, remove the period from the object
-        objMap(obj, (period, val) => {
+        mapObj(obj, (period, val) => {
 
           // Find all instances matching the youth in this period
           let matches = Youth.findMatches(val, youth);
@@ -186,39 +187,18 @@ export default {
 
           // If youth found once, set the value to their class
           else if (matches.length == 1) {
-            return matches[0]["Class"];
+            return {key: period, value: matches[0]["Class"]};
           }
 
           // If found more than once, flag it and use the first instance in the list
           else {
             console.warn("Multiple instances of youth " + youth + " in period " + period);
-            return matches[0]["Class"];
+            return {key: period, value: matches[0]["Class"]};
           }
-        }, true);
-
+        });
 
         // Return the final object
         return obj;
-
-
-        // Helper function to map a function onto the keys of an object
-        function objMap(object, f, delete_undefined) {
-          Object.keys(object).forEach(key => {
-
-            // Obtain the mapped value by applying the given function
-            let new_val = f(key, object[key])
-
-            // Delete the field if applicable
-            if (delete_undefined && new_val === undefined) {
-              delete object[key]
-            }
-
-            // Otherwise, set to the new value
-            else {
-              object[key] = new_val
-            }
-          });
-        }
       }
     }
 }

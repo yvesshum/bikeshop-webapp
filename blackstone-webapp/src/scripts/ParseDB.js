@@ -98,6 +98,58 @@ export function mapKeyVal(arr, op) {
 };
 
 
+/* Maps a one- or two-input function onto the key/value pairs of an Object.
+
+	For example, the following call:
+
+		mapObj( {a: 1, b: 2, c: 3}, (key, val) => {return {key: key + "2", value: val * 2}} )
+
+	...will return the following:
+
+		{a2: 2, b2: 4, c2: 6}
+
+	Single-argument functions should return the new value for that key.
+
+	Two-argument functions should return an object with the fields "key" and "value".
+	If a two argument function returns undefined, that key will be deleted from the object.
+
+*/
+export function mapObj(object, f) {
+  Object.keys(object).forEach(key => {
+
+	// For a single argument function, just apply f to each value
+	if (f.length == 1) {
+		object[key] = f(object[key])
+	}
+
+	// For a double argument function, delete the field on an undefined value,
+	// otherwise set the returned key to the returned value and remove the old
+	// key if it's been changed
+	else {
+
+		// Obtain the mapped value by applying the given function
+		let new_obj = f(key, object[key]);
+
+		// If the function returns undefined, delete the key/value
+		if (new_obj === undefined) {
+			delete object[key];
+		}
+
+		// If not, update the value
+		else {
+			// Delete the old field if applicable
+			if (new_obj.key !== key) {
+				delete object[key];
+			}
+
+			// Add/set the new field
+			object[new_obj.key] = new_obj.value;
+		}
+	}
+  });
+}
+
+
 // Error checking to get a Date object from the database
 // Should be a Timestamp, but handles error in case it isn't
 export function get_as_date(date_obj) {
