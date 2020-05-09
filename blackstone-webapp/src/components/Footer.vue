@@ -1,6 +1,6 @@
 <template>
     <footer>
-        <p class="copyright">Blackstone Bicycle Works © 2020, version 0.1c</p>
+        <p class="copyright">Blackstone Bicycle Works © 2020, version 0.1d</p>
     </footer>
 </template>
 
