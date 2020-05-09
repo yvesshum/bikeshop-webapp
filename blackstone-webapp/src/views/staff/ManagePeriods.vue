@@ -36,6 +36,7 @@
               :profile="currentProfile"
               :headerDoc="header_doc"
               :periodData="profile_period_data"
+              :disableWarnings="true"
             />
             <br />
             <br />
