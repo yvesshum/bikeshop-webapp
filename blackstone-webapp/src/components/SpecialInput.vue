@@ -143,6 +143,7 @@ use v-model. Whenever one of these is changed, it updates the other.
                 @input="$emit('input', $event)"
                 :min="0"
                 :step="1"
+                :precision=2
             />
         </div>
 
