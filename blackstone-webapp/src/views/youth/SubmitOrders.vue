@@ -1,6 +1,7 @@
 // New submit orders
 <template>
 <div>
+    <div class="content">
     <div class="spinner" v-if="!allReady">
         <b-spinner label="Loading..."></b-spinner>
     </div>
@@ -72,6 +73,8 @@
         </div>
         <b-button class="mt-3" block @click="closeMsgModal" variant = "success">Ok</b-button>
     </b-modal>
+    </div>
+    <Footer/>
 
 
 
@@ -476,7 +479,9 @@ span.inline {
     width:  70%;
     margin: 0 auto;
     margin-bottom: 1rem;
-
+}
+::v-deep .form-control {
+    background-color: #fafafa;
 }
 
 </style>
