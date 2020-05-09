@@ -238,6 +238,7 @@ In firebase the following things happen:
                         this.$refs.selectedFrom.reset();
                         this.$refs.selectedTo.reset();
                         this.$refs.hoursInput.setValue(1)
+                        this.note = "";
 
                         this.showModal("Success!", "Your request has been sent for staff approval")
                     }
