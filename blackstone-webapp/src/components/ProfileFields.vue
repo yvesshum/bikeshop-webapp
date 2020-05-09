@@ -19,15 +19,6 @@
     </div>
 
     <br />
-
-    <PeriodsClassesDisplay
-      :active_periods="active_periods"
-      :seasons="season_list"
-      v-bind="periodData"
-      disable_selection
-      style="max-width: 95%; margin:auto"
-    />
-
     <br />
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
