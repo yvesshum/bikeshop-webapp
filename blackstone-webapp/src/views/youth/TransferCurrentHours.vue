@@ -21,6 +21,7 @@ In firebase the following things happen:
 <template>
     <div id = "TransferHours">
         <top-bar/>
+        <PageHeader pageCategory="Youth Headers" pageName="Transfer Hours Between Youth"></PageHeader>
         <h1>Transfer Hours</h1>
         <br/>
         <b-container>
@@ -120,11 +121,13 @@ In firebase the following things happen:
     import VueNumberInput from '@chenfengyuan/vue-number-input';
     import {db} from '../../firebase';
     import {Timestamp} from '@/firebase.js'
+    import PageHeader from "@/components/PageHeader.vue"
     export default {
         name: 'HourTransfer',
         components: {
             YouthIDSelector,
-            VueNumberInput
+            VueNumberInput,
+            PageHeader
 
         },
 
