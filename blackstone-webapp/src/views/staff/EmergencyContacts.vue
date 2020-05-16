@@ -4,6 +4,9 @@
     <TopBar/>
     <h1>Emergency Contacts</h1>
     <br />
+    <div class="spinner" v-if="!allReady" style="margin-top: 2rem">
+        <b-spinner style="width: 3rem; height: 3rem;" label="Loading..."></b-spinner>
+    </div>
     <CollectionTable
       ref="contacts_table"
       :heading_data="headers"
@@ -35,6 +38,7 @@ export default {
 
   data: function() {
     return {
+      allReady: false,
 
       // The collection to draw profiles from
       contacts_collection: null,
@@ -120,6 +124,7 @@ export default {
 
     load_complete: function() {
       console.log("Load is complete");
+      this.allReady = true;
     },
   },
 }
