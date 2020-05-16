@@ -95,7 +95,7 @@
           </b-collapse>
         </b-card>
 
-        <!--
+        
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-5>Statistics</h5>
@@ -106,7 +106,7 @@
             </b-card-body>
           </b-collapse>
         </b-card>
-      -->
+     
     </div>
     <!--
     <div class="heading">
