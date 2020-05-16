@@ -266,7 +266,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
@@ -277,7 +277,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
                             console.log(data);
@@ -326,7 +326,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.category_name]
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
@@ -336,7 +336,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.category_name]
                             await db.doc(path).set(data);
                         })
@@ -382,7 +382,7 @@ export default {
                 let query = await db.collection(this.collectionsToEdit[j]).get();
                 query.forEach(async doc => {
                     let id = doc.id;
-                    let data = this.parse(doc.data());
+                    let data = doc.data();
                     data[this.modal.add.category_name] = this.modal.add.initial_value;
                     await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                 })
@@ -392,7 +392,7 @@ export default {
                 query.forEach(async doc => {
                     let id = doc.id;
                     let path = doc.ref.path
-                    let data = this.parse(doc.data());
+                    let data = doc.data();
                     data[this.modal.add.category_name] = this.modal.add.initial_value;
                     await db.doc(path).set(data);
                 })
