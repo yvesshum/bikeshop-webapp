@@ -139,11 +139,17 @@ export default {
 
 	computed: {
 		youth_name: function() {
-			return "Yves Shum";
+			if (this.current_profile == null) {
+				return "";
+			} else {
+				let first_name = this.current_profile.data()["First Name"]
+				let last_name  = this.current_profile.data()["Last Name"];
+				return `${first_name} ${last_name}`;
+			}
 		},
 
 		youth_id: function() {
-			return "10001";
+			return this.ID;
 		},
 
 		// Two conditions - loadProfile bool value, profile set or not set
