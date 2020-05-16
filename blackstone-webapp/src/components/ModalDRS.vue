@@ -1,33 +1,17 @@
 <template>
-	<div class="save_bar">
+	<div class="modal_drs">
 
-		<div ref="bottom_bar" class="bottom-bar" v-show="show_bar">
-			<b-button
-				:variant="discard_variant"
-				:disabled="disableIfNoChanges && !has_any_changes"
-				@click="discard"
-				class="change_button"
-			>
-				Discard Changes
-			</b-button>
-			<b-button
-				v-if="!hideReset"
-				:variant="reset_variant"
-				:disabled="disableIfNoChanges && !has_any_changes"
-				@click="reset"
-				class="change_button"
-			>
-				Reset Changes
-			</b-button>
-			<b-button
-				:variant="save_variant"
-				:disabled="disableIfNoChanges && !has_saveable_changes"
-				@click="save"
-				class="change_button"
-			>
-				Save Changes
-			</b-button>
-		</div>
+		<DiscardResetSave v-show="show_buttons"
+			:hasChanges="hasChanges"
+			:hasUnsaveableChanges="hasUnsaveableChanges"
+			:hideReset="hideReset"
+			:disableIfNoChanges="disableIfNoChanges"
+			:saveVariant="saveVariant"
+			:resetVariant="resetVariant"
+			:discardVariant="discardVariant"
+			@save="save" @reset="reset" @discard="discard"
+		>
+		</DiscardResetSave>
 
 		<b-modal size="lg" v-model="modal_visible" hide-footer lazy>
 			<template slot="modal-header">
@@ -84,9 +68,10 @@
  
 <script>
 import {Status} from "@/scripts/Status.js";
+import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
-	name: 'save_bar',
+	name: 'modal_drs',
 	props: {
 		hasChanges: Boolean,
 		hasUnsaveableChanges: Boolean,
@@ -94,12 +79,12 @@ export default {
 			default: false,
 		},
 
-		// Whether to display the bar at the bottom of the screen
+		// Whether to display the buttons
 		show: {
 			default: true,
 		},
 
-		// If set, display the bar iff there are changes
+		// If set, display the buttons iff there are changes
 		showIfChanges: {
 			default: false,
 		},
@@ -119,6 +104,7 @@ export default {
 		// 	default: () => {},
 		// },
 	},
+	components: {DiscardResetSave},
 
 	data: function() {
 		return {
@@ -132,27 +118,6 @@ export default {
 	},
 
 	computed: {
-		save_variant: function() {
-			if (this.saveVariant != undefined) {
-				return this.saveVariant;
-			}
-			return this.has_saveable_changes ? "success" : "outline-success";
-		},
-
-		reset_variant: function() {
-			if (this.resetVariant != undefined) {
-				return this.resetVariant;
-			}
-			return this.has_any_changes ? "warning" : "outline-warning";
-		},
-
-		discard_variant: function() {
-			if (this.discardVariant != undefined) {
-				return this.discardVariant;
-			}
-			return this.has_any_changes ? "danger" : "outline-danger";
-		},
-
 		has_saveable_changes: function() {
 			return this.hasChanges;
 		},
@@ -165,7 +130,7 @@ export default {
 			return this.showIfChanges === "" || this.showIfChanges == true;
 		},
 
-		show_bar: function() {
+		show_buttons: function() {
 			return this.show_if_changes ? this.has_any_changes : this.show;
 		}
 	},
@@ -263,16 +228,6 @@ export default {
 </script>
  
 <style scoped>
-	.bottom-bar {
-		background-color: #333;
-		overflow: hidden;
-		position: fixed;
-		bottom: 0;
-		width: 100%;
-		padding: 10px;
-		z-index: 10;
-	}
-
 	.change_button {
 		margin: 0px 5px;
 	}
