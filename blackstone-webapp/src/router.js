@@ -16,7 +16,7 @@ import RegisterYouth from './views/staff/RegisterNewYouth.vue';
 //import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
 import HourTransfer from './views/youth/TransferCurrentHours';
 import ApproveTransfers from './views/staff/ApproveTransferHours';
-//import AdminPanel from './views/staff/AdminPanel.vue';
+import AdminPanel from './views/staff/AdminPanel.vue';
 //import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 //import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
@@ -28,7 +28,7 @@ import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
 //import Stats from './views/staff/Stats.vue';
 import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
-//import PeriodSettings from './views/admin/PeriodSettings.vue'
+import PeriodSettings from './views/admin/PeriodSettings.vue'
 Vue.use(Router);
 
 const router = new Router({
@@ -195,7 +195,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-        /*
         {
             path: '/admin-panel',
             name: 'admin-panel',
@@ -204,7 +203,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },*/
+        },
         {
             path: '/add-subtract-hours',
             name: 'add-subtract-hours',
@@ -292,6 +291,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        */
         {
             path: '/period-settings',
             name: 'period-settings',
@@ -303,8 +303,7 @@ const router = new Router({
         },
 
 
-*/
-        ]
+    ]
 });
 
 router.beforeEach(async (to, from, next) => {
