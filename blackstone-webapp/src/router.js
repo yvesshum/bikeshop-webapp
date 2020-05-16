@@ -25,7 +25,7 @@ import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
-//import Stats from './views/staff/Stats.vue';
+import Stats from './views/staff/Stats.vue';
 import EmergencyContacts from './views/staff/EmergencyContacts.vue';
 import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 //import PeriodSettings from './views/admin/PeriodSettings.vue'
@@ -223,7 +223,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-        /*
         {
             path: '/stats',
             name: 'stats',
@@ -232,7 +231,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        }, */
+        },
         {
             path: '/emergency-contacts',
             name: 'emergency-contacts',

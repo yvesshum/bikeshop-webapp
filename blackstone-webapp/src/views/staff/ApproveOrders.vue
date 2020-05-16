@@ -341,8 +341,8 @@
                     })
                 }
                 else { //if rejecting document is of pending status
-                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
-                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
+                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
+                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent,
                         "Pending Hours": newPendingHours
