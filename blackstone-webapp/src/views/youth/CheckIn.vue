@@ -4,8 +4,8 @@
     <h2 style="margin-top: 20px; margin: 0px 10px;">
         Check In/Out: {{ date }}
     </h2>
-    <br>
     <PageHeader pageCategory="Youth Headers" pageName="Check In and Out"></PageHeader>
+    <br>
     <!-- ID Selector Component -->
     <YouthIDSelector
       @selected="handleSelect"
@@ -290,7 +290,7 @@ export default {
     components: {
         YouthIDSelector,
         VueNumberInput,
-        PageHeader
+        PageHeader,
     }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="headerText != null && headerText != ''">
+  <div class="header-div" v-if="headerText != null && headerText != ''">
     <hr>
     <p>{{headerText}}</p>
     <hr>
@@ -49,5 +49,10 @@
 
 <style scoped>
   
-
+.header-div{
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
 </style>

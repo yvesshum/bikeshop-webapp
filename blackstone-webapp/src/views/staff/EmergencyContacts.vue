@@ -3,6 +3,8 @@
     <TopBar/>
 
     <h1>Emergency Contacts</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Emergency Contacts"></PageHeader>
+    
     <br />
     <CollectionTable
       ref="contacts_table"
@@ -22,12 +24,14 @@ import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
   name: 'profile_lookup_youth',
   components: {
     TopBar,
     CollectionTable,
+    PageHeader,
   },
 
   data: function() {

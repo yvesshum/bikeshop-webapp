@@ -3,6 +3,7 @@
     <TopBar/>
 
     <h1 class="title">Profile Lookup and Editing</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Profile Lookup and Editing"></PageHeader>
     <YouthIDSelector @selected="load_youth"/>
     <br />
 
@@ -60,6 +61,7 @@ import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
 import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
+import PageHeader from "@/components/PageHeader.vue"
 
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
@@ -75,6 +77,7 @@ export default {
     ApronBar,
     ProfileItemLogs,
     PeriodsClassesDisplay,
+    PageHeader,
   },
 
   data: function() {

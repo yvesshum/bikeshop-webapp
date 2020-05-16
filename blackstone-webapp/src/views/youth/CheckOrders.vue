@@ -2,6 +2,7 @@
     <div>
         <top-bar/>
         <h1 class="title">Check Orders</h1>
+        <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
         <b-table
             :items="items"
             :fields="fields"
@@ -22,10 +23,12 @@
 
 <script>
 import {db} from '../../firebase';
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
     name: 'YouthCheckOrders',
     components: {
+      PageHeader,
     },
 
     data() {

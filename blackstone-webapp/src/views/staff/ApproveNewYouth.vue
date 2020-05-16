@@ -2,6 +2,7 @@
     <div class = ApproveNewYouth>
         <top-bar/>
         <h1>Approve New Youth Dashboard</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Approve New Youth Registration"></PageHeader>
         <div class="toolbarwrapper">
                     <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
                     <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
@@ -122,6 +123,7 @@
     import {rb} from '../../firebase';
     import moment from 'moment'
     import { forKeyVal } from '@/scripts/ParseDB.js';
+    import PageHeader from "@/components/PageHeader.vue"
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
@@ -133,7 +135,8 @@
         components: {
           RadioGroupOther,
           VueTelInput,
-          SpecialInput
+          SpecialInput,
+          PageHeader,
         },
         data() {
             return {

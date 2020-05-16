@@ -7,6 +7,7 @@
         <b-col>
           <h1>Stats</h1>
         </b-col>
+        <PageHeader pageCategory="Staff Headers" pageName="Stats for the Quarter"></PageHeader>
       </b-row>
       <b-row>
         <b-col>
@@ -206,6 +207,7 @@ import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
 import {filter} from '@/scripts/Search.js'
+import PageHeader from "@/components/PageHeader.vue"
 let setOrder = function(field) {
   var fieldVal = 0;
   if (field == "Check In") {
@@ -233,7 +235,8 @@ export default {
   components: {
     Datetime,
     QueryTable,
-    Tabulator
+    Tabulator,
+    PageHeader,
   },
   data() {
     return {

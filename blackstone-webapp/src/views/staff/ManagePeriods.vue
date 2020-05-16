@@ -2,6 +2,7 @@
   <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Manage Youth Activity Period"></PageHeader>
     <br />
 
     <div class="col-container">
@@ -232,6 +233,7 @@ import ModalDRS from '@/components/ModalDRS';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfilePopup from "@/components/ProfilePopup";
+import PageHeader from "../../components/PageHeader.vue"
 
 // Scripts
 import {Status} from '@/scripts/Status.js';
@@ -253,6 +255,7 @@ export default {
     ProfileFields,
     ApronBar,
     ProfilePopup,
+    PageHeader,
   },
 
   data: function() {

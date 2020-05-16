@@ -8,6 +8,8 @@
         <top-bar/>
         <h1 id="title">Submit Order Form</h1>
         <hr class="title">
+        
+        <PageHeader pageCategory="Youth Headers" pageName="Submit Orders"></PageHeader>
 
         <div v-for="field in fields.required" :key="field.name">
             <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
@@ -83,12 +85,14 @@ import {Timestamp} from '@/firebase.js';
 import moment from 'moment';
 import SpecialInput from '../../components/SpecialInput';
 import { initSpecialInputVal } from '../../scripts/SpecialInit';
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
     name: 'YouthSubmitOrders',
     components: {
         YouthIDSelector,
-        SpecialInput
+        SpecialInput,
+        PageHeader,
     },
     data() {
         return {

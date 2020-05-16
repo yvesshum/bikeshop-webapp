@@ -2,6 +2,7 @@
     <div class = "StaffManageSkills">
         <top-bar/>
         <h1 style="margin: 20px">Manage Apron Skills</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
         <div class ="selection">
         <b>Add category: </b>
         <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin:0 10px; padding: 5px;">
@@ -40,6 +41,7 @@
 
 <script>
     import EditTable from '../../components/EditTable';
+    import PageHeader from "../../components/PageHeader.vue"
     import {db} from '../../firebase';
     import {firebase} from '../../firebase';
 
@@ -49,6 +51,7 @@
         name: 'StaffManageSkills',
         components: {
             EditTable,
+            PageHeader,
         },
         data() {
             return {

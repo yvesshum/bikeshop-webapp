@@ -10,7 +10,11 @@
         
         <h3 v-if="returningYouth == 'New Youth'" style="margin: 20px">Register a new Youth here!</h3>
         
+        <PageHeader v-if="returningYouth == 'New Youth'" pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
+        
         <h3 v-if="returningYouth == 'Returning Youth'" style="margin: 20px">Register a returning Youth here!</h3>
+
+        <PageHeader v-if="returningYouth == 'Returning Youth'" pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader>
 
         <div v-if="returningYouth != '-'">
 
@@ -135,6 +139,7 @@
     import {firebase} from '../../firebase';
     import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
+    import PageHeader from "@/components/PageHeader.vue"
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
@@ -147,6 +152,7 @@
             RadioGroupOther,
             VueTelInput,
             SpecialInput,
+            PageHeader,
         },
         data() {
             return {

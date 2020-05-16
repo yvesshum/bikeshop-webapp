@@ -21,8 +21,8 @@ In firebase the following things happen:
 <template>
     <div id = "TransferHours">
         <top-bar/>
-        <PageHeader pageCategory="Youth Headers" pageName="Transfer Hours Between Youth"></PageHeader>
         <h1>Transfer Hours</h1>
+        <PageHeader pageCategory="Youth Headers" pageName="Transfer Hours Between Youth"></PageHeader>
         <br/>
         <b-container>
             <b-row>

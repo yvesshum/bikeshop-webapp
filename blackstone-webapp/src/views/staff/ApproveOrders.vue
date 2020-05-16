@@ -2,6 +2,7 @@
     <div>
         <top-bar/>
         <h1 class="title">Order Status Dashboard</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Approve Orders"></PageHeader>
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
                     <b-dropdown right text="Set Status" style="margin: 1%;">
@@ -86,9 +87,11 @@
 <script>
     import {db} from '../../firebase';
     import {Timestamp} from '../../firebase'
+    import PageHeader from "@/components/PageHeader.vue"
     export default {
         name: 'ApproveOrders',
         components: {
+          PageHeader
         },
         data() {
             return {

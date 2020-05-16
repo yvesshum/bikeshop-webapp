@@ -3,6 +3,7 @@
         <top-bar/>
         <div class="loghours-page">
             <h1>Log hours for one or more youth</h1>
+            <PageHeader pageCategory="Staff Headers" pageName="Log Hours for Multiple Youths"></PageHeader>
             <p v-if="profilesToAdd.length === 0">No youths selected</p>
             <div v-for="profile in profilesToAdd" :key="profile['ID']">
               <YouthListCard :youth="profile" :deleteHandler="function(){removeProfileToAdd(profile)}"/>
@@ -95,6 +96,7 @@ import {db} from '@/firebase.js'
 import VueNumberInput from '@chenfengyuan/vue-number-input';
 import moment from 'moment'
 import { Timestamp } from '@/firebase.js'
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
     name: "LogHoursForYouth",
@@ -238,8 +240,8 @@ export default {
     components: {
         YouthIDSelector,
         YouthListCard,
-        VueNumberInput
-
+        VueNumberInput,
+        PageHeader,
     }
 };
 </script>
