@@ -15,7 +15,7 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <Datetime auto v-model="datePicker_date" value-zone="America/Chicago" />
+                    <Datetime auto v-model="datePicker_date" value-zone="America/Chicago"/>
                 </b-col>
                 <b-col>
                     <b-button @click="lookupDailyAttendance" :disabled='datePicker_date === ""'>See attendance</b-button>
@@ -292,7 +292,7 @@ export default {
                     dateRange: "Select Date Range"
                 }
             },
-            datePicker_date: "",
+            datePicker_date: new Date().toString(),
             dailyAttendanceTableItems: [],
             dailyAttendanceLoading: false,
             noDailyAttendanceEntries: null,
@@ -358,7 +358,7 @@ export default {
             this.dailyAttendanceLoading = false
         },
         async getDailyAttendace() {
-            let query_start_datetime = moment(this.datePicker_date).utcOffset(-6).toDate()
+            let query_start_datetime = moment(this.datePicker_date).toDate()
             let query_end_datetime = moment(query_start_datetime)
                 .add(1, "days")
                 .toDate();
