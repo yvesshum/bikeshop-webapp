@@ -148,68 +148,68 @@
         </table>
 
         </div>
+
+        <ModalDRS
+          showIfChanges :hideReset="true"
+          :hasChanges="has_changes"
+          @save="save_changes"
+          @discard="discard_changes"
+        >
+          <template slot="bodyFooter">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">Name & ID</th>
+                  <th scope="col">Period</th>
+                  <th scope="col">Old Class</th>
+                  <th scope="col">New Class</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="change in change_array" style="padding-top: 0px;">
+                  <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
+                    {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
+                  </td>
+                  <td>{{change.period}}</td>
+                  <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
+                  <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+
+          <template slot="failureModalBody">
+            Something went wrong updating the database. The following changes could not be saved:
+            <br />
+
+            <h4 style="color: black;">Unsaved Youth Profiles</h4>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">Name & ID</th>
+                  <th scope="col">Period</th>
+                  <th scope="col">Old Class</th>
+                  <th scope="col">New Class</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="change in error_array_youth" style="padding-top: 0px;">
+                  <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
+                    {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
+                  </td>
+                  <td>{{change.period}}</td>
+                  <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
+                  <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            Please take note of these and try again.
+          </template>
+        </ModalDRS>
+
       </div>
     </div>
-
-    <SaveBar
-      showIfChanges
-      :hasChanges="has_changes"
-      @save="save_changes"
-      @reset="reset_changes"
-      @discard="discard_changes"
-    >
-      <template slot="bodyFooter">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">Name & ID</th>
-              <th scope="col">Period</th>
-              <th scope="col">Old Class</th>
-              <th scope="col">New Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="change in change_array" style="padding-top: 0px;">
-              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
-                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
-              </td>
-              <td>{{change.period}}</td>
-              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
-              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </template>
-
-      <template slot="failureModalBody">
-        Something went wrong updating the database. The following changes could not be saved:
-        <br />
-
-        <h4 style="color: black;">Unsaved Youth Profiles</h4>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">Name & ID</th>
-              <th scope="col">Period</th>
-              <th scope="col">Old Class</th>
-              <th scope="col">New Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="change in error_array_youth" style="padding-top: 0px;">
-              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
-                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
-              </td>
-              <td>{{change.period}}</td>
-              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
-              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        Please take note of these and try again.
-      </template>
-    </SaveBar>
   </div>
 </template>
 
@@ -225,7 +225,7 @@ import Table from '@/components/Table';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
-import SaveBar from '@/components/SaveBar';
+import ModalDRS from '@/components/ModalDRS';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfilePopup from "@/components/ProfilePopup";
@@ -243,7 +243,7 @@ export default {
     PeriodsClassesDisplay,
     YouthIDSelector,
     ButtonArrayHeader,
-    SaveBar,
+    ModalDRS,
     ProfileFields,
     ApronBar,
     ProfilePopup,
