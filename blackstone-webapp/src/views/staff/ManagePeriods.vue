@@ -31,18 +31,6 @@
       </div>
 
       <div class="col-right">
-        <b-modal v-model="viewProfileModalVisible" hide-footer lazy>
-      <div ref="body_fields" v-show="currentProfile != null">
-        <ProfileFields
-          :profile="currentProfile"
-          :headerDoc="header_doc"
-          :periodData="profile_period_data"
-          hideWarnings
-        />
-        <br />
-        <br />
-      </div>
-    </b-modal>
         <div v-if="selected_youths.length == 0">
           <h3>Youth Information</h3>
           Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
@@ -66,11 +54,8 @@
               &times;
             </b-button>
           </PeriodsClassesDisplay>
-          <b-button
-            @click="viewProfile"
-            style="margin-bottom: 1rem"
-            variant="info"
-          >View Profile</b-button>
+
+          <ProfilePopup :ID="selected_youth.ID" />
         </div>
 
         <div v-else>
@@ -243,6 +228,7 @@ import ButtonArrayHeader from '@/components/ButtonArrayHeader';
 import SaveBar from '@/components/SaveBar';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
+import ProfilePopup from "@/components/ProfilePopup";
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -259,7 +245,8 @@ export default {
     ButtonArrayHeader,
     SaveBar,
     ProfileFields,
-    ApronBar
+    ApronBar,
+    ProfilePopup,
   },
 
   data: function() {
@@ -341,8 +328,6 @@ export default {
     await this.load_metadata();
     await this.load_periods();
     this.switch_to("Current");
-    await this.getHeaders();
-    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
 
     this.period_status = new Object();
 
@@ -884,41 +869,6 @@ export default {
       }
       return cell.getValue();
     },
-
- async viewProfile() {
-      let ID = this.selected_youth.ID;
-      let snapshot = db.collection("GlobalYouthProfile").doc(ID);
-      this.currentProfile = await snapshot.get();
-      this.viewProfileModalVisible = true;
-
-      // window.alert("This is an upcoming feature :) look forward to it!")
-    },
-      async getHeaders() {
-      let headers = await db
-        .collection("GlobalFieldsCollection")
-        .doc("Checked In")
-        .get();
-      headers = headers.data().fields;
-      let fields = [];
-      for (let i = 0; i < headers.length; i++) {
-        fields.push({ key: Object.keys(headers[i])[0], sortable: true });
-      }
-      this.fields = fields;
-    },
-   load_profile_data: async function() {
-        this.profile_periods_doc = await this.periods_db.doc("metadata").get();
-        var data = this.periods_doc.data();
-
-        await Period.setSeasons(data["Seasons"]);
-        this.profile_periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
-
-        this.profile_period_data = {
-          cur_period: data["CurrentPeriod"],
-          reg_period: data["CurrentRegistrationPeriod"],
-          seasons:    data["Seasons"],
-          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
-        };
-      },
   }
 
 }
