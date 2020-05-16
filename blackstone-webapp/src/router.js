@@ -21,7 +21,7 @@ import AdminPanel from './views/staff/AdminPanel.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 //import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
 //import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
-//import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
+import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
 import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
 import LogHoursForYouth from './views/staff/LogHoursForYouth.vue';
@@ -281,6 +281,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+        */
         {
             path: '/hour-logging-categories-settings',
             name: 'hour-logging-categories-settings',
@@ -290,7 +291,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-        */
         {
             path: '/period-settings',
             name: 'period-settings',
