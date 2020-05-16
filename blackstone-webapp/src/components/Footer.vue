@@ -18,6 +18,7 @@ footer {
   background-color: #fff;
     color: grey;
   padding: 2.5rem 0 2rem 0;
+  width: 100%;
 }
 
 </style>
