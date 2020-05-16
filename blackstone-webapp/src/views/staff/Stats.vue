@@ -15,7 +15,15 @@
             </b-row>
             <b-row>
                 <b-col>
-                    <Datetime auto v-model="datePicker_date" value-zone="America/Chicago"/>
+                    <Datetime auto v-model="datePicker_date" value-zone="America/Chicago" title="Pick a date">
+                        <label for="startDate" slot="before">Pick a date</label>
+                        <template slot="button-cancel">
+                            Cancel
+                        </template>
+                        <template slot="button-confirm">
+                            Confirm
+                        </template>
+                    </Datetime>
                 </b-col>
                 <b-col>
                     <b-button @click="lookupDailyAttendance" :disabled='datePicker_date === ""'>See attendance</b-button>
