@@ -216,10 +216,14 @@
 
 <script>
 // @ is an alias to /src
+
+// Firebase
 import {db} from '../../firebase';
 import {firebase} from '../../firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
+
+// Components
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
@@ -229,6 +233,8 @@ import ModalDRS from '@/components/ModalDRS';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfilePopup from "@/components/ProfilePopup";
+
+// Scripts
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
