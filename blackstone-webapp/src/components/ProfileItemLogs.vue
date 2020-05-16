@@ -9,6 +9,7 @@
       :groupByOptions="periods"
       :progressiveLoad="true"
       :doc_formatter="work_doc_formatter"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -23,6 +24,7 @@
       groupBy="Period"
       :groupByOptions="periods"
       :progressiveLoad="true"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -37,6 +39,7 @@
       groupBy="Period"
       :groupByOptions="periods"
       :progressiveLoad="true"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -167,6 +170,16 @@ export default {
           "Notes": data["Notes"],
           "Period": data["Period"],
         };
+      },
+
+
+      // Other Tabulator arguments for the tables
+      extra_args: {
+
+        // On load, sort all items from most recent to least recent
+        initialSort: [
+          {column: "Date", dir: "desc"},
+        ],
       },
     };
   },
