@@ -1,7 +1,7 @@
 <template>
- <div>
+ <div class="content">
    <b-row style="padding:0; margin:0">
-  <div class="manage_periods">
+    <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
     <br />
@@ -227,11 +227,9 @@
         Please take note of these and try again.
       </template>
     </SaveBar>
-  </div>
-  </b-row>
-  <b-row>
+   </div>
+   </b-row>
     <Footer/>
-  </b-row>
   </div>
 </template>
 
