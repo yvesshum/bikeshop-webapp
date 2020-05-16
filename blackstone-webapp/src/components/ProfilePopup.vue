@@ -94,12 +94,7 @@ export default {
 		};
 	},
 
-	mounted: async function() {
-    	// Load headers, if requested
-		if (this.loadHeaders == true && this.headers == null) {
-			await this.get_headers();
-		}
-	},
+	mounted: async function() {},
 
 	methods: {
 
