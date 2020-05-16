@@ -61,7 +61,7 @@ export default {
                 required: [],
                 hidden: [],
                 optional: []
-            }
+            },
         }
     },
     methods: {
@@ -101,3 +101,12 @@ export default {
     
 }
 </script>
+<style scoped>
+.YouthInfo{
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+    display: flex;
+}
+</style>

@@ -261,6 +261,16 @@
                     let currentYear = this.currentSeason.split(" ")[1];
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
+                    for(var i = 0; i < current[this.currentSeason].length; i++){
+                        console.log(current[this.currentSeason][i])
+                        console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                        console.log("Row returning id: " + row["ReturningID"]);
+                        if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
+                            this.closeLoadingModal();
+                            window.alert("Error: " + row["ReturningID"] + " has already been registered for this quarter.");
+                            return null;
+                        }
+                    }
                     current[this.currentSeason].push({
                       "Class" : row["Class"],
                       "First Name" : row["First Name"],
@@ -269,6 +279,7 @@
                     });
                     let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
                     if (periodStatus) {
+                        this.closeLoadingModal();
                         window.alert("Err: Could not add to period collection");
                         this.editSelected = {};
                         return null;
@@ -277,6 +288,7 @@
                     let logStatus = await submitRef.update(input);
 
                     if (logStatus) {
+                        this.closeLoadingModal();
                         window.alert("Error on updating Global Youth Profile: " + row["ReturningID"]);
                         return null;
                     }
@@ -321,6 +333,7 @@
                     console.log("Current: " + current[this.currentSeason]);
                     let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
                     if (periodStatus) {
+                        this.closeLoadingModal();
                         window.alert("Err: Could not add to period collection");
                         this.editSelected = {};
                         return null;
@@ -330,6 +343,7 @@
                     console.log("Has set input")
 
                     if (logStatus) {
+                        this.closeLoadingModal();
                         window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                         return null;
                     }
@@ -339,6 +353,7 @@
                 let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
 
                 if (status) {
+                    this.closeLoadingModal();
                     window.alert("Error on deleting youth registration: " + row["Document ID"]);
                     return null;
                 }
@@ -398,6 +413,7 @@
 
                 let status = db.collection("GlobalPendingRegistrations").doc(this.rejectingDocumentID).delete();
                 if (status == null) {
+                    this.closeLoadingModal();
                     window.alert("Err, unable to delete youth registration ID: " + this.rejectingDocumentID)
                     return null;
                 }
@@ -530,6 +546,7 @@
 
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
+                    this.closeLoadingModal();
                     window.alert("Err: " +  err);
                     this.editSelected = {};
                     return null;

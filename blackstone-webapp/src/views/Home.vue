@@ -118,6 +118,7 @@
             <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Essay Questions</button>
             <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Class Settings</button>
             <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button>
+            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Page Headers</button>
 
           </b-card-body>
         </b-collapse>

@@ -32,6 +32,7 @@ import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
 import Testing from './views/admin/Testing.vue'
 import ClassSettings from './views/admin/ClassSettings';
+import PageHeaders from './views/admin/PageHeaders';
 Vue.use(Router);
 
 const router = new Router({
@@ -322,6 +323,15 @@ const router = new Router({
             path: '/testing',
             name: 'tesitng',
             component: Testing,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/page-headers',
+            name: 'page-headers',
+            component: PageHeaders,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

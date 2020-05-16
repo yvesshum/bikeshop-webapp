@@ -176,8 +176,14 @@
             };
         },
         computed:{
-            errorModalIsVisible: function () {
-              return this.errorModalVisible
+            errorModalIsVisible: {
+                get: function () {
+                  return this.errorModalVisible;
+                },
+                // setter
+                set: function (newErrorValue) {
+                  this.errorModalVisible = newErrorValue;
+                }
             }
         },
         methods: {
@@ -207,15 +213,30 @@
                 }
             },
             async submit() {
-                this.loadingModalVisible = true;
                 //if an error field has been returned
                 let badFields = await this.checkValid();
                 if (badFields.length) {
                     this.errorFields = badFields;
                     this.loadingModalVisible = false;
                     this.showErrorModal();
-                }
-                else {
+                    // Clear the fields
+                    
+                    // DELETE FROM HERE TO 
+                    for (let i = 0; i < this.requiredFields.length; i ++) {
+                        this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
+                    }
+                    for (let i = 0; i < this.optionalFields.length; i ++) {
+                        this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
+                        if(this.optionalFields[i]["type"] == "Boolean"){
+                            console.log("Boolean field: " + this.optionalFields[i]["value"]);
+                            this.optionalFields[i]["value"] = null;
+                        }
+                    }
+                    this.returningYouthID = "";
+                    // HERE AFTER TESTING
+                    return null;
+                } else {
+                    this.loadingModalVisible = true;
                     console.log("Required fields")
                     console.log(this.requiredFields)
                     console.log("Optional fields")
@@ -323,6 +344,7 @@
                     for (let i = 0; i < this.optionalFields.length; i ++) {
                         this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
                     }
+                    this.returningYouthID = "";
                           
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
@@ -357,14 +379,15 @@
             async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
-                if(this.returningYouth == "New Youth"){
-                  for (let i = 0; i < this.requiredFields.length; i++) {
-                      let currentField = this.requiredFields[i];
-                      //if it is of length 0
-                      if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
-                  }
-                } else {
-                  if (!this.returningYouthID.length) ret.push("Returning Youth ID");
+                if(!this.returningYouth == "New Youth"){
+                    if (!this.returningYouthID.length) ret.push("Returning Youth ID");
+                }
+                for (let i = 0; i < this.requiredFields.length; i++) {
+                    let currentField = this.requiredFields[i];
+                    //if it is of length 0
+                    if(this.returningYouth == "New Youth" || currentField["name"] == "Class"){
+                        if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
+                    }
                 }
                 return ret;
             },
