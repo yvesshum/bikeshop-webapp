@@ -818,40 +818,6 @@ export default {
 
       // Run the accumulated transactions and wait for all to return
       year_transactions.runTransactions();
-
-
-
-
-      // Update the database for each youth_id
-      // TODO: Is there a way to specify a change to be made to an array without .get() ing it?
-      for (let i = 0; i < youth_id_list.length; i++) {
-
-        // Grab the data from the database
-        let youth_id = youth_id_list[i];
-        let youth_db = db.collection("GlobalYouthProfile").doc(youth_id);
-        let youth_doc = await youth_db.get();
-        let youth_data = youth_doc.data();
-
-        // Initialize a new active_periods array which will be changed
-        let new_active_periods = youth_data["ActivePeriods"];
-
-        // Make the changes to the grabbed array
-        Object.keys(this.changes[youth_id].periods).forEach(period => {
-          new_active_periods[period] = this.changes[youth_id].periods[period].new_class;
-        });
-
-        // Send the changes back to the database
-        youth_db.update({ActivePeriods: new_active_periods}).then((error) => {
-          if (error) {
-            // this.$set(this.update_results.youth, i, this.changes[youth_id]);
-          }
-          else {
-            // this.$set(this.update_results.youth, i, true);
-          }
-          // check_for_completion(this.update_results);
-        });
-      }
-
     },
 
 
