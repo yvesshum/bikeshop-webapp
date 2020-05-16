@@ -149,7 +149,7 @@
         </div>
 
         <ModalDRS
-          showIfChanges hideReset="true"
+          showIfChanges :hideReset="true"
           :hasChanges="has_changes"
           @save="save_changes"
           @discard="discard_changes"
