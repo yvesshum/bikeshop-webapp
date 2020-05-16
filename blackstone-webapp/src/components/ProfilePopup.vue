@@ -80,16 +80,6 @@ export default {
 			type: Object,
 			default: null,
 		},
-
-		// // Period information
-		// loadPeriodData: {
-		// 	type: Boolean,
-		// 	default: true,
-		// },
-		// periodData: {
-		// 	type: Object,
-		// 	default: null,
-		// },
 	},
 
 	data: function() {
@@ -101,22 +91,14 @@ export default {
 
 			loaded_profile: null,
 			loaded_headers: null,
-
-			// profile_periods_doc: null,
-			// profile_period_data: null,
-			// profile_periods: null,
 		};
 	},
 
 	mounted: async function() {
-		// await this.getHeaders();
-  //   	this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-
     	// Load headers, if requested
 		if (this.loadHeaders == true && this.headers == null) {
 			await this.get_headers();
 		}
-		console.log(this.current_headers);
 	},
 
 	methods: {
@@ -127,26 +109,9 @@ export default {
 			// Make sure we have everything we need from the database
 			await this.ensure_data_loaded();
 
-			console.log(this.current_profile);
-			console.log("Data", this.current_profile.data());
-			console.log(this.current_headers);
-			// console.log(this.current_period_data);
-
 			// Display the modal
 			this.modal_visible = true;
 		},
-
-		// async viewProfile() {
-
-		// 	// Grab the youth profile from Firebase
-		// 	let snapshot = db.collection("GlobalYouthProfile").doc(this.ID);
-		// 	this.current_profile = await snapshot.get();
-
-		// 	// Display the modal
-		// 	this.modal_visible = true;
-
-		// 	// window.alert("This is an upcoming feature :) look forward to it!")
-		// },
 
 
 		// Ensure all required data has been loaded fromthe database, if applicable
@@ -160,80 +125,21 @@ export default {
 			if (this.loadHeaders == true && this.headers == null) {
 				await this.get_headers();
 			}
-
-			// // Load period data, if requested
-			// if (this.loadPeriodData == true && this.periodData == null) {
-			// 	await this.get_period_data()
-			// }
 		},
 
 		// Grab the youth profile from Firebase
 		async get_profile() {
 			let snapshot = db.collection("GlobalYouthProfile").doc(this.ID);
-			console.log("Profile", this.ID, snapshot);
 			this.loaded_profile = await snapshot.get();
-			console.log(this.loaded_profile);
-			console.log(this.loaded_profile.data());
 		},
 
 		// Grab the header document from Firebase
 		async get_headers() {
-			// let headers = await db
-			// 	.collection("GlobalFieldsCollection")
-			// 	.doc("Checked In")
-			// 	.get();
-			// this.loaded_headers = headers.data().fields;
-
-			// let headers = await db
-			// 	.collection("GlobalFieldsCollection")
-			// 	.doc("Youth Profile")
-			// 	.get();
-
 			this.loaded_headers = await db
 				.collection("GlobalFieldsCollection")
 				.doc("Youth Profile")
 				.get()
 		},
-
-
-		// async getHeaders() {
-
-		// 	// Grab the headers from the database
-		// 	let headers = await db
-		// 		.collection("GlobalFieldsCollection")
-		// 		.doc("Checked In")
-		// 		.get();
-		// 	headers = headers.data().fields;
-
-		// 	let fields = [];
-
-		// 	for (let i = 0; i < headers.length; i++) {
-		// 		fields.push({ key: Object.keys(headers[i])[0], sortable: true });
-		// 	}
-
-		// 	this.fields = fields;
-		// },
-
-		// // Grab the period document from the database
-		// get_period_data: async function() {
-
-		// // }
-
-
-		// // load_profile_data: async function() {
-		// 	this.profile_periods_doc = await db.collection("GlobalPeriods").doc("metadata").get();
-		// 	var data = this.periods_doc.data();
-
-		// 	await Period.setSeasons(data["Seasons"]);
-		// 	this.profile_periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
-
-		// 	this.profile_period_data = {
-		// 		cur_period: data["CurrentPeriod"],
-		// 		reg_period: data["CurrentRegistrationPeriod"],
-		// 		seasons:    data["Seasons"],
-		// 		class_list: mapKeyVal(data["Classes"], (name, desc) => name),
-		// 	};
-		// },
 	},
 
 	computed: {
@@ -249,18 +155,7 @@ export default {
 		// Should only load from db if it's okay to load it and no data passed from parent
 		current_profile: function() {
 			if (this.loadProfile == true && this.profile == null) {
-				console.log("Returning loaded profile: ", this.loaded_profile);
 				return this.loaded_profile;
-
-				// // If profile has not been loaded yet, do so now
-				// if (this.loaded_profile == null) {
-					
-				// }
-
-				// // Otherwise, just return it as-is
-				// else {
-				// 	return this.loaded_profile;
-				// }
 			}
 			else {
 				return this.profile;
@@ -277,17 +172,6 @@ export default {
 				return this.headers;
 			}
 		},
-
-		// // Two conditions - loadPeriodData bool value, periodData set or not set
-		// // Should only load from db if it's okay to load it and no data passed from parent
-		// current_period_data: function() {
-		// 	if (this.loadPeriodData == true && this.periodData == null) {
-		// 		return this.loaded_period_data;
-		// 	}
-		// 	else {
-		// 		return this.periodData;
-		// 	}
-		// },
 	},
 }
 </script>
