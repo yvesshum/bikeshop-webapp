@@ -6,13 +6,12 @@
 
     <div class="col-container flex-direction">
       <div class="col-left">
-        <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
-
         <ButtonArrayHeader
-          :left ="button_header_l" :right="button_header_r" :current="display_period"
+          :left="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
         >
+          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
