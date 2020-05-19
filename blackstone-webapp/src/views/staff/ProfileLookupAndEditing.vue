@@ -41,6 +41,7 @@
     </div>
 
     <div v-show="currentProfile == null">
+      <br>
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
     </div>
@@ -196,7 +197,7 @@ export default {
 </script>
 
 <style>
-    .title {
+  .title {
     margin-bottom: 1rem;
-    }
+  }
 </style>
