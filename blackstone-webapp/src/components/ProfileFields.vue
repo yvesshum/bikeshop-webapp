@@ -13,15 +13,6 @@
     </div>
 
     <br />
-
-    <PeriodsClassesDisplay
-      :active_periods="active_periods"
-      :seasons="season_list"
-      v-bind="periodData"
-      disable_selection
-      style="max-width: 95%; margin:auto"
-    />
-
     <br />
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
@@ -219,7 +210,7 @@ import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
     HoursDisplay,
@@ -408,11 +399,6 @@ export default {
 
     has_changes_strict: function() {
       return this.check_edits(true);
-    },
-
-    season_list: function() {
-      if (this.periodData == null) return undefined;
-      return this.periodData.seasons;
     },
 
     change_modal_cell_type_old: function() {
