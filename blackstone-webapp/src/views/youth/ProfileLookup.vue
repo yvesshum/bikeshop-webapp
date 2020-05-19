@@ -17,6 +17,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
       <ProfileFields
         :profile="currentProfile"
         :headerDoc="header_doc"
+        :disableWarnings="true"
         showOptionalFields
       />
 
