@@ -1,7 +1,7 @@
 <template>
   <div class="profile_fields">
 
-    <div ref="name_div" v-show="profile!=null">
+    <div ref="name_div" v-show="profile!=null && hideTitle!=true">
       <div class="full_name">{{youth_name}}</div>
       <div class="id_parens">(ID: {{youth_id}})</div>
     </div>
@@ -219,7 +219,7 @@ import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields", "disableWarnings"],
+  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
     HoursDisplay,
@@ -806,6 +806,7 @@ export default {
   .full_name {
     font-size: 2em;
     margin-bottom: 0;
+    color: black;
   }
 
   .id_parens {
