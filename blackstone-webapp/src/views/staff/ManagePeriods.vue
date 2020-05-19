@@ -882,4 +882,8 @@ export default {
   }
 
 }
+
+  .changed {
+    font-weight: bold;
+  }
 </style>
