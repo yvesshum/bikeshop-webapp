@@ -1,7 +1,7 @@
 <template>
   <div class="header-div" v-if="headerText != null && headerText != ''">
     <hr>
-    <p>{{headerText}}</p>
+    <pre class="header-pre">{{headerText}}</pre>
     <hr>
   </div>
 
@@ -35,7 +35,8 @@
                 if (pageHeaders == null) { 
                     window.alert("Unable to get PageHeaders from Global Variables");
                 }
-                let headerText = pageHeaders[this.pageCategory][this.pageName];
+                var headerText = pageHeaders[this.pageCategory][this.pageName];
+                headerText = headerText.split("\\n").join("\n");
                 this.headerText = headerText;
             },
 
@@ -54,5 +55,15 @@
   margin-left: auto;
   margin-right: auto;
   justify-content: center;
+}
+.header-pre {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }
 </style>

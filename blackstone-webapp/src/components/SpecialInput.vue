@@ -150,6 +150,7 @@ use v-model. Whenever one of these is changed, it updates the other.
                 :placeholder="args.placeholder"
                 rows="3"
                 max-rows="6"
+                maxlength="3500"
             ></b-form-textarea>
         </div>
 

@@ -4,86 +4,108 @@
         
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
         
-        <div class = "specialDiv">
-          <b-form-select v-model="returningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
+        <div class = "topDiv">
+          <b-form-select v-model="changeReturningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
         </div>
         
-        <h3 v-if="returningYouth == 'New Youth'" style="margin: 20px">Register a new Youth here!</h3>
-        
-        <PageHeader v-if="returningYouth == 'New Youth'" pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
-        
-        <h3 v-if="returningYouth == 'Returning Youth'" style="margin: 20px">Register a returning Youth here!</h3>
-
-        <PageHeader v-if="returningYouth == 'Returning Youth'" pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader>
+        <div v-if="returningYouth == 'New Youth'">
+          <h3 style="margin: 20px">Register a new Youth here!</h3>
+          <PageHeader :key="newyouthheader" pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
+        </div>
+        <div v-if="returningYouth == 'Returning Youth'">
+          <h3 style="margin: 20px">Register a returning Youth here!</h3>
+          <PageHeader :key="returningyouthheader" pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader>
+        </div>
 
         <div v-if="returningYouth != '-'">
 
-        <h4 class = "field_msg">Required fields:</h4>
-        
-        <div v-if="returningYouth == 'Returning Youth'">
-        
-          <p class="field_header">Enter Your Youth ID:</p>
-        
-          <div class = "specialDiv">
-            <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
-            </br>
-            <div v-for="field in requiredFields">
-                  <div v-if="field.name == 'Class'">
-                      <p class="field_header">{{field.name}}</p>
-                        <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                        </SpecialInput>
-                      <br>
-                  </div>
-                  <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
-                      <div v-for="question in essayQuestions[field.value]">
-                        <p class="field_header">{{question}}</p>
-                          <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
-                          </SpecialInput>
-                        <br>
-                      </div>
-                  </div>
-            </div>
-            <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
-            <hr>
-          </div>
-        
-      </div>
-        
-
-        <div v-for="field in requiredFields">
-            <div class="each_field">
-                <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
-                  <p class="field_header">{{field.name}}</p>
-                  <div class = "specialDiv">
-                    <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                    </SpecialInput>
-                  </div>
-                </div>
-                <br>
-                <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
-                    <div v-for="question in essayQuestions[field.value]">
-                      <p class="field_header">{{question}}</p>
-                      <div class = "specialDiv">
-                        <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
-                        </SpecialInput>
-                      </div>
-                      <br>
+          <div class="category-container">
+              <b-card no-body class="mb-0">
+                  <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
+                    <h5 href="#" v-b-toggle.accordion-returning>Required Fields</h5>
+                  </b-card-header>
+                  <b-collapse id="accordion-returning" accordion="my-accordion" role="tabpanel">
+                      <div v-if="returningYouth == 'Returning Youth'">
+                      
+                        <p class="field_header">Enter Your Youth ID:</p>
+                      
+                        <div class = "specialDiv">
+                          <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
+                          </br>
+                          <div v-for="field in requiredFields">
+                            <div v-if="field.name == 'Class'">
+                                <p class="field_header">{{field.name}}</p>
+                                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                  </SpecialInput>
+                            </div>
+                            <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                                <div v-for="question in essayQuestions[field.value]">
+                                  <p class="field_header">{{question}}</p>
+                                    <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                                    </SpecialInput>
+                                </div>
+                            </div>
+                          </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <h4 class = "field_msg" v-if="returningYouth == 'New Youth'">Optional fields:</h4>
-        <div v-for="field in optionalFields">
-            <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <div class = "specialDiv">
-                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                  </SpecialInput>
-                </div>
-                <br>
-            </div>
-        </div>
+                    <div v-if="returningYouth == 'New Youth'">
+                      <div v-for="field in requiredFields">
+                          <div class="each_field">
+                              <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
+                                <p class="field_header">{{field.name}}</p>
+                                <div class = "specialDiv">
+                                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                  </SpecialInput>
+                                </div>
+                              </div>
+                              <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
+                                  <div v-for="question in essayQuestions[field.value]">
+                                    <p class="field_header">{{question}}</p>
+                                    <div class = "specialDiv">
+                                      <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                                      </SpecialInput>
+                                    </div>
+                                    <br>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                    </div>
+                  </b-collapse>
+              </b-card>
+          </div>
+          
+          <div class="category-container">
+              <b-card no-body class="mb-0">
+                  <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
+                    <h5 href="#" v-b-toggle.accordion-optional>Optional Fields</h5>
+                  </b-card-header>
+                  <b-collapse id="accordion-optional" accordion="my-accordion" role="tabpanel">
+                      <div v-if="returningYouth == 'Returning Youth'">
+                        <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
+                          <hr>
+                          <div v-for="field in requiredFields">
+                            <div v-if="field.name != 'Class'">
+                              <p class="field_header">{{field.name}}</p>
+                              <div class = "specialDiv">
+                                <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                </SpecialInput>
+                              </div>
+                            </div>
+                          </div>
+                      </div>
+                      <div v-for="field in optionalFields">
+                          <div class="each_field">
+                              <p class="field_header">{{field.name}}</p>
+                              <div class = "specialDiv">
+                                <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                </SpecialInput>
+                              </div>
+                          </div>
+                      </div>
+                  </b-collapse>
+              </b-card>
+          </div>
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
@@ -190,12 +212,25 @@
                 set: function (newErrorValue) {
                   this.errorModalVisible = newErrorValue;
                 }
+            },
+            changeReturningYouth : {
+               set: function (newReturningValue){
+                  this.loadingModalVisible = true;
+                  this.returningYouth = newReturningValue;
+                  // Clear the fields
+                  // for (let i = 0; i < this.requiredFields.length; i ++) {
+                  //     this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
+                  // }
+                  // for (let i = 0; i < this.optionalFields.length; i ++) {
+                  //     this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
+                  // }
+                  this.loadingModalVisible = false;
+               }
             }
         },
         methods: {
             async getFields() {
                 let f = await fieldsRef.get();
-                this.loadingModalVisible = false;
                 return f.data();
             },
             async getEssays() {
@@ -529,6 +564,7 @@
                     value: ""
                 })
             }
+            this.loadingModalVisible = false;
         }
     }
 </script>
@@ -564,11 +600,42 @@
         margin-bottom:1px;
     }
     
-    .specialDiv{
+    .topDiv{
         width: 35%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
+    }
+    
+    .specialDiv{
+        width: 60%;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: center;
+        padding-bottom: 1rem;
+        padding-top: 1rem;
+    }
+    
+    a, a:hover, a:active, a:link {
+      color:inherit;
+      text-decoration: none;
+     }
+    
+    h5 {
+      padding: 0.5rem;
+      color: white;
+      cursor: pointer;
+    }
+    
+    .category-container {
+      /* padding-top: 6rem; */
+      margin: auto;
+      max-width: 750px;
+      background-color: #ffffff;
+    }
+    
+    h5:hover {
+      text-decoration: underline;
     }
 
 </style>

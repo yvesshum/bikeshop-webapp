@@ -137,16 +137,22 @@ export default {
             }
             let parentPages = [];
             for (const page in pageHeaders["Parent Headers"]) {
+                pageHeaders["Parent Headers"][page] =
+                  pageHeaders["Parent Headers"][page].split("\\n").join("\n");
                 parentPages.push(page);
             }
             this.parentPages = parentPages;
             let youthPages = [];
             for (const page in pageHeaders["Youth Headers"]) {
+                pageHeaders["Youth Headers"][page] =
+                  pageHeaders["Youth Headers"][page].split("\\n").join("\n");
                 youthPages.push(page);
             }
             this.youthPages = youthPages;
             let staffPages = [];
-            for (const page in pageHeaders["Staff Headers"]) {
+            for (var page in pageHeaders["Staff Headers"]) {
+                pageHeaders["Staff Headers"][page] =
+                  pageHeaders["Staff Headers"][page].split("\\n").join("\n");
                 staffPages.push(page);
             }
             this.staffPages = staffPages;
@@ -157,11 +163,22 @@ export default {
         async save() {
             this.loadingModalVisible = true;
             let submitRef = db.collection("GlobalVariables").doc("PageHeaders");
-            var newPageHeaders = {}
+            var newPageHeaders = {};
             newPageHeaders["Parent Headers"] = this.parentHeaders;
             newPageHeaders["Youth Headers"] = this.youthHeaders;
             newPageHeaders["Staff Headers"] = this.staffHeaders;
-            console.log(newPageHeaders["Youth Headers"])
+            for(var page in newPageHeaders["Parent Headers"]){
+              newPageHeaders["Parent Headers"][page] = 
+                newPageHeaders["Parent Headers"][page].split('\n').join('\\n');
+            }
+            for(var page in newPageHeaders["Youth Headers"]){
+              newPageHeaders["Youth Headers"][page] = 
+                newPageHeaders["Youth Headers"][page].split('\n').join('\\n');
+            }
+            for(var page in newPageHeaders["Staff Headers"]){
+              newPageHeaders["Staff Headers"][page] = 
+                newPageHeaders["Staff Headers"][page].split('\n').join('\\n');
+            }
             let submitStatus = await submitRef.set(newPageHeaders)
             if (submitStatus) {
                 window.alert("Error updating page headers");
