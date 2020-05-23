@@ -21,7 +21,7 @@ export default {
     Table,
   },
 
-  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable'],
+  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable', 'groupBy'],
 
   data: function() {
     return {
@@ -57,7 +57,7 @@ export default {
       },
 
       table_args: {
-        groupBy: 'group',
+        groupBy: this.groupBy,
         resizeableRows: false,
         resizeableColumns: false,
         index: 'name',
