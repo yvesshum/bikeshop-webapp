@@ -102,6 +102,7 @@
                             :fields="earned_Table_Fields"
                             sort-by="Check In"
                             responsive="sm"
+                            v-else
                         >
                             <template v-slot:cell(show_details)="row">
                                 <b-button
@@ -192,7 +193,7 @@
             <b-row>
                 <b-col>
                     <p v-if="this.noTotalHoursSpentEntries">No Entries found</p>
-                    <b-table hover :items="total_Hours_Spent_Data"></b-table>
+                    <b-table v-else hover :items="total_Hours_Spent_Data"></b-table>
                 </b-col>
             </b-row>
             <div v-if="this.total_Hours_Spent_Data.length !== 0">
