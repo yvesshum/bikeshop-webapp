@@ -161,6 +161,7 @@ export default {
             newPageHeaders["Parent Headers"] = this.parentHeaders;
             newPageHeaders["Youth Headers"] = this.youthHeaders;
             newPageHeaders["Staff Headers"] = this.staffHeaders;
+            console.log(newPageHeaders["Youth Headers"])
             let submitStatus = await submitRef.set(newPageHeaders)
             if (submitStatus) {
                 window.alert("Error updating page headers");
