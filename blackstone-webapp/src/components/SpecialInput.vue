@@ -242,17 +242,15 @@ export default {
          * PUBLIC METHOD TO BE CALLED WHEN TYPE NEEDS TO BE UPDATED 
          */
         updateInputType(type) {  
-            console.log("updateinput type called. type: ", type);
-            console.log("current vmodel value:", this.value);
             this.input = type;
-            if (this.inputType === "Class" && this.classOptions[0].value == null) {
+            if (this.input === "Class" && this.classOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getClassOptions();
             }
-            else if (this.inputType === "Period" && this.periodOptions[0].value == null) {
+            else if (this.input === "Period" && this.periodOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getPeriodOptions();
-            }
+            } 
         },
 
         isValidPhoneNumber() {
@@ -282,6 +280,7 @@ export default {
                     text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
+            console.log("Class options", this.classOptions)
         },
 
         async getPeriodOptions() {
