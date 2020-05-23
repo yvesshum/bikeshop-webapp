@@ -2,7 +2,8 @@
 //TODO:  Adding and deleting not working well
 //TODO: Initial value must have something in it, cannot be undefined 
 
-<template><div>
+<template>
+<div>
     <b-button-group style="margin-bottom:10px">
         <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
         <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
@@ -119,6 +120,7 @@
             placeholder="Edit here.."
             rows="1"
             max-rows="3"
+            @change="handle_field_type_change"
         ></b-form-select>
 
         <p style="margin-bottom: 0">Initial Value</p>
@@ -137,7 +139,8 @@
     </b-modal>
 
 
-</div></template>
+</div>
+</template>
 
 <script>
 import draggable from 'vuedraggable'
@@ -145,6 +148,7 @@ import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
+import { initSpecialInputVal } from '../scripts/SpecialInit';	
 
 export default {
     name: 'fieldEditor',
@@ -195,14 +199,14 @@ export default {
                     visible: false,
                     field_name: "",
                     field_type: "String",
-                    initial_value: ""
+                    initial_value: null
                 }
             }
         }
     },
     mounted() {
         this.field_data = this.elements;
-        this.field_data_initial_copy = this.field_data;
+        this.field_data_initial_copy = JSON.parse(JSON.stringify(this.field_data));
 
         // Grab input types
         db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
@@ -210,8 +214,11 @@ export default {
         })
     },
     methods: {
-        parse(item) {
-            return JSON.parse(JSON.stringify(item));
+        handle_field_type_change(type) {	
+            console.log('handle field type change called', type);	
+            this.modal.add.initial_value = initSpecialInputVal(type);	
+            console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
+            this.$refs.addInput.updateInputType(type);	
         },
 
         editButtonClicked(data) {
@@ -231,7 +238,7 @@ export default {
         addButtonClicked() {
             this.modal.add.field_name = "";
             this.modal.add.field_type = "String";
-            this.modal.add.initial_value = "";
+            this.modal.add.initial_value = null;
             this.modal.add.visible = true;
 
         },
@@ -293,6 +300,7 @@ export default {
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
+            //TODO: Check this
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
@@ -425,37 +433,49 @@ export default {
             updatedFields.push(fieldObject);
             let updateObject = {};
             updateObject[this.sourceFieldName] = updatedFields;
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
-            if (updateStatus) {
-                window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
-                return null;
-            }
+            console.log("Update object:", updateObject)
+            // let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+            // if (updateStatus) {
+            //     window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
+            //     return null;
+            // }
+
+            console.log('update collections', this.$refs.addInput)
+
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
                 let query = await db.collection(this.collectionsToEdit[j]).get();
-                
-                query.forEach(async doc => {
-                    let id = doc.id;
-                    let data = doc.data();
+                // console.log(query)
+                for (let q of query.docs) {
+                    let id = q.id;
+                    let data = q.data();
 
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
 
-                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
-                })
+                    // console.log("Updating", this.collectionsToEdit[j], id, data)
+                    // await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
+
+                }
             }
+
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-
-                query.forEach(async doc => {
-                    let id = doc.id;
-                    let path = doc.ref.path
-                    let data = doc.data();
+                for (let q of query.docs) {
+                    // console.log('query', q)
+                    let id = q.id;
+                    let path = q.ref.path
+                    let data = q.data();
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
-                    // data[this.modal.add.field_name] = this.$refs.addInput.get();
-                    await db.doc(path).update(data);
-                })
+                    // console.log("Updating", q.ref.path, data)
+
+                    // await db.doc(path).update(data);
+                }
             }
+
+            //TODO Not sure why this.$refs has undefined for addInput... 
+
+            console.log('check refs', this.$refs)
+
 
             //Updating Locally 
             let localUpdateObject = {
@@ -466,9 +486,13 @@ export default {
             this.field_data.push(localUpdateObject);
             this.field_data_initial_copy.push(localUpdateObject);
 
+            console.log('reset', this.$refs.addInput)
+
             // Reset
             this.modal.add.field_name = "";
             this.modal.add.field_type = "String",
+            this.$refs.addInput.updateInputType("String");	
+
             this.modal.add.initial_value = "";
 
             this.closeLoadingModal();
