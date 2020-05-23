@@ -1,5 +1,6 @@
 // TODO: Add pagination
 <template>
+    <div class="content">
     <div>
         <top-bar />
         <b-container>
@@ -231,6 +232,8 @@
                 </div>
             </div>
         </b-modal>
+    </div>
+    <Footer/>
     </div>
 </template>
 
