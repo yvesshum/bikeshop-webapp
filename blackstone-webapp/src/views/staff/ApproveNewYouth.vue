@@ -4,11 +4,11 @@
         <h1>Approve New Youth Dashboard</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Approve New Youth Registration"></PageHeader>
         <div class="toolbarwrapper">
-                    <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-                    <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;">See Essay Answers</b-button>
-                    <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
-                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
+            <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+            <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;">See Essay Answers</b-button>
+            <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
+            <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
+            <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
         </div>
 
         <b-table
@@ -209,7 +209,7 @@
                   this.editSelected = {};
                   return null;
               }
-              this.approve();
+              this.accept();
             },
             async showEssayAnswers(){
                 this.loadingModalVisible = true;

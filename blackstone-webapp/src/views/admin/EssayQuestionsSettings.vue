@@ -2,25 +2,13 @@
     <div class = EssayQuestionsSettings>
         <top-bar/>
         <h1>Essay Question Settings</h1>
-        <div class="toolbar_wrapper">
-            <b-button-toolbar justify>
-
-                <b-button-group>
-                    <b-button variant="success" @click="showAddModal">Add Question</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="info" @click="showEditModal">Edit Question</b-button>
-                </b-button-group>
-                
-                <b-button-group>
-                    <b-button variant="danger" @click="reject">Delete Question</b-button>
-                </b-button-group>
-
-                <b-button-group>
-                    <b-button variant="info" @click="getNewData">Refresh Table</b-button>
-                </b-button-group>
-            </b-button-toolbar>
+        <div class="toolbarwrapper">
+              <b-button-toolbar style="justify-content: center;">
+                    <b-button variant="success" @click="showAddModal" style="margin: 1%;">Add Question</b-button>
+                    <b-button variant="info" @click="showEditModal"style="margin: 1%;">Edit Question</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Question</b-button>
+                    <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
+              </b-button-toolbar>
         </div>
 
         <b-table
@@ -373,12 +361,8 @@
 </script>
 
 <style>
-    .toolbar_wrapper{
-        width: 60%;
-        height: 40px;
-        display: inline-block;
-        margin: 0 auto 10px;
-        border: 1px #42b983;
-    }
+.toolbarwrapper {
+  margin-bottom: 1rem;
+}
 
 </style>
