@@ -1,5 +1,6 @@
 <template>
   <div class="profile_lookup_staff">
+    <div class="content">
     <TopBar/>
 
     <h1 class="title">Profile Lookup and Editing</h1>
@@ -28,7 +29,7 @@
 
       <br />
 
-      <ApronBar :profile="currentProfile" allowEdits />
+      <!-- <ApronBar :profile="currentProfile" allowEdits /> -->
 
       <br /><br />
 
@@ -42,9 +43,10 @@
     </div>
 
     <div v-show="currentProfile == null">
-      <br>
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
+    </div>
+    <Footer/>
   </div>
 </template>
 
@@ -206,10 +208,9 @@ export default {
     }
 }
 </script>
+
 <style>
-
-.title {
-margin-bottom: 1rem;
-}
-
+    .title {
+    margin-bottom: 1rem;
+    }
 </style>

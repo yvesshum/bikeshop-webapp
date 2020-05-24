@@ -5,7 +5,8 @@
 // If 1 fails, break out of it and say which ones were successful
 // If successful, just display a modal of the successful ones
 <template>
-    <div>
+    <div class = ApproveHourLogs>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Approve Hour Logs"></PageHeader>
@@ -129,11 +130,9 @@
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
-
-
 
 </template>
 <script>
@@ -456,7 +455,8 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted transfer", "successfully deleted transfer with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted hour log request", "successfully deleted request with ID of " 
+                    + this.rejectingDocumentID + "\n You may safely disregard this message");
                 this.rejectingDocumentID = "";
 
 

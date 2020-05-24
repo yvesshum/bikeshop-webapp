@@ -1,5 +1,6 @@
 <template>
     <div class = "StaffManageSkills">
+        <div class="content">
         <top-bar/>
         <h1 style="margin: 20px">Manage Apron Skills</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
@@ -36,6 +37,8 @@
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">ok</b-button>
         </b-modal>
+        </div>
+        <Footer/>
     </div>
 </template>
 

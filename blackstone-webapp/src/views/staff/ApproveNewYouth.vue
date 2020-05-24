@@ -1,5 +1,6 @@
 <template>
     <div class = ApproveNewYouth>
+        <div class="content">
         <top-bar/>
         <h1>Approve New Youth Dashboard</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Approve New Youth Registration"></PageHeader>
@@ -124,8 +125,8 @@
                 </div>
             </div>
         </b-modal>
-
-
+        </div>
+        <Footer/>
     </div>
 
 

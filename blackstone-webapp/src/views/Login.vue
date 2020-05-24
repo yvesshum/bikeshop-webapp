@@ -2,11 +2,14 @@
     <div class = "login">
       <div class="jumbotron loginJumbo">
         <h2>
+          Welcome to Blackstone Bicycle Works
+        </h2>
+        <!-- <h2>
               Parents, if you are looking to register a new child,
               <a href="/register-new-youth">
               Register a new youth
               </a>
-        </h2>
+        </h2> -->
         <br /> <br />
         <h3>Sign in to your youth/staff account</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
@@ -39,7 +42,8 @@
                         this.$emit("logged-in");
                     },
                     err => {
-                        alert("oops, something went wrong: " + err);
+                        alert("Oops, something went wrong. You probably entered the wrong password.");
+                        console.log(err);
                     }
                 )
             }

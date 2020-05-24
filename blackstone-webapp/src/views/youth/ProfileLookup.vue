@@ -4,12 +4,14 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
 <template>
   <div class="profile_lookup_youth">
+    <div class="content">
     <top-bar/>
     <h1 class="title">Profile Lookup</h1>
     <PageHeader pageCategory="Youth Headers" pageName="Profile Lookup"></PageHeader>
     <br />
     <YouthIDSelector @selected="load_youth"/>
     <br />
+
     <!-- This has to be v-show, not v-if, so that the components are actually loaded -->
     <div ref="body_fields" v-show="currentProfile != null">
 
@@ -21,22 +23,11 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
         showOptionalFields
       />
 
-      <br /><br />
-
-      <h3>Active Periods & Classes</h3>
-      <PeriodsClassesDisplay
-        :active_periods="current_active_periods"
-        :seasons="period_metadata['seasons']"
-        v-bind="period_metadata"
-        disable_selection
-        style="max-width: 95%; margin:auto"
-      />
-
-      <br />
+      <!-- <br />
 
       <ApronBar
         :profile="currentProfile"
-      />
+      /> -->
 
       <br /><br />
 
@@ -51,9 +42,10 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
     <div v-show="currentProfile == null">
       <br>
-      <p>To see your profile, start typing your name or ID into the bar above and select your name when it comes up.</p>
+      <p style="margin: 0 2rem;">To see your profile, start typing your name or ID into the bar above and select your name when it comes up.</p>
     </div>
-
+    </div>
+  <Footer/>
   </div>
 </template>
 

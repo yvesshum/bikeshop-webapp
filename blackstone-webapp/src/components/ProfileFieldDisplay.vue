@@ -3,6 +3,18 @@
 
     {{ value_string }}
 
+      <!-- Display each item in an array -->
+      <!-- <div v-if="type === 'Array'">
+        <div v-for="item in get_original_value()" class="field_list_element">
+          {{ item }}
+        </div>
+      </div> -->
+
+      <!-- Display the string version of the value -->
+      <!-- <div v-else>
+        {{ get_string() }}
+      </div> -->
+
   </div>
 </template>
 
@@ -42,6 +54,12 @@ export default {
         //   let num = val + "";
         //   num += "__________".substring(num.length);
         //   return `(${num.substring(0,3)}) ${num.substring(3,6)}-${num.substring(6,10)}`;
+
+        // Display an array as a list with commas
+        case "Array":
+          let arr = "";
+          val.forEach(item => arr += item + ", ");
+          return arr;
 
         // Display a time in 12h format (as opposed to 24h)
         case "Time":

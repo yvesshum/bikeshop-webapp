@@ -9,10 +9,25 @@
     <br />
 
     <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
-      <HoursDisplay v-for="item in hour_fields" v-bind="item" />
+      <div class="hours_div" v-for="item in hour_fields">
+        <p class="hours_num">
+          <span class="hours_whole">{{item.Whole!=""? item.Whole : "0"}}</span>
+          <span class="hours_decimal" v-show="item.Decimal != 'NaN'">.{{item.Decimal}}</span>
+        </p>
+        <p class="hours_name"> {{item.Name}} </p>
+      </div>
     </div>
 
     <br />
+
+    <PeriodsClassesDisplay
+      :active_periods="active_periods"
+      :seasons="season_list"
+      v-bind="periodData"
+      disable_selection
+      style="max-width: 95%; margin:auto"
+    />
+
     <br />
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
@@ -22,7 +37,11 @@
         <tr v-for="field in section.Data" v-show="show_container(field)">
           <td style="width: 35%">
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
-            <b-badge v-show="needs_warning(field) && disableWarnings != true" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
+            <b-badge
+              v-show="hideWarnings == undefined && needs_warning(field)"
+              pill variant="warning" class="warning_icon"
+              v-b-tooltip.hover.html="warning_msg(field)"
+            >!</b-badge>
           </td>
           <td style="width: 65%">
             <ProfileFieldDisplay v-model="local_values[field]" :type="field_types[field]"></ProfileFieldDisplay>
@@ -202,21 +221,21 @@ import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 
 import ToggleButton from '@/components/ToggleButton';
-import HoursDisplay from '@/components/HoursDisplay';
 import SpecialInputReset from '@/components/SpecialInputReset';
 import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
+import SaveBar from '@/components/SaveBar';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "headerDoc", "periodData", "edit", "showOptionalFields", "hideFields", "hideWarnings"],
   components: {
     ToggleButton,
-    HoursDisplay,
     SpecialInputReset,
     ProfileFieldDisplay,
     PeriodsClassesDisplay,
+    SaveBar,
     DiscardResetSave,
   },
 
@@ -248,6 +267,7 @@ export default {
         "Class",
       ],
 
+      hour_fields_list: ["Hours Earned", "Hours Spent", "Pending Hours"],
       temp_fields: [],
 
       row_status: null,
@@ -361,19 +381,15 @@ export default {
 
     hour_fields: function() {
 
-      // If local values hasn't been set yet, give an empty list
-      if (this.local_values == null) return [];
-
-      // Compute the spendable balance: earned - spent
-      let balance = this.local_values["Hours Earned"] - this.local_values["Hours Spent"];
-
-      // Return the list of objects
-      return [
-        {title: "Hours Earned",  value: this.local_values["Hours Earned"]},
-        {title: "Hours Spent",   value: this.local_values["Hours Spent"]},
-        {title: "Pending Hours", value: this.local_values["Pending Hours"]},
-        {title: "Spendable Balance", value: balance},
-      ];
+      this.hour_fields_list.forEach(title => {
+        let hours = this.format_hours(title, 2);
+        temp.push({
+          Name:    title,
+          Whole:   hours.substring(0,hours.indexOf('.')),
+          Decimal: hours.substring(hours.indexOf('.')+1),
+        });
+      });
+      return temp;
     },
 
     youth_name: function() {
@@ -530,6 +546,13 @@ export default {
         // TODO: This might have to be more sophisticated for different data types
         return field != "";
       };
+    },
+
+    // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
+    format_hours: function(field, dp) {
+      if (this.local_values == null) return "";
+      let hours = this.local_values[field];
+      return Number(Math.round(parseFloat(hours + 'e' + dp)) + "e-" + dp).toFixed(dp);
     },
 
     // Set the status of a given field in the Status object and make appropriate changes

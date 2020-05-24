@@ -1,9 +1,10 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
+        <h1 class="title">Log hours for one or more youth</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Log Hours for Multiple Youths"></PageHeader>
         <div class="loghours-page">
-            <h1>Log hours for one or more youth</h1>
-            <PageHeader pageCategory="Staff Headers" pageName="Log Hours for Multiple Youths"></PageHeader>
             <p v-if="profilesToAdd.length === 0">No youths selected</p>
             <div v-for="profile in profilesToAdd" :key="profile['ID']">
               <YouthListCard :youth="profile" :deleteHandler="function(){removeProfileToAdd(profile)}"/>
@@ -14,7 +15,7 @@
             <h3>Hours</h3>
             <div v-for="(category, index) in categories" :key="index" class="input-field">
                 <p style="text-align: center; margin-bottom:3px">{{category}}</p>
-                <VueNumberInput 
+                <VueNumberInput
                     center
                     v-model="hours[category]"
                     :min="0"
@@ -29,7 +30,7 @@
             </div>
             <div class="notes">
                 <h3>Notes</h3>
-                <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!" style="text-align:center; width = 30rem">
+                <input type="text" class="form-control" v-model="notes" placeholder="Leave a note!" style="text-align:center;">
             </div>
             <br>
             <b-button variant="info" @click="handleSubmit">Submit!</b-button>
@@ -40,19 +41,19 @@
         <!-- Add Modal -->
         <b-modal  hide-footer v-model="addModalVisible">
             <template slot="modal-title">
-                Add a Youth
+                <h4 style="color: black;">Add a Youth</h4>
             </template>
             <div class ="add-form">
                 <h2 style="text-align: center" v-b-tooltip.hover title="If a youth is not active, head over to Manager Periods and change it first">Select an active youth!</h2>
                 <YouthIDSelector @selected="handleSelect" ref="selector"/>
                 <br>
-                <h3 style="text-align: center">You have selected:</h3>
+                <h3>You have selected:</h3>
                 <div v-for="(item, index) in selected" :key="index">
                   <YouthListCard :youth="item" :deleteHandler="function(){removeSelected(item)}"/>
                 </div>
 
                 <br>
-                
+
             </div>
             <b-button class="mt-3" block @click="closeAddModal" variant="danger">Cancel</b-button>
             <b-button class="mt-3" block @click="addYouth" variant="success">Add to logging list</b-button>
@@ -61,7 +62,7 @@
         <!-- Loading Modal -->
         <b-modal v-model = "loadingModalVisbile" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
             <template slot="modal-title">
-                Doing some work...
+                <h4 style="color: black;">Doing some work...</h4>
             </template>
             <div class="d-block text-center">
                 <div slot="table-busy" class="text-center text-danger my-2">
@@ -74,7 +75,7 @@
         <!-- Success Modal -->
         <b-modal v-model = "successModalVisbile" hide-footer lazy hide-header-close >
             <template slot="modal-title">
-                Success!
+                <h4 style="color: black;">Success!</h4>
             </template>
             <div class="d-block text-center">
                 <div slot="table-busy" class="text-center my-2">
@@ -84,8 +85,8 @@
             <b-button class="mt-3" block @click="closeSuccessModal" variant="success">Ok</b-button>
         </b-modal>
 
-        
-        
+        </div>
+        <Footer/>
     </div>
 </template>
 
@@ -150,13 +151,13 @@ export default {
                 //Check for duplicates
                 if (this.profilesToAdd.filter(p => p.ID === res.ID).length === 0){
                     this.profilesToAdd.push(res);
-                } 
+                }
             })
             this.selected = [];
             this.closeAddModal();
         },
 
-        removeSelected(item) { 
+        removeSelected(item) {
             this.selected.splice(this.selected.indexOf(item), 1);
         },
 
@@ -203,7 +204,7 @@ export default {
                     window.alert("Error on setting new Globl Pending Hours Entry, error: " + err)
                 }
 
-                //Edit the youth's pending hours 
+                //Edit the youth's pending hours
                 let totalHours = 0;
                 let keys = Object.keys(this.hours);
                 for (let i = 0; i < keys.length; i++) {
@@ -216,10 +217,10 @@ export default {
                 console.log('logged.')
             }
 
-            //Reset locally 
+            //Reset locally
             this.profilesToAdd = [];
             this.notes = "Logged by staff"
-            this.categories.forEach(category => { 
+            this.categories.forEach(category => {
                 this.hours[category] = 0;
             })
 
@@ -233,7 +234,7 @@ export default {
         this.categories = categories;
 
         //set hour logs to be 0 by default
-        this.categories.forEach(category => { 
+        this.categories.forEach(category => {
             this.hours[category] = 0;
         })
     },
@@ -253,11 +254,16 @@ export default {
     align-items: center;
     margin: 0 auto;
     width: 70%;
+    margin-top: 2rem;
 }
 
-.notes {
-    width: 40%
+.add-form {
+  text-align: center;
 }
 
+
+.title {
+margin-bottom: 1rem;
+}
 
 </style>

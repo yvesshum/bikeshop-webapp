@@ -1,18 +1,21 @@
 <template>
-  <div class="manage_periods">
+ <div class="content">
+   <b-row style="padding:0; margin:0">
+    <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
     <PageHeader pageCategory="Staff Headers" pageName="Manage Youth Activity Period"></PageHeader>
     <br />
 
-    <div class="col-container">
+    <div class="col-container flex-direction">
       <div class="col-left">
+        <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
+
         <ButtonArrayHeader
-          :left="button_header_l" :right="button_header_r" :current="display_period"
+          :left ="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
         >
-          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
@@ -24,13 +27,25 @@
           @rowClick="row_click"
         />
 
-        <YouthIDSelector periods="all"
+        <!-- <YouthIDSelector periods="all"
           :args="{multiple: true, hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
           @selected="s => selected_bar = s"
-        />
+        /> -->
       </div>
 
       <div class="col-right">
+        <b-modal v-model="viewProfileModalVisible" hide-footer lazy>
+      <div ref="body_fields" v-show="currentProfile != null">
+        <ProfileFields
+          :profile="currentProfile"
+          :headerDoc="header_doc"
+          :periodData="profile_period_data"
+          hideWarnings
+        />
+        <br />
+        <br />
+      </div>
+    </b-modal>
         <div v-if="selected_youths.length == 0">
           <h3>Youth Information</h3>
           Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
@@ -54,8 +69,11 @@
               &times;
             </b-button>
           </PeriodsClassesDisplay>
-
-          <ProfilePopup :ID="selected_youth.ID" />
+          <b-button
+            @click="viewProfile"
+            style="margin-bottom: 1rem"
+            variant="info"
+          >View Profile</b-button>
         </div>
 
         <div v-else>
@@ -208,8 +226,12 @@
           </template>
         </ModalDRS>
 
-      </div>
-    </div>
+        Please take note of these and try again.
+      </template>
+    </SaveBar>
+   </div>
+   </b-row>
+    <Footer/>
   </div>
 </template>
 
@@ -229,13 +251,10 @@ import Table from '@/components/Table';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
-import ModalDRS from '@/components/ModalDRS';
+import SaveBar from '@/components/SaveBar';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
-import ProfilePopup from "@/components/ProfilePopup";
 import PageHeader from "../../components/PageHeader.vue"
-
-// Scripts
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -251,10 +270,9 @@ export default {
     PeriodsClassesDisplay,
     YouthIDSelector,
     ButtonArrayHeader,
-    ModalDRS,
+    SaveBar,
     ProfileFields,
     ApronBar,
-    ProfilePopup,
     PageHeader,
   },
 
@@ -333,6 +351,8 @@ export default {
     await this.load_metadata();
     await this.load_periods();
     this.switch_to("Current");
+    await this.getHeaders();
+    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
 
     this.period_status = new Object();
 
@@ -851,6 +871,41 @@ export default {
       }
       return cell.getValue();
     },
+
+ async viewProfile() {
+      let ID = this.selected_youth.ID;
+      let snapshot = db.collection("GlobalYouthProfile").doc(ID);
+      this.currentProfile = await snapshot.get();
+      this.viewProfileModalVisible = true;
+
+      // window.alert("This is an upcoming feature :) look forward to it!")
+    },
+      async getHeaders() {
+      let headers = await db
+        .collection("GlobalFieldsCollection")
+        .doc("Checked In")
+        .get();
+      headers = headers.data().fields;
+      let fields = [];
+      for (let i = 0; i < headers.length; i++) {
+        fields.push({ key: Object.keys(headers[i])[0], sortable: true });
+      }
+      this.fields = fields;
+    },
+   load_profile_data: async function() {
+        this.profile_periods_doc = await this.periods_db.doc("metadata").get();
+        var data = this.periods_doc.data();
+
+        await Period.setSeasons(data["Seasons"]);
+        this.profile_periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
+
+        this.profile_period_data = {
+          cur_period: data["CurrentPeriod"],
+          reg_period: data["CurrentRegistrationPeriod"],
+          seasons:    data["Seasons"],
+          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
+        };
+      },
   }
 
 }
@@ -869,10 +924,13 @@ export default {
   }
 
   .col-container:after {
-    content: "";
-    display: table;
-    clear: both;
+    display:inline-flex;
+  flex-wrap:wrap;
   }
+
+  .flex-direction{
+  flex-direction:row;
+}
 
   .col-left {
     float: left;
@@ -888,7 +946,18 @@ export default {
     padding-right: 3%;
   }
 
-  .changed {
-    font-weight: bold;
+  @media screen and (max-width: 800px) {
+  .flex-direction{
+  flex-direction:column;
   }
+.col-left{
+  width:100%;
+  padding: 0 3%;
+  }
+  .col-right{
+    width:100%;
+    padding: 1rem 3%;
+  }
+
+}
 </style>

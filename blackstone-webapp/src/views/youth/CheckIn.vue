@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div class="content">
     <top-bar/>
     <h2 style="margin-top: 20px; margin: 0px 10px;">
         Check In/Out: {{ date }}
@@ -81,6 +82,8 @@
         <b-button class="mt-3" block @click="$bvModal.hide('checkout-status-modal')">Done</b-button>
       </div>
     </b-modal>
+    </div>
+    <Footer/>
   </div>
 </template>
 
@@ -221,7 +224,7 @@ export default {
             let newPendingHours = Math.round((parseFloat(profile["Pending Hours"]) + categoryHourSum) * 100) / 100;
 
             await db.collection("GlobalYouthProfile").doc(this.ID).update({
-                "Pending Hours": newPendingHours.toString()
+                "Pending Hours": newPendingHours
             })
 
             // check user out of realtime database
@@ -315,5 +318,9 @@ export default {
 
 .input-field {
     margin-bottom: 1rem
+}
+
+.content {
+  min-height: calc(100vh - 110px);
 }
 </style>

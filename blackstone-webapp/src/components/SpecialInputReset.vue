@@ -1,13 +1,29 @@
 <template>
-  <div class="special_input_reset">
+  <div class="input_display_toggle">
 
-    <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
-    </SpecialInput>
+    <div ref="display" v-if="!editMode">
 
-    <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
-      <div v-if="get_original_string().length == 0">Clear</div>
-      <div v-else>Reset</div>
-    </b-button>
+      <!-- Display each item in an array -->
+      <div v-if="type === 'Array'">
+        <div v-for="item in get_original_value()" class="field_list_element">
+          {{ item }}
+        </div>
+      </div>
+
+      <!-- Display the string version of the value -->
+      <div v-else>
+        {{ get_original_string() }}
+      </div>
+    </div>
+
+    <div ref="edit_container" v-else>
+      <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
+      </SpecialInput>
+      <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
+        <div v-if="get_original_string().length == 0">Clear</div>
+        <div v-else>Reset</div>
+      </b-button>
+    </div>
 
   </div>
 </template>

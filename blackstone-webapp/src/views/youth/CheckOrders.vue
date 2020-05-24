@@ -1,22 +1,28 @@
 <template>
     <div>
-        <top-bar/>
-        <h1 class="title">Check Orders</h1>
-        <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
-        <b-table
-            :items="items"
-            :fields="fields"
-            responsive="sm"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="sortDesc"
-            :busy="isBusy"
-        >
-            <div slot="table-busy" class="text-center text-danger my-2">
-            <b-spinner class="align-middle"></b-spinner>
-            <strong>Loading...</strong>
+        <div class="content">
+            <top-bar/>
+            <h1 class="title">Check Orders</h1>
+            <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
+
+            <p v-if="noData">No Data Found</p>
+            <div v-else>
+                <b-table
+                    :items="items"
+                    :fields="fields"
+                    responsive="sm"
+                    :sort-by.sync="sortBy"
+                    :sort-desc.sync="sortDesc"
+                    :busy="isBusy"
+                >
+                    <div slot="table-busy" class="text-center text-danger my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong>Loading...</strong>
+                    </div>
+                </b-table>
             </div>
-        </b-table>
-        <p v-if="!items.length">No orders found!</p>
+        </div>
+        <Footer/>
     </div>
 
 </template>
@@ -38,6 +44,7 @@ export default {
                 fields: [],
                 items: [],
                 isBusy: true,
+                noData: null,
             };
     },
 
@@ -49,11 +56,17 @@ export default {
                 for (let i = 0; i < headers.length; i++) {
                     fields.push({key: headers[i], sortable: true});
                 }
-                this.fields = fields;
+                this.fields = JSON.parse(JSON.stringify(fields)).map(el=>{
+                  return {
+                    key:Object.keys(el.key)[0],
+                    sortable:true
+                    }}
+                  );
         },
 
         async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
+                this.noData = snapshot.empty
                 this.items = this.formatCollection(snapshot);
         },
 
@@ -82,9 +95,12 @@ export default {
 
 }
 
+
 </script>
+
 <style>
 .title {
 margin-bottom: 1rem;
 }
+
 </style>

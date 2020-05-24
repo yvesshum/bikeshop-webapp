@@ -226,7 +226,7 @@ export default {
 
     format_date_time: function(cell) {
       var val = cell.getValue();
-      var date = get_as_date(val);
+      var date = this.get_as_date(val);
 
       var day     = this.get_date(date);
       var weekday = this.get_weekday(date);
@@ -245,8 +245,8 @@ export default {
       var val = cell.getValue();
 
       if (Array.isArray(val)) {
-        let date1 = get_as_date(val[0]);
-        let date2 = get_as_date(val[1]);
+        let date1 = this.get_as_date(val[0]);
+        let date2 = this.get_as_date(val[1]);
 
         if (this.same_day(date1, date2)) {
           day     = this.get_date(date1);
@@ -260,7 +260,7 @@ export default {
       }
 
       else {
-        let date = get_as_date(val);
+        let date = this.get_as_date(val);
         day     = this.get_date(date);
         weekday = this.get_weekday(date);
       }
@@ -270,7 +270,7 @@ export default {
 
     format_time: function(cell) {
       var val = cell.getValue();
-      var date = get_as_date(val);
+      var date = this.get_as_date(val);
 
       var time = date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -294,7 +294,7 @@ export default {
     date_filter: function(filters, option) {
 
       var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = get_as_date(datestamp);
+      var date = this.get_as_date(datestamp);
 
       // Result will be true if every filter passes
       var result = filters.every(filter => {
@@ -462,8 +462,8 @@ export default {
 
     numeric_range_filter: function(search_range, option) {
 
-      let above = search_range.min == null ? true : option >= parseInt(search_range.min);
-      let below = search_range.max == null ? true : option <= parseInt(search_range.max);
+      let above = search_range.min == null ? true : option >= parseFloat(search_range.min);
+      let below = search_range.max == null ? true : option <= parseFloat(search_range.max);
 
       return above && below;
     },
@@ -475,7 +475,7 @@ export default {
     time_range_filter: function(search_range, option) {
 
       // Interpret the current cell's value
-      var val = get_as_date(option);
+      var val = this.get_as_date(option);
       var hour = val.getHours().toString();
       var mins = val.getMinutes().toString();
       var time = [hour, mins];
@@ -522,8 +522,8 @@ export default {
     // =-= Sorters =-=-=
 
     date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-      let a_date = (Array.isArray(a)) ? get_as_date(a[0]) : get_as_date(a);
-      let b_date = (Array.isArray(b)) ? get_as_date(b[0]) : get_as_date(b);
+      let a_date = (Array.isArray(a)) ? this.get_as_date(a[0]) : this.get_as_date(a);
+      let b_date = (Array.isArray(b)) ? this.get_as_date(b[0]) : this.get_as_date(b);
       return a_date.getTime() - b_date.getTime();
     },
 
@@ -607,6 +607,14 @@ export default {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
 
+
+    // Error checking to get a Date object from the database
+    // Should be a Timestamp, but handles error in case it isn't
+    get_as_date: function(date_obj) {
+      return (date_obj.toDate == undefined)
+        ? new Date(date_obj.seconds * 1000)
+        : date_obj.toDate();
+    }
   }
 }
 </script>

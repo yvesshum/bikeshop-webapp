@@ -88,6 +88,8 @@ Emits:
                     return;
                 }
 
+                this.$emit("load_start", null);
+
                 // Init vars
                 let group_opts = this.groupByOptions != null;
                 this.loaded_groups = new Object;
@@ -206,6 +208,8 @@ Emits:
                 this.$emit("table", this.table);
 
                 this.table.redraw();
+
+                this.$emit("load_complete", null);
             },
 
             // If the table headers change, replace them in the Tabulator object

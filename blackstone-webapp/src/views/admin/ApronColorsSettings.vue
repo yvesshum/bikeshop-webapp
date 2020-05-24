@@ -1,5 +1,6 @@
 <template>
     <div v-if="dataLoaded">
+      <div class="content">
         <top-bar/>
         <br>
         <h1>Apron Colors Settings</h1>
@@ -13,7 +14,8 @@
         <hr class="divider">
 
         <SettingsBottomNote/>
-
+      </div>
+      <Footer/>
     </div>
 
 </template>

@@ -2,12 +2,12 @@ import firebase_app from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/database'
 const config = {
-    apiKey: "AIzaSyA39Jp3rVTwBrn__rkjbAFp2EZalfZVHYs",
-    authDomain: "bikeshoptesting-9e034.firebaseapp.com",
-    databaseURL: "https://bikeshoptesting-9e034.firebaseio.com",
-    projectId: "bikeshoptesting-9e034",
-    storageBucket: "bikeshoptesting-9e034.appspot.com",
-    messagingSenderId: "50618401035"
+    apiKey: "AIzaSyASx3iKdwsX64SrMpjxCp9rAM8aQsHJLbI",
+    authDomain: "blackstone-production.firebaseapp.com",
+    databaseURL: "https://blackstone-production.firebaseio.com",
+    projectId: "blackstone-production",
+    storageBucket: "blackstone-production.appspot.com",
+    messagingSenderId: "190399094900",
 };
 
 firebase_app.initializeApp(config);

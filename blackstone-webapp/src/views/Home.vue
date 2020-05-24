@@ -1,5 +1,6 @@
 <template>
   <div class="home" v-if="ready">
+    <div class="content">
     <top-bar :addPadding="false"/>
     <SpecialInput input="Datetime" :arguments="{}"/>
     <div id="menu_container">
@@ -38,7 +39,10 @@
       <div class="heading">
           <h1>Staff</h1>
       </div>
+
+
       <div role="tablist" >
+        
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-1>Youth Activity Management</h5>
@@ -46,12 +50,12 @@
           <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
             <b-card-body>
                 <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
-                <!--- <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button> -->
-                <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button>
+                <!-- <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button> -->
                 <button onclick="location.href='/manage-periods'" class="btn btn-outline-info btn-block" type="button">Manage Youth Activity Periods</button>
             </b-card-body>
           </b-collapse>
         </b-card>
+     
 
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
@@ -90,6 +94,7 @@
           </b-collapse>
         </b-card>
 
+        
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
             <h5 href="#" v-b-toggle.accordion-5>Statistics</h5>
@@ -100,8 +105,8 @@
             </b-card-body>
           </b-collapse>
         </b-card>
+     
     </div>
-
     <div class="heading">
         <h1>Admin</h1>
     </div>
@@ -112,12 +117,13 @@
         </b-card-header>
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
-            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
-            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile Staff View</button>
-            <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
+            <!-- <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
+            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration</button>
+            <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button> -->
             <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Essay Questions</button>
             <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Class Settings</button>
-            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button>
+            <!-- <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
+            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button> -->
             <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Page Headers</button>
 
           </b-card-body>
@@ -126,9 +132,8 @@
   </div>
     </div>
 </div>
-<footer>
-    <p class="copyright">Blackstone Bicycle Works © 2019, version 0.1a</p>
-</footer>
+</div>
+<Footer/>
 </div>
 
 </template>
@@ -154,7 +159,7 @@ export default {
         const currentUser = await firebase.auth().currentUser;
         console.log('c', currentUser.email);
         if (currentUser) {
-            if (currentUser.email === "yvesshum@uchicago.edu") {
+            if (currentUser.email === "staff@blackstonebikes.com") {
                 this.isStaff = true;
             }
         }
@@ -207,12 +212,6 @@ h5:hover {
   color: #007399;
   width: 20rem;
   height: 8rem;
-}
-
-footer {
-  background-color: #fff;
-  color: grey;
-  padding: 2rem;
 }
 
 h4 {

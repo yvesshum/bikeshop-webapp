@@ -1,6 +1,7 @@
 <!--Values in this table are naturally reactive to changes to realtime database-->
 <template>
   <div>
+    <div class="content">
     <top-bar />
     <h1 class="title">Currently Checked-In Youth</h1>
     <PageHeader pageCategory="Staff Headers" pageName="Currently Checked In"></PageHeader>
@@ -36,13 +37,11 @@
         />
 
         <br />
-
-        <ApronBar :profile="currentProfile" />
-
-        <br />
         <br />
       </div>
     </b-modal>
+    </div>
+    <Footer/>
   </div>
 </template>
 

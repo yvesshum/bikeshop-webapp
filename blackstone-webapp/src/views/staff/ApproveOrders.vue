@@ -1,5 +1,6 @@
 <template>
     <div>
+        <div class="content">
         <top-bar/>
         <h1 class="title">Order Status Dashboard</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Approve Orders"></PageHeader>
@@ -79,6 +80,8 @@
             <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
 
         </b-modal>
+        </div>
+        <Footer/>
     </div>
 
 
@@ -119,15 +122,14 @@
                 this.selected = items;
             },
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("StaffOrderApproval").get();
                 headers = headers.data();
                 let fields = [];
-                ['required', 'optional', 'hidden'].forEach(ftype => { //specific ordering
-                    for (let i = 0; i < headers[ftype].length; i ++) {
-                        fields.push({key: headers[ftype][i], sortable:true});
-                }})
+                for (let i = 0; i < headers.fields.length; i++) {
+                  fields.push({key: Object.keys(headers.fields[i])[0], sortable: true});
+                }
                 this.fields = fields;
-            },
+                  },
 
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
@@ -342,8 +344,8 @@
                     })
                 }
                 else { //if rejecting document is of pending status
-                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
-                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"])*100)/100);
+                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
+                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent,
                         "Pending Hours": newPendingHours
