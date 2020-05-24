@@ -38,7 +38,7 @@
                 var headerText = pageHeaders[this.pageCategory][this.pageName];
                 headerText = headerText.split("\\n").join("\n");
                 this.headerText = headerText;
-            },
+            }
 
         },
         async mounted() {

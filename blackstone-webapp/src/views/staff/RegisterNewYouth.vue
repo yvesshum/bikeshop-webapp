@@ -5,18 +5,23 @@
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
         
         <div class = "topDiv">
-          <b-form-select v-model="changeReturningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
+          <b-button-group class="button-group-container" style="margin-bottom:10px" size="lg">
+              <b-button class="major-button" :variant="newActive" @click="switchNewYouth">New</b-button>
+              <div class="vl"></div>
+              <b-button class="major-button" :variant="returningActive" @click="switchReturningYouth">Returning</b-button>
+          </b-button-group>
+          <!-- <b-form-select v-model="changeReturningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select> -->
         </div>
+        
         
         <div v-if="returningYouth == 'New Youth'">
           <h3 style="margin: 20px">Register a new Youth here!</h3>
-          <PageHeader :key="newyouthheader" pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
+          <PageHeader pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
         </div>
         <div v-if="returningYouth == 'Returning Youth'">
           <h3 style="margin: 20px">Register a returning Youth here!</h3>
-          <PageHeader :key="returningyouthheader" pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader>
+          <span><PageHeader pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader></span>
         </div>
-
         <div v-if="returningYouth != '-'">
 
           <div class="category-container">
@@ -24,28 +29,30 @@
                   <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
                     <h5 href="#" v-b-toggle.accordion-returning>Required Fields</h5>
                   </b-card-header>
-                  <b-collapse id="accordion-returning" accordion="my-accordion" role="tabpanel">
+                  <b-collapse id="accordion-returning" visible accordion="my-accordion" role="tabpanel">
                       <div v-if="returningYouth == 'Returning Youth'">
                       
                         <p class="field_header">Enter Your Youth ID:</p>
-                      
-                        <div class = "specialDiv">
-                          <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
-                          </br>
+                          <div class = "specialDiv">
+                              <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
+                          </div>
                           <div v-for="field in requiredFields">
                             <div v-if="field.name == 'Class'">
+                              <div class = "specialDiv">
                                 <p class="field_header">{{field.name}}</p>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
+                              </div>
                             </div>
                             <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
                                 <div v-for="question in essayQuestions[field.value]">
                                   <p class="field_header">{{question}}</p>
-                                    <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
-                                    </SpecialInput>
+                                    <div class = "specialDiv">
+                                      <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                                      </SpecialInput>
+                                    </div>
                                 </div>
                             </div>
-                          </div>
                         </div>
                     </div>
                     <div v-if="returningYouth == 'New Youth'">
@@ -65,7 +72,6 @@
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
                                     </div>
-                                    <br>
                                   </div>
                               </div>
                           </div>
@@ -162,6 +168,7 @@
     import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
     import PageHeader from "@/components/PageHeader.vue"
+    import moment from 'moment'
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
@@ -179,7 +186,7 @@
         data() {
             return {
                 listenerRef: "",
-                requiredFields: [], //[{name: "YouthID", value =""}, {name: "ItemID", value = ""}]
+                requiredFields: [],
                 optionalFields: [],
                 hiddenFields: [],
                 modalVisible: false,
@@ -193,14 +200,11 @@
                     "placeholder": "0"
                 },
                 returningYouth: "-",
-                returningOptions: [
-                    { value: '-', text: '-' },
-                    { value: 'New Youth', text: 'New Youth' },
-                    { value: "Returning Youth", text: 'Returning Youth' }
-                ],
                 returningYouthID: null,
                 essayQuestions : {},
                 answers : {},
+                newActive : 'secondary',
+                returningActive : 'secondary',
             };
         },
         computed:{
@@ -213,22 +217,24 @@
                   this.errorModalVisible = newErrorValue;
                 }
             },
-            changeReturningYouth : {
-               set: function (newReturningValue){
-                  this.loadingModalVisible = true;
-                  this.returningYouth = newReturningValue;
-                  // Clear the fields
-                  // for (let i = 0; i < this.requiredFields.length; i ++) {
-                  //     this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
-                  // }
-                  // for (let i = 0; i < this.optionalFields.length; i ++) {
-                  //     this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
-                  // }
-                  this.loadingModalVisible = false;
-               }
-            }
         },
         methods: {
+            async switchNewYouth(){
+              this.loadingModalVisible = true;
+              this.returningYouth = "-";
+              this.newActive = 'info';
+              this.returningActive = 'secondary';
+              this.returningYouth = 'New Youth';
+              this.loadingModalVisible = false;
+            },
+            async switchReturningYouth(){
+              this.loadingModalVisible = true;
+              this.returningYouth = "-";
+              this.newActive = 'secondary';
+              this.returningActive = 'info';
+              this.returningYouth = "Returning Youth";
+              this.loadingModalVisible = false;
+            },
             async getFields() {
                 let f = await fieldsRef.get();
                 return f.data();
@@ -252,6 +258,9 @@
                     else if (curName === "Last Name") this.requiredFields[i]["value"] = value.split(" ")[1];
                     else if (curName === "Youth ID") this.requiredFields[i]["value"] = value.split(" ")[2];
                 }
+            },
+            getDMY(date){
+              return date.getUTCDate() + " " + date.getUTCMonth() + " " + date.getUTCFullYear();
             },
             async submit() {
                 //if an error field has been returned
@@ -328,7 +337,16 @@
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                            if(data[i]["type"] == "Date"){
+                                console.log(initSpecialInputVal(data[i]["type"]));
+                                let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
+                                let given_date = this.getDMY(new Date(data[i]["value"].seconds * 1000));
+                                console.log(default_date);
+                                console.log(given_date);
+                                if (default_date != given_date){
+                                    input[data[i]["name"]] = data[i]["value"];
+                                }
+                            } else if (data[i]["value"] != initSpecialInputVal(data[i]["type"])){
                                 input[data[i]["name"]] = data[i]["value"];
                             }
                         }
@@ -344,7 +362,16 @@
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            if(data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                            if(data[i]["type"] == "Date"){
+                              console.log(initSpecialInputVal(data[i]["type"]));
+                              let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
+                              let given_date = this.getDMY(new Date(data[i]["value"].seconds  * 1000));
+                              console.log(default_date);
+                              console.log(given_date);
+                              if (default_date != given_date){
+                                  input[data[i]["name"]] = data[i]["value"];
+                              }
+                            } else if (data[i]["value"] != initSpecialInputVal(data[i]["type"])){
                                 input[data[i]["name"]] = data[i]["value"];
                             }
                         }
@@ -359,8 +386,6 @@
                     for(var question in this.answers[currentClass]){
                         input["Essay"][question] = this.answers[currentClass][question];
                     }
-                    
-                    console.log(input);
                     let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
@@ -420,8 +445,9 @@
             async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
-                if(!this.returningYouth == "New Youth"){
-                    if (!this.returningYouthID.length) ret.push("Returning Youth ID");
+                if(this.returningYouth == "Returning Youth"){
+                    if (this.returningYouthID == null || this.returningYouthID == undefined
+                      ||!this.returningYouthID.length) ret.push("Returning Youth ID");
                 }
                 for (let i = 0; i < this.requiredFields.length; i++) {
                     let currentField = this.requiredFields[i];
@@ -601,14 +627,23 @@
     }
     
     .topDiv{
-        width: 35%;
+        width: 80%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
     }
     
+    .major-button{
+        width: 50%;
+    }
+    
+    .button-group-container{
+        width: 400px;
+        max-width: 100%;
+    }
+    
     .specialDiv{
-        width: 60%;
+        width: 55%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
@@ -628,14 +663,18 @@
     }
     
     .category-container {
-      /* padding-top: 6rem; */
       margin: auto;
-      max-width: 750px;
+      max-width: 800px;
       background-color: #ffffff;
     }
     
     h5:hover {
       text-decoration: underline;
     }
+    
+    .vl {
+      border-left: 2px solid white;
+    }
 
 </style>
+

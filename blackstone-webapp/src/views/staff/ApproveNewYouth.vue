@@ -5,6 +5,7 @@
         <PageHeader pageCategory="Staff Headers" pageName="Approve New Youth Registration"></PageHeader>
         <div class="toolbarwrapper">
                     <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
+                    <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;">See Essay Answers</b-button>
                     <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
                     <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
@@ -50,27 +51,38 @@
             <div class="d-block text-center">
                 <h3>{{rejectModalMsg}}</h3>
             </div>
-            <b-button class="mt-3" block @click="closeRejectModal" variant = "secondary">cancel</b-button>
-            <b-button class="mt-3" block @click="closeRejectModal(); confirmedDelete();" variant = "danger">proceed</b-button>
+            <b-button class="mt-3" block @click="closeRejectModal" variant = "secondary">Cancel</b-button>
+            <b-button class="mt-3" block @click="closeRejectModal(); confirmedDelete();" variant = "danger">Proceed</b-button>
+        </b-modal>
+        
+        <b-modal v-model = "overwriteModalVisible" hide-footer lazy >
+            <template slot="modal-title">
+                Youth already registered
+            </template>
+            <div class="d-block text-center">
+                <h3>Youth ID {{overwriteID}} has already been registered for this period</h3>
+                <h4>Do you want to overwrite Youth {{overwriteID}}'s current registration or cancel?</h4>
+            </div>
+            <b-button class="mt-3" block @click="closeOverwriteModal" variant = "secondary">Cancel</b-button>
+            <b-button class="mt-3" block @click="closeOverwriteModal(); confirmOverwrite();" variant = "danger">Overwrite Registration</b-button>
         </b-modal>
 
-        <b-modal v-model = "editModalVisible" hide-footer lazy>
+        <b-modal v-model = "essayModalVisible" hide-footer lazy>
             <template slot = "modal-title">
-                Editing
+                Essay Answers
             </template>
-            <!-- <div class="d-block text-center">
-                <h3>Edit the following message:</h3>
-            </div> -->
-            <b-form-textarea
-                    id="textarea"
-                    v-model="editMsg"
-                    placeholder="Enter a new message here.."
-                    rows="2"
-                    max-rows="5"
-            ></b-form-textarea>
-
-            <b-button class="mt-3" block @click="saveNote(); closeEditModal()" variant = "success">Save</b-button>
-            <b-button class="mt-3" block @click="closeEditModal" variant="warning">Cancel</b-button>
+            <div v-if="checkSet(currentAnswers)">
+              <div v-for="qa in currentAnswers">
+                  <p><b>Question: </b> {{qa["question"]}}</p>
+                  <p><b>Answer: </b> {{qa["answer"]}}</p>
+                  <hr>
+              </div>
+            </div>
+            <div v-if="!checkSet(currentAnswers)">
+                No essay questions for this class.
+            </div>
+            
+            <b-button class="mt-3" block @click="closeEssayModal" variant="secondary">Close</b-button>
 
         </b-modal>
 
@@ -83,8 +95,13 @@
             </div> -->
             <div v-for="(category, index) in editSelected" :key="index">
                 Category: <b>{{category.Category}}</b> -
-                <span v-if="category.Value != ''">Currently set to {{category.Value}}</span>
-                <span v-if="category.Value == ''">Currently not set</span>
+                <span v-if="checkSet(category.Value) && category.Type != 'Date'">
+                  Currently set to: {{category.Value}}
+                </span>
+                <span v-if="checkSet(category.Value) && category.Type == 'Date'">
+                  Currently set to: {{formatTimeStampToDate(category.Value)}}
+                </span>
+                <span v-if="!checkSet(category.Value)">Currently not set</span>
                 <br>
                 <SpecialInput v-model="category.NewValue" :inputType="category.Type" :args="arguments">
                 </SpecialInput>
@@ -160,13 +177,67 @@
                 loadingModalHeader: "",
                 deleteAmount: 0,
                 editModalVisible: false,
+                essayModalVisible: false,
                 editSelected: {},
                 currentSeason: null,
                 essayQuestions: {},
+                currentAnswers: null,
+                overwriteID: 0,
+                overwriteModalVisible: false,
             };
 
         },
         methods: {
+            async confirmOverwrite(){
+              let row = this.selected[0];
+              this.showLoadingModal("Doing some work in the background...");
+              let currentYear = this.currentSeason.split(" ")[1];
+              let s = await db.collection("GlobalPeriods").doc(currentYear).get();
+              var current = s.data();
+              for(var i = 0; i < current[this.currentSeason].length; i++){
+                  console.log(current[this.currentSeason][i])
+                  console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                  console.log("Row returning id: " + row["ReturningID"]);
+                  if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
+                      current[this.currentSeason].splice(i, 1);
+                  }
+              }
+              let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
+              if (periodStatus) {
+                  this.closeLoadingModal();
+                  window.alert("Err: Could not remove from period collection");
+                  this.editSelected = {};
+                  return null;
+              }
+              this.approve();
+            },
+            async showEssayAnswers(){
+                this.loadingModalVisible = true;
+                let curRow = this.selected[0];
+                if (curRow == null) {
+                    return null;
+                }
+                var currentClass = curRow["Class"];
+                let questions = this.essayQuestions[currentClass];
+                var currentAnswersLocal = [];
+                if(this.checkSet(questions)){
+                    for (let i = 0; i < questions.length; i++){
+                        currentAnswersLocal.push({
+                          question: questions[i],
+                          answer: curRow["Essay"][questions[i]],
+                        })
+                    }
+                }
+                this.currentAnswers = currentAnswersLocal;
+                this.loadingModalVisible = false;
+                this.showEssayModal();
+            },
+            formatTimeStampToDate(date){
+                return moment(date.toDate()).format("YYYY-MM-DD");
+            },
+            checkSet(value){
+                return (value != "" && value != undefined && value != null);
+            },
             async getEditFields() {
                 let f = await fieldsRef.get();
                 return f.data();
@@ -217,8 +288,8 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Timestamp"] = moment(data["Timestamp"].toDate()).format("YYYY-MM-DD hh:mm a");
-                    data["Birthdate"] = moment(data["DOB"].toDate()).format("YYYY-MM-DD");
+                    data["Timestamp"] = this.formatTimeStampToDate(data["Timestamp"])
+                    data["Birthdate"] = this.formatTimeStampToDate(data["DOB"]);
                     if(data["New or Returning"] == "Returning Youth"){
                         data["New or Returning"] = "Returning Youth - ID: " + data["ReturningID"];
                     }
@@ -270,7 +341,8 @@
                         console.log("Row returning id: " + row["ReturningID"]);
                         if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
                             this.closeLoadingModal();
-                            window.alert("Error: " + row["ReturningID"] + " has already been registered for this quarter.");
+                            this.overwriteID = row["ReturningID"];
+                            this.showOverwriteModal();
                             return null;
                         }
                     }
@@ -390,6 +462,10 @@
             closeRejectModal() {
                 this.rejectModalVisible = false;
             },
+            
+            closeOverwriteModal() {
+                this.overwriteModalVisible = false;
+            },
 
             async getNewData() {
                 await this.getTData();
@@ -439,13 +515,6 @@
 
             },
 
-            editNote() {
-                this.editMsg = this.selected[0]["Notes"];
-                console.log(this.editMsg, this.selected);
-                this.showEditModal();
-
-            },
-
             async editFields() {
                 let curRow = this.selected[0];
                 if (curRow == null) {
@@ -462,8 +531,7 @@
                     req_keys.push(name);
                     req_vals.push(val);
                 });
-                var currentClass = "";
-                console.log("Hello?")
+                var currentClass = curRow["Class"];
                 for (let i = 0; i < req_keys.length; i ++) {
                     editSelectedLocal.push({
                         Category: req_keys[i],
@@ -471,9 +539,6 @@
                         NewValue: curRow[req_keys[i]],
                         Type: req_vals[i]
                     });
-                    if(req_keys[i] == "Class"){
-                        currentClass = curRow[req_keys[i]]
-                    }
                 }
                 console.log(currentClass)
                 var opt_keys = [];
@@ -492,33 +557,38 @@
                 }
                 var questions = this.essayQuestions[currentClass];
                 console.log(questions);
-                for (let i = 0; i < questions.length; i ++){
-                    editSelectedLocal.push({
-                        Category: questions[i],
-                        Value: curRow["Essay"][questions[i]],
-                        NewValue: curRow["Essay"][questions[i]],
-                        Type: "Essay"
-                    });
+                if(this.checkSet(questions)){
+                    for (let i = 0; i < questions.length; i ++){
+                        editSelectedLocal.push({
+                            Category: questions[i],
+                            Value: curRow["Essay"][questions[i]],
+                            NewValue: curRow["Essay"][questions[i]],
+                            Type: "Essay"
+                        });
+                    }
                 }
                 this.editSelected = editSelectedLocal;
                 console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
+            
+            showOverwriteModal() {
+                this.overwriteModalVisible = true;
+            },
+            
+            showEssayModal() {
+                this.essayModalVisible = true;
+            },
+
+            closeEssayModal() {
+                this.essayModalVisible = false;
+            },
 
             showEditModal() {
                 this.editModalVisible = true;
             },
 
             closeEditModal() {
-                this.editModalVisible = false;
-            },
-
-            showEditModal() {
-                this.editModalVisible = true;
-            },
-
-            closeEditModal() {
-                this.editMsg = "";
                 this.editModalVisible = false;
             },
 
@@ -565,7 +635,7 @@
                                 if(this.editSelected[index].Type != "Essay"){
                                     if(this.editSelected[index].Category == "DOB"){
                                         this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
-                                        this.items[i]["Birthdate"] = moment(this.editSelected[index].NewValue.toDate()).format("YYYY-MM-DD");
+                                        this.items[i]["Birthdate"] = this.formatTimeStampToDate(this.editSelected[index].NewValue);
                                     } else {
                                         this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
                                     }
