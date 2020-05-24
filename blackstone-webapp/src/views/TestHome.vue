@@ -9,7 +9,7 @@
 </template>
 
 <script>
-    import {firebase} from '../../firebase';
+    import {firebase} from '@/firebase';
     import StaffManageSkills from "./staff/ManageApronSkills";
     import TopBar from '../components/TopBar';
     export default {

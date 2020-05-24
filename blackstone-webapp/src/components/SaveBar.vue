@@ -1,17 +1,33 @@
 <template>
-	<div class="modal_drs">
+	<div class="save_bar">
 
-		<DiscardResetSave v-show="show_buttons"
-			:hasChanges="hasChanges"
-			:hasUnsaveableChanges="hasUnsaveableChanges"
-			:hideReset="hideReset"
-			:disableIfNoChanges="disableIfNoChanges"
-			:saveVariant="saveVariant"
-			:resetVariant="resetVariant"
-			:discardVariant="discardVariant"
-			@save="save" @reset="reset" @discard="discard"
-		>
-		</DiscardResetSave>
+		<div ref="bottom_bar" class="bottom-bar" v-show="show_bar">
+			<b-button
+				:variant="discard_variant"
+				:disabled="disableIfNoChanges && !has_any_changes"
+				@click="discard"
+				class="change_button"
+			>
+				Discard Changes
+			</b-button>
+			<b-button
+				v-if="!hideReset"
+				:variant="reset_variant"
+				:disabled="disableIfNoChanges && !has_any_changes"
+				@click="reset"
+				class="change_button"
+			>
+				Reset Changes
+			</b-button>
+			<b-button
+				:variant="save_variant"
+				:disabled="disableIfNoChanges && !has_saveable_changes"
+				@click="save"
+				class="change_button"
+			>
+				Save Changes
+			</b-button>
+		</div>
 
 		<b-modal size="lg" v-model="modal_visible" hide-footer lazy>
 			<template slot="modal-header">
@@ -68,82 +84,83 @@
  
 <script>
 import {Status} from "@/scripts/Status.js";
-import DiscardResetSave from '@/components/DiscardResetSave';
-
 export default {
-	name: 'modal_drs',
+	name: 'save_bar',
 	props: {
 		hasChanges: Boolean,
 		hasUnsaveableChanges: Boolean,
 		hideReset: {
 			default: false,
 		},
-
-		// Whether to display the buttons
+		// Whether to display the bar at the bottom of the screen
 		show: {
 			default: true,
 		},
-
-		// If set, display the buttons iff there are changes
+		// If set, display the bar iff there are changes
 		showIfChanges: {
 			default: false,
 		},
-
 		disableIfNoChanges: {
 			default: false,
 		},
-
 		// Variants for the various buttons
 		saveVariant: [String, Function],
 		resetVariant: [String, Function],
 		discardVariant: [String, Function],
-
 		initModal: Function,
 		// initModal: {
 		// 	type: Function,
 		// 	default: () => {},
 		// },
 	},
-	components: {DiscardResetSave},
-
 	data: function() {
 		return {
 			modal_type: null,
 			modal_visible: false,
-
 			success_modal_visible: false,
 			failure_modal_visible: false,
 			no_edit_modal_visible: false,
 		}
 	},
-
 	computed: {
+		save_variant: function() {
+			if (this.saveVariant != undefined) {
+				return this.saveVariant;
+			}
+			return this.has_saveable_changes ? "success" : "outline-success";
+		},
+		reset_variant: function() {
+			if (this.resetVariant != undefined) {
+				return this.resetVariant;
+			}
+			return this.has_any_changes ? "warning" : "outline-warning";
+		},
+		discard_variant: function() {
+			if (this.discardVariant != undefined) {
+				return this.discardVariant;
+			}
+			return this.has_any_changes ? "danger" : "outline-danger";
+		},
 		has_saveable_changes: function() {
 			return this.hasChanges;
 		},
-
 		has_any_changes: function() {
 			return (this.hasChanges || this.hasUnsaveableChanges);
 		},
-
 		show_if_changes: function() {
 			return this.showIfChanges === "" || this.showIfChanges == true;
 		},
-
-		show_buttons: function() {
+		show_bar: function() {
 			return this.show_if_changes ? this.has_any_changes : this.show;
 		}
 	},
-
 	methods: {
 		acceptModal: function() {
 			this.$emit(this.modal_type, this.accept);
 		},
-
 		cancelModal: function() {
 			this.modal_visible = false;
 		},
-
 		show_modal: function(type) {
 			if (this.initModal != undefined) {
 				this.initModal();
@@ -151,21 +168,17 @@ export default {
 			this.modal_type = type;
 			this.modal_visible = true;
 		},
-
 		hide_modal: function() {
 			this.modal_type = null;
 			this.modal_visible = false;
 		},
-
 		accept_no_edit_modal: function() {
 			this.no_edit_modal_visible = false;
 			this.$emit("discard", this.cancel);
 		},
-
 		cancel_no_edit_modal: function() {
 			this.no_edit_modal_visible = false;
 		},
-
 		save: function() {
 			if (this.hasChanges) {
 				this.show_modal("save");
@@ -174,7 +187,6 @@ export default {
 				this.no_edit_modal_visible = true;
 			}
 		},
-
 		reset: function() {
 			if (this.hasChanges) {
 				this.show_modal("reset");
@@ -183,7 +195,6 @@ export default {
 				this.$emit("reset", this.cancel);
 			}
 		},
-
 		discard: function() {
 			if (this.hasChanges) {
 				this.show_modal("discard");
@@ -192,7 +203,6 @@ export default {
 				this.$emit("discard", this.cancel);
 			}
 		},
-
 		get_variant: function(str) {
 			switch (str) {
 				case "save":
@@ -204,7 +214,6 @@ export default {
 			}
 			return 'outline-secondary';
 		},
-
 		accept: function(success) {
 			console.log({success});
 			if (success == undefined) {
@@ -219,7 +228,6 @@ export default {
 				this.failure_modal_visible = true;
 			}
 		},
-
 		cancel: function() {
 			return;
 		},
@@ -228,6 +236,15 @@ export default {
 </script>
  
 <style scoped>
+	.bottom-bar {
+		background-color: #333;
+		overflow: hidden;
+		position: fixed;
+		bottom: 0;
+		width: 100%;
+		padding: 10px;
+		z-index: 10;
+	}
 	.change_button {
 		margin: 0px 5px;
 	}

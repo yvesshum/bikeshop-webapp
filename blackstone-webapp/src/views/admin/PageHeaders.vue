@@ -164,22 +164,26 @@ export default {
             this.loadingModalVisible = true;
             let submitRef = db.collection("GlobalVariables").doc("PageHeaders");
             var newPageHeaders = {};
-            newPageHeaders["Parent Headers"] = this.parentHeaders;
-            newPageHeaders["Youth Headers"] = this.youthHeaders;
-            newPageHeaders["Staff Headers"] = this.staffHeaders;
+            newPageHeaders["Parent Headers"] = Object.assign(this.parentHeaders);
+            newPageHeaders["Youth Headers"] = Object.assign(this.youthHeaders);
+            newPageHeaders["Staff Headers"] = Object.assign(this.staffHeaders);
+            var submitPageHeaders = {};
+            submitPageHeaders["Parent Headers"] = {};
+            submitPageHeaders["Youth Headers"] = {};
+            submitPageHeaders["Staff Headers"] = {};
             for(var page in newPageHeaders["Parent Headers"]){
-              newPageHeaders["Parent Headers"][page] = 
+              submitPageHeaders["Parent Headers"][page] = 
                 newPageHeaders["Parent Headers"][page].split('\n').join('\\n');
             }
             for(var page in newPageHeaders["Youth Headers"]){
-              newPageHeaders["Youth Headers"][page] = 
+              submitPageHeaders["Youth Headers"][page] = 
                 newPageHeaders["Youth Headers"][page].split('\n').join('\\n');
             }
             for(var page in newPageHeaders["Staff Headers"]){
-              newPageHeaders["Staff Headers"][page] = 
+              submitPageHeaders["Staff Headers"][page] = 
                 newPageHeaders["Staff Headers"][page].split('\n').join('\\n');
             }
-            let submitStatus = await submitRef.set(newPageHeaders)
+            let submitStatus = await submitRef.set(submitPageHeaders)
             if (submitStatus) {
                 window.alert("Error updating page headers");
             }

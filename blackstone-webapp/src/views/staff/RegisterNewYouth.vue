@@ -538,6 +538,7 @@
             let fields = await this.getFields();
             let options = await this.getOptions();
             this.essayQuestions = await this.getEssays();
+            console.log("Essay Questions: " + this.essayQuestions);
             for (var className in this.essayQuestions) {
                 this.answers[className] = {};
                 for(var i = 0; i < this.essayQuestions[className].length; i++){
