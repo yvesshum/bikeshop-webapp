@@ -17,7 +17,7 @@ import RegisterYouth from './views/staff/RegisterNewYouth.vue';
 import HourTransfer from './views/youth/TransferCurrentHours';
 import ApproveTransfers from './views/staff/ApproveTransferHours';
 import AdminPanel from './views/staff/AdminPanel.vue';
-//import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
+import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
 //import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
 //import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
@@ -253,7 +253,7 @@ const router = new Router({
 
 
         // Admin Panels
-/*
+
         {
             path: '/youth-order-settings',
             name: 'youth-order-settings',
@@ -263,6 +263,7 @@ const router = new Router({
                 requiresStaff: true
             }
         },
+/*
         {
             path: '/youth-profile-staff-settings',
             name: 'youth-profile-staff-settings',
