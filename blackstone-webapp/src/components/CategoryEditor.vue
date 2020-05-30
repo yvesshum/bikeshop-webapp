@@ -153,7 +153,7 @@ export default {
                 add: {
                     visible: false,
                     category_name: "",
-                    initial_value: 0
+                    initial_value: 0 // Deprecated, it's pretty much always 0 lol
                 }
             }
         }
@@ -383,7 +383,7 @@ export default {
                 query.forEach(async doc => {
                     let id = doc.id;
                     let data = doc.data();
-                    data[this.modal.add.category_name] = this.modal.add.initial_value;
+                    data[this.modal.add.category_name] = 0;
                     await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                 })
             }
@@ -393,7 +393,7 @@ export default {
                     let id = doc.id;
                     let path = doc.ref.path
                     let data = doc.data();
-                    data[this.modal.add.category_name] = this.modal.add.initial_value;
+                    data[this.modal.add.category_name] = 0;
                     await db.doc(path).set(data);
                 })
             }
@@ -405,7 +405,6 @@ export default {
 
             // Reset
             this.modal.add.category_name = "";
-            this.modal.add.initial_value = "";
 
             this.closeLoadingModal();
             this.showMsgModal("Success!", "Added a new category in GlobalCategoriesCollection and corresponding documents.");
