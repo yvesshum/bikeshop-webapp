@@ -169,6 +169,9 @@ export default {
 
         },
         resetInput() {
+            Object.keys(this.hours).map(category => {
+                this.hours[category] = 0 
+            })
             this.$refs.selector.reset();
             this.ID = "";
             this.FirstName = "";
