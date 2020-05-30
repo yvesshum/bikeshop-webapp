@@ -383,6 +383,7 @@
             },
 
             async getNewData() {
+                await this.getHeaders()
                 await this.getTData();
                 this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
