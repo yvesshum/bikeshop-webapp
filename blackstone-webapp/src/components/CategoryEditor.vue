@@ -124,7 +124,8 @@ export default {
     },
     computed: {
         isValidNewCategoryName: function() {
-            return !this.category_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.category_name) > -1}) && this.modal.add.category_name.length > 0
+            let res = !this.category_data.some(field => field.data === this.modal.add.category_name) && this.modal.add.category_name.length > 0
+            return res
         }
     },
     data() {
