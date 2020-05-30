@@ -74,8 +74,8 @@
             </template>
             <div v-if="checkSet(currentAnswers)">
               <div v-for="qa in currentAnswers">
-                  <p><b>Question: </b> {{qa["question"]}}</p>
-                  <p><b>Answer: </b> {{qa["answer"]}}</p>
+                  <pre class = "pre-essay"><b>Question: </b> {{qa["question"]}}</pre><br>
+                  <pre class = "pre-essay"><b>Answer: </b> {{qa["answer"]}}</pre>
                   <hr>
               </div>
             </div>
@@ -96,12 +96,12 @@
             </div> -->
             <div v-for="(category, index) in editSelected" :key="index">
                 Category: <b>{{category.Category}}</b> -
-                <span v-if="checkSet(category.Value) && category.Type != 'Date'">
+                <pre class="pre-essay" v-if="checkSet(category.Value) && category.Type != 'Date'">
                   Currently set to: {{category.Value}}
-                </span>
-                <span v-if="checkSet(category.Value) && category.Type == 'Date'">
+                </pre>
+                <pre class="pre-essay" v-if="checkSet(category.Value) && category.Type == 'Date'">
                   Currently set to: {{formatTimeStampToDate(category.Value)}}
-                </span>
+                </pre>
                 <span v-if="!checkSet(category.Value)">Currently not set</span>
                 <br>
                 <SpecialInput v-model="category.NewValue" :inputType="category.Type" :args="arguments">
@@ -215,7 +215,8 @@
             async showEssayAnswers(){
                 this.loadingModalVisible = true;
                 let curRow = this.selected[0];
-                if (curRow == null) {
+                if (!this.checkSet(curRow)) {
+                    this.loadingModalVisible = false;
                     return null;
                 }
                 var currentClass = curRow["Class"];
@@ -224,8 +225,8 @@
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i++){
                         currentAnswersLocal.push({
-                          question: questions[i],
-                          answer: curRow["Essay"][questions[i]],
+                          question: questions[i].split("\\n").join("\n"),
+                          answer: curRow["Essay"][questions[i]].split("\\n").join("\n"),
                         })
                     }
                 }
@@ -318,6 +319,11 @@
                 this.showLoadingModal("Doing some work in the background...");
 
                 var newIDs = []
+                
+                if(!this.checkSet(row)){
+                    this.closeLoadingModal();
+                    return;
+                }
 
                 if(row["New or Returning"].split(" ")[0] == "Returning"){
 
@@ -561,9 +567,9 @@
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i ++){
                         editSelectedLocal.push({
-                            Category: questions[i],
-                            Value: curRow["Essay"][questions[i]],
-                            NewValue: curRow["Essay"][questions[i]],
+                            Category: questions[i].split("\\n").join("\n"),
+                            Value: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                            NewValue: curRow["Essay"][questions[i]].split("\\n").join("\n"),
                             Type: "Essay"
                         });
                     }
@@ -611,7 +617,8 @@
                           value = this.editSelected[i]["NewValue"];
                       }
                       if(this.editSelected[i]["Type"] == "Essay"){
-                          newValues["Essay"][category] = value;
+                          newValues["Essay"][category.split("\n").join("\\n")]
+                            = value.split("\n").join("\\n");
                       } else{
                           newValues[category] = value;
                       }
@@ -641,7 +648,8 @@
                                         this.items[i][this.editSelected[index].Category] = this.editSelected[index].NewValue;
                                     }
                                 } else {
-                                    this.items[i]["Essay"][this.editSelected[index].Category] = this.editSelected[index].NewValue;
+                                    this.items[i]["Essay"][this.editSelected[index].Category] =
+                                      this.editSelected[index].NewValue.split("\n").join("\n\n");
                                 }
                             }
                         }
@@ -682,7 +690,21 @@
 
 <style>
 .toolbarwrapper {
-margin-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pre-essay {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  overflow-x: auto;
+  display: inline;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+  text-align: left;
+  white-space: pre-line;
 }
 
 </style>

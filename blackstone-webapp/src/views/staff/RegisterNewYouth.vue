@@ -47,7 +47,7 @@
                             </div>
                             <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
                                 <div v-for="question in essayQuestions[field.value]">
-                                  <p class="field_header">{{question}}</p>
+                                  <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
@@ -68,7 +68,7 @@
                               </div>
                               <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
                                   <div v-for="question in essayQuestions[field.value]">
-                                    <p class="field_header">{{question}}</p>
+                                    <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
@@ -386,7 +386,10 @@
                     console.log("Current class " + currentClass);
                     input["Essay"] = {}
                     for(var question in this.answers[currentClass]){
-                        input["Essay"][question] = this.answers[currentClass][question];
+                        let answer = this.answers[currentClass][question]
+                        let questionSubmit = question;
+                        input["Essay"][questionSubmit.split("\n").join("\\n")]
+                          = answer.split("\n").join("\\n");
                     }
                     let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
@@ -542,6 +545,8 @@
             for (var className in this.essayQuestions) {
                 this.answers[className] = {};
                 for(var i = 0; i < this.essayQuestions[className].length; i++){
+                    this.essayQuestions[className][i] =
+                      this.essayQuestions[className][i].split("\\n").join("\n");
                     this.answers[className][this.essayQuestions[className][i]] = "";
                 }
             }
@@ -677,6 +682,17 @@
     
     .vl {
       border-left: 2px solid white;
+    }
+
+    pre{
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      white-space: -moz-pre-wrap;
+      white-space: -pre-wrap;
+      white-space: -o-pre-wrap;
+      word-wrap: break-word;
     }
 
 </style>

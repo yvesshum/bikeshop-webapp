@@ -106,6 +106,11 @@ export default {
         async addButtonClicked() {
             this.loadingModalHeader = "Hold on...";
             this.loadingModalVisible = true;
+            if(this.id == ""){
+                this.loadingModalVisible = false;
+                this.showModal("No ID selected", "Please select a Youth to add hours");
+                return;
+            }
             let profile = await db.collection("GlobalYouthProfile").doc(this.id).get();
             if (profile.data() == null) {
                 window.alert("Error Youth not found with ID: " + this.id);
@@ -127,6 +132,11 @@ export default {
         async subtractButtonClicked() {
             this.loadingModalHeader = "Hold on...";
             this.loadingModalVisible = true;
+            if(this.id == ""){
+                this.loadingModalVisible = false;
+                this.showModal("No ID selected", "Please select a Youth to subtract hours");
+                return;
+            }
             let profile = await db.collection("GlobalYouthProfile").doc(this.id).get();
             if (profile.data() == null) {
                 window.alert("Error Youth not found with ID: " + this.id);

@@ -157,13 +157,13 @@ export default {
   },
   async mounted() {
         const currentUser = await firebase.auth().currentUser;
-        console.log('c', currentUser.email);
+        // console.log('c', currentUser.email);
         if (currentUser) {
             if (currentUser.email === "staff@blackstonebikes.com") {
                 this.isStaff = true;
             }
         }
-        console.log(this.isStaff);
+        // console.log(this.isStaff);
         this.ready = true;
 
   }

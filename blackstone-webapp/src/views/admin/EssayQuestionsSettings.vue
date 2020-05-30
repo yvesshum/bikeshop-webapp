@@ -158,7 +158,7 @@
                 for(class_opt in data){
                     for(var i = 0; i < data[class_opt].length; i++){
                         single_question = {};
-                        single_question["Question"] = data[class_opt][i];
+                        single_question["Question"] = data[class_opt][i].split('\\n').join('\n');;
                         single_question["Class"] = class_opt;
                         ret.push(single_question);
                     }
@@ -195,7 +195,8 @@
                     if(!(this.newClass in data)){
                         data[this.newClass] = [];
                     }
-                    data[this.newClass].push(this.newQuestion);
+                    let newQuestionSubmit = this.newQuestion.split('\n').join('\\n');
+                    data[this.newClass].push(newQuestionSubmit);
                     let status = await questionsRef.update(data);
                     if (status) {
                         window.alert("Err could not add question");
@@ -250,8 +251,9 @@
 
                 let qs = await questionsRef.get();
                 let data = qs.data();
+                let rejectingLocal = this.rejectingQuestion.split("\n").join("\\n");
                 for(var i = 0; i < data[this.rejectingClass].length; i++){
-                    if(data[this.rejectingClass][i] === this.rejectingQuestion){
+                    if(data[this.rejectingClass][i] === rejectingLocal){
                         data[this.rejectingClass].splice(i, 1);
                     }
                 }
@@ -300,15 +302,19 @@
                 
                 let qs = await questionsRef.get();
                 let data = qs.data();
+                let editOldQuestionSubmit = this.editOldQuestion.split('\n').join('\\n');
                 for(var i = 0; i < data[this.editOldClass].length; i++){
-                    if(data[this.editOldClass][i] === this.editOldQuestion){
+                    console.log("Old question: " + editOldQuestionSubmit);
+                    console.log("Old all: " + data[this.editOldClass][i]);
+                    if(data[this.editOldClass][i] === editOldQuestionSubmit){
                         data[this.editOldClass].splice(i, 1);
                     }
                 }
                 if(!(this.editNewClass in data)){
                     data[this.editNewClass] = [];
                 }
-                data[this.editNewClass].push(this.editNewQuestion);
+                let editNewQuestionSubmit = this.editNewQuestion.split('\n').join('\\n');
+                data[this.editNewClass].push(editNewQuestionSubmit);
                 let status = await questionsRef.update(data);
                 if (status) {
                     window.alert("Err could not edit question");
