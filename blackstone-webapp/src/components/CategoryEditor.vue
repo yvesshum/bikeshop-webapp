@@ -62,10 +62,11 @@ Pretty much works the same as CategoryEditor, with a few modifications.
                 placeholder="Edit here.."
                 rows="1"
                 max-rows="3"
+                :state="isValidEditingCategoryName"
         ></b-form-textarea>
         <br>
-        <strong style="color: red">Please check if you have a duplicate category name before saving so bad things won't happen.</strong>
-        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the category</b-button>
+        <strong>(This new name must not already exist)</strong>
+        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditingCategoryName" variant="warning">Save and change all existing uses of the category</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
@@ -125,6 +126,12 @@ export default {
     computed: {
         isValidNewCategoryName: function() {
             let res = !this.category_data.some(field => field.data === this.modal.add.category_name) && this.modal.add.category_name.length > 0
+            return res
+        },
+
+        isValidEditingCategoryName: function() {
+            let res = !this.category_data.some(field => field.data === this.modal.edit.category_name) && this.modal.edit.category_name.length > 0
+            console.log(res)
             return res
         }
     },
