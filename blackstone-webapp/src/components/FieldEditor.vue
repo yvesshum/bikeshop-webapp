@@ -56,6 +56,9 @@
     </b-modal>
 
     <!-- Editing -->
+    <!-- TODO: Disable field type switching, only allow field name switching -->
+    <!-- TODO: Add a note to say that if they want to change field type, they will need to delete the field along with all instances of its usage and create another one with an initial value-->
+    <!-- TODO: Add text that says what the original name was on top -->
     <b-modal v-model = "modal.edit.visible" hide-footer lazy>
         <template slot = "modal-title">
             Editing Field
@@ -67,6 +70,7 @@
                 placeholder="Edit here.."
                 rows="1"
                 max-rows="1"
+                :state="isValidEditFieldName"
         ></b-form-textarea>
         <br>
         <p>Field Type:</p>
@@ -81,7 +85,7 @@
         <br>
         <br>
         <strong style="color: red">Please check if you have a duplicate field name before saving so bad things won't happen.</strong>
-        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the field</b-button>
+        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditFieldName" variant = "warning">Save and change all existing uses of the field</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
@@ -124,14 +128,6 @@
         ></b-form-select>
 
         <p style="margin-bottom: 0">Initial Value</p>
-        <!-- <b-form-textarea
-            id="textarea"
-            v-model="modal.add.initial_value"
-            placeholder="Enter a value or leave empty"
-            size="sm"
-            rows="1"
-            max-rows="3"
-        ></b-form-textarea> -->
         <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
         <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName && modal.add.initial_value == null">Add a new field and change all existing documents to have this field and value</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
@@ -167,6 +163,10 @@ export default {
     computed: {
         isValidNewFieldName: function() {
             return !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
+        },
+
+        isValidEditFieldName: function() {
+            return !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.edit.field_name) > -1}) && this.modal.edit.field_name.length > 0
         }
     },
     data() {
@@ -296,7 +296,7 @@ export default {
             this.modal.add.visible = false;
         },
         checkDateTime(type,value){
-          if(type!=="Datetime") return value;
+          if (type!=="Datetime") return value;
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
@@ -317,11 +317,11 @@ export default {
                     let updateObject = {};
                     updateObject[this.sourceFieldName] = updatedFieldNames;
 
-                    let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
-                    if (updateStatus) {
-                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
-                        return null;
-                    }
+                    // let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+                    // if (updateStatus) {
+                    //     window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
+                    //     return null;
+                    // }
 
                     // Updating all the collections that needs an update
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
@@ -331,7 +331,8 @@ export default {
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                            console.warn(this.collectionsToEdit[j], id, data)
+                            // await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
@@ -342,7 +343,9 @@ export default {
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            await db.doc(path).set(data);
+                            console.warn(path, data)
+
+                            // await db.doc(path).set(data);
                         })
                     }
 
@@ -376,6 +379,7 @@ export default {
                     updatedFields.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedFields;
+                    console.warn(updateValue)
                     let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateValue);
                     if (deleteStatus) {
                         window.alert("Error on removing a field in GlobalFieldsCollection. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
@@ -399,6 +403,7 @@ export default {
                             let path = doc.ref.path
                             let data = doc.data();
                             delete data[this.modal.delete.field_name]
+
                             await db.doc(path).set(data);
                         })
                     }
@@ -433,30 +438,26 @@ export default {
             updatedFields.push(fieldObject);
             let updateObject = {};
             updateObject[this.sourceFieldName] = updatedFields;
-            console.log("Update object:", updateObject)
-            // let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
-            // if (updateStatus) {
-            //     window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
-            //     return null;
-            // }
-
-            console.log('update collections', this.$refs.addInput)
+            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+            if (updateStatus) {
+                window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
+                return null;
+            }
 
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
                 let query = await db.collection(this.collectionsToEdit[j]).get();
-                // console.log(query)
                 for (let q of query.docs) {
                     let id = q.id;
                     let data = q.data();
 
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
 
-                    // console.log("Updating", this.collectionsToEdit[j], id, data)
-                    // await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
+                    await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
 
                 }
             }
+
 
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
@@ -466,15 +467,10 @@ export default {
                     let path = q.ref.path
                     let data = q.data();
                     data[this.modal.add.field_name] = this.modal.add.initial_value;
-                    // console.log("Updating", q.ref.path, data)
 
-                    // await db.doc(path).update(data);
+                    await db.doc(path).update(data);
                 }
             }
-
-            //TODO Not sure why this.$refs has undefined for addInput... 
-
-            console.log('check refs', this.$refs)
 
 
             //Updating Locally 
@@ -486,12 +482,10 @@ export default {
             this.field_data.push(localUpdateObject);
             this.field_data_initial_copy.push(localUpdateObject);
 
-            console.log('reset', this.$refs.addInput)
-
             // Reset
             this.modal.add.field_name = "";
-            this.modal.add.field_type = "String",
-            this.$refs.addInput.updateInputType("String");	
+            this.modal.add.field_type = "String"
+            // this.$refs.addInput.updateInputType("String"); // no need to do this turns out 
 
             this.modal.add.initial_value = "";
 
