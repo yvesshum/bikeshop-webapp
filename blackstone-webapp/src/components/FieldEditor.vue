@@ -97,7 +97,7 @@
         <b-form-textarea
             id="textarea"
             v-model="modal.add.field_name"
-            placeholder="This cannot be empty and must not already exist!"
+            placeholder="This cannot be empty and must not already exist, no symbols too!"
             :state="isValidNewFieldName"
             size="sm"
             rows="1"
@@ -149,11 +149,15 @@ export default {
     },
     computed: {
         isValidNewFieldName: function() {
-            return !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
+            let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // No symbols!
+            return check1 && check2
         },
 
         isValidEditFieldName: function() {
-            return !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.edit.field_name) > -1}) && this.modal.edit.field_name.length > 0
+            let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.edit.field_name) > -1}) && this.modal.edit.field_name.length > 0
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // No symbols!
+            return check1 && check2
         }
     },
     data() {
