@@ -4,6 +4,7 @@
     <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Manage Youth Activity Period"></PageHeader>
     <br />
 
     <div class="col-container flex-direction">
@@ -248,6 +249,7 @@ import ButtonArrayHeader from '@/components/ButtonArrayHeader';
 import SaveBar from '@/components/SaveBar';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
+import PageHeader from "../../components/PageHeader.vue"
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -264,7 +266,8 @@ export default {
     ButtonArrayHeader,
     SaveBar,
     ProfileFields,
-    ApronBar
+    ApronBar,
+    PageHeader
   },
 
   data: function() {

@@ -3,6 +3,7 @@
         <div class="content">
             <top-bar/>
             <h1 class="title">Check Orders</h1>
+            <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
 
             <p v-if="noData">No Data Found</p>
             <div v-else>
@@ -28,10 +29,12 @@
 
 <script>
 import {db} from '../../firebase';
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
     name: 'YouthCheckOrders',
     components: {
+      PageHeader,
     },
 
     data() {
