@@ -311,9 +311,8 @@
                     this.rejectingDocumentID = curRow["Document ID"];
                     this.rejectingYouthID = curRow["Youth ID"];
                     this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order on " + curRow["Order Date"]);
+                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order of " + curRow["Item Name"]);
                 }
-
             },
 
             async confirmedDelete() {
