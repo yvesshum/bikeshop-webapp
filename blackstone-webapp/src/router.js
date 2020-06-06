@@ -180,8 +180,8 @@ const router = new Router({
             }
         },
         {
-            path: '/approve-new-youth',
-            name: 'approve-new-youth',
+            path: '/approve-youth-registration',
+            name: 'approve-youth-registration',
             component: ApproveNewYouth,
             meta: {
                 requiresAuth: true,

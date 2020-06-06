@@ -271,21 +271,6 @@
                     this.errorFields = badFields;
                     this.loadingModalVisible = false;
                     this.showErrorModal();
-                    // Clear the fields
-                    
-                    // DELETE FROM HERE TO 
-                    for (let i = 0; i < this.requiredFields.length; i ++) {
-                        this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
-                    }
-                    for (let i = 0; i < this.optionalFields.length; i ++) {
-                        this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
-                        if(this.optionalFields[i]["type"] == "Boolean"){
-                            console.log("Boolean field: " + this.optionalFields[i]["value"]);
-                            this.optionalFields[i]["value"] = null;
-                        }
-                    }
-                    this.returningYouthID = "";
-                    // HERE AFTER TESTING
                     return null;
                 } else {
                     this.loadingModalVisible = true;

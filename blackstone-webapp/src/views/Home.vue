@@ -49,8 +49,8 @@
           </b-card-header>
           <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
             <b-card-body>
-                <!-- <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
-                <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
+                <button onclick="location.href='/approve-youth-registration'" class="btn btn-outline-info btn-block" type="button">Approve Youth Registration</button>
+                <!-- <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
                 <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button> -->
                 <button onclick="location.href='/manage-periods'" class="btn btn-outline-info btn-block" type="button">Manage Youth Activity Periods</button>
             </b-card-body>

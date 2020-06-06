@@ -2,8 +2,8 @@
     <div class = ApproveNewYouth>
         <div class="content">
         <top-bar/>
-        <h1>Approve New Youth Dashboard</h1>
-        <PageHeader pageCategory="Staff Headers" pageName="Approve New Youth Registration"></PageHeader>
+        <h1>Approve Youth Dashboard</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Approve Youth Registration"></PageHeader>
         <div class="toolbarwrapper">
             <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
             <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;">See Essay Answers</b-button>
