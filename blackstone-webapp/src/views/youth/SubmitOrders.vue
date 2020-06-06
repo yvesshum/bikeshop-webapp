@@ -14,7 +14,8 @@
             <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
                 <span class="inline">{{field.name}}</span>
                 <span style="color: red">*</span>
-                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="{...args.specialInput, ...{placeholder: placeholders[field.name]}}"></SpecialInput>
+                <p style="color: grey">{{placeholders[field.name]}}</p>
+                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="{...args.specialInput}"></SpecialInput>
 
             </div>
             <div v-else>
@@ -439,6 +440,7 @@ export default {
         let placeholderQuery = await this.queryPlaceholders();
         await this.setFields(fieldQuery);
         await this.setPlaceholders(placeholderQuery);
+        console.warn(placeholderQuery)
     },
 
 
