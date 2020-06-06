@@ -440,7 +440,6 @@ export default {
         let placeholderQuery = await this.queryPlaceholders();
         await this.setFields(fieldQuery);
         await this.setPlaceholders(placeholderQuery);
-        console.warn(placeholderQuery)
     },
 
 
