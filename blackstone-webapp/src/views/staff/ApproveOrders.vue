@@ -5,13 +5,13 @@
         <h1 class="title">Order Status Dashboard</h1>
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
-                    <b-dropdown right text="Set Status" style="margin: 1%;">
+                    <b-dropdown right text="Set Status" style="margin: 1%;" :disabled="!selected.length">
                         <b-dropdown-item @click="setPending">Pending</b-dropdown-item>
                         <b-dropdown-item @click="setApproved">Approved</b-dropdown-item>
                         <b-dropdown-item @click="setCompleted">Completed</b-dropdown-item>
                     </b-dropdown>
-                    <b-button variant="success" @click="editNote" style="margin: 1%;">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Order</b-button>
+                    <b-button variant="success" @click="editNote" style="margin: 1%;" :disabled="selected.length != 1">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Delete Order</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
               </b-button-toolbar>
 
