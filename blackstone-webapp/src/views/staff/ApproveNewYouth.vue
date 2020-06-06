@@ -340,8 +340,14 @@
                     console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
+                    console.log("Current year " + currentYear);
+                    console.log("Current season " + this.currentSeason);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
+                    if(current[this.currentSeason] == undefined){
+                        current[this.currentSeason] = [];
+                        console.log("New Season");
+                    }
                     for(var i = 0; i < current[this.currentSeason].length; i++){
                         console.log(current[this.currentSeason][i])
                         console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
