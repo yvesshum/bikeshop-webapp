@@ -363,7 +363,7 @@
 
                 this.$root.$emit('bv::refresh::table', 'order-table');
 
-                this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted order", "successfully deleted " + YouthProfile["First Name"] + "'s order");
                 this.rejectingDocumentID = "";
                 this.toggleBusy();
 
