@@ -62,6 +62,18 @@
 				<slot name="failureModalHeader"><h4>Save Failed</h4></slot>
 			</template>
 			<slot name="failureModalBody">Something went wrong updating the database.</slot>
+			<div slot="modal-footer">
+				<div style="float: left">
+					<slot name="failureModalFooter"></slot>
+				</div>
+				<span>&nbsp;</span>
+				<div style="float: right">
+					<b-button
+						variant="outline-danger"
+						@click="failure_modal_visible = false"
+					>OK</b-button>
+				</div>
+			</div>
 		</b-modal>
 	</div>
 </template>
