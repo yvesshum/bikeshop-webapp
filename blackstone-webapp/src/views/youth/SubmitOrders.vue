@@ -33,6 +33,7 @@
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
+            <p style="color: grey">{{placeholders[field.name]}}</p>
             <SpecialInput v-model="fields.optional[youthIDFieldIndex].value" v-if="allReady" :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
         </div>
 
@@ -427,7 +428,7 @@ export default {
             this.$refs.YouthIDSelector[0].reset();
             for (let fieldType in this.fields) {
                 this.fields[fieldType].forEach(element => {
-                    element.value = null;
+                    element.value = initSpecialInputVal(element.type);
                 })
             }
             return true;
