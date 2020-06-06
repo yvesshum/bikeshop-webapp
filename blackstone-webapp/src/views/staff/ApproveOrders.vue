@@ -11,7 +11,7 @@
                         <b-dropdown-item @click="setCompleted">Completed</b-dropdown-item>
                     </b-dropdown>
                     <b-button variant="success" @click="editNote" style="margin: 1%;" :disabled="selected.length != 1">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Delete Order</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="selected.length != 1">Delete Order</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
               </b-button-toolbar>
 
