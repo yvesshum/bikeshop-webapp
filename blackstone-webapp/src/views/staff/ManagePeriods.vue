@@ -803,6 +803,9 @@ export default {
               // Using let binding so this is a new object for each loop
               let data = doc.data()[season];
 
+              // If an array for this period doesn't already exist, create it now
+              if (data == null) data = [];
+
               // Update the database's data with the new entries for each youth,
               // and save the updated entries to the update object
               update_obj[season] = Youth.concat_overwrite(data, year_data[season]);
