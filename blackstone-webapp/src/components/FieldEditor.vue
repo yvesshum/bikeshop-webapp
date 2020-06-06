@@ -1,7 +1,4 @@
 // TODO: Field names must not have symbols
-//TODO:  Adding and deleting not working well
-//TODO: Initial value must have something in it, cannot be undefined 
-
 <template>
 <div>
     <b-button-group style="margin-bottom:10px">
@@ -27,8 +24,6 @@
             Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
         </b-button>
     </b-button-group>
-    
-    
 
     <!-- Modals -->
     <!-- Msg -->
@@ -56,14 +51,16 @@
     </b-modal>
 
     <!-- Editing -->
-    <!-- TODO: Disable field type switching, only allow field name switching -->
     <!-- TODO: Add a note to say that if they want to change field type, they will need to delete the field along with all instances of its usage and create another one with an initial value-->
     <!-- TODO: Add text that says what the original name was on top -->
     <b-modal v-model = "modal.edit.visible" hide-footer lazy>
         <template slot = "modal-title">
-            Editing Field
+            Editing Field Name
         </template>
-        <p>Field Name:</p>
+        <p>Note: If you wish to edit the field type, delete the field and create new one</p>
+        <br>
+        <p>Original Field Name: {{this.modal.edit.original_field_name}}</p>
+        <p>New Field Name:</p>
         <b-form-textarea
                 id="textarea"
                 v-model="modal.edit.field_name"
@@ -73,18 +70,8 @@
                 :state="isValidEditFieldName"
         ></b-form-textarea>
         <br>
-        <p>Field Type:</p>
-        <b-form-select
-                id="textarea"
-                v-model="modal.edit.field_type"
-                :options="modal.edit.options"
-                placeholder="Edit here.."
-                rows="1"
-                max-rows="1"
-        ></b-form-select>
         <br>
-        <br>
-        <strong style="color: red">Please check if you have a duplicate field name before saving so bad things won't happen.</strong>
+        <strong style="color: black">Note: Field name must not already exist under required, optional, or hidden.</strong>
         <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditFieldName" variant = "warning">Save and change all existing uses of the field</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
@@ -126,9 +113,9 @@
             max-rows="3"
             @change="handle_field_type_change"
         ></b-form-select>
-
         <p style="margin-bottom: 0">Initial Value</p>
         <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
+        <p>Check that this field does not exist under required, optional, or hidden, or else bad things might happen</p>
         <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName && modal.add.initial_value == null">Add a new field and change all existing documents to have this field and value</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
 
@@ -238,11 +225,9 @@ export default {
         addButtonClicked() {
             this.modal.add.field_name = "";
             this.modal.add.field_type = "String";
-            this.modal.add.initial_value = null;
+            this.modal.add.initial_value = "";
             this.modal.add.visible = true;
-
         },
-        
 
         resetOrdering() {
             this.field_data = this.field_data_initial_copy;
@@ -300,11 +285,10 @@ export default {
           else return Timestamp.fromDate(new Date(value))
         },
         async save_edit() {
-            //TODO: Check this
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
-            let newFieldType = this.modal.edit.field_type;
+            let fieldType = this.modal.edit.field_type;
             for (let i = 0; i < this.field_data.length; i++) {
                 if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection
@@ -313,15 +297,15 @@ export default {
                         return element.data
                     })
                     delete updatedFieldNames[i][this.modal.edit.original_field_name];
-                    updatedFieldNames[i][newFieldName] = newFieldType;
+                    updatedFieldNames[i][newFieldName] = fieldType;
                     let updateObject = {};
                     updateObject[this.sourceFieldName] = updatedFieldNames;
 
-                    // let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
-                    // if (updateStatus) {
-                    //     window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
-                    //     return null;
-                    // }
+                    let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+                    if (updateStatus) {
+                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
+                        return null;
+                    }
 
                     // Updating all the collections that needs an update
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
@@ -332,7 +316,7 @@ export default {
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
                             console.warn(this.collectionsToEdit[j], id, data)
-                            // await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
@@ -345,20 +329,20 @@ export default {
                             delete data[this.modal.edit.original_field_name];
                             console.warn(path, data)
 
-                            // await db.doc(path).set(data);
+                            await db.doc(path).set(data);
                         })
                     }
 
                     //Local Update
                     let newVal = {};
-                    newVal[newFieldName] = newFieldType;
+                    newVal[newFieldName] = fieldType;
                     this.field_data[i].data = newVal;
 
                     //Updating the copied version. Since ordering may have changed, we'll need to search through this.
                     for (let j = 0; j < this.field_data_initial_copy.length; j++) {
                         if (Object.keys(this.field_data_initial_copy[j].data)[0] === this.modal.edit.original_field_name) {
                             delete this.field_data_initial_copy[j][this.modal.edit.original_field_name]
-                            this.field_data_initial_copy[j][newFieldName] = newFieldType;
+                            this.field_data_initial_copy[j][newFieldName] = fieldType;
                         }
                     }
 
@@ -379,7 +363,7 @@ export default {
                     updatedFields.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedFields;
-                    console.warn(updateValue)
+
                     let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateValue);
                     if (deleteStatus) {
                         window.alert("Error on removing a field in GlobalFieldsCollection. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
@@ -403,7 +387,6 @@ export default {
                             let path = doc.ref.path
                             let data = doc.data();
                             delete data[this.modal.delete.field_name]
-
                             await db.doc(path).set(data);
                         })
                     }
