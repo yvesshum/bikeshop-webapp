@@ -57,7 +57,7 @@
 			<h3>Success!</h3>
 		</b-modal>
 
-		<b-modal v-model="failure_modal_visible" ok-only ok-variant="outline-danger">
+		<b-modal v-model="failure_modal_visible" ok-only ok-variant="outline-danger" no-close-on-backdrop no-close-on-esc hide-header-close>
 			<template slot="modal-title">
 				<slot name="failureModalHeader"><h4>Save Failed</h4></slot>
 			</template>
