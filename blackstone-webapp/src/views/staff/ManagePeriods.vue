@@ -178,32 +178,48 @@
           </template>
 
           <template slot="failureModalBody">
-            Something went wrong updating the database. The following changes could not be saved:
-            <br />
+            <p>
+              Something went wrong updating the database. The following changes could not be saved:
+            </p>
 
-            <h4 style="color: black;">Unsaved Youth Profiles</h4>
+            <h4 style="color: black;">Unsaved Changes</h4>
             <table class="table table-bordered">
               <thead>
                 <tr>
                   <th scope="col">Name & ID</th>
                   <th scope="col">Period</th>
-                  <th scope="col">Old Class</th>
-                  <th scope="col">New Class</th>
+                  <th scope="col">Intended Class</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="change in error_array_youth" style="padding-top: 0px;">
-                  <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
-                    {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
-                  </td>
+                <tr v-for="change in error_array" style="padding-top: 0px;">
+                  <td>{{change.name}} ({{change.id}})</td>
                   <td>{{change.period}}</td>
-                  <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
-                  <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+                  <td>{{change.class}}</td>
                 </tr>
               </tbody>
             </table>
 
-            Please take note of these and try again.
+            <p>Please take note of these and try again.</p>
+
+            <div v-show="show_advanced_errors">
+              <br />
+              <p>Error message(s):</p>
+              <div style="background: #2e2e38">
+                  <p v-for="i in transaction_errors">
+                    <code>{{i.err}}</code>
+                  </p>
+              </div>
+            </div>
+          </template>
+
+          <template slot="failureModalFooter">
+            <ToggleButton v-model="show_advanced_errors"
+                onText="Hide Error Messages"
+                offText="Show Error Messages"
+                onVariant="outline-secondary"
+                offVariant="outline-secondary"
+              />
           </template>
         </ModalDRS>
 
@@ -232,6 +248,7 @@ import ModalDRS from '@/components/ModalDRS';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfilePopup from "@/components/ProfilePopup";
+import ToggleButton from "@/components/ToggleButton";
 
 // Scripts
 import {Status} from '@/scripts/Status.js';
@@ -253,6 +270,7 @@ export default {
     ProfileFields,
     ApronBar,
     ProfilePopup,
+    ToggleButton,
   },
 
   data: function() {
@@ -322,6 +340,8 @@ export default {
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
 
+      transaction_errors: [],
+      show_advanced_errors: false,
     };
   },
 
@@ -414,20 +434,33 @@ export default {
       return result;
     },
 
-    error_array_youth: function() {
-      if (this.update_results == null || this.update_results.youth == null) return null;
+    error_array: function() {
+
+      if (this.transaction_errors == null) return [];
+
       let result_array = [];
 
-      this.update_results.youth.filter(x => x != true && x != null).forEach(result => {
-        let periods = Period.sort(Object.keys(result.periods));
-        periods.forEach((period, n) => {
-          result_array.push({
-            youth: n == 0 ? result.youth : undefined,
-            period,
-            old_class: result.periods[period].old_class,
-            new_class: result.periods[period].new_class
-          })
-        })
+      this.transaction_errors.forEach(err => {
+        Object.keys(err.changes).forEach(change => {
+          err.changes[change].forEach(item => {
+            result_array.push({
+              name: `${item["First Name"]} ${item["Last Name"]}`,
+              id: item["ID"],
+              class: item["Class"],
+              period: change,
+            });
+          });
+        });
+      });
+
+      // Sort by youth, then by period
+      result_array.sort((a,b) => {
+        if (a.id == b.id) {
+          return Period.compare(a.period, b.period);
+        }
+        else {
+          return a.id.localeCompare(b.id);
+        }
       });
 
       return result_array;
@@ -789,10 +822,20 @@ export default {
       // Any update that failed will be the object that we were trying to update
       year_transactions.setReturnFunc(errs => {
         if (errs.length > 0) {
+
+          // Add the intended changes to each error object
+          errs.forEach((err, n) => {
+            err.changes = period_obj[err.name];
+          });
+
+          // Save the error object for parsing, and display the failure modal
+          this.transaction_errors = errs;
           accept_func(false);
+          this.show_advanced_errors = false;
         }
         else {
           accept_func(true);
+          this.show_advanced_errors = false;
         }
       });
 
@@ -804,6 +847,7 @@ export default {
     discard_changes: function(accept_func) {
       this.changes = new Object();
       accept_func();
+      this.show_advanced_errors = false;
     },
 
 
