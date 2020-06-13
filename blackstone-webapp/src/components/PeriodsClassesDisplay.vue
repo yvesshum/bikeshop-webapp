@@ -66,7 +66,7 @@
                 <td v-for="s in seasons"
                     @mouseover="hover_cell(s, year)"
                     @click="select_cell(s, year)"
-                    style="cursor:pointer; text-align: left;"
+                    style="text-align: left;"
                     :class="get_cell_classes(s, year)"
                 >
                     <span v-if="is_future_period(s, year)"></span>
@@ -236,21 +236,24 @@ export default {
     table.table th.table-hov, table.table td.table-hov {
       background-color: #DFDFDF;
       /*background-color: #BBB;*/
+      cursor: pointer;
     }
 
     table.table th.table-sel, table.table td.table-sel {
       background-color: #CBE0FE;
       /*background-color: #9ABCEA;*/
+      cursor: pointer;
     }
 
     table.table th.table-hov-sel, table.table td.table-hov-sel {
       background-color: #B2C4DE;
       /*background-color: #769BCC;*/
+      cursor: pointer;
     }
 
     table.table td.table-unavailable {
         background-color: #c0c0c0;
-        cursor: pointer;
+        cursor: default;
     }
 
     table.table thead tr th.main_header {
