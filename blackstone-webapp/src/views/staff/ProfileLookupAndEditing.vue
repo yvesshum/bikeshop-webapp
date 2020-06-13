@@ -4,7 +4,7 @@
     <TopBar/>
 
     <h1 class="title">Profile Lookup and Editing</h1>
-    <YouthIDSelector @selected="load_youth"/>
+    <YouthIDSelector @selected="load_youth" :args="{openDirection: 'bottom'}" />
     <br />
 
     <div ref="body_fields" v-show="currentProfile != null">
