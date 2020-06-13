@@ -335,8 +335,8 @@ export default {
       ],
 
       button_header_r: [
+        {name: 'Current', arr: 'h'},
         {name: 'Next', val: 'next'},
-        {name: 'Current', arr: 'd'},
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
 
