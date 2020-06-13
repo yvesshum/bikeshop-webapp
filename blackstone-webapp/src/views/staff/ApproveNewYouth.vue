@@ -223,11 +223,19 @@
                 let questions = this.essayQuestions[currentClass];
                 var currentAnswersLocal = [];
                 if(this.checkSet(questions)){
+                    console.log("Questions: " + questions)
                     for (let i = 0; i < questions.length; i++){
-                        currentAnswersLocal.push({
-                          question: questions[i].split("\\n").join("\n"),
-                          answer: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                        })
+                        if(this.checkSet(curRow["Essay"][questions[i]])){
+                            currentAnswersLocal.push({
+                              question: questions[i].split("\\n").join("\n"),
+                              answer: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                            })
+                        } else {
+                          currentAnswersLocal.push({
+                            question: questions[i].split("\\n").join("\n"),
+                            answer: "",
+                          })
+                        }
                     }
                 }
                 this.currentAnswers = currentAnswersLocal;
@@ -572,12 +580,21 @@
                 console.log(questions);
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i ++){
-                        editSelectedLocal.push({
-                            Category: questions[i].split("\\n").join("\n"),
-                            Value: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                            NewValue: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                            Type: "Essay"
-                        });
+                        if(this.checkSet(curRow["Essay"][questions[i]])){
+                            editSelectedLocal.push({
+                                Category: questions[i].split("\\n").join("\n"),
+                                Value: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                                NewValue: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                                Type: "Essay"
+                            });
+                        } else {
+                            editSelectedLocal.push({
+                                Category: questions[i].split("\\n").join("\n"),
+                                Value: "",
+                                NewValue: "",
+                                Type: "Essay"
+                            });
+                        }
                     }
                 }
                 this.editSelected = editSelectedLocal;
