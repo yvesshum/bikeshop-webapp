@@ -5,6 +5,10 @@
             <h1 class="title">Check Orders</h1>
             <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
 
+            <b-button @click="refresh" variant="info">Refresh!</b-button>
+            <br>
+            <br>
+
             <p v-if="noData">No Data Found</p>
             <div v-else>
                 <b-table
@@ -85,12 +89,19 @@ export default {
             this.isBusy = !this.isBusy;
         },
 
+        async refresh() {
+            this.toggleBusy()
+            await this.getHeaders()
+            await this.getTData()
+            this.toggleBusy()
+        }
+
     },
 
     async mounted() {
-            await this.getHeaders();
-            await this.getTData();
-            this.toggleBusy();
+        await this.getHeaders();
+        await this.getTData();
+        this.toggleBusy();
     }
 
 }

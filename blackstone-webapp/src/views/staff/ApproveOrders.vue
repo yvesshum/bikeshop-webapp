@@ -6,13 +6,13 @@
         <PageHeader pageCategory="Staff Headers" pageName="Approve Orders"></PageHeader>
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
-                    <b-dropdown right text="Set Status" style="margin: 1%;">
+                    <b-dropdown right text="Set Status" style="margin: 1%;" :disabled="!selected.length">
                         <b-dropdown-item @click="setPending">Pending</b-dropdown-item>
                         <b-dropdown-item @click="setApproved">Approved</b-dropdown-item>
                         <b-dropdown-item @click="setCompleted">Completed</b-dropdown-item>
                     </b-dropdown>
-                    <b-button variant="success" @click="editNote" style="margin: 1%;">Edit note</b-button>
-                    <b-button variant="danger" @click="reject" style="margin: 1%;">Delete Order</b-button>
+                    <b-button variant="success" @click="editNote" style="margin: 1%;" :disabled="selected.length != 1">Edit note</b-button>
+                    <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="selected.length != 1">Delete Order</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
               </b-button-toolbar>
 
@@ -314,9 +314,8 @@
                     this.rejectingDocumentID = curRow["Document ID"];
                     this.rejectingYouthID = curRow["Youth ID"];
                     this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
-                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order on " + curRow["Order Date"]);
+                        + curRow["First Name"] + " " + curRow["Last Name"] + "'s order of " + curRow["Item Name"]);
                 }
-
             },
 
             async confirmedDelete() {
@@ -367,7 +366,7 @@
 
                 this.$root.$emit('bv::refresh::table', 'order-table');
 
-                this.showModal("Successfully deleted order", "successfully deleted order with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted order", "successfully deleted " + YouthProfile["First Name"] + "'s order");
                 this.rejectingDocumentID = "";
                 this.toggleBusy();
 
