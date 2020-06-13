@@ -696,23 +696,28 @@ export default {
       return Youth.contains(this.selected_youths, youth);
     },
 
+
+    // The new change will use the period as the key and store the old and new classes
+    // Goal is to get an object like:
+    //   12345: {
+    //      youth: {First Name: ...}
+    //      periods: {
+    //        "Spring 19": {old_class: ..., new_class: ...}
+    //        "Summer 19": {old_class: ..., new_class: ...}
+    //      }
+    //   },
+    //   ...
+    //
+    // Takes a change object with the following fields:
+    //   old_class - The current class listed for the youth
+    //   new_class - The class the youth is being changed to
+    //   youth     - A Youth object representing the youth being changed
+    //   period    - A string for the period being changed
+    //
     change_period: function(change) {
 
       // If changing to the same class, do nothing
       if (change.old_class == change.new_class) return;
-
-      // The new change will use the period as the key and store the old and new classes
-      // Goal is to get an object like:
-      // 12345: {
-      //    youth: {First Name: ...}
-      //    periods: {
-      //      "Spring 19": {old_class: ..., new_class: ...}
-      //      "Summer 19": {old_class: ..., new_class: ...}
-      //    }
-      // },
-      // ...
-      //
-      let new_change = { old_class: change.old_class, new_class: change.new_class };
 
       // If changes doesn't exist yet, create it
       if (this.changes == null) this.changes = {};
@@ -722,8 +727,42 @@ export default {
         this.$set(this.changes, change.youth.ID, {youth: change.youth, periods: {}});
       }
 
-      // Store the changes
-      this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+      // Get the change that's currently pending, if it exists
+      let previous_change = this.changes[change.youth.ID]["periods"][change.period];
+
+      // If this period does not have any pending changes yet, directly set the change to
+      // the old and new classes passed in
+      if (previous_change == undefined) {
+        let new_change = {
+          old_class: change.old_class,
+          new_class: change.new_class
+        };
+        this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+      }
+      else {
+
+        // If trying to change the user back to their original class, delete this period from
+        // the changes list
+        if (previous_change.old_class == change.new_class) {
+          this.$delete(this.changes[change.youth.ID].periods, change.period);
+
+          // If that was the youth's only change, remove their ID from the list of pending
+          // changes altogether
+          if (Object.keys(this.changes[change.youth.ID].periods).length == 0) {
+            this.$delete(this.changes, change.youth.ID);
+          }
+        }
+
+        // If trying to change the user to a different new class, overwrite the new_class
+        // field but not the old_class field
+        else {
+          let new_change = {
+            old_class: previous_change.old_class,
+            new_class: change.new_class
+          };
+          this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+        }
+      }
     },
 
     change_periods_selected: function(change) {
