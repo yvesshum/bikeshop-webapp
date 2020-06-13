@@ -66,6 +66,13 @@ export default {
     CollectionTable,
   },
 
+  mounted: async function() {
+    var hour_categories_doc = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
+
+    var data = hour_categories_doc.data();
+    this.hour_categories = data["Categories"];
+  },
+
   data: function() {
     return {
       work_log_collection: null,
@@ -152,25 +159,7 @@ export default {
         },
       ],
 
-      // Helper function to group document data for the work log table
-      work_doc_formatter: (doc) => {
-        var data = doc.data();
-        return {
-          "Date": [ data["Check In"], data["Check Out"] ],
-          "Check In": data["Check In"],
-          "Check Out": data["Check Out"],
-          "Hours": {
-            "Class": data["Class"],
-            "Elective": data["Elective"],
-            "Bike Riding or Cycling": data["Bike Riding or Cycling"],
-            "Shop Support": data["Shop Support"],
-            "Other": data["Other"],
-            "Misc": data["Misc"],
-          },
-          "Notes": data["Notes"],
-          "Period": data["Period"],
-        };
-      },
+      hour_categories: [],
 
 
       // Other Tabulator arguments for the tables
@@ -182,6 +171,24 @@ export default {
         ],
       },
     };
+  },
+
+  computed: {
+
+    // Helper function to group document data for the work log table
+    work_doc_formatter: function() {
+      return (doc) => {
+        var data = doc.data();
+        return {
+          "Date": [ data["Check In"], data["Check Out"] ],
+          "Check In": data["Check In"],
+          "Check Out": data["Check Out"],
+          "Hours": this.make_hours_obj(data),
+          "Notes": data["Notes"],
+          "Period": data["Period"],
+        };
+      };
+    },
   },
 
   watch: {
@@ -202,6 +209,15 @@ export default {
   },
 
   methods: {
+
+    make_hours_obj: function(data) {
+      var obj = {};
+      for (let i in this.hour_categories) {
+        let category = this.hour_categories[i];
+        obj[category] = data[category];
+      };
+      return obj;
+    },
 
     // =-= Formatters =-=-=
 
