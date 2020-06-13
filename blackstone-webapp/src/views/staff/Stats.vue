@@ -8,6 +8,7 @@
                 <b-col>
                     <h1>Stats</h1>
                 </b-col>
+                <PageHeader pageCategory="Staff Headers" pageName="Stats for the Quarter"></PageHeader>
             </b-row>
             <b-row>
                 <b-col>
@@ -245,6 +246,7 @@ import 'vue-datetime/dist/vue-datetime.css'
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
+import PageHeader from "@/components/PageHeader.vue"
 import {filter} from '@/scripts/Search.js'
 let setOrder = function(field) {
     var fieldVal = 0;
@@ -273,7 +275,8 @@ export default {
     components: {
         Datetime,
         QueryTable,
-        Tabulator
+        Tabulator,
+        PageHeader
     },
     data() {
         return {

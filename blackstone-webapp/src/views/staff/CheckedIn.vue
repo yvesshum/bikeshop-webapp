@@ -4,6 +4,7 @@
     <div class="content">
     <top-bar />
     <h1 class="title">Currently Checked-In Youth</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Currently Checked In"></PageHeader>
 
     <b-button
       @click="viewProfile"
@@ -54,6 +55,7 @@ import ApronBar from "@/components/ApronBar.vue"
 import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
+import PageHeader from "@/components/PageHeader.vue"
 
 let checkedInRef = rb.ref("Checked In");
 
@@ -62,6 +64,7 @@ export default {
   components: {
     ProfileFields,
     ApronBar,
+    PageHeader,
   },
   data() {
     return {

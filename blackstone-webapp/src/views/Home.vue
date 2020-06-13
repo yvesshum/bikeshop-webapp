@@ -49,8 +49,8 @@
           </b-card-header>
           <b-collapse id="accordion-1" accordion="my-accordion" role="tabpanel">
             <b-card-body>
-                <!-- <button onclick="location.href='/approve-new-youth'" class="btn btn-outline-info btn-block" type="button">Approve New Youth Registration</button>
-                <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
+                <button onclick="location.href='/approve-youth-registration'" class="btn btn-outline-info btn-block" type="button">Approve Youth Registration</button>
+                <!-- <button onclick="location.href=''" class="btn btn-outline-info btn-block" type="button">Approve Returning Youth</button>
                 <button onclick="location.href='/manage-skills-staff'" class="btn btn-outline-info btn-block" type="button">Manage Apron Skills</button> -->
                 <button onclick="location.href='/manage-periods'" class="btn btn-outline-info btn-block" type="button">Manage Youth Activity Periods</button>
             </b-card-body>
@@ -108,7 +108,7 @@
         </b-card>
      
     </div>
-    <!--
+
     <div class="heading">
         <h1>Admin</h1>
     </div>
@@ -119,17 +119,18 @@
         </b-card-header>
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
-            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
+            <!-- <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
             <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration</button>
             <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
-           <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
-            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button>
-
+            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
+            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button> -->
+            <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Essay Questions</button>
+            <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Class Settings</button>
+            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Page Headers</button>
           </b-card-body>
         </b-collapse>
       </b-card>
-  </div>
--->
+    </div>
     </div>
 </div>
 </div>

@@ -5,6 +5,7 @@
     <h2 style="margin-top: 20px;">
         Check In/Out: {{ date }}
     </h2>
+    <PageHeader pageCategory="Youth Headers" pageName="Check In and Out"></PageHeader>
     <br>
     <!-- ID Selector Component -->
     <YouthIDSelector
@@ -91,6 +92,7 @@ import {db} from '@/firebase.js'
 import {rb} from '../../firebase'
 import {Timestamp} from '@/firebase.js'
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
+import PageHeader from "@/components/PageHeader.vue"
 import moment from 'moment';
 import { setTimeout } from 'timers';
 import VueNumberInput from '@chenfengyuan/vue-number-input';
@@ -293,7 +295,8 @@ export default {
 
     components: {
         YouthIDSelector,
-        VueNumberInput
+        VueNumberInput,
+        PageHeader,
     }
 }
 </script>

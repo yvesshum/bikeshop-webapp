@@ -7,6 +7,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
     <div class="content">
     <top-bar/>
     <h1 class="title">Profile Lookup</h1>
+    <PageHeader pageCategory="Youth Headers" pageName="Profile Lookup"></PageHeader>
     <br />
     <YouthIDSelector @selected="load_youth"/>
     <br />
@@ -58,6 +59,7 @@ import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
+import PageHeader from "@/components/PageHeader.vue"
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
 
@@ -69,6 +71,7 @@ export default {
     ProfileFields,
     ApronBar,
     ProfileItemLogs,
+    PageHeader
   },
 
   data: function() {

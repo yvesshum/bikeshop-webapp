@@ -11,7 +11,7 @@
                       <ul class="nav navbar-nav mr-auto"></ul>
                       <span class="navbar-text actions">
                         <a class="nav_button" href="/Home">Dashboard</a>
-                        <a class="nav_button" href="/emergency-contacts">Emergency</a>
+                        <a class="nav_button" href="/emergency-contacts" v-if="show_logout_option">Emergency</a>
                         <a class="btn btn-light action-button" role="button" @click="logout" v-if="show_logout_option">Log Out</a>
                       </span>
                   </b-collapse>

@@ -4,6 +4,7 @@
   <top-bar/>
   <h1 class="title">Add or take away hours for Youth</h1>
   <p style="margin: 0 1rem; padding-top: 0.5rem;">Note: This changes Hours Earned and does not show up as a record</p>
+  <PageHeader pageCategory="Staff Headers" pageName="Add and Subtract Hours for Multiple Youths"></PageHeader>
   <br>
     <b-container>
       <b-row>
@@ -71,11 +72,13 @@
 import YouthIDSelector from "../../components/YouthIDSelector";
 import {db} from '@/firebase'
 import VueNumericInput from 'vue-numeric-input';
+import PageHeader from "@/components/PageHeader.vue"
 export default {
     name: 'AddSubtractHours',
     components: {
         YouthIDSelector,
-        VueNumericInput
+        VueNumericInput,
+        PageHeader,
     },
     data() {
         return {
@@ -103,6 +106,11 @@ export default {
         async addButtonClicked() {
             this.loadingModalHeader = "Hold on...";
             this.loadingModalVisible = true;
+            if(this.id == ""){
+                this.loadingModalVisible = false;
+                this.showModal("No ID selected", "Please select a Youth to add hours");
+                return;
+            }
             let profile = await db.collection("GlobalYouthProfile").doc(this.id).get();
             if (profile.data() == null) {
                 window.alert("Error Youth not found with ID: " + this.id);
@@ -124,6 +132,11 @@ export default {
         async subtractButtonClicked() {
             this.loadingModalHeader = "Hold on...";
             this.loadingModalVisible = true;
+            if(this.id == ""){
+                this.loadingModalVisible = false;
+                this.showModal("No ID selected", "Please select a Youth to subtract hours");
+                return;
+            }
             let profile = await db.collection("GlobalYouthProfile").doc(this.id).get();
             if (profile.data() == null) {
                 window.alert("Error Youth not found with ID: " + this.id);
