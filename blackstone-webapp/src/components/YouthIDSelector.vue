@@ -143,7 +143,7 @@ Emits:
             },
             remove: {
                 type: Array,
-                default: [],
+                default: () => [],
             },
         },
         data () {
