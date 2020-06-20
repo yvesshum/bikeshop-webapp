@@ -20,14 +20,15 @@
           :table_data="display_youths"
           :args="args"
           @deselectedRow="deselected_row"
-          @replaceData="replaceData"
+          @replaceData="reselect_rows"
           @rowClick="row_click"
         />
 
-        <!-- <YouthIDSelector periods="all"
-          :args="{multiple: true, hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
-          @selected="s => selected_bar = s"
-        /> -->
+        <YouthIDSelector periods="all"
+          :args="{hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
+          :remove="selected_youths"
+          @selected="handle_selector"
+        />
       </div>
 
       <div class="col-right">
@@ -309,8 +310,6 @@ export default {
         selectable: true,
       },
 
-      selected_cur: [],
-      selected_bar: [],
       selected_youths: [],
       all_youth: null,
       viewProfileModalVisible: false,
@@ -667,7 +666,7 @@ export default {
 
     // Event handler for tabulator replaceData event
     // Reselects all youth which are currently being edited
-    replaceData: function(data) {
+    reselect_rows: function(data) {
 
       // Get the table
       let table = this.$refs.current_table.tabulator;
@@ -690,6 +689,21 @@ export default {
 
       // Add everyone currently selected in the table to the list
       selected.forEach(r => this.add_to_selected(r.getData()));
+    },
+
+    // Event handler for YouthIDSelector selection
+    // Adds the selected youth to the list
+    handle_selector: function(selection) {
+
+      // Ignore null selection
+      if (selection == null) return;
+
+      // Add Full Name as a field
+      selection["Full Name"] = Youth.getFullName(selection);
+
+      // Add youth from YouthIDSelector to selection and update table to match
+      this.add_to_selected(selection);
+      this.reselect_rows();
     },
 
 
