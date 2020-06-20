@@ -528,7 +528,7 @@ export default {
       for (let i = 0; i < this.year_list.length; i++) {
         let year = this.year_list[i];
         let snapshot = await this.periods_db.doc(year).get();
-        this.periods[year] = snapshot.data();
+        this.$set(this.periods, year, snapshot.data());
       }
     },
 
@@ -862,7 +862,7 @@ export default {
       // Waits until all the changes have returned, then does something with the results
       // If everything succeeded, results will be an array of "true"
       // Any update that failed will be the object that we were trying to update
-      year_transactions.setReturnFunc(errs => {
+      year_transactions.setReturnFunc(async errs => {
         if (errs.length > 0) {
 
           // Add the intended changes to each error object
@@ -878,6 +878,14 @@ export default {
         else {
           accept_func(true);
           this.show_advanced_errors = false;
+
+          // Reload the period data from Firebase
+          // This is easier than trying to update this.periods to match all the changes
+          await this.load_periods();
+
+          // This has to come after load_periods, to force the page to recompute its
+          // displayed values
+          this.changes = new Object();
         }
       });
 
