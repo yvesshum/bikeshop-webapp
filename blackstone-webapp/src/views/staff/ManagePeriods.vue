@@ -34,7 +34,13 @@
       <div class="col-right">
         <div v-if="selected_youths.length == 0">
           <h3>Youth Information</h3>
-          Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
+          <br />
+          <p style="font-style: italic;">
+            Select a single youth from the table to view/edit their classes individually, or hold <span class="keyboard_button_text">Ctrl</span> or <span class="keyboard_button_text">Shift</span> when clicking to select multiple youth and perform batch operations.
+          </p>
+          <p style="font-style: italic;">
+            In addition, youth from all periods can be found in the selector below the table.
+          </p>
         </div>
 
         <!-- TODO: Load the youth's profile to get their active_periods -->
@@ -952,6 +958,11 @@ export default {
   .id_parens {
     color: gray;
     font-size: 0.75em;
+  }
+
+  .keyboard_button_text {
+    font-family: Courier, Monaco, monospace;
+    padding: 0px .25rem;
   }
 
   .col-container:after {
