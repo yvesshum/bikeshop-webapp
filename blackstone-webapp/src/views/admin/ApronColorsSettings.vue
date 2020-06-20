@@ -9,8 +9,8 @@
         <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Apron Color editor</h2>
         <hr class="subheading">
 
-        <h3 v-b-tooltip.hover title="These are the current apron colors used to track youth skill development">Colors:</h3>
-        <fieldEditor v-if="dataLoaded" ftype="colors" :elements="fields.colors" doc="Apron Colors" collection="GlobalVariables"/>
+        <h3 v-b-tooltip.hover title="These are the current apron colors used to track youth skill development">Apron Colors:</h3>
+        <ColorEditor v-if="dataLoaded" sourceFieldName="Colors" :elements="fields.colors" sourceDocument="Apron Colors" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
 
         <SettingsBottomNote/>
@@ -24,32 +24,38 @@
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
 import fieldEditor from '../../components/FieldEditor.vue'
+import { Compact } from 'vue-color'
+import ColorEditor from '../../components/ColorEditor.vue'
 
 export default {
   name: 'ApronColorsSettings',
   components: {
     SettingsBottomNote,
-    fieldEditor
+    fieldEditor,
+    'compact-picker': Compact,
+    ColorEditor
+
 
   },
   data() {
     return {
+      colors: "",
       fields: {
         colors: []
       },
       dataLoaded: false,
     }
   },
+  watch: {
+    colors: c => console.log(c)
+  },
   methods: {
-    parse(item) {
-      return JSON.parse(JSON.stringify(item));
-    },
-
     parseFields(items, dest, protectedFields) {
       for (let i = 0; i < items.length; i ++) {
-        let isProtected = protectedFields.includes(items[i])
+        let isProtected = protectedFields.includes(items[i]['name'])
         dest.push({
-          "name": items[i],
+          "name": items[i]['name'],
+          "color": items[i]['color'],
           "isProtected": isProtected
         })
       }
@@ -62,9 +68,8 @@ export default {
         window.alert("Unable to get Apron Color fields from Global Variables");
       }
       else {
-        let protectedFields = []
-        this.parseFields(fields["colors"], this.fields.colors, protectedFields);
-        this.initialFields = this.parse(this.fields);
+        let protectedFields = ['Gray']
+        this.parseFields(fields["Colors"], this.fields.colors, protectedFields);
       }
     },
 

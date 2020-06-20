@@ -29,6 +29,8 @@ export function initSpecialInputVal(type) {
             return "";
         case 'Price':
             return 0;
+        case 'Color':
+            return {hex: "#000000"} // black
         default:
             return "";
     

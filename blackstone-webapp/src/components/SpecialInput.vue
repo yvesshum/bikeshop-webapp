@@ -166,6 +166,10 @@ use v-model. Whenever one of these is changed, it updates the other.
             ></b-form-textarea>
         </div>
 
+        <div v-else-if="input === 'Color'">
+            <compact-picker :value="value" @input="$emit('input',$event)"/>
+        </div>
+
         <!-- String Input -->
         <div v-else>
             <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
@@ -179,6 +183,7 @@ import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
+import { Compact } from 'vue-color'
 // import { Datetime } from 'vue-datetime'
 import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
@@ -326,6 +331,7 @@ export default {
         Datetime,
         Datepicker,
         SpecialNumberInput,
+        'compact-picker': Compact
     }
 
 }
