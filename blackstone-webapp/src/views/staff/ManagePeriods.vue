@@ -181,7 +181,14 @@
                   <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
                     {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
                   </td>
-                  <td>{{change.period}}</td>
+                  <td style="position:relative;">
+                    {{change.period}}
+                    <b-badge v-if="!change.old_class"
+                      pill variant="warning"
+                      style="position:absolute; right:.5em; bottom:1.25em;"
+                      v-b-tooltip.hover.html="warning_msg"
+                    >!</b-badge>
+                  </td>
                   <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
                   <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
                 </tr>
@@ -353,6 +360,8 @@ export default {
 
       transaction_errors: [],
       show_advanced_errors: false,
+
+      warning_msg: "This change would manually set this youth's class in the current registration period, bypassing the parent registration process. Please be sure this is intended.",
     };
   },
 
