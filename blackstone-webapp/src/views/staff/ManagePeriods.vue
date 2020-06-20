@@ -10,6 +10,7 @@
           :left="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
+          v-show="display_period != null"
         >
           <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
