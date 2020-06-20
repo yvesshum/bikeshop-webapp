@@ -29,7 +29,7 @@
                     <td>
                         <b-dropdown right id="dropdown-text" class="m-2"
                             :variant="dropdown_variant"
-                            :text="get_class(display)"
+                            :text="get_class_str(display)"
                             style="min-width: 100%;"
                             :disabled="display.length == 0"
                         >
@@ -71,7 +71,7 @@
                 >
                     <span v-if="is_future_period(s, year)"></span>
                     <span v-else-if="is_active(s, year)">
-                        &#9745; {{get_class(s,year)}}
+                        &#9745; {{get_class_str(s,year)}}
                     </span>
                     <span v-else>&#9744;</span>
                 </td>
@@ -164,7 +164,11 @@ export default {
                 return "- n/a -  ";
             }
             var period = Period.makePeriod(season, year);
-            var temp = this.active_periods[period.toString()];
+            return this.active_periods[period.toString()];
+        },
+
+        get_class_str: function(season, year) {
+            var temp = this.get_class(season, year);
             return (temp != null) ? temp : "Not Active";
         },
 
