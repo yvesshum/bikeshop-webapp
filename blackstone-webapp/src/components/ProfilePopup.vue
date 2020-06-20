@@ -3,7 +3,6 @@
 	<div class="profile-popup">
 		<b-button
 			@click="show_popup"
-			style="margin-bottom: 1rem"
 			:variant="variant"
 			:disabled="ID == null"
 		>
