@@ -24,7 +24,7 @@
             </table>
             <table style="width: 95%; margin: auto; text-align:left;">
                 <tr>
-                    <td style="width:35%; text-align:center;">
+                    <td style="width:45%; text-align:center;">
                         <span v-if="display.length == 0 || is_future_period(display)">
                             <i style="color: #999">Choose a period in the table below.</i>
                         </span>
