@@ -21,6 +21,7 @@
     "moment": "^2.24.0",
     "tabulator-tables": "^4.2.7",
     "vue": "^2.6.10",
+    "vue-color": "^2.7.1",
     "vue-data-tabulator": "^0.2.4",
     "vue-datetime": "^1.0.0-beta.11",
     "vue-multiselect": "^2.1.6",
