@@ -19,7 +19,7 @@
     "lodash": "^4.17.14",
     "luxon": "^1.21.3",
     "moment": "^2.24.0",
-    "tabulator-tables": "^4.2.7",
+    "tabulator-tables": "^4.3.0",
     "vue": "^2.6.10",
     "vue-data-tabulator": "^0.2.4",
     "vue-datetime": "^1.0.0-beta.11",
