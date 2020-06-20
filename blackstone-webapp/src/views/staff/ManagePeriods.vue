@@ -1,7 +1,10 @@
 <template>
-  <div class="manage_periods">
+ <div class="content">
+   <b-row style="padding:0; margin:0">
+    <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Manage Youth Activity Period"></PageHeader>
     <br />
 
     <div class="col-container flex-direction">
@@ -245,6 +248,9 @@
 
       </div>
     </div>
+    </div>
+   </b-row>
+   <Footer/>
   </div>
 </template>
 
@@ -271,6 +277,7 @@ import ProfilePopup from "@/components/ProfilePopup";
 import ToggleButton from "@/components/ToggleButton";
 
 // Scripts
+import PageHeader from "../../components/PageHeader.vue"
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -291,6 +298,7 @@ export default {
     ApronBar,
     ProfilePopup,
     ToggleButton,
+    PageHeader
   },
 
   data: function() {

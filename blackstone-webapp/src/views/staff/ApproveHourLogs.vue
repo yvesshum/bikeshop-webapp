@@ -9,6 +9,7 @@
         <div class="content">
         <top-bar/>
         <h1 class="title">Approve Hours Dashboard</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Approve Hour Logs"></PageHeader>
         <div class="toolbar_wrapper">
             <b-button-toolbar style="justify-content: center;">
                     <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="this.selected.length == 0">Approve</b-button>
@@ -142,10 +143,12 @@
     import moment from 'moment';
     import {Timestamp} from '../../firebase'
     import VueNumberInput from '@chenfengyuan/vue-number-input';
+    import PageHeader from "@/components/PageHeader.vue"
     export default {
         name: 'ApproveHourLogs',
         components: {
-          VueNumberInput
+          VueNumberInput,
+          PageHeader,
         },
         data() {
             return {
@@ -383,6 +386,7 @@
             },
 
             async getNewData() {
+                await this.getHeaders()
                 await this.getTData();
                 this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")

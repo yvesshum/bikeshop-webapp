@@ -478,8 +478,8 @@ export default {
 
     numeric_range_filter: function(search_range, option) {
 
-      let above = search_range.min == null ? true : option >= parseInt(search_range.min);
-      let below = search_range.max == null ? true : option <= parseInt(search_range.max);
+      let above = search_range.min == null ? true : option >= parseFloat(search_range.min);
+      let below = search_range.max == null ? true : option <= parseFloat(search_range.max);
 
       return above && below;
     },

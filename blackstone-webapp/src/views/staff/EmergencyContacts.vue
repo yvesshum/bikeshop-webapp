@@ -3,13 +3,19 @@
     <div class="content">
     <TopBar/>
     <h1>Emergency Contacts</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Emergency Contacts"></PageHeader>
     <br />
+    <div class="spinner" v-if="!allReady" style="margin-top: 2rem">
+        <b-spinner style="width: 3rem; height: 3rem;" label="Loading..."></b-spinner>
+    </div>
     <CollectionTable
       ref="contacts_table"
       :heading_data="headers"
       :collection="contacts_collection"
       :doc_formatter="doc_formatter"
       :args="table_args"
+      @load_start="load_start"
+      @load_complete="load_complete"
       style="width:90%;margin:auto;"
     ></CollectionTable>
     </div>
@@ -23,16 +29,19 @@ import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
   name: 'profile_lookup_youth',
   components: {
     TopBar,
     CollectionTable,
+    PageHeader,
   },
 
   data: function() {
     return {
+      allReady: false,
 
       // The collection to draw profiles from
       contacts_collection: null,
@@ -110,6 +119,15 @@ export default {
     // Function to filter the rows based on the ID search
     id_filter: function(headerValue, rowValue, rowData, filterParams) {
       return rowValue.indexOf(headerValue) >= 0;
+    },
+
+    load_start: function() {
+      console.log("Load has started");
+    },
+
+    load_complete: function() {
+      console.log("Load is complete");
+      this.allReady = true;
     },
   },
 }
