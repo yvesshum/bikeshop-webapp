@@ -117,14 +117,14 @@
         </b-card-header>
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
-            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
-            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration</button>
+            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form fields</button>
+            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration fields</button>
             <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
-            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
-            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button>
-            <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Essay Questions</button>
-            <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Class Settings</button>
-            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Page Headers</button>
+            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Create/Edit Apron Colors</button>
+            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Set Current Period Settings</button>
+            <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Manage Essay Questions</button>
+            <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Manage Class Settings</button>
+            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Set Page Headers</button>
           </b-card-body>
         </b-collapse>
       </b-card>
