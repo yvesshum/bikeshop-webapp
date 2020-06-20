@@ -1,6 +1,6 @@
 
 <template>
-	<div class="hours-display">
+	<div class="profile-popup">
 		<b-button
 			@click="show_popup"
 			style="margin-bottom: 1rem"
@@ -37,7 +37,7 @@ import {db} from '@/firebase';
 import ProfileFields from "@/components/ProfileFields.vue"
 
 export default {
-	name: 'hours-display',
+	name: 'profile-popup',
 	components: {
 		ProfileFields,
 	},
