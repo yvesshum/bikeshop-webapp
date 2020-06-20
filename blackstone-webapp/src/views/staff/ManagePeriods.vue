@@ -61,8 +61,6 @@
               &times;
             </b-button>
           </PeriodsClassesDisplay>
-
-          <ProfilePopup :ID="selected_youth.ID" />
         </div>
 
         <div v-else>
@@ -156,11 +154,17 @@
 
         </div>
 
+        <div style="padding: 1rem 0px; margin: auto;">
+        <ProfilePopup :ID="selected_youth.ID"
+          v-if="selected_youths.length == 1"
+          style="display:inline-block; margin: 0px 5px; padding: 0px 25px;"
+        />
         <ModalDRS
           showIfChanges :hideReset="true"
           :hasChanges="has_changes"
           @save="save_changes"
           @discard="discard_changes"
+          style="display:inline-block;"
         >
           <template slot="bodyFooter">
             <table class="table table-bordered">
@@ -230,6 +234,7 @@
               />
           </template>
         </ModalDRS>
+        </div>
 
       </div>
     </div>
