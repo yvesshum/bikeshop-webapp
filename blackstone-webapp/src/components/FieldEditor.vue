@@ -1,4 +1,3 @@
-// TODO: Field names must not have symbols
 <template>
 <div>
     <b-button-group style="margin-bottom:10px">
