@@ -308,6 +308,7 @@ export default {
       fst_period: null,
       classes: [],
 
+      // List of local changes to be saved to the database
       changes: {},
 
       // The column headers for the table
@@ -328,39 +329,36 @@ export default {
         selectable: true,
       },
 
+      // The youths currently being viewed/edited
       selected_youths: [],
-      all_youth: null,
-      viewProfileModalVisible: false,
-      currentProfile:null,
-      header_doc: null,
-      profile_periods_doc: null,
-      profile_period_data: null,
-      profile_periods:[],
-      // Misc
+
+      // Season and year information
       season_list: null,
       year_list: [],
 
-      period_status: null,
-
+      // Season and year to view/edit when operating on multiple youth
       batch_season: null,
       batch_year: null,
 
+      // Period to display in the table
       display_period: null,
 
+      // Lay out the buttons in the table header
       button_header_l: [
         {name: 'First', arr: 'b', val: 'min'},
         {name: 'Previous', val: 'prev'},
       ],
-
       button_header_r: [
         {name: 'Current', arr: 'h'},
         {name: 'Next', val: 'next'},
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
 
+      // Store and display errors from an update
       transaction_errors: [],
       show_advanced_errors: false,
 
+      // Tooltip text for warning message if adding a class to registration period
       warning_msg: "This change would manually set this youth's class in the current registration period, bypassing the parent registration process. Please be sure this is intended.",
     };
   },
@@ -370,8 +368,6 @@ export default {
     await this.load_metadata();
     await this.load_periods();
     this.switch_to("Current");
-
-    this.period_status = new Object();
 
     // TODO:
     //  - Collect all youth
