@@ -3,6 +3,7 @@
     <div class="content">
     <TopBar/>
     <h1>Emergency Contacts</h1>
+    <PageHeader pageCategory="Staff Headers" pageName="Emergency Contacts"></PageHeader>
     <br />
     <div class="spinner" v-if="!allReady" style="margin-top: 2rem">
         <b-spinner style="width: 3rem; height: 3rem;" label="Loading..."></b-spinner>
@@ -28,12 +29,14 @@ import {db} from '../../firebase';
 import TopBar from '@/components/TopBar';
 import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
+import PageHeader from "@/components/PageHeader.vue"
 
 export default {
   name: 'profile_lookup_youth',
   components: {
     TopBar,
     CollectionTable,
+    PageHeader,
   },
 
   data: function() {
