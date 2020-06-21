@@ -579,7 +579,7 @@ export default {
         async getProfileData() {
             let profiles = await db.collection("GlobalYouthProfile").get();
             let squashed = profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
-            squashed = squashed.map(x=>{
+            squashed = squashed.map(x => {
                 // Combining first and last name into 1 column 
                 var combinedName = x["Last Name"] + ", " + x["First Name"];
                 delete x["Last Name"];
@@ -604,6 +604,16 @@ export default {
                             x[key] = x[key].toDate().toLocaleString()
                         }
                     }
+                }
+
+                if (x.Essay) {
+                    // Flatten the key value pairs into a string 
+                    let ret = ""
+                    let essays = x.Essay;
+                    for (let question in essays) { 
+                        ret = ret + question + "\n" + essays[question] + "\n\n"
+                    }
+                    x.Essay = ret;
                 }
 
                 return x;
