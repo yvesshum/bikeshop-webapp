@@ -8,3 +8,15 @@
 
 0.1d (May 9)
 - Hours Spent hotfix
+
+0.1e (Undeployed)
+- Stats UI + Logic + Bug fixes 
+- Submit orders value bug fixes, UI improvements
+- Approve Hour Log bug fixes + UI improvements 
+- Youth Registration 
+- Transfer Hours UI Fixes 
+- Bug fixes to Special Input 
+- Approve Orders UI fixes 
+- Removed Emergency button if not staff 
+- Manage Periods 
+- All admin pages 
