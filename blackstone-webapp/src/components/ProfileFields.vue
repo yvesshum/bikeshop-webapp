@@ -491,7 +491,9 @@ export default {
       // Clear the old data from the screen
       this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
+        // Set to undefined rather than deleting to keep it reactive w Vue
         this.local_values[key] = undefined;
+        this.fields_used[key] = false;
       });
 
       // Delete temporary fields from previous profile (if applicable)
@@ -528,7 +530,7 @@ export default {
 
       function field_used(field) {
         // TODO: This might have to be more sophisticated for different data types
-        return field != "";
+        return field !== "";
       };
     },
 
