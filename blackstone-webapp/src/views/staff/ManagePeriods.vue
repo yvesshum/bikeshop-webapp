@@ -873,14 +873,9 @@ export default {
               // to be removed
               let youth_to_change = [], youth_to_remove = [];
 
-              year_data[season].forEach(youth => {
-                if (youth["Class"] == null) {
-                  youth_to_remove.push(youth);
-                }
-                else {
-                  youth_to_change.push(youth);
-                }
-              });
+              year_data[season].forEach(youth =>
+                (youth["Class"] == null ? youth_to_remove : youth_to_change).push(youth)
+              );
 
               // Grab the data from the database
               // Using let binding so this is a new object for each loop
