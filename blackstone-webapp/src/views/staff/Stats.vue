@@ -619,16 +619,22 @@ export default {
             this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"),1)
             this.checkbox_fields.splice(this.checkbox_fields.indexOf("Name"),1)
             this.checkbox_fields.unshift("ID","Name")
+            console.log("Table data", tableData)
             this.table = new Tabulator("#table", {
                 data: tableData,
                 layout: "fitColumns",
                 columns: this.fields_selected.map(x => {
-                    return {
-                        title: x,
-                        field: x,
-                        headerFilter: (x==="ID"||x==="Name"),
-                        headerFilterFunc: filter
-                    };
+                    let ret = {
+                            title: x,
+                            field: x,
+                            headerFilter: (x==="ID"||x==="Name"),
+                            headerFilterFunc: filter
+                        };
+                    let multilineFields = ["ActivePeriods", "Essay"]
+                    if (multilineFields.includes(x)) {
+                        ret['formatter'] = "textarea"
+                    }
+                    return ret;
                 }),
                 pagination: "local",
                 paginationSize: "20",
