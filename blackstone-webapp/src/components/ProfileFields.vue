@@ -460,6 +460,7 @@ export default {
     },
 
     show_container: function(key) {
+      if (this.row_status == null) return false;
       return (
         (this.row_status.is_status(key, Status.U) || this.row_status.is_status(key, Status.USE_T))
         && !this.specially_displayed_fields.includes(key)
