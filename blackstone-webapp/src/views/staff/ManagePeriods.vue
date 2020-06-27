@@ -869,6 +869,19 @@ export default {
             // Loop through each season that needs an update
             Object.keys(year_data).forEach(season => {
 
+              // Split up the youth into which ones need to be changed and which ones need
+              // to be removed
+              let youth_to_change = [], youth_to_remove = [];
+
+              year_data[season].forEach(youth => {
+                if (youth["Class"] == null) {
+                  youth_to_remove.push(youth);
+                }
+                else {
+                  youth_to_change.push(youth);
+                }
+              });
+
               // Grab the data from the database
               // Using let binding so this is a new object for each loop
               let data = doc.data()[season];
@@ -878,7 +891,7 @@ export default {
 
               // Update the database's data with the new entries for each youth,
               // and save the updated entries to the update object
-              update_obj[season] = Youth.concat_overwrite(data, year_data[season]);
+              update_obj[season] = Youth.update_list(data, youth_to_change, youth_to_remove);
             });
 
             // Apply the updates
