@@ -7,7 +7,13 @@
                   <span class="sr-only">Toggle navigation</span>
                   <span class="navbar-toggler-icon"></span>
                 </button>
-                  <b-collapse class="navbar-collapse" id="navcol-1">
+                  <b-collapse class="navbar-collapse" id="navcol-1" v-if="!isLoggedIn">
+                      <ul class="nav navbar-nav mr-auto"></ul>
+                      <span class="navbar-text actions">
+                        <a class="btn btn-light action-button" href="/Home">Log in</a>
+                      </span>
+                  </b-collapse>
+                  <b-collapse class="navbar-collapse" id="navcol-1" v-if="isLoggedIn">
                       <ul class="nav navbar-nav mr-auto"></ul>
                       <span class="navbar-text actions">
                         <a class="nav_button" href="/Home">Dashboard</a>
@@ -41,7 +47,8 @@
         data() {
             return {
                 buttonText: "",
-                isStaff: false
+                isStaff: false,
+                isLoggedIn: false,
             };
         },
         computed: {
@@ -65,10 +72,13 @@
 
         },
         async mounted() {
-            this.getButtonText();
             const currentUser = await firebase.auth().currentUser;
-            console.log('c', currentUser.email);
             if (currentUser) {
+                console.log('c', currentUser.email);
+                this.getButtonText();
+            }
+            if (currentUser) {
+                this.isLoggedIn = true;
                 if (currentUser.email === "staff@blackstonebikes.com") {
                     this.isStaff = true;
                 }
