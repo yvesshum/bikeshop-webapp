@@ -10,7 +10,7 @@ import ProfileLookupStaff from './views/staff/ProfileLookupAndEditing.vue';
 import YouthSubmitOrders from './views/youth/SubmitOrders.vue';
 import ApproveOrders from './views/staff/ApproveOrders.vue';
 import YouthCheckOrders from './views/youth/CheckOrders.vue';
-//import ManageApronSkills from './views/staff/ManageApronSkills.vue';
+import ManageApronSkills from './views/staff/ManageApronSkills.vue';
 import CheckedIn from './views/staff/CheckedIn.vue';
 import RegisterYouth from './views/staff/RegisterNewYouth.vue';
 import ApproveNewYouth from './views/staff/ApproveNewYouth.vue';
@@ -124,7 +124,6 @@ const router = new Router({
                 requiresStaff: false
             }
         },
-        /*
         {
             path: '/manage-skills-staff',
             name: 'manage-skills-staff',
@@ -133,7 +132,7 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: true
             }
-        },*/
+        },
         {
             path: '/checked-in',
             name: 'checked-in',

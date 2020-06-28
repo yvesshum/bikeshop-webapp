@@ -4,28 +4,104 @@
         <top-bar/>
         <h3 style="margin: 20px">Manage Apron skills here!</h3>
         <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
-        <b>Add category: </b>
-        <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px"> 
-        <b-button variant="success" @click="add_category" style="margin-top:10px">Add Category</b-button></br>
         <div>
-            <b>Add skill: </b>
-            <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
-                <div v-for="category in uniqueCategories">
-                    <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
-                </div>
-            </b-dropdown>
-            <input v-model="new_skill" type="text" id="new_skill_field" aria-describedby="emailHelp" placeholder="Skill Name" style="margin-top:10px">
-            <b-button variant="success" @click="add_skill" style="margin-top:10px">Add Skill</b-button>
+            <b-button variant="success" @click="showAddCategoryModal" style="margin: 1%;">Add Category</b-button>
+            <b-button variant="success" @click="showRenameCategoryModal" style="margin: 1%;">Rename Category</b-button>
+            <b-button variant="danger" @click="showDeleteCategoryModal" style="margin: 1%;">Delete Category</b-button>
         </div>
-        <div>
-          <b-button-group>
-              <b-button variant="danger" @click="deleteSkill">Delete selected skill</b-button>
-          </b-button-group>
+        <div class="toolbarwrapper">
+            <b-button variant="success" @click="showAddSkillModal" style="margin: 1%;">Add New Skill</b-button>
+            <b-button variant="success" @click="showConfirmationModal('submit',
+              'Confirm submission',
+              'Are you sure you want to submit the new apron skills table? Youth with changed or deleted skills will lose their skill information.'
+              )" style="margin: 1%;">Submit Changes</b-button>
+            <b-button variant="info" @click="showConfirmationModal('refresh',
+              'Confirm Refresh',
+              'Are you sure you want to refresh the apron skills table? Any unsubmitted local changes will be lost.'
+              )" style="margin: 1%;">Refresh Table</b-button>
         </div>
         <br>
-        <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skills']" @rowSelected="updateSelected"/>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
-        <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button>
+        <DraggableTable :colors="colors" :groups="groups" :categories="categories" />
+        
+        <b-modal v-model = "addCategoryModalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Add a New Category
+            </template>
+            <div class="centerModal">
+              <h4>Enter your new category name: </h4>
+              <SpecialInput v-model="new_category" ref="new_category" inputType="String" :arguments="{...args.specialInput}"></SpecialInput>
+              <h4 class="error_message">{{errorMsg}}</h4>
+              <b-button class="mt-3" block @click="checkError(new_category, true, false);" variant = "success">Add Category</b-button>
+              <b-button class="mt-3" block @click="closeAddCategoryModal();" variant="secondary">Cancel</b-button>
+            </div>
+        </b-modal>
+        
+        <b-modal v-model = "addSkillModalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Add a New Skill
+            </template>
+            <div class="centerModal">
+              <h4>Select skill category: </h4>
+              <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
+                  <div v-for="category in getUniqueCategories()">
+                      <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
+                  </div>
+              </b-dropdown>
+              <br>
+              <h4>Select skill color: </h4>
+              <ApronColorSelector
+                style="display: inline-block;" :size="32" :selected="selected_color" hideGray=true
+                @input="apronColorSelected"
+              />
+              <br>
+              <h4>Enter your new skill name: </h4>
+              <SpecialInput v-model="new_skill" ref="new_skill" inputType="String" :arguments="{...args.specialInput}"></SpecialInput>
+              <h4 class="error_message">{{errorMsg}}</h4>
+              <h4>{{successMsg}}</h4>
+              <b-button class="mt-3" block @click="checkError(new_skill, false, false);" variant = "success">Add Skill</b-button>
+              <b-button class="mt-3" block @click="closeAddSkillModal();" variant="secondary">Done</b-button>
+            </div>
+        </b-modal>
+        
+        <b-modal v-model = "renameCategoryModalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Rename a Category
+            </template>
+            <div class="centerModal">
+              <h4>Select category to rename: </h4>
+              <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
+                  <div v-for="category in getUniqueCategories()">
+                      <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
+                  </div>
+              </b-dropdown>
+              <h4>Enter new name for your category: </h4>
+              <SpecialInput v-model="renamed_category" ref="renamed_category" inputType="String" :arguments="{...args.specialInput}"></SpecialInput>
+              <h4 class="error_message">{{errorMsg}}</h4>
+              <b-button class="mt-3" block @click="checkError(renamed_category, true, true);" variant = "success">Rename Category</b-button>
+              <b-button class="mt-3" block @click="closeRenameCategoryModal();" variant="secondary">Cancel</b-button>
+            </div>
+        </b-modal>
+        
+        <b-modal v-model = "deleteCategoryModalVisible" hide-footer lazy >
+            <template slot="modal-title">
+                Select category to Delete
+            </template>
+            <div class="centerModal">
+              <h4>Select category to delete: </h4>
+              <b-dropdown id="dropdown-2" v-bind:text="selected_category" class="m-md-2">
+                  <div v-for="category in getUniqueCategories()">
+                      <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
+                  </div>
+              </b-dropdown>
+              <h4 class="error_message">{{errorMsg}}</h4>
+              <b-button class="mt-3" block @click="showConfirmationModal('delete_category',
+                'Confirm Delete Category',
+                'Are you sure you want to delete this category? All skills for this category will be deleted.'
+                );" variant = "danger">Delete Category</b-button>
+              <b-button class="mt-3" block @click="closeDeleteCategoryModal();" variant="secondary">Cancel</b-button>
+            </div>
+        </b-modal>
+        
         <b-modal v-model = "modalVisible" hide-footer lazy >
             <template slot="modal-title">
                 {{modalHeader}}
@@ -35,7 +111,34 @@
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">ok</b-button>
         </b-modal>
+        
+        <b-modal v-model = "confirmationModalVisible" hide-footer lazy >
+            <template slot="modal-title">
+                {{confirmationModalHeader}}
+            </template>
+            <div class="d-block text-center">
+                <h3>{{confirmationModalMsg}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="closeConfirmationModal();" variant = "secondary">Cancel</b-button>
+            <b-button class="mt-3" block @click="closeConfirmationModal(); confirmed();" variant = "warning">Continue</b-button>
+        </b-modal>
+        
+        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+            <template slot="modal-title">
+                Doing some work in the background
+            </template>
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong> Loading...</strong>
+                </div>
+            </div>
+        </b-modal>
+        <!-- <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skill', 'Color']" @rowSelected="updateSelected"/>
+        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
+        <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
         </div>
+        
         <Footer/>
     </div>
 </template>
@@ -45,14 +148,24 @@
     import {db} from '../../firebase';
     import {firebase} from '../../firebase';
     import PageHeader from "../../components/PageHeader.vue"
+    import ApronColorSelector from "../../components/ApronColorSelector.vue"
+    import ApronBar from "../../components/ApronBar.vue"
+    import DraggableTable from "../../components/DraggableTable.vue"
+    import { initSpecialInputVal } from '../../scripts/SpecialInit';
+    import SpecialInput from '@/components/SpecialInput';
     
-    let ApronSkillsRef = db.collection("ApronSkills").doc("Categories");
+    let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
+    let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
     
     export default {
         name: 'StaffManageSkills',
         components: {
             EditTable,
             PageHeader,
+            ApronColorSelector,
+            ApronBar,
+            DraggableTable,
+            SpecialInput
         },
         data() {
             return {
@@ -61,74 +174,99 @@
                 current_skills: [],
                 current_categories: [],
                 new_category: "",
+                renamed_category: "",
                 new_skill: "",
                 modalHeader: "",
                 modalMsg: "",
-                modalVisible: false,
-                selected_category: "Select Category"
+                confirmationModalHeader: "",
+                confirmationModalMsg: "",
+                modalType: "",
+                errorMsg: "",
+                successMsg: "",
+                selected_category: "Select Category to rename",
+                selected_color: {},
+                // For draggable table
+                colors : [],
+                categories : [],
+                // contains items of the form { color : c1, category: c2, editable : true, droppable : true, skills : [{ skill}]}
+                groups : [],
+                loadingModalVisible : false,
+                addCategoryModalVisible : false,
+                renameCategoryModalVisible : false,
+                deleteCategoryModalVisible : false,
+                addSkillModalVisible : false,
+                confirmationModalVisible : false,
+                modalVisible : false,
+                args: {
+                    specialInput: {
+                        style: "text-align: center"
+                    }
+                },
             };
         },
-        computed: {
-            uniqueCategories: function () {
-                // `this` points to the vm instance
-                var categories = [];
-                console.log(this.table_data)
-                for(var i = 0; i < this.table_data.length; i++) {
-                    categories.push(this.table_data[i]["Category"]);
-                }
-                console.log(categories)
-                return [...new Set(categories)];
-            }
-        },
         methods: {
-            async getCategories() {
-                let f = await ApronSkillsRef.get();
-                return f.data();
+            // async getCategories() {
+            //     let f = await ApronSkillsRef.get();
+            //     return f.data();
+            // },
+            confirmed(){
+              if(this.modalType == "submit"){
+                  this.submit();
+              }
+              if(this.modalType == "refresh"){
+                  this.getNewData();
+              }
+              if(this.modalType == "delete_category"){
+                  this.delete_category();
+              }
+            },
+            checkError(input, isCat, isRenameCat){
+              if(isCat && input.includes("/")){
+                this.errorMsg = "Error: Categories cannot contain the forward slash (/) character.";
+              } else if(isCat && input == "." || input == ".." ||
+                  input == "Select Category to rename" || input == "Select a category for your skill"){
+                this.errorMsg = "Error: Invalid category name";
+              } else if(isCat && isRenameCat && this.selected_category == "Select Category to rename"){
+                this.errorMsg = "Error: You must select a category to rename";
+              } else if(isCat && this.categories.includes(input)){
+                this.errorMsg = "Error: A category with that name already exists";
+              } else if(!isCat && this.selected_category == "Select a category for your skill"){
+                this.errorMsg = "Error: You must select a category for your skill";
+              } else if(isCat && input.length > 300){
+                this.errorMsg = "Error: Maximum category length is 300 characters";
+              } else if(!isCat && input.length > 1000){
+                this.errorMsg = "Error: Maximum skill length is 1000 characters";
+              } else {
+                if(this.modalType == "rename_category"){
+                  this.rename_category();
+                  this.closeRenameCategoryModal();
+                  return;
+                }
+                if(this.modalType == "add_skill"){
+                  this.add_skill();
+                  return;
+                }
+                if(this.modalType == "add_category"){
+                  this.add_category();
+                  this.closeAddCategoryModal()
+                  return;
+                }
+              }
+              this.successMsg = "";
             },
             updateSelected (data) {
                 this.selectedRow = data;
             },
-            showModal(header, msg) {
-                this.modalHeader = header;
-                this.modalMsg = msg;
-                this.modalVisible = true;1
-            },
-            closeModal() {
-                this.modalVisible = false;
+            getUniqueCategories() {
+                // `this` points to the vm instance
+                var new_categories = [];
+                for(var i = 0; i < this.categories.length; i++) {
+                    new_categories.push(this.categories[i]);
+                }
+                return [...new Set(new_categories)];
             },
             async update_selected_category(category) {
                 this.selected_category = category;
-            },
-            async deleteSkill(){
-                console.log("delete!");
-                console.log(this.selectedRow);
-                console.log(this.selectedRow._row.data.Category);
-                console.log(this.selectedRow._row.data.Skills);
-                for (var i = 0; i < this.table_data.length; i++) {
-                    console.log(this.table_data[i].Category)
-                    if (this.table_data[i].Category == this.selectedRow._row.data.Category) {
-                        console.log(this.table_data[i].skill)
-                        if(this.table_data[i].Skills == this.selectedRow._row.data.Skills){
-                            this.table_data.splice(i,1);
-                            break;
-                        }
-                    }
-                }
-                // this.table_data.splice(this.selectedRow, 1);
-            },
-            async add_category() {
-                this.table_data.push({
-                    'Category': this.new_category,
-                    'Skills': "None"
-                });
-                this.new_category = "";
-            },
-            async add_skill() {
-                this.table_data.push({
-                    'Category': this.selected_category,
-                    'Skills': this.new_skill
-                });
-                this.new_skill = "";
             },
             async update() {
                 if(this.table_data.length != 0){
@@ -136,63 +274,234 @@
                 }
                 let categories = await this.getCategories();
                 for(var category in categories) {
-                    var skills =  categories[category];
-                    for(let i = 0; i < skills.length; i++){
+                    var skills = categories[category];
+                    for(var skill in skills){
                         this.table_data.push({
                             'Category': category,
-                            'Skills': skills[i]
+                            'Skill': skill,
+                            'Color': skills[skill]
                         });
                     }
                 }
             },
+            checkSet(value){
+                return (value != "" && value != undefined && value != null);
+            },
             async submit() {
-                var skill_arrays = {}
-                for(let i = 0; i < this.table_data.length; i++){
-                    let category = this.table_data[i]["Category"];
-                    let skill = this.table_data[i]["Skills"];
-                    if(skill_arrays[category] == null){
-                        skill_arrays[category] = '["' + skill + '"';
-                    }else{
-                        skill_arrays[category] += ', "' + skill + '"';
+                this.showLoadingModal();
+                var input = {}
+                for(var i = 0; i < this.groups.length; i++){
+                    let cat = this.groups[i].category;
+                    let col = this.groups[i].color;
+                    let skills = this.groups[i].skills;
+                    if(!this.checkSet(input[cat])){
+                        input[cat] = {}
+                    }
+                    if(!this.checkSet(input[cat][col])){
+                        input[cat][col] = []
+                    }
+                    for(var j = 0; j < skills.length; j++){
+                        input[cat][col].push(skills[j].skill);
                     }
                 }
-                console.log("Skill array: " + skill_arrays)
-                var new_data_text = '{';
-                for(var category in skill_arrays){
-                    new_data_text += '"'
-                    + category
-                    + '" : '
-                    + 
-                    skill_arrays[category]
-                    + "], "
+                this.closeLoadingModal();
+                let check = ApronSkillsRef.set(input);
+                if(check){
+                  this.showModal("Success", "New apron categories and skills submitted");
+                }else{
+                  this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem");
                 }
-                console.log(new_data_text)
-                new_data_text = new_data_text.slice(0, -2);
-                new_data_text += "}"
-                console.log(new_data_text)
-                ApronSkillsRef.set(JSON.parse(new_data_text)).then((err) => {
-                    if(err){
-                        this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem")
-                    } else {
-                        this.showModal("Success", "New apron categories and skills submitted")
+            },
+            async getColors() {
+              let f = await ApronColorsRef.get();
+              return f.data()["Colors"];
+            },
+            async getCategoryData() {
+              let f = await ApronSkillsRef.get();
+              return f.data();
+            },
+            async getNewData() {
+                this.showLoadingModal();
+                this.colors = [];
+                this.categories = [];
+                this.groups = [];
+                await this.getTData();
+                this.closeLoadingModal();
+                this.showModal("Table Refreshed", "If you see something unexpected check the firebase backend console");
+            },
+            async apronColorSelected(new_color){
+              this.selected_color = new_color;
+            },
+            showLoadingModal() {
+                this.loadingModalVisible = true;
+            },
+        
+            closeLoadingModal() {
+                this.loadingModalVisible = false;
+            },
+            showModal(header, msg) {
+                this.modalHeader = header;
+                this.modalMsg = msg;
+                this.modalVisible = true;
+            },
+            closeModal() {
+                this.modalVisible = false;
+            },
+            showConfirmationModal(modalType, header, msg) {
+                if(modalType == "delete_category"){
+                  if(this.selected_category == "Select Category to delete"){
+                    this.errorMsg = "You must select a category to delete";
+                    return;
+                  }
+                }
+                this.confirmationModalHeader = header;
+                this.confirmationModalMsg = msg;
+                this.modalType = modalType;
+                this.confirmationModalVisible = true;
+                if(modalType == "delete_category"){
+                  this.closeDeleteCategoryModal();
+                }
+            },
+            closeConfirmationModal() {
+                this.confirmationModalVisible = false;
+            },
+            showAddCategoryModal() {
+                this.errorMsg = "";
+                this.modalType = "add_category";
+                this.new_category = initSpecialInputVal("String");
+                this.addCategoryModalVisible = true;
+            },
+            closeAddCategoryModal() {
+                this.addCategoryModalVisible = false;
+            },
+            showAddSkillModal() {
+                this.errorMsg = "";
+                this.successMsg = "";
+                this.new_skill = initSpecialInputVal("String");
+                this.modalType = "add_skill";
+                this.selected_category = "Select a category for your skill";
+                if(this.colors.length > 1){
+                  this.selected_color = this.colors[1];
+                } else if(this.colors.length > 0){
+                  this.selected_color = this.colors[0];
+                }
+                this.addSkillModalVisible = true;
+            },
+            closeAddSkillModal() {
+                this.addSkillModalVisible = false;
+            },
+            showRenameCategoryModal() {
+                this.errorMsg = "";
+                this.renamed_category = initSpecialInputVal("String");
+                this.modalType = "rename_category";
+                this.selected_category= "Select Category to rename"
+                this.renameCategoryModalVisible = true;
+            },
+            closeRenameCategoryModal() {
+                this.renameCategoryModalVisible = false;
+            },
+            showDeleteCategoryModal() {
+                this.errorMsg = "";
+                this.selected_category= "Select Category to delete"
+                this.deleteCategoryModalVisible = true;
+            },
+            closeDeleteCategoryModal() {
+                this.deleteCategoryModalVisible = false;
+            },
+            async add_category(){
+                this.categories.push(this.new_category);
+                for(var i = 0; i < this.colors.length; i++){
+                  let color = this.colors[i].name;
+                  this.groups.push({
+                      'category': this.new_category,
+                      'color': color,
+                      'skills': [],
+                      'editable': true,
+                      'droppable': true, 
+                  });
+                }
+            },
+            async rename_category(){
+              for(var i = 0; i < this.categories.length; i++){
+                  if(this.categories[i] == this.selected_category){
+                      this.categories[i] = this.renamed_category;
+                  }
+              }
+              for(var i = 0; i < this.groups.length; i++){
+                  if(this.groups[i]["category"] == this.selected_category){
+                      this.groups[i]["category"] = this.renamed_category;
+                  }
+              }
+            },
+            async delete_category(){
+              for(var i = 0; i < this.categories.length; i++){
+                  if(this.categories[i] == this.selected_category){
+                      this.categories.splice(i, 1);
+                      let new_groups = this.groups.filter(group => group.category != this.selected_category);
+                      this.groups = new_groups;
+                      return
+                  }
+              }
+            },
+            async add_skill(){
+                for(var i = 0; i < this.groups.length; i++){
+                    if(this.groups[i].color == this.selected_color.name &&
+                      this.groups[i].category == this.selected_category){
+                        this.groups[i].skills.push({
+                          skill : this.new_skill
+                        });
                     }
-                    return null;
-                });
-                
+                }
+                this.successMsg = "Added skill: " + this.new_skill;
+                this.new_skill = initSpecialInputVal("String");
+                this.errorMsg = "";
+            },
+            getGroupsByColorCategory( color, category){
+              for(var i = 0; i < this.groups.length; i++){
+                if(this.groups[i].color == color.name && this.groups[i].category == category){
+                  // console.log("Returning group with skills");
+                  // console.log(this.groups[i].skills);
+                  return [ this.groups[i] ] ;
+                }
+              }
+              // console.log("Returning placeholder")
+              var placeholder = this.placeholder;
+              placeholder["category"] = category;
+              placeholder["color"] = color.name;
+              return placeholder;
+            },
+            async getTData(){
+              this.colors = await this.getColors();
+              let categoryData = await this.getCategoryData();
+              for(var category in categoryData) {
+                this.categories.push(category);
+                for(var j = 0; j < this.colors.length; j++){
+                  let color = this.colors[j].name;
+                  console.log("Mount color " + color)
+                  var skills = []
+                  if(categoryData[category][color] != undefined){
+                    for(var i = 0; i < categoryData[category][color].length; i++){
+                      skills.push({ skill : categoryData[category][color][i] });
+                    }
+                  }
+                  this.groups.push({
+                      'category': category,
+                      'color': color,
+                      'skills': skills,
+                      'editable': true,
+                      'droppable': true, 
+                  });
+                }
+              }
             }
         },
         async mounted() {
-            let categories = await this.getCategories();
-            console.log(JSON.stringify(categories));
-            for(var category in categories) {
-                var skills = categories[category];
-                for(let i = 0; i < skills.length; i++){
-                    this.table_data.push({
-                        'Category': category,
-                        'Skills': skills[i]
-                    });
-                }
-            }
+            this.showLoadingModal();
+            this.new_category = initSpecialInputVal("String");
+            this.new_skill = initSpecialInputVal("String");
+            this.renamed_category = initSpecialInputVal("String");
+            await this.getTData();
+            this.closeLoadingModal();
         }
     }
 </script>
@@ -216,5 +525,16 @@
     }
     .field_msg{
         text-decoration: underline;
+    }
+    .toolbarwrapper {
+      margin-bottom: 1rem;
+    }
+    .centerModal{
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .error_message{
+      color: red;
     }
 </style>
