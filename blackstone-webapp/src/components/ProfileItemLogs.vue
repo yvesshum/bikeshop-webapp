@@ -9,6 +9,7 @@
       :groupByOptions="periods"
       :progressiveLoad="true"
       :doc_formatter="work_doc_formatter"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -23,6 +24,7 @@
       groupBy="Period"
       :groupByOptions="periods"
       :progressiveLoad="true"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -37,6 +39,7 @@
       groupBy="Period"
       :groupByOptions="periods"
       :progressiveLoad="true"
+      :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
     ></CollectionTable>
@@ -51,6 +54,7 @@ import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
+import {get_as_date} from "@/scripts/ParseDB.js"
 
 const moment = require("moment");
 var Tabulator = require("tabulator-tables");
@@ -60,6 +64,13 @@ export default {
   props: ["snapshot", "periods", "visible"],
   components: {
     CollectionTable,
+  },
+
+  mounted: async function() {
+    var hour_categories_doc = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
+
+    var data = hour_categories_doc.data();
+    this.hour_categories = data["Categories"];
   },
 
   data: function() {
@@ -148,26 +159,36 @@ export default {
         },
       ],
 
-      // Helper function to group document data for the work log table
-      work_doc_formatter: (doc) => {
+      hour_categories: [],
+
+
+      // Other Tabulator arguments for the tables
+      extra_args: {
+
+        // On load, sort all items from most recent to least recent
+        initialSort: [
+          {column: "Date", dir: "desc"},
+        ],
+      },
+    };
+  },
+
+  computed: {
+
+    // Helper function to group document data for the work log table
+    work_doc_formatter: function() {
+      return (doc) => {
         var data = doc.data();
         return {
           "Date": [ data["Check In"], data["Check Out"] ],
           "Check In": data["Check In"],
           "Check Out": data["Check Out"],
-          "Hours": {
-            "Class": data["Class"],
-            "Elective": data["Elective"],
-            "Bike Riding or Cycling": data["Bike Riding or Cycling"],
-            "Shop Support": data["Shop Support"],
-            "Other": data["Other"],
-            "Misc": data["Misc"],
-          },
+          "Hours": this.make_hours_obj(data),
           "Notes": data["Notes"],
           "Period": data["Period"],
         };
-      },
-    };
+      };
+    },
   },
 
   watch: {
@@ -188,6 +209,15 @@ export default {
   },
 
   methods: {
+
+    make_hours_obj: function(data) {
+      var obj = {};
+      for (let i in this.hour_categories) {
+        let category = this.hour_categories[i];
+        obj[category] = data[category];
+      };
+      return obj;
+    },
 
     // =-= Formatters =-=-=
 
@@ -212,7 +242,7 @@ export default {
 
     format_date_time: function(cell) {
       var val = cell.getValue();
-      var date = this.get_as_date(val);
+      var date = get_as_date(val);
 
       var day     = this.get_date(date);
       var weekday = this.get_weekday(date);
@@ -231,8 +261,8 @@ export default {
       var val = cell.getValue();
 
       if (Array.isArray(val)) {
-        let date1 = this.get_as_date(val[0]);
-        let date2 = this.get_as_date(val[1]);
+        let date1 = get_as_date(val[0]);
+        let date2 = get_as_date(val[1]);
 
         if (this.same_day(date1, date2)) {
           day     = this.get_date(date1);
@@ -246,7 +276,7 @@ export default {
       }
 
       else {
-        let date = this.get_as_date(val);
+        let date = get_as_date(val);
         day     = this.get_date(date);
         weekday = this.get_weekday(date);
       }
@@ -256,7 +286,7 @@ export default {
 
     format_time: function(cell) {
       var val = cell.getValue();
-      var date = this.get_as_date(val);
+      var date = get_as_date(val);
 
       var time = date.toLocaleTimeString(undefined, {
         hour: "numeric",
@@ -280,7 +310,7 @@ export default {
     date_filter: function(filters, option) {
 
       var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = this.get_as_date(datestamp);
+      var date = get_as_date(datestamp);
 
       // Result will be true if every filter passes
       var result = filters.every(filter => {
@@ -461,7 +491,7 @@ export default {
     time_range_filter: function(search_range, option) {
 
       // Interpret the current cell's value
-      var val = this.get_as_date(option);
+      var val = get_as_date(option);
       var hour = val.getHours().toString();
       var mins = val.getMinutes().toString();
       var time = [hour, mins];
@@ -508,14 +538,23 @@ export default {
     // =-= Sorters =-=-=
 
     date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-      let a_date = (Array.isArray(a)) ? this.get_as_date(a[0]) : this.get_as_date(a);
-      let b_date = (Array.isArray(b)) ? this.get_as_date(b[0]) : this.get_as_date(b);
+      let a_date = (Array.isArray(a)) ? get_as_date(a[0]) : get_as_date(a);
+      let b_date = (Array.isArray(b)) ? get_as_date(b[0]) : get_as_date(b);
       return a_date.getTime() - b_date.getTime();
     },
 
     time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-      let sec_diff = a.seconds - b.seconds
-      return sec_diff ? sec_diff : (a.nanoseconds - b.nanoseconds);
+
+      // Get both as dates
+      let a_date = get_as_date(a);
+      let b_date = get_as_date(b);
+
+      // Get differences in hours, minutes, and seconds
+      let h_diff = a_date.getHours() - b_date.getHours();
+      let m_diff = a_date.getMinutes() - b_date.getMinutes();
+      let s_diff = a_date.getSeconds() - b_date.getSeconds();
+
+      return h_diff ? h_diff : (m_diff ? m_diff : s_diff);
     },
 
     hour_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
@@ -584,14 +623,6 @@ export default {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
     },
 
-
-    // Error checking to get a Date object from the database
-    // Should be a Timestamp, but handles error in case it isn't
-    get_as_date: function(date_obj) {
-      return (date_obj.toDate == undefined)
-        ? new Date(date_obj.seconds * 1000)
-        : date_obj.toDate();
-    }
   }
 }
 </script>
