@@ -9,13 +9,13 @@
 
     <div class="col-container flex-direction">
       <div class="col-left">
-        <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
-
         <ButtonArrayHeader
-          :left ="button_header_l" :right="button_header_r" :current="display_period"
+          :left="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
           @clicked="switch_to"
+          v-show="display_period != null"
         >
+          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
@@ -23,32 +23,27 @@
           :table_data="display_youths"
           :args="args"
           @deselectedRow="deselected_row"
-          @replaceData="replaceData"
+          @replaceData="reselect_rows"
           @rowClick="row_click"
         />
 
-        <!-- <YouthIDSelector periods="all"
-          :args="{multiple: true, hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
-          @selected="s => selected_bar = s"
-        /> -->
+        <YouthIDSelector periods="all"
+          :args="{hideSelected: true, closeOnSelect: false, openDirection: 'top'}"
+          :remove="selected_youths"
+          @selected="handle_selector"
+        />
       </div>
 
       <div class="col-right">
-        <b-modal v-model="viewProfileModalVisible" hide-footer lazy>
-      <div ref="body_fields" v-show="currentProfile != null">
-        <ProfileFields
-          :profile="currentProfile"
-          :headerDoc="header_doc"
-          :periodData="profile_period_data"
-          hideWarnings
-        />
-        <br />
-        <br />
-      </div>
-    </b-modal>
         <div v-if="selected_youths.length == 0">
           <h3>Youth Information</h3>
-          Select a single youth to view/edit their classes individually, or select multiple youth with <span style="font-family: Courier, Monaco, monospace;">CTRL</span>-click to perform batch operations.
+          <br />
+          <p style="font-style: italic;">
+            Select a single youth from the table to view/edit their classes individually, or hold <span class="keyboard_button_text">Ctrl</span> or <span class="keyboard_button_text">Shift</span> when clicking to select multiple youth and perform batch operations.
+          </p>
+          <p style="font-style: italic;">
+            In addition, youth from all periods can be found in the selector below the table.
+          </p>
         </div>
 
         <!-- TODO: Load the youth's profile to get their active_periods -->
@@ -69,11 +64,6 @@
               &times;
             </b-button>
           </PeriodsClassesDisplay>
-          <b-button
-            @click="viewProfile"
-            style="margin-bottom: 1rem"
-            variant="info"
-          >View Profile</b-button>
         </div>
 
         <div v-else>
@@ -166,93 +156,132 @@
         </table>
 
         </div>
+
+        <div style="padding: 1rem 0px; margin: auto;">
+        <ProfilePopup :ID="selected_youth.ID"
+          v-if="selected_youths.length == 1"
+          style="display:inline-block; margin: 0px 5px; padding: 0px 25px;"
+        />
+        <ModalDRS
+          showIfChanges :hideReset="true"
+          :hasChanges="has_changes"
+          @save="save_changes"
+          @discard="discard_changes"
+          style="display:inline-block;"
+        >
+          <template slot="bodyFooter">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">Name & ID</th>
+                  <th scope="col">Period</th>
+                  <th scope="col">Old Class</th>
+                  <th scope="col">New Class</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="change in change_array" style="padding-top: 0px;">
+                  <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
+                    {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
+                  </td>
+                  <td style="position:relative;">
+                    {{change.period}}
+                    <b-badge v-if="!change.old_class"
+                      pill variant="warning"
+                      style="position:absolute; right:.5em; bottom:1.25em;"
+                      v-b-tooltip.hover.html="warning_msg"
+                    >!</b-badge>
+                  </td>
+                  <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
+                  <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
+
+          <template slot="failureModalBody">
+            <p>
+              Something went wrong updating the database. The following changes could not be saved:
+            </p>
+
+            <h4 style="color: black;">Unsaved Changes</h4>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">Name & ID</th>
+                  <th scope="col">Period</th>
+                  <th scope="col">Intended Class</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="change in error_array" style="padding-top: 0px;">
+                  <td>{{change.name}} ({{change.id}})</td>
+                  <td>{{change.period}}</td>
+                  <td>{{change.class}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>Please take note of these and try again.</p>
+
+            <div v-show="show_advanced_errors">
+              <br />
+              <p>Error message(s):</p>
+              <div style="background: #2e2e38">
+                  <p v-for="i in transaction_errors">
+                    <code>{{i.err}}</code>
+                  </p>
+              </div>
+            </div>
+          </template>
+
+          <template slot="failureModalFooter">
+            <ToggleButton v-model="show_advanced_errors"
+                onText="Hide Error Messages"
+                offText="Show Error Messages"
+                onVariant="outline-secondary"
+                offVariant="outline-secondary"
+              />
+          </template>
+        </ModalDRS>
+        </div>
+
       </div>
     </div>
-
-    <SaveBar
-      showIfChanges
-      :hasChanges="has_changes"
-      @save="save_changes"
-      @reset="reset_changes"
-      @discard="discard_changes"
-    >
-      <template slot="bodyFooter">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">Name & ID</th>
-              <th scope="col">Period</th>
-              <th scope="col">Old Class</th>
-              <th scope="col">New Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="change in change_array" style="padding-top: 0px;">
-              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
-                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
-              </td>
-              <td>{{change.period}}</td>
-              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
-              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </template>
-
-      <template slot="failureModalBody">
-        Something went wrong updating the database. The following changes could not be saved:
-        <br />
-
-        <h4 style="color: black;">Unsaved Youth Profiles</h4>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">Name & ID</th>
-              <th scope="col">Period</th>
-              <th scope="col">Old Class</th>
-              <th scope="col">New Class</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="change in error_array_youth" style="padding-top: 0px;">
-              <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
-                {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
-              </td>
-              <td>{{change.period}}</td>
-              <td>{{change.old_class ? change.old_class : "- n/a -"}}</td>
-              <td>{{change.new_class ? change.new_class : "- n/a -"}}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        Please take note of these and try again.
-      </template>
-    </SaveBar>
-   </div>
+    </div>
    </b-row>
-    <Footer/>
+   <Footer/>
   </div>
 </template>
 
 
 <script>
 // @ is an alias to /src
+
+// Firebase
 import {db} from '../../firebase';
 import {firebase} from '../../firebase';
 import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
+
+// Components
 import TopBar from '@/components/TopBar';
 import Table from '@/components/Table';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
-import SaveBar from '@/components/SaveBar';
+import ModalDRS from '@/components/ModalDRS';
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
+import ProfilePopup from "@/components/ProfilePopup";
+import ToggleButton from "@/components/ToggleButton";
+
+// Scripts
 import PageHeader from "../../components/PageHeader.vue"
 import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
+import {AwaitTransactions} from '@/scripts/ParseDB.js';
 import {Period} from '@/scripts/Period.js';
 import {Youth} from  '@/scripts/Youth.js';
 
@@ -264,9 +293,11 @@ export default {
     PeriodsClassesDisplay,
     YouthIDSelector,
     ButtonArrayHeader,
-    SaveBar,
+    ModalDRS,
     ProfileFields,
     ApronBar,
+    ProfilePopup,
+    ToggleButton,
     PageHeader
   },
 
@@ -305,8 +336,6 @@ export default {
         selectable: true,
       },
 
-      selected_cur: [],
-      selected_bar: [],
       selected_youths: [],
       all_youth: null,
       viewProfileModalVisible: false,
@@ -332,15 +361,15 @@ export default {
       ],
 
       button_header_r: [
+        {name: 'Current', arr: 'h'},
         {name: 'Next', val: 'next'},
-        {name: 'Current', arr: 'd'},
         {name: 'Registration', arr: 'b', val: 'max'},
       ],
 
-      // Array to store the results of updating the database
-      // TODO: Does this need to exist at the data level? Could be local to the function
-      update_results: [],
+      transaction_errors: [],
+      show_advanced_errors: false,
 
+      warning_msg: "This change would manually set this youth's class in the current registration period, bypassing the parent registration process. Please be sure this is intended.",
     };
   },
 
@@ -349,8 +378,6 @@ export default {
     await this.load_metadata();
     await this.load_periods();
     this.switch_to("Current");
-    await this.getHeaders();
-    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
 
     this.period_status = new Object();
 
@@ -435,20 +462,33 @@ export default {
       return result;
     },
 
-    error_array_youth: function() {
-      if (this.update_results == null || this.update_results.youth == null) return null;
+    error_array: function() {
+
+      if (this.transaction_errors == null) return [];
+
       let result_array = [];
 
-      this.update_results.youth.filter(x => x != true && x != null).forEach(result => {
-        let periods = Period.sort(Object.keys(result.periods));
-        periods.forEach((period, n) => {
-          result_array.push({
-            youth: n == 0 ? result.youth : undefined,
-            period,
-            old_class: result.periods[period].old_class,
-            new_class: result.periods[period].new_class
-          })
-        })
+      this.transaction_errors.forEach(err => {
+        Object.keys(err.changes).forEach(change => {
+          err.changes[change].forEach(item => {
+            result_array.push({
+              name: `${item["First Name"]} ${item["Last Name"]}`,
+              id: item["ID"],
+              class: item["Class"],
+              period: change,
+            });
+          });
+        });
+      });
+
+      // Sort by youth, then by period
+      result_array.sort((a,b) => {
+        if (a.id == b.id) {
+          return Period.compare(a.period, b.period);
+        }
+        else {
+          return a.id.localeCompare(b.id);
+        }
       });
 
       return result_array;
@@ -516,7 +556,7 @@ export default {
       for (let i = 0; i < this.year_list.length; i++) {
         let year = this.year_list[i];
         let snapshot = await this.periods_db.doc(year).get();
-        this.periods[year] = snapshot.data();
+        this.$set(this.periods, year, snapshot.data());
       }
     },
 
@@ -654,7 +694,7 @@ export default {
 
     // Event handler for tabulator replaceData event
     // Reselects all youth which are currently being edited
-    replaceData: function(data) {
+    reselect_rows: function(data) {
 
       // Get the table
       let table = this.$refs.current_table.tabulator;
@@ -679,28 +719,48 @@ export default {
       selected.forEach(r => this.add_to_selected(r.getData()));
     },
 
+    // Event handler for YouthIDSelector selection
+    // Adds the selected youth to the list
+    handle_selector: function(selection) {
+
+      // Ignore null selection
+      if (selection == null) return;
+
+      // Add Full Name as a field
+      selection["Full Name"] = Youth.getFullName(selection);
+
+      // Add youth from YouthIDSelector to selection and update table to match
+      this.add_to_selected(selection);
+      this.reselect_rows();
+    },
+
 
     youth_is_selected: function(youth) {
       return Youth.contains(this.selected_youths, youth);
     },
 
+
+    // The new change will use the period as the key and store the old and new classes
+    // Goal is to get an object like:
+    //   12345: {
+    //      youth: {First Name: ...}
+    //      periods: {
+    //        "Spring 19": {old_class: ..., new_class: ...}
+    //        "Summer 19": {old_class: ..., new_class: ...}
+    //      }
+    //   },
+    //   ...
+    //
+    // Takes a change object with the following fields:
+    //   old_class - The current class listed for the youth
+    //   new_class - The class the youth is being changed to
+    //   youth     - A Youth object representing the youth being changed
+    //   period    - A string for the period being changed
+    //
     change_period: function(change) {
 
       // If changing to the same class, do nothing
       if (change.old_class == change.new_class) return;
-
-      // The new change will use the period as the key and store the old and new classes
-      // Goal is to get an object like:
-      // 12345: {
-      //    youth: {First Name: ...}
-      //    periods: {
-      //      "Spring 19": {old_class: ..., new_class: ...}
-      //      "Summer 19": {old_class: ..., new_class: ...}
-      //    }
-      // },
-      // ...
-      //
-      let new_change = { old_class: change.old_class, new_class: change.new_class };
 
       // If changes doesn't exist yet, create it
       if (this.changes == null) this.changes = {};
@@ -710,8 +770,42 @@ export default {
         this.$set(this.changes, change.youth.ID, {youth: change.youth, periods: {}});
       }
 
-      // Store the changes
-      this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+      // Get the change that's currently pending, if it exists
+      let previous_change = this.changes[change.youth.ID]["periods"][change.period];
+
+      // If this period does not have any pending changes yet, directly set the change to
+      // the old and new classes passed in
+      if (previous_change == undefined) {
+        let new_change = {
+          old_class: change.old_class,
+          new_class: change.new_class
+        };
+        this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+      }
+      else {
+
+        // If trying to change the user back to their original class, delete this period from
+        // the changes list
+        if (previous_change.old_class == change.new_class) {
+          this.$delete(this.changes[change.youth.ID].periods, change.period);
+
+          // If that was the youth's only change, remove their ID from the list of pending
+          // changes altogether
+          if (Object.keys(this.changes[change.youth.ID].periods).length == 0) {
+            this.$delete(this.changes, change.youth.ID);
+          }
+        }
+
+        // If trying to change the user to a different new class, overwrite the new_class
+        // field but not the old_class field
+        else {
+          let new_change = {
+            old_class: previous_change.old_class,
+            new_class: change.new_class
+          };
+          this.$set(this.changes[change.youth.ID].periods, change.period, new_change);
+        }
+      }
     },
 
     change_periods_selected: function(change) {
@@ -733,7 +827,8 @@ export default {
 
     save_changes: async function(accept_func) {
 
-      // Construct the changes for the period object
+      // --- Construct the changes for the period object -----
+
       // Want an object where each key is a year, and each entry is object with fields for each season that needs to change
       // Each season field in turn is a list of youth
       let period_obj = {};
@@ -762,112 +857,90 @@ export default {
       let youth_id_list = Object.keys(this.changes);
       let year_list = Object.keys(period_obj);
 
-      // Initialize the update results
-      this.update_results = {youth: [], years: []};
-      for (var i = 0; i < youth_id_list.length; i++) {
-        this.update_results.youth.push(null);
-      }
-      for (var i = 0; i < year_list.length; i++) {
-        this.update_results.years.push(null);
-      }
 
-      // Update the database for each youth_id
-      // TODO: Is there a way to specify a change to be made to an array without .get() ing it?
-      for (let i = 0; i < youth_id_list.length; i++) {
+      // --- Update the GlobalPeriods list -----
 
-        // Grab the data from the database
-        let youth_id = youth_id_list[i];
-        let youth_db = db.collection("GlobalYouthProfile").doc(youth_id);
-        let youth_doc = await youth_db.get();
-        let youth_data = youth_doc.data();
+      // Add all transactions to this object, which will then run them all at once
+      // and wait for the results to come back before moving on
+      var year_transactions = new AwaitTransactions(db);
 
-        // Initialize a new active_periods array which will be changed
-        let new_active_periods = youth_data["ActivePeriods"];
+      // Loop through each year that needs to be updated
+      Object.keys(period_obj).forEach(year => {
+        let current_doc = this.periods_db.doc(year);
 
-        // Make the changes to the grabbed array
-        Object.keys(this.changes[youth_id].periods).forEach(period => {
-          new_active_periods[period] = this.changes[youth_id].periods[period].new_class;
+        // Create a transaction object to update the document for that year
+        year_transactions.createTransaction(year, t => {
+
+          // Grab the relevant document from the database
+          return t.get(current_doc).then(doc => {
+
+            // Init object to store new state of the database
+            let update_obj = {};
+            let year_data = period_obj[year]
+
+            // Loop through each season that needs an update
+            Object.keys(year_data).forEach(season => {
+
+              // Grab the data from the database
+              // Using let binding so this is a new object for each loop
+              let data = doc.data()[season];
+
+              // If an array for this period doesn't already exist, create it now
+              if (data == null) data = [];
+
+              // Update the database's data with the new entries for each youth,
+              // and save the updated entries to the update object
+              update_obj[season] = Youth.concat_overwrite(data, year_data[season]);
+            });
+
+            // Apply the updates
+            t.update(current_doc, update_obj);
+          });
         });
-
-        // Send the changes back to the database
-        youth_db.update({ActivePeriods: new_active_periods}).then((error) => {
-          if (error) {
-            this.$set(this.update_results.youth, i, this.changes[youth_id]);
-          }
-          else {
-            this.$set(this.update_results.youth, i, true);
-          }
-          check_for_completion(this.update_results);
-        });
-      }
-
-      for (let i = 0; i < year_list.length; i++) {
-
-        // Grab the data from the database
-        let year = year_list[i];
-        let period_db = db.collection("GlobalPeriods").doc(year);
-        let period_doc = await period_db.get();
-        let period_data = period_doc.data();
-
-        // Initialize object to store all db changes for the current year
-        let periods_to_update = {};
-
-        // Take the current database data for each period and add the new youth profiles, overwriting them when they exist already
-        Object.keys(period_obj[year]).forEach(period => {
-          periods_to_update[period] = Youth.concat_overwrite(period_data[period], period_obj[year][period]);
-        });
-
-        period_db.update(periods_to_update).then(error => {
-          if (error) {
-            this.$set(this.update_results.years, i, period_obj[year]);
-          }
-          else {
-            this.$set(this.update_results.years, i, true);
-          }
-          check_for_completion(this.update_results);
-        });
-      }
+      });
 
 
+      // Create a function to handle the transactions when all are completed
       // This runs at the end of each callback to the database
       // Waits until all the changes have returned, then does something with the results
       // If everything succeeded, results will be an array of "true"
       // Any update that failed will be the object that we were trying to update
-      function check_for_completion(results_object) {
+      year_transactions.setReturnFunc(async errs => {
+        if (errs.length > 0) {
 
-        let results = results_object.youth.concat(results_object.years);
+          // Add the intended changes to each error object
+          errs.forEach((err, n) => {
+            err.changes = period_obj[err.name];
+          });
 
-        // If there are no results yet, quit
-        if (results.length == 0) return;
-
-        // If there are any null values, quit
-        for (let i in results) {
-          if (results[i] == null) return;
-        }
-
-        // Filter out failed updates - object value rather than "true"
-        let failures = results.filter(x => x != true);
-
-        // If any of the updates failed, show that to the user
-        if (failures.length > 0) {
+          // Save the error object for parsing, and display the failure modal
+          this.transaction_errors = errs;
           accept_func(false);
+          this.show_advanced_errors = false;
         }
-
-        // If not, give the success modal
         else {
           accept_func(true);
-        }
-      }
-    },
+          this.show_advanced_errors = false;
 
-    reset_changes: function(accept_func) {
-      this.changes = new Object();
-      accept_func();
+          // Reload the period data from Firebase
+          // This is easier than trying to update this.periods to match all the changes
+          await this.load_periods();
+
+          // This has to come after load_periods, to force the page to recompute its
+          // displayed values
+          this.changes = new Object();
+        }
+      });
+
+
+      // Run the accumulated transactions and wait for all to return
+      year_transactions.runTransactions();
     },
 
     discard_changes: function(accept_func) {
       this.changes = new Object();
       accept_func();
+      this.show_advanced_errors = false;
     },
 
 
@@ -892,41 +965,6 @@ export default {
       }
       return cell.getValue();
     },
-
- async viewProfile() {
-      let ID = this.selected_youth.ID;
-      let snapshot = db.collection("GlobalYouthProfile").doc(ID);
-      this.currentProfile = await snapshot.get();
-      this.viewProfileModalVisible = true;
-
-      // window.alert("This is an upcoming feature :) look forward to it!")
-    },
-      async getHeaders() {
-      let headers = await db
-        .collection("GlobalFieldsCollection")
-        .doc("Checked In")
-        .get();
-      headers = headers.data().fields;
-      let fields = [];
-      for (let i = 0; i < headers.length; i++) {
-        fields.push({ key: Object.keys(headers[i])[0], sortable: true });
-      }
-      this.fields = fields;
-    },
-   load_profile_data: async function() {
-        this.profile_periods_doc = await this.periods_db.doc("metadata").get();
-        var data = this.periods_doc.data();
-
-        await Period.setSeasons(data["Seasons"]);
-        this.profile_periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
-
-        this.profile_period_data = {
-          cur_period: data["CurrentPeriod"],
-          reg_period: data["CurrentRegistrationPeriod"],
-          seasons:    data["Seasons"],
-          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
-        };
-      },
   }
 
 }
@@ -942,6 +980,11 @@ export default {
   .id_parens {
     color: gray;
     font-size: 0.75em;
+  }
+
+  .keyboard_button_text {
+    font-family: Courier, Monaco, monospace;
+    padding: 0px .25rem;
   }
 
   .col-container:after {
@@ -981,4 +1024,8 @@ export default {
   }
 
 }
+
+  .changed {
+    font-weight: bold;
+  }
 </style>

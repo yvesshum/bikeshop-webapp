@@ -11,6 +11,7 @@
                 <span v-if="get_arrow(b) == 's'">&larr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Larr;</span>
                 <span v-else-if="get_arrow(b) == 'b'">&larrb;</span>
+                <span v-else-if="get_arrow(b) == 'h'">&#8962;</span>
             </b-button>
 
             <div style="display: inline-block;"><slot></slot></div>
@@ -24,6 +25,7 @@
                 <span v-if="get_arrow(b) == 's'">&rarr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Rarr;</span>
                 <span v-else-if="get_arrow(b) == 'b'">&rarrb;</span>
+                <span v-else-if="get_arrow(b) == 'h'">&#8962;</span>
             </b-button>
         </div>
         <div style="clear:both;"></div>
