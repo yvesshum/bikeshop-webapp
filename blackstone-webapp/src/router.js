@@ -17,10 +17,10 @@ import RegisterYouth from './views/staff/RegisterNewYouth.vue';
 import HourTransfer from './views/youth/TransferCurrentHours';
 import ApproveTransfers from './views/staff/ApproveTransferHours';
 import AdminPanel from './views/staff/AdminPanel.vue';
-//import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
+import YouthOrderSettings from './views/admin/YouthOrderSettings.vue';
 import ApproveHourLogs from './views/staff/ApproveHourLogs.vue';
-//import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
-//import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
+import YouthProfileStaffSettings from './views/admin/YouthProfileStaffSettings.vue';
+import ApronColorsSettings from './views/admin/ApronColorsSettings.vue';
 import HourLoggingCategoriesSettings from './views/admin/HourLoggingCategoriesSettings.vue';
 import ManagePeriods from './views/staff/ManagePeriods.vue';
 import AddSubtractHours from './views/staff/AddSubtractHours.vue';
@@ -253,7 +253,6 @@ const router = new Router({
 
 
         // Admin Panels
-/*
         {
             path: '/youth-order-settings',
             name: 'youth-order-settings',
@@ -281,7 +280,6 @@ const router = new Router({
                 requiresStaff: true
             }
         },
-        */
         {
             path: '/hour-logging-categories-settings',
             name: 'hour-logging-categories-settings',
