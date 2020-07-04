@@ -113,17 +113,37 @@
     <div role="tablist" >
       <b-card no-body class="mb-0">
         <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
-          <h5 href="#" v-b-toggle.accordion-8>Admin Panel</h5>
+          <h5 href="#" v-b-toggle.accordion-8>Modify Youth Registration</h5>
         </b-card-header>
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
-            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form fields</button>
             <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration fields</button>
-            <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
-            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Create/Edit Apron Colors</button>
             <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Set Current Period Settings</button>
             <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Manage Essay Questions</button>
             <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Manage Class Settings</button>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+
+      <b-card no-body class="mb-0">
+        <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
+          <h5 href="#" v-b-toggle.accordion-9>Modify Youth Activity</h5>
+        </b-card-header>
+        <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
+          <b-card-body>
+            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form fields</button>
+            <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
+            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Create/Edit Apron Colors</button>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+
+      <b-card no-body class="mb-0">
+        <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
+          <h5 href="#" v-b-toggle.accordion-10>Change Page Description</h5>
+        </b-card-header>
+        <b-collapse id="accordion-10" accordion="my-accordion" role="tabpanel">
+          <b-card-body>
             <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Set Page Headers</button>
           </b-card-body>
         </b-collapse>
