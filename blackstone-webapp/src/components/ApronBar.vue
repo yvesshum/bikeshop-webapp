@@ -122,6 +122,8 @@ import ApronProgressBar from '@/components/ApronProgressBar';
 import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
 
+let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
+
 export default {
   name: 'apron_bar',
 
@@ -135,14 +137,7 @@ export default {
 
   data: function() {
     return {
-      // TODO: Draw these from database
-      apron_colors: [
-        {name: "Gray",   color: -1},
-        {name: "Green",  color: 140},
-        {name: "Red",    color: 0},
-        {name: "Purple", color: 270},
-        {name: "Black",  color: 361},
-      ],
+      apron_colors: [],
 
       // TODO: Draw these from database
       test_full_data: [
@@ -175,10 +170,6 @@ export default {
       checked_data: [],
       apron_color: null,
     }
-  },
-
-  mounted: function() {
-
   },
 
   computed: {
@@ -311,6 +302,15 @@ export default {
 
       this.change_skills_modal = false;
     },
+    
+    async getColors() {
+        let f = await ApronColorsRef.get();
+        return f.data()["Colors"];
+    },
+  },
+  
+  async mounted() {
+    this.apron_colors = await this.getColors();
   }
 }
 </script>
