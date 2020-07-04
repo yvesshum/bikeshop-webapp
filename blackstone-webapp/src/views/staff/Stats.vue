@@ -248,6 +248,8 @@ import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
 import PageHeader from "@/components/PageHeader.vue"
 import {filter} from '@/scripts/Search.js'
+import sanitizeHtml from 'sanitize-html'
+
 let setOrder = function(field) {
     var fieldVal = 0;
     if (field == "Check In") {
@@ -577,22 +579,63 @@ export default {
             return total;
         },
         async getProfileData() {
-            let profiles = await db.collection("GlobalYouthProfile").get();
+            let query = await Promise.all([await db.collection("GlobalYouthProfile").get(), await db.collection("GlobalPeriods").get()])
+            let profiles = query[0]
+            let globalperiods = {}
+            query[1].docs.map(x => globalperiods[x.id] = x.data())
+            delete globalperiods["metadata"]
+            console.warn(globalperiods)
             let squashed = profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
-            squashed = squashed.map(x=>{
+            squashed = squashed.map(x => {
                 // Combining first and last name into 1 column 
                 var combinedName = x["Last Name"] + ", " + x["First Name"];
                 delete x["Last Name"];
                 delete x["First Name"];
                 x["Name"] = combinedName;
 
+                // Delete Active Periods from Youth Profile 
+                delete x.ActivePeriods
                 // Flattening Active Periods array for text-based display 
-                if (x.ActivePeriods){
-                    var newPeriods = [];
-                    for (var el of Object.keys(x.ActivePeriods)){
-                        newPeriods.push(` ${el}: ${x.ActivePeriods[el]}`)
+                // if (x.ActivePeriods){
+                //     var newPeriods = [];
+                //     for (var el of Object.keys(x.ActivePeriods)){
+                //         newPeriods.push(` ${el}: ${x.ActivePeriods[el]}`)
+                //     }
+                //     x.ActivePeriods = newPeriods;
+                // }
+                // Assign active periods from global periods 
+                let activePeriods = ""
+                for (let year in globalperiods) {
+                    for (let period in globalperiods[year]) {
+                        for (let entry of globalperiods[year][period]) {
+                            if (x.ID == entry.ID) {
+                                activePeriods += `<span style="font-size: 14px; font-weight: bold">${period}: </span><span>${entry.Class}</span><br/>`
+                            }
+                        }
                     }
-                    x.ActivePeriods = newPeriods;
+                }
+                x["Active Periods"] = activePeriods
+
+
+                if (x["Essay"]) {
+                    // flatten essay object 
+                    let ret = ""
+                    for (let question in x["Essay"]) {
+                        // ret += `\"${question}\" \n ${x["Essay"][question]} \n\n`
+                        ret += `<p>Q: ${sanitizeHtml(question)}</p><p>A: ${sanitizeHtml(x["Essay"][question])}</p><br/>`
+                    }
+                    x["Essay"] = ret
+                }
+                if (x["Old Essay Answers"]) {
+                    let ret = ""
+                    for (let youthclass in x["Old Essay Answers"]) {
+                        ret += `<p style="font-weight: bold; text-decoration: underline">Class: ${youthclass}</p>`
+                        for (let question in x["Old Essay Answers"][youthclass]) {
+                            ret += `<p>Q: ${question}</p><p>A: ${sanitizeHtml(x["Old Essay Answers"][youthclass][question])}</p>`
+                        }
+                        ret += `<br/>`
+                    }
+                    x["Old Essay Answers"] = ret
                 }
 
                 // Change Timestamp objects into localeDateStrings 
@@ -619,16 +662,17 @@ export default {
             this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"),1)
             this.checkbox_fields.splice(this.checkbox_fields.indexOf("Name"),1)
             this.checkbox_fields.unshift("ID","Name")
+            console.log("Table data", tableData)
             this.table = new Tabulator("#table", {
                 data: tableData,
-                layout: "fitColumns",
+                layout: "fitData",
                 columns: this.fields_selected.map(x => {
                     return {
-                        title: x,
-                        field: x,
-                        headerFilter: (x==="ID"||x==="Name"),
-                        headerFilterFunc: filter
-                    };
+                            title: x,
+                            field: x,
+                            headerFilter: (x==="ID"||x==="Name"),
+                            headerFilterFunc: filter
+                        };
                 }),
                 pagination: "local",
                 paginationSize: "20",
@@ -672,14 +716,23 @@ export default {
             nV.splice(nV.indexOf("Name"),1)
             nV.sort().unshift("ID","Name") //Force ID to always be leftmost column
             this.table.setColumns(nV.map(x => {
-                    return {
+                let ret = {
                         title: x,
                         field: x,
                         headerFilter: true,
-                        headerFilterFunc:  (x==="ID"||x==="Name") ? filter : "like"
+                        headerFilterFunc: (x==="ID"||x==="Name") ? filter : "like"
                     };
-                })
-            );
+                let multilineFields = []
+                if (multilineFields.includes(x)) {
+                    ret['formatter'] = "textarea"
+                }
+                let htmlFields = ["Active Periods", "Essay", "Old Essay Answers"]
+                if (htmlFields.includes(x)) {
+                    ret['formatter'] = "html"
+                }
+
+                return ret;
+            }));
         }
     }
 };
