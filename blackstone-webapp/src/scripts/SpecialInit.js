@@ -12,7 +12,7 @@ export function initSpecialInputVal(type) {
         case 'Date':
             return Timestamp.fromDate(new Date()); // initialize to today's date
         case 'Gender':
-            return "M"; // leftmost element, honestly I don't know what to set the default one as :/ 
+            return null;
         case 'Race': 
             return null;
         case 'Grade':
