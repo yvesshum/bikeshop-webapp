@@ -87,7 +87,7 @@ export default {
                 window.alert("Unable to get Youth Profile fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["DOB", "Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log", "Class"]
+                let protectedFields = ["DOB", "Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log", "Class", "Primary Parent or Guardian Name", "Primary Parent or Guardian Phone", "Secondary Parent or Guardian Name", "Secondary Parent or Guardian Phone"]
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
