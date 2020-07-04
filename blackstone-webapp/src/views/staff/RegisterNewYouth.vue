@@ -124,8 +124,8 @@
                 New Youth registered!
             </template>
             <div class="d-block text-center">
-                <h3 v-if="returningYouth == 'New Youth'">A new Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
-                <h3 v-if="returningYouth == 'Returning Youth'">A returning Youth has been registered! Confirmation ID: {{newID}} (You may safely ignore this)</h3>
+                <h3 v-if="returningYouth == 'New Youth'">Successfully submitted a new youth registration for {{currentName}} to be in {{currentClass}} class</h3>
+                <h3 v-if="returningYouth == 'Returning Youth'">Successfully submitted a returning youth registration for {{currentName}} to be in {{currentClass}} class</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -207,6 +207,8 @@
                 answers : {},
                 newActive : 'secondary',
                 returningActive : 'secondary',
+                currentName : "",
+                currentClass : "",
             };
         },
         computed:{
@@ -367,6 +369,8 @@
                         }
                     }
                     
+                    this.currentClass = input["Class"];
+                    this.currentName = input["First Name"] + " " + input["Last Name"];
                     let currentClass = input["Class"];
                     console.log("Current class " + currentClass);
                     input["Essay"] = {}
@@ -401,6 +405,13 @@
                         this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
                     }
                     this.returningYouthID = "";
+                    
+                    for (var className in this.essayQuestions) {
+                        this.answers[className] = {};
+                        for(var i = 0; i < this.essayQuestions[className].length; i++){
+                            this.answers[className][this.essayQuestions[className][i]] = "";
+                        }
+                    }
                           
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
