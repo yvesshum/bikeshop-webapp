@@ -93,6 +93,7 @@ import moment from 'moment';
 import SpecialInput from '../../components/SpecialInput'
 import PageHeader from "@/components/PageHeader.vue"
 import { initSpecialInputVal } from '../../scripts/SpecialInit';	
+import eMath from 'exact-math'
 
 export default {
     name: 'YouthSubmitOrders',
@@ -364,7 +365,7 @@ export default {
         async hasSufficientHours() {
             let cost = this.fields.required
                 .find(f => f.name === "Item Total Cost").value
-            let youthCurrentHours = parseFloat(this.form.YouthProfile["Hours Earned"] - parseFloat(this.form.YouthProfile["Hours Spent"]));
+            let youthCurrentHours = eMath.sub(this.form.YouthProfile["Hours Earned"], parseFloat(this.form.YouthProfile["Hours Spent"]));
             if (youthCurrentHours < cost) {
                 this.modal.error.errors.push("You don't have enough hours! You have " + youthCurrentHours + " but the Item Total Cost is " + cost);
                 return false;
@@ -407,15 +408,19 @@ export default {
             payload["Status"] = "Pending";
             return payload;
         },
+        
+
         async updateYouthProfile(payload) {
             //Subtract hours
             //profile: this.form.YouthProfile
-            console.log('p', payload);
-            console.log('yp', this.form.YouthProfile);
-            this.form.YouthProfile["Hours Spent"] =
-                parseFloat(this.form.YouthProfile["Hours Spent"]) + payload["Item Total Cost"]
-            this.form.YouthProfile["Pending Hours"] =
-                parseFloat(this.form.YouthProfile["Pending Hours"]) - payload["Item Total Cost"];
+            console.warn("ITC", payload["Item Total Cost"])
+            console.warn("HS", parseFloat(this.form.YouthProfile["Hours Spent"]))
+            console.warn("PH", parseFloat(this.form.YouthProfile["Pending Hours"]))
+            console.warn("NEW HS", (parseFloat(this.form.YouthProfile["Hours Spent"]) * 100 + parseFloat(payload["Item Total Cost"]) * 100) / 100)
+            console.warn("NEW PH",  (parseFloat(this.form.YouthProfile["Pending Hours"]) * 100 - parseFloat(payload["Item Total Cost"]) * 100) / 100)
+
+            this.form.YouthProfile["Hours Spent"] = eMath.add(parseFloat(this.form.YouthProfile["Hours Spent"]), parseFloat(payload["Item Total Cost"]))
+            this.form.YouthProfile["Pending Hours"] = eMath.sub(parseFloat(this.form.YouthProfile["Pending Hours"]), parseFloat(payload["Item Total Cost"]))
             // console.warn(this.form.YouthProfile);
             let updateStatus = await db.collection("GlobalYouthProfile").doc(payload["Youth ID"]).update(this.form.YouthProfile);
             if (updateStatus) {
