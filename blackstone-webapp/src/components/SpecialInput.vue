@@ -121,7 +121,8 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns an email string -->
         <div v-else-if="input === 'Email'">
-            <b-form-input :value="value" @input="$emit('input', $event)" type="email" :state="isValidEmail()" :style="args.style"></b-form-input>
+            <!-- <b-form-input :value="value" @input="$emit('input', $event)" type="email" :style="args.style"></b-form-input> -->
+            <EmailWrapper :value="value" @input="$emit('input', $event)"/>
         </div>
 
         <!-- Returns a positive integer -->
@@ -189,7 +190,7 @@ import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
 import Datepicker from '../components/datepickerTimestamp';
 import SpecialNumberInput from '../components/SpecialNumberInput'
-
+import EmailWrapper from '../components/EmailWrapper'
 
 export default {
     name: 'SpecialInput',
@@ -206,6 +207,7 @@ export default {
             default: function (){ return {} }
         },
     },
+
     data() {
         return {
             input: null,
@@ -260,17 +262,6 @@ export default {
 
         isValidPhoneNumber() {
             return (this.value == null) ? false : (this.value.toString().length === 10 && !isNaN(this.value));
-        },
-
-        isValidEmail() {
-
-            if (this.value == null) return false
-            else {
-                let data = this.value.split("@")
-
-                return (data[0] != null && data[1] != null)
-            }
-            
         },
 
         async getClassOptions() {
@@ -331,7 +322,8 @@ export default {
         Datetime,
         Datepicker,
         SpecialNumberInput,
-        'compact-picker': Compact
+        'compact-picker': Compact,
+        EmailWrapper,
     }
 
 }
