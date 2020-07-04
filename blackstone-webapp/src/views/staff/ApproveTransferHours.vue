@@ -3,6 +3,7 @@
         <div class="content">
         <top-bar/>
         <h1 class="title">Transfer Hours Approval Dashboard</h1>
+        <PageHeader pageCategory="Staff Headers" pageName="Approve Hour Transfers"></PageHeader>
         <div class="toolbarwrapper">
             <b-button-toolbar style="justify-content: center;">
                     <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="selected.length == 0">Approve</b-button>
@@ -96,9 +97,11 @@
     import {db} from '../../firebase';
     import moment from 'moment'
     import {Timestamp} from '@/firebase.js'
+    import PageHeader from "@/components/PageHeader.vue"
     export default {
         name: 'ApproveTransfers',
         components: {
+          PageHeader,
         },
         data() {
             return {

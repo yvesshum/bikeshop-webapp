@@ -166,6 +166,10 @@ use v-model. Whenever one of these is changed, it updates the other.
             ></b-form-textarea>
         </div>
 
+        <div v-else-if="input === 'Color'">
+            <compact-picker :value="value" @input="$emit('input',$event)"/>
+        </div>
+
         <!-- String Input -->
         <div v-else>
             <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
@@ -179,6 +183,7 @@ import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
+import { Compact } from 'vue-color'
 // import { Datetime } from 'vue-datetime'
 import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
@@ -242,17 +247,15 @@ export default {
          * PUBLIC METHOD TO BE CALLED WHEN TYPE NEEDS TO BE UPDATED 
          */
         updateInputType(type) {  
-            console.log("updateinput type called. type: ", type);
-            console.log("current vmodel value:", this.value);
             this.input = type;
-            if (this.inputType === "Class" && this.classOptions[0].value == null) {
+            if (this.input === "Class" && this.classOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getClassOptions();
             }
-            else if (this.inputType === "Period" && this.periodOptions[0].value == null) {
+            else if (this.input === "Period" && this.periodOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getPeriodOptions();
-            }
+            } 
         },
 
         isValidPhoneNumber() {
@@ -282,6 +285,7 @@ export default {
                     text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
+            console.log("Class options", this.classOptions)
         },
 
         async getPeriodOptions() {
@@ -327,6 +331,7 @@ export default {
         Datetime,
         Datepicker,
         SpecialNumberInput,
+        'compact-picker': Compact
     }
 
 }

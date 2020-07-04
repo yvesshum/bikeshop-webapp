@@ -97,7 +97,7 @@ export default {
                 window.alert("Unable to get Youth Order Form fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["Youth ID", "Item Total Cost", "First Name", "Last Name", "Status", "Order Date", "Period"]
+                let protectedFields = ["Youth ID", "Item Total Cost", "Item Name", "First Name", "Last Name", "Status", "Order Date", "Period"]
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);

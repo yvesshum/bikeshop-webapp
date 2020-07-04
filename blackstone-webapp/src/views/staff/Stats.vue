@@ -1,5 +1,6 @@
 // TODO: Add pagination
 <template>
+    <div class="content">
     <div>
         <top-bar />
         <b-container>
@@ -7,6 +8,7 @@
                 <b-col>
                     <h1>Stats</h1>
                 </b-col>
+                <PageHeader pageCategory="Staff Headers" pageName="Stats for the Quarter"></PageHeader>
             </b-row>
             <b-row>
                 <b-col>
@@ -102,6 +104,7 @@
                             :fields="earned_Table_Fields"
                             sort-by="Check In"
                             responsive="sm"
+                            v-else
                         >
                             <template v-slot:cell(show_details)="row">
                                 <b-button
@@ -192,7 +195,7 @@
             <b-row>
                 <b-col>
                     <p v-if="this.noTotalHoursSpentEntries">No Entries found</p>
-                    <b-table hover :items="total_Hours_Spent_Data"></b-table>
+                    <b-table v-else hover :items="total_Hours_Spent_Data"></b-table>
                 </b-col>
             </b-row>
             <div v-if="this.total_Hours_Spent_Data.length !== 0">
@@ -231,6 +234,8 @@
             </div>
         </b-modal>
     </div>
+    <Footer/>
+    </div>
 </template>
 
 <script>
@@ -241,6 +246,7 @@ import 'vue-datetime/dist/vue-datetime.css'
 import { Timestamp } from "@/firebase.js";
 import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
+import PageHeader from "@/components/PageHeader.vue"
 import {filter} from '@/scripts/Search.js'
 let setOrder = function(field) {
     var fieldVal = 0;
@@ -269,7 +275,8 @@ export default {
     components: {
         Datetime,
         QueryTable,
-        Tabulator
+        Tabulator,
+        PageHeader
     },
     data() {
         return {
@@ -572,7 +579,7 @@ export default {
         async getProfileData() {
             let profiles = await db.collection("GlobalYouthProfile").get();
             let squashed = profiles.docs.map(x => Object.assign(x.data(), { ID: x.id }));
-            squashed = squashed.map(x=>{
+            squashed = squashed.map(x => {
                 // Combining first and last name into 1 column 
                 var combinedName = x["Last Name"] + ", " + x["First Name"];
                 delete x["Last Name"];
@@ -597,6 +604,16 @@ export default {
                             x[key] = x[key].toDate().toLocaleString()
                         }
                     }
+                }
+
+                if (x.Essay) {
+                    // Flatten the key value pairs into a string 
+                    let ret = ""
+                    let essays = x.Essay;
+                    for (let question in essays) { 
+                        ret = ret + question + "\n" + essays[question] + "\n\n"
+                    }
+                    x.Essay = ret;
                 }
 
                 return x;

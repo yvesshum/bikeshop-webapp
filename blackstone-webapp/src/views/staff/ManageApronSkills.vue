@@ -3,6 +3,7 @@
         <div class="content">
         <top-bar/>
         <h3 style="margin: 20px">Manage Apron skills here!</h3>
+        <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
         <b>Add category: </b>
         <input v-model="new_category" type="text" id="new_category_field" aria-describedby="emailHelp" placeholder="Category Name" style="margin-top:10px"> 
         <b-button variant="success" @click="add_category" style="margin-top:10px">Add Category</b-button></br>
@@ -43,6 +44,7 @@
     import EditTable from '../../components/EditTable';
     import {db} from '../../firebase';
     import {firebase} from '../../firebase';
+    import PageHeader from "../../components/PageHeader.vue"
     
     let ApronSkillsRef = db.collection("ApronSkills").doc("Categories");
     
@@ -50,6 +52,7 @@
         name: 'StaffManageSkills',
         components: {
             EditTable,
+            PageHeader,
         },
         data() {
             return {

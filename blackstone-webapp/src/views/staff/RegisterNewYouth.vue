@@ -5,55 +5,114 @@
         
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
         
-        <div class = "specialDiv">
-          <b-form-select v-model="returningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select>
+        <div class = "topDiv">
+          <b-button-group class="button-group-container" style="margin-bottom:10px" size="lg">
+              <b-button class="major-button" :variant="newActive" @click="switchNewYouth">New</b-button>
+              <div class="vl"></div>
+              <b-button class="major-button" :variant="returningActive" @click="switchReturningYouth">Returning</b-button>
+          </b-button-group>
+          <!-- <b-form-select v-model="changeReturningYouth" :options="returningOptions" style="margin-top: 20px"></b-form-select> -->
         </div>
         
-        <h3 v-if="returningYouth == 'New Youth'" style="margin: 20px">Register a new Youth here!</h3>
         
-        <h3 v-if="returningYouth == 'Returning Youth'" style="margin: 20px">Register a returning Youth here!</h3>
-
+        <div v-if="returningYouth == 'New Youth'">
+          <h3 style="margin: 20px">Register a new Youth here!</h3>
+          <PageHeader pageCategory="Parent Headers" pageName="New Youth Registration"></PageHeader>
+        </div>
+        <div v-if="returningYouth == 'Returning Youth'">
+          <h3 style="margin: 20px">Register a returning Youth here!</h3>
+          <span><PageHeader pageCategory="Parent Headers" pageName="Returning Youth Registration"></PageHeader></span>
+        </div>
         <div v-if="returningYouth != '-'">
 
-        <h4 class = "field_msg">Required fields:</h4>
-        
-        <div v-if="returningYouth == 'Returning Youth'">
-        
-          <p class="field_header">Enter Your Youth ID:</p>
-        
-          <div class = "specialDiv">
-            <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
-            </br>
-            <h4 class = "field_msg">Optional fields:</h4>
-            <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
-            <hr>
+          <div class="category-container">
+              <b-card no-body class="mb-0">
+                  <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
+                    <h5 href="#" v-b-toggle.accordion-returning>Required Fields</h5>
+                  </b-card-header>
+                  <b-collapse id="accordion-returning" visible accordion="my-accordion" role="tabpanel">
+                      <div v-if="returningYouth == 'Returning Youth'">
+                      
+                        <p class="field_header">Enter Your Youth ID:</p>
+                          <div class = "specialDiv">
+                              <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
+                          </div>
+                          <div v-for="field in requiredFields">
+                            <div v-if="field.name == 'Class'">
+                              <div class = "specialDiv">
+                                <p class="field_header">{{field.name}}</p>
+                                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                  </SpecialInput>
+                              </div>
+                            </div>
+                            <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
+                                <div v-for="question in essayQuestions[field.value]">
+                                  <pre class="field_header">{{question}}</pre>
+                                    <div class = "specialDiv">
+                                      <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                                      </SpecialInput>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="returningYouth == 'New Youth'">
+                      <div v-for="field in requiredFields">
+                          <div class="each_field">
+                              <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
+                                <p class="field_header">{{field.name}}</p>
+                                <div class = "specialDiv">
+                                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                  </SpecialInput>
+                                </div>
+                              </div>
+                              <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
+                                  <div v-for="question in essayQuestions[field.value]">
+                                    <pre class="field_header">{{question}}</pre>
+                                    <div class = "specialDiv">
+                                      <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
+                                      </SpecialInput>
+                                    </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                    </div>
+                  </b-collapse>
+              </b-card>
           </div>
-        
-      </div>
-        
-
-        <div v-for="field in requiredFields">
-            <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <div class = "specialDiv">
-                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                  </SpecialInput>
-                </div>
-                <br>
-            </div>
-        </div>
-
-        <h4 class = "field_msg" v-if="returningYouth == 'New Youth'">Optional fields:</h4>
-        <div v-for="field in optionalFields">
-            <div class="each_field">
-                <p class="field_header">{{field.name}}</p>
-                <div class = "specialDiv">
-                  <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
-                  </SpecialInput>
-                </div>
-                <br>
-            </div>
-        </div>
+          
+          <div class="category-container">
+              <b-card no-body class="mb-0">
+                  <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
+                    <h5 href="#" v-b-toggle.accordion-optional>Optional Fields</h5>
+                  </b-card-header>
+                  <b-collapse id="accordion-optional" accordion="my-accordion" role="tabpanel">
+                      <div v-if="returningYouth == 'Returning Youth'">
+                        <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
+                          <hr>
+                          <div v-for="field in requiredFields">
+                            <div v-if="field.name != 'Class'">
+                              <p class="field_header">{{field.name}}</p>
+                              <div class = "specialDiv">
+                                <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                </SpecialInput>
+                              </div>
+                            </div>
+                          </div>
+                      </div>
+                      <div v-for="field in optionalFields">
+                          <div class="each_field">
+                              <p class="field_header">{{field.name}}</p>
+                              <div class = "specialDiv">
+                                <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
+                                </SpecialInput>
+                              </div>
+                          </div>
+                      </div>
+                  </b-collapse>
+              </b-card>
+          </div>
 
         <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
 
@@ -71,7 +130,7 @@
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
 
-        <b-modal v-model = "errorModalVisible" hide-footer lazy>
+        <b-modal v-model = "errorModalIsVisible" hide-footer lazy>
             <template slot="modal-title">
                 Error!
             </template>
@@ -103,16 +162,19 @@
 <script>
     import { VueTelInput } from 'vue-tel-input'
     import SpecialInput from '@/components/SpecialInput';
+    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import {firebase} from '../../firebase';
     import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
+    import PageHeader from "@/components/PageHeader.vue"
+    import moment from 'moment'
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
-    let periodRef = db.collection("GlobalVariables").doc("ActivePeriods");
+    let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
     
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
@@ -121,11 +183,12 @@
             RadioGroupOther,
             VueTelInput,
             SpecialInput,
+            PageHeader,
         },
         data() {
             return {
                 listenerRef: "",
-                requiredFields: [], //[{name: "YouthID", value =""}, {name: "ItemID", value = ""}]
+                requiredFields: [],
                 optionalFields: [],
                 hiddenFields: [],
                 modalVisible: false,
@@ -139,41 +202,48 @@
                     "placeholder": "0"
                 },
                 returningYouth: "-",
-                returningOptions: [
-                    { value: '-', text: '-' },
-                    { value: 'New Youth', text: 'New Youth' },
-                    { value: "Returning Youth", text: 'Returning Youth' }
-                ],
                 returningYouthID: null,
+                essayQuestions : {},
+                answers : {},
+                newActive : 'secondary',
+                returningActive : 'secondary',
             };
         },
+        computed:{
+            errorModalIsVisible: {
+                get: function () {
+                  return this.errorModalVisible;
+                },
+                // setter
+                set: function (newErrorValue) {
+                  this.errorModalVisible = newErrorValue;
+                }
+            },
+        },
         methods: {
+            async switchNewYouth(){
+              this.loadingModalVisible = true;
+              this.returningYouth = "-";
+              this.newActive = 'info';
+              this.returningActive = 'secondary';
+              this.returningYouth = 'New Youth';
+              this.loadingModalVisible = false;
+            },
+            async switchReturningYouth(){
+              this.loadingModalVisible = true;
+              this.returningYouth = "-";
+              this.newActive = 'secondary';
+              this.returningActive = 'info';
+              this.returningYouth = "Returning Youth";
+              this.loadingModalVisible = false;
+            },
             async getFields() {
                 let f = await fieldsRef.get();
-                this.loadingModalVisible = false;
                 return f.data();
             },
-            async getSeasons() {
-                let s = await periodRef.get();
-                let activePeriods = s.data()
-                var seasons = activePeriods["Seasons"]
-                var current = activePeriods["CurrentPeriod"]
-                let curSeason = current.split(" ")[0];
-                var curYear = current.split(" ")[1];
-                var new_seasons = [];
-                var i = seasons.indexOf(curSeason);
-                while(new_seasons.length < seasons.length){
-                    new_seasons.push(seasons[i] + " " + curYear);
-                    if(seasons[i] == "Fall"){
-                        curYear = (parseInt(curYear) + 1).toString();
-                    }
-                    i += 1;
-                    if(i >= seasons.length){
-                        i = 0
-                    }
-                }
-                new_seasons.push("None");
-                return new_seasons;
+            async getEssays() {
+                let f = await essayRef.get();
+                return f.data();
             },
             async getOptions() {
                 let o = await optionsRef.get();
@@ -191,16 +261,19 @@
                     else if (curName === "Youth ID") this.requiredFields[i]["value"] = value.split(" ")[2];
                 }
             },
+            getDMY(date){
+              return date.getUTCDate() + " " + date.getUTCMonth() + " " + date.getUTCFullYear();
+            },
             async submit() {
-                this.loadingModalVisible = true;
                 //if an error field has been returned
                 let badFields = await this.checkValid();
                 if (badFields.length) {
                     this.errorFields = badFields;
                     this.loadingModalVisible = false;
                     this.showErrorModal();
-                }
-                else {
+                    return null;
+                } else {
+                    this.loadingModalVisible = true;
                     console.log("Required fields")
                     console.log(this.requiredFields)
                     console.log("Optional fields")
@@ -244,35 +317,65 @@
                     var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
-                    let data = this.parse(this.requiredFields);
+                    let data = this.requiredFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["type"] == "Date"){
+                                console.log(initSpecialInputVal(data[i]["type"]));
+                                let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
+                                let given_date = this.getDMY(new Date(data[i]["value"].seconds * 1000));
+                                console.log(default_date);
+                                console.log(given_date);
+                                if (default_date != given_date){
+                                    input[data[i]["name"]] = data[i]["value"];
+                                }
+                            } else if (data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
                         }
                     }
                     
-                    data = this.parse(this.optionalFields);
+                    data = this.optionalFields;
                     for (let i = 0; i < data.length; i ++) {
                         if(data[i]["value"] == undefined){
                             if(this.returningYouth != "Returning Youth"){
                                 data[i]["value"] = "";
                             }
                         } else if(this.returningYouth == "Returning Youth") {
-                            input[data[i]["name"]] = data[i]["value"];
+                            if(data[i]["type"] == "Date"){
+                              console.log(initSpecialInputVal(data[i]["type"]));
+                              let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
+                              let given_date = this.getDMY(new Date(data[i]["value"].seconds  * 1000));
+                              console.log(default_date);
+                              console.log(given_date);
+                              if (default_date != given_date){
+                                  input[data[i]["name"]] = data[i]["value"];
+                              }
+                            } else if (data[i]["value"] != initSpecialInputVal(data[i]["type"])){
+                                input[data[i]["name"]] = data[i]["value"];
+                            }
                         }
                         if(this.returningYouth != "Returning Youth"){
                             input[data[i]["name"]] = data[i]["value"];
                         }
                     }
                     
-                    console.log(input);
+                    let currentClass = input["Class"];
+                    console.log("Current class " + currentClass);
+                    input["Essay"] = {}
+                    for(var question in this.answers[currentClass]){
+                        let answer = this.answers[currentClass][question]
+                        let questionSubmit = question;
+                        input["Essay"][questionSubmit.split("\n").join("\\n")]
+                          = answer.split("\n").join("\\n");
+                    }
                     let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
@@ -292,11 +395,12 @@
                     
                     // Clear the fields
                     for (let i = 0; i < this.requiredFields.length; i ++) {
-                        this.requiredFields[i]["value"] = undefined;
+                        this.requiredFields[i]["value"] = initSpecialInputVal(this.requiredFields[i]["type"]);
                     }
                     for (let i = 0; i < this.optionalFields.length; i ++) {
-                        this.optionalFields[i]["value"] = undefined;
+                        this.optionalFields[i]["value"] = initSpecialInputVal(this.optionalFields[i]["type"]);
                     }
+                    this.returningYouthID = "";
                           
                         // db.collection("GlobalYouthProfile").doc(submitRef.id).collection("Work log").add({
                         //     // Creates placeholder
@@ -331,14 +435,16 @@
             async checkValid() {
                 let ret = [];
                 //loop over required fields, check that they are at least filled in
-                if(this.returningYouth == "New Youth"){
-                  for (let i = 0; i < this.requiredFields.length; i++) {
-                      let currentField = this.requiredFields[i];
-                      //if it is of length 0
-                      if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
-                  }
-                } else {
-                  if (!this.returningYouthID.length) ret.push("Returning Youth ID");
+                if(this.returningYouth == "Returning Youth"){
+                    if (this.returningYouthID == null || this.returningYouthID == undefined
+                      ||!this.returningYouthID.length) ret.push("Returning Youth ID");
+                }
+                for (let i = 0; i < this.requiredFields.length; i++) {
+                    let currentField = this.requiredFields[i];
+                    //if it is of length 0
+                    if(this.returningYouth == "New Youth" || currentField["name"] == "Class"){
+                        if (currentField["value"] == undefined || currentField["value"] == "") ret.push(currentField["name"]);
+                    }
                 }
                 return ret;
             },
@@ -418,8 +524,17 @@
         async mounted() {
             this.loadingModalVisible = true;
             let fields = await this.getFields();
-            let seasons = await this.getSeasons();
             let options = await this.getOptions();
+            this.essayQuestions = await this.getEssays();
+            console.log("Essay Questions: " + this.essayQuestions);
+            for (var className in this.essayQuestions) {
+                this.answers[className] = {};
+                for(var i = 0; i < this.essayQuestions[className].length; i++){
+                    this.essayQuestions[className][i] =
+                      this.essayQuestions[className][i].split("\\n").join("\n");
+                    this.answers[className][this.essayQuestions[className][i]] = "";
+                }
+            }
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
                 console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
@@ -438,7 +553,7 @@
             for (let i = 0; i < req_keys.length; i ++) {
                 this.requiredFields.push({
                     name: req_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(req_vals[i]),
                     type: req_vals[i],
                     placeholder: this.placeholders[req_keys[i]]
                 });
@@ -452,7 +567,7 @@
             for (let i = 0; i < opt_keys.length; i ++) {
                 this.optionalFields.push({
                     name: opt_keys[i],
-                    value: "",
+                    value: initSpecialInputVal(opt_vals[i]),
                     type: opt_vals[i],
                     placeholder: this.placeholders[opt_keys[i]]
                 });
@@ -468,6 +583,7 @@
                     value: ""
                 })
             }
+            this.loadingModalVisible = false;
         }
     }
 </script>
@@ -503,11 +619,65 @@
         margin-bottom:1px;
     }
     
-    .specialDiv{
-        width: 35%;
+    .topDiv{
+        width: 80%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
+    }
+    
+    .major-button{
+        width: 50%;
+    }
+    
+    .button-group-container{
+        width: 400px;
+        max-width: 100%;
+    }
+    
+    .specialDiv{
+        width: 55%;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: center;
+        padding-bottom: 1rem;
+        padding-top: 1rem;
+    }
+    
+    a, a:hover, a:active, a:link {
+      color:inherit;
+      text-decoration: none;
+     }
+    
+    h5 {
+      padding: 0.5rem;
+      color: white;
+      cursor: pointer;
+    }
+    
+    .category-container {
+      margin: auto;
+      max-width: 800px;
+      background-color: #ffffff;
+    }
+    
+    h5:hover {
+      text-decoration: underline;
+    }
+    
+    .vl {
+      border-left: 2px solid white;
+    }
+
+    pre{
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      white-space: -moz-pre-wrap;
+      white-space: -pre-wrap;
+      white-space: -o-pre-wrap;
+      word-wrap: break-word;
     }
 
 </style>
