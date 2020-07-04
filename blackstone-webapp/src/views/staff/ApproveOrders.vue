@@ -91,6 +91,8 @@
     import {db} from '../../firebase';
     import {Timestamp} from '../../firebase'
     import PageHeader from "@/components/PageHeader.vue"
+    import eMath from 'exact-math'
+
     export default {
         name: 'ApproveOrders',
         components: {
@@ -188,8 +190,7 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": (Math.round((parseFloat(YouthProfile["Pending Hours"]) - parseFloat(curData["Item Total Cost"]))*100)/100),
-                            // "Hours Spent": (parseFloat(YouthProfile["Hours Spent"]) - parseFloat(curData["Item Total Cost"]))
+                            "Pending Hours": eMath.sub(parseFloat(YouthProfile["Pending Hours"]), parseFloat(curData["Item Total Cost"]))
                         }).then((err) => {
                             if (err) this.showModal("Error", "Unable to update Youth Profile's hours, this may be an internet connection problem")
                             return null;
@@ -222,7 +223,7 @@
                         YouthProfile = YouthProfile.data();
 
                         db.collection("GlobalYouthProfile").doc(YouthID).update({
-                            "Pending Hours": Math.round(((parseFloat(YouthProfile["Pending Hours"]) + parseFloat(curData["Item Total Cost"]))*100)/100)
+                            "Pending Hours": eMath.add(parseFloat(YouthProfile["Pending Hours"]), parseFloat(curData["Item Total Cost"]))
                         }).catch(err => {
                             window.alert("Error " + err);
                             return null;
@@ -334,7 +335,7 @@
                 //if rejecting document is already approved
                 if (this.items[itemIndex]["Status"] === "Approved") {
                     //decrease hours spent by item cost
-                    let newHoursSpent = (Math.round((parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100);
+                    let newHoursSpent = eMath.sub(parseFloat(YouthProfile["Hours Spent"]), parseFloat(this.items[itemIndex]["Item Total Cost"]))
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent
                     }).catch(err => {
@@ -343,8 +344,8 @@
                     })
                 }
                 else { //if rejecting document is of pending status
-                    let newHoursSpent = (Math.round(parseFloat(YouthProfile["Hours Spent"]) - parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
-                    let newPendingHours = (Math.round(parseFloat(YouthProfile["Pending Hours"]) + parseFloat(this.items[itemIndex]["Item Total Cost"]))*100)/100;
+                    let newHoursSpent = eMath.sub(parseFloat(YouthProfile["Hours Spent"]), parseFloat(this.items[itemIndex]["Item Total Cost"]))
+                    let newPendingHours = eMath.add(parseFloat(YouthProfile["Pending Hours"]), parseFloat(this.items[itemIndex]["Item Total Cost"]))
                     db.collection("GlobalYouthProfile").doc(this.rejectingYouthID).update({
                         "Hours Spent": newHoursSpent,
                         "Pending Hours": newPendingHours
