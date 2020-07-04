@@ -191,6 +191,7 @@ export default {
   border-top: 2px solid black;
   border-left: 2px solid black;
   border-right: 2px solid black;
+  border-bottom: 2px solid black;
   border-radius: 5px;
   background-color:white;
   position: fixed;
