@@ -5,10 +5,10 @@
         <h1>Approve Youth Dashboard</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Approve Youth Registration"></PageHeader>
         <div class="toolbarwrapper">
-            <b-button variant="success" @click="accept" style="margin: 1%;">Approve</b-button>
-            <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;">See Essay Answers</b-button>
-            <b-button variant="info" @click="editFields" style="margin: 1%;">Inspect Youth</b-button>
-            <b-button variant="danger" @click="reject" style="margin: 1%;">Reject/Cancel</b-button>
+            <b-button variant="success" @click="accept" style="margin: 1%;" :disabled="!selected.length">Approve</b-button>
+            <b-button variant="info" @click="showEssayAnswers" style="margin: 1%;" :disabled="!selected.length">See Essay Answers</b-button>
+            <b-button variant="info" @click="editFields" style="margin: 1%;" :disabled="!selected.length">Inspect Youth</b-button>
+            <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Reject/Cancel</b-button>
             <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
         </div>
 
@@ -223,11 +223,19 @@
                 let questions = this.essayQuestions[currentClass];
                 var currentAnswersLocal = [];
                 if(this.checkSet(questions)){
+                    console.log("Questions: " + questions)
                     for (let i = 0; i < questions.length; i++){
-                        currentAnswersLocal.push({
-                          question: questions[i].split("\\n").join("\n"),
-                          answer: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                        })
+                        if(this.checkSet(curRow["Essay"][questions[i]])){
+                            currentAnswersLocal.push({
+                              question: questions[i].split("\\n").join("\n"),
+                              answer: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                            })
+                        } else {
+                          currentAnswersLocal.push({
+                            question: questions[i].split("\\n").join("\n"),
+                            answer: "",
+                          })
+                        }
                     }
                 }
                 this.currentAnswers = currentAnswersLocal;
@@ -235,7 +243,11 @@
                 this.showEssayModal();
             },
             formatTimeStampToDate(date){
-                return moment(date.toDate()).format("YYYY-MM-DD");
+                if(this.checkSet(date)){
+                  return moment(date.toDate()).format("YYYY-MM-DD");
+                } else {
+                  return "No DOB";
+                }
             },
             checkSet(value){
                 return (value != "" && value != undefined && value != null);
@@ -336,7 +348,18 @@
                     delete input["Timestamp"];
                     delete input["New or Returning"];
                     delete input["ReturningID"];
-                    input["ActivePeriods"][this.currentSeason] = input["Class"];
+                    if(this.checkSet(input["ActivePeriods"])){
+                      input["ActivePeriods"][this.currentSeason] = input["Class"];
+                    }
+                    if (this.checkSet(input["Old Essay Answers"])) {
+                      Console.log("Old Essay Answers: " + input["Old Essay Answers"]);
+                      input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    } else{
+                      Console.log("Old Essay Answers not set");
+                      input["Old Essay Answers"] = {};
+                      input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    }
+                    delete input["ReturningID"];
                     console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
@@ -400,6 +423,14 @@
 
                     input["ActivePeriods"] = {};
                     input["ActivePeriods"][this.currentSeason] = input["Class"];
+                    if (this.checkSet(input["Old Essay Answers"])) {
+                      input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    } else{
+                      input["Old Essay Answers"] = {};
+                      input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    }
+                    
+                    delete input["ReturningID"];
 
                     console.log(input)
 
@@ -483,7 +514,7 @@
             async getNewData() {
                 await this.getTData();
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
-                this.showModal("Table Refreshed!", "If you don't see something expected check the firebase backend console!")
+                this.showModal("Table Refreshed!", "If you see something unexpected check the firebase backend console")
 
             },
 
@@ -572,12 +603,21 @@
                 console.log(questions);
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i ++){
-                        editSelectedLocal.push({
-                            Category: questions[i].split("\\n").join("\n"),
-                            Value: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                            NewValue: curRow["Essay"][questions[i]].split("\\n").join("\n"),
-                            Type: "Essay"
-                        });
+                        if(this.checkSet(curRow["Essay"][questions[i]])){
+                            editSelectedLocal.push({
+                                Category: questions[i].split("\\n").join("\n"),
+                                Value: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                                NewValue: curRow["Essay"][questions[i]].split("\\n").join("\n"),
+                                Type: "Essay"
+                            });
+                        } else {
+                            editSelectedLocal.push({
+                                Category: questions[i].split("\\n").join("\n"),
+                                Value: "",
+                                NewValue: "",
+                                Type: "Essay"
+                            });
+                        }
                     }
                 }
                 this.editSelected = editSelectedLocal;
