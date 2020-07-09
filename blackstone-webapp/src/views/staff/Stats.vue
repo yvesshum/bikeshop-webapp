@@ -625,6 +625,7 @@ export default {
                         ret += `<p>Q: ${sanitizeHtml(question)}</p><p>A: ${sanitizeHtml(x["Essay"][question])}</p><br/>`
                     }
                     x["Essay"] = ret
+                    console.warn("Essay", ret)
                 }
                 if (x["Old Essay Answers"]) {
                     let ret = ""
@@ -649,15 +650,15 @@ export default {
                     }
                 }
 
-                if (x.Essay) {
-                    // Flatten the key value pairs into a string 
-                    let ret = ""
-                    let essays = x.Essay;
-                    for (let question in essays) { 
-                        ret = ret + question + "\n" + essays[question] + "\n\n"
-                    }
-                    x.Essay = ret;
-                }
+                // if (x.Essay) {
+                //     // Flatten the key value pairs into a string 
+                //     let ret = ""
+                //     let essays = x.Essay;
+                //     for (let question in essays) { 
+                //         ret = ret + question + "\n" + essays[question] + "\n\n"
+                //     }
+                //     x.Essay = ret;
+                // }
 
                 return x;
             })
