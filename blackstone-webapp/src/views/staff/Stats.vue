@@ -650,16 +650,6 @@ export default {
                     }
                 }
 
-                // if (x.Essay) {
-                //     // Flatten the key value pairs into a string 
-                //     let ret = ""
-                //     let essays = x.Essay;
-                //     for (let question in essays) { 
-                //         ret = ret + question + "\n" + essays[question] + "\n\n"
-                //     }
-                //     x.Essay = ret;
-                // }
-
                 return x;
             })
             return squashed
