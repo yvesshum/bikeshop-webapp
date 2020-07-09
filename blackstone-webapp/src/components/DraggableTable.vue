@@ -16,9 +16,9 @@
           <div class="row" :style="getTableWidth()">
             <div class="col table-categories"> <b>{{ category }}</b> </div>
               <div v-for="color in colors" v-if="color.name != 'Gray'" class="table-col col-sm">
-                <div v-for="group in getGroupsByColorCategory(color, category)">
-                  <draggable element="span" v-model="group.skills" :options="getOptions(group)" :move="onMove" @start="isDragging=true" @end="isDragging=false">
-                     <transition-group type="transition" :name="'flip-list'" class="dragArea" tag="ul">
+                <div v-for="group in getGroupsByColorCategory(color, category)" class="dragArea">
+                  <draggable element="div" class="dragArea" v-model="group.skills" :options="getOptions(group)" :move="onMove" @start="isDragging=true" @end="isDragging=false">
+                     <transition-group type="transition" :name="'flip-list'" tag="ul" class="dragAreaFinal">
                         <div class="sdt-tag sdt-tag-item table-cell" v-for="(element, index) in group.skills" :key="element.skill"  :style="getColorStyle(color)">
                            <!-- <textarea>{{ element.skill }}</textarea>  contenteditable? -->
                            <div
@@ -102,7 +102,8 @@ export default {
     },
     getColorStyle( color ){
       return { "border": "2px solid " + color.color,
-               "border-radius": "5px;" };
+               "border-radius": "5px;",
+               "box-shadow": "2px 4px #888888" };
     },
     getTableWidth(){
       return { "width": ((this.colors.length) * 225).toString() + "px" };
@@ -180,8 +181,13 @@ export default {
   background: #C8EBFB;
 }
 .dragArea {
+  height : 95%;
+}
+
+.dragAreaFinal {
   padding: 2px 15px !important;
-  min-height : 100px;
+  min-height: 100px;
+  height : 95%;
 }
 
 .trashcan {
