@@ -80,11 +80,12 @@ export default {
     },
     computed: {
         isValidFieldName: function() {
+            console.warn('isValidFieldName called', this.existingFieldNames, this.newFieldName)
             return this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName}).length > 0 && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
         },
 
         isValidInitializer: function() {
-            return this.newInitializerText.length > 0
+            return this.newInitializerText != null
         }
     },
     watch: {
