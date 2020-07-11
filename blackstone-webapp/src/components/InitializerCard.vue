@@ -61,21 +61,15 @@
                     id="textarea"
                     v-model="editFieldName"
                     placeholder="This must match one of the current fields"
-                    :state="existingFieldNames.includes(editFieldName)"
+                    :state="isValidFieldName"
                     size="sm"
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
             <p style="margin-bottom: 0">Initial Value</p>
-            <b-form-textarea
-                    id="textarea"
-                    v-model="editInitialText"
-                    placeholder="Enter a value or leave empty for no value"
-                    size="sm"
-                    rows="1"
-                    max-rows="3"
-            ></b-form-textarea>
-            <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save</b-button>
+            <SpecialInput :inputType="input_field_type" ref="addInput" v-model="editInitialText"/>
+
+            <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning" :disabled="!isValidFieldName">Save</b-button>
             <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
@@ -97,6 +91,8 @@
 
 <script>
 import {rb} from '@/firebase.js'
+import SpecialInput from '../components/SpecialInput.vue'
+import { initSpecialInputVal } from '../scripts/SpecialInit';	
 
 export default {
     name: 'InitializerCard',
@@ -119,12 +115,31 @@ export default {
             editInitialText: "",
             loading_modalVisible: false,
             loading_modalHeader: "",
+            input_field_type: null,
+
         }
-        
     },
     computed: {
         isDisabled: function() {
             return this.status === "success"
+        },
+
+        isValidFieldName: function() {  
+            let doesExist = this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})
+            let protectedFields = ["Hours Spent", "Pending Hours", "Work Log", "Order Log", "Hours Earned", "Transfer Log", "ActivePeriods", "Apron Color"]
+            let notProtected = !protectedFields.some(f => f === this.editFieldName)
+            return doesExist && notProtected
+        }
+    },
+    watch: {
+        editFieldName: function() {
+            if (this.isValidFieldName()) {
+                let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
+                let newVal = initSpecialInputVal(type);
+                this.$refs.addInput.updateInputType(type);	
+                this.editInitialText = newVal
+                this.input_field_type = type
+            }
         }
     },
     methods: {
@@ -194,8 +209,21 @@ export default {
         }
         this.fieldText = this.field;
         this.initialText = this.initializer;
+        this.editFieldName = this.field
+
+        if (this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})) {
+            let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
+            let newVal = initSpecialInputVal(type);
+            this.editInitialText = newVal
+            this.input_field_type = type
+        }
+
         this.ready = true;
 
+    },
+
+    components: {
+        SpecialInput
     }
 
 }
