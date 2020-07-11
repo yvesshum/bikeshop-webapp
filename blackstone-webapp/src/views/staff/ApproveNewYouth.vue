@@ -329,6 +329,9 @@
                 let row = this.selected[0];
 
                 this.showLoadingModal("Doing some work in the background...");
+                
+                let s = await periodRef.get();
+                this.currentSeason = s.data()["CurrentRegistrationPeriod"];
 
                 var newIDs = []
                 
