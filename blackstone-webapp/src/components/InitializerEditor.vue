@@ -39,7 +39,7 @@
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <p style="margin-bottom: 0">Initializer Text</p>
+            <p style="margin-bottom: 0">Initializer Value</p>
 
             <SpecialInput :inputType="input_field_type" ref="addInput" v-model="newInitializerText"/>
 
