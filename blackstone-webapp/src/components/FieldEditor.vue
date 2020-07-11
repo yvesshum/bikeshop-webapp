@@ -112,7 +112,7 @@
             max-rows="3"
             @change="handle_field_type_change"
         ></b-form-select>
-        <p style="margin-bottom: 0">Initial Value</p>
+        <p style="margin-bottom: 0">Initial Value (For existing documents)</p>
         <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
         <p>Check that this field does not exist under required, optional, or hidden, or else bad things might happen</p>
         <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName && modal.add.initial_value == null">Add a new field and change all existing documents to have this field and value</b-button>
