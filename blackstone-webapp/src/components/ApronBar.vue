@@ -123,6 +123,7 @@ import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
+let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
 
 export default {
   name: 'apron_bar',
@@ -142,7 +143,12 @@ export default {
       default: false,
     },
 
-    loadApronInfo: {
+    loadApronColors:  {
+      type: Boolean,
+      default: true,
+    },
+
+    loadApronSkills:  {
       type: Boolean,
       default: true,
     },
@@ -160,8 +166,6 @@ export default {
 
   data: function() {
     return {
-
-      apron_colors: [],
 
       // TODO: Draw these from database
       test_full_data: [
@@ -194,7 +198,6 @@ export default {
       checked_data: [],
       apron_color: null,
 
-      loaded_apron_info: null,
       loaded_apron_skills: null,
       loaded_apron_colors: [],
     }
@@ -207,21 +210,31 @@ export default {
   },
 
   async mounted() {
-    this.apron_colors = await this.getColors();
+    
   },
 
   computed: {
 
+    /* The object containing the apron skills
+     *
+     * Depending on the loadApronColors prop, this will either be passed in as a prop
+     * or loaded from the database
+     */
     apron_skills: function() {
-      if (this.loadApronInfo == true && this.apronSkills == null) {
+      if (this.loadApronSkills == true && this.apronSkills == null) {
         return this.loaded_apron_skills;
       } else {
         return this.apronSkills;
       }
     },
 
+    /* The list of apron colors
+     *
+     * Depending on the loadApronColors prop, this will either be passed in as a prop
+     * or loaded from the database
+     */
     apron_colors: function() {
-      if (this.loadApronInfo == true && this.apronColors == null) {
+      if (this.loadApronColors == true && this.apronColors == null) {
         return this.loaded_apron_colors;
       } else {
         return this.apronColors;
@@ -293,18 +306,27 @@ export default {
 
   methods: {
     ensure_data_loaded: async function() {
-      // Load profile, if requested
-      if (this.loadApronInfo == true && this.apronInfo == null) {
-        await this.load_apron_info();
+      // Load skills, if requested
+      if (this.loadApronSkills == true && this.apronSkills == null) {
+        await this.load_apron_skills();
+      }
+
+      // Load colors, if requested
+      if (this.loadApronColors == true && this.apronColors == null) {
+        await this.load_apron_colors();
       }
     },
 
-    load_apron_info: async function() {
-      var snapshot = db.collection("ApronSkills").doc("Test Doc");
-      this.loaded_apron_info = await snapshot.get();
+    // Load the apron skills object from the database and save it to this object
+    load_apron_skills: async function() {
+      var loaded_skills = await ApronSkillsRef.get();
+      this.loaded_apron_skills = loaded_skills.data()["Skills"];
+    },
 
-      this.loaded_apron_skills = this.loaded_apron_info.data()["Skills"];
-      this.loaded_apron_colors = this.loaded_apron_info.data()["Colors"];
+    // Load the list of colors from the database and save it to this object
+    load_apron_colors: async function() {
+      var loaded_colors = await ApronColorsRef.get();
+      this.loaded_apron_colors = loaded_colors.data()["Colors"];
     },
 
     get_profile_field: function(field, default_value) {
