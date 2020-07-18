@@ -121,13 +121,7 @@ export default {
   computed: {
     table_data: function() {
       return this.fullData.map(c => {
-        let achieved = false;
-        this.checkedData.forEach(d => {
-          if (d[this.matchBy] == c[this.matchBy]) {
-            achieved = true
-          }
-        });
-        return {achieved, ...c};
+        return {achieved: this.checkedData.includes(c[this.matchBy]), ...c};
       })
     },
 
