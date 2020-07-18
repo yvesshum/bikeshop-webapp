@@ -133,10 +133,14 @@ export default {
     },
     watch: {
         editFieldName: function() {
-            if (this.isValidFieldName()) {
+            if (this.isValidFieldName) {
                 let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
                 let newVal = initSpecialInputVal(type);
-                this.$refs.addInput.updateInputType(type);	
+                try {
+                    this.$refs.addInput.updateInputType(type);
+                } catch (err) {
+                    console.warn(err)
+                }
                 this.editInitialText = newVal
                 this.input_field_type = type
             }
