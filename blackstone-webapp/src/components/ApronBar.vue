@@ -143,7 +143,7 @@ export default {
       default: false,
     },
 
-    loadApronColors:  {
+    loadApronColors: {
       type: Boolean,
       default: true,
     },
@@ -153,7 +153,7 @@ export default {
       default: null,
     },
 
-    loadApronSkills:  {
+    loadApronSkills: {
       type: Boolean,
       default: true,
     },
@@ -316,7 +316,7 @@ export default {
     // Load the apron skills object from the database and save it to this object
     load_apron_skills: async function() {
       var loaded_skills = await ApronSkillsRef.get();
-      this.loaded_apron_skills = loaded_skills.data()["Skills"];
+      this.loaded_apron_skills = loaded_skills.data();
     },
 
     // Load the list of colors from the database and save it to this object
