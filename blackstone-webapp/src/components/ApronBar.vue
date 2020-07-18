@@ -148,17 +148,17 @@ export default {
       default: true,
     },
 
+    apronColors: {
+      type: Object,
+      default: null,
+    },
+
     loadApronSkills:  {
       type: Boolean,
       default: true,
     },
 
     apronSkills: {
-      type: Object,
-      default: null,
-    },
-
-    apronColors: {
       type: Object,
       default: null,
     },
@@ -207,10 +207,6 @@ export default {
     this.$emit("load_start");
     await this.ensure_data_loaded();
     this.$emit("load_complete");
-  },
-
-  async mounted() {
-    
   },
 
   computed: {
@@ -417,11 +413,6 @@ export default {
       }
 
       this.change_skills_modal = false;
-    },
-    
-    async getColors() {
-        let f = await ApronColorsRef.get();
-        return f.data()["Colors"];
     },
   }
 }
