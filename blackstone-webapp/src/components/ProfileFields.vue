@@ -208,9 +208,11 @@ import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
+let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
     HoursDisplay,
@@ -263,6 +265,8 @@ export default {
       fields_used: {},
 
       show_edit_modal: false,
+
+      header_doc: null,
     }
   },
 
@@ -286,9 +290,9 @@ export default {
     },
 
     table_sections: function() {
-      if (this.headerDoc == null) return [];
+      if (this.header_doc == null) return [];
 
-      let data = this.headerDoc.data();
+      let data = this.header_doc.data();
       let temp = [];
       let hidden_fields = this.hidden_fields;
       
@@ -343,10 +347,10 @@ export default {
     },
 
     field_types: function() {
-      if (this.headerDoc == null) return {};
+      if (this.header_doc == null) return {};
 
       let temp = new Object();
-      let data = this.headerDoc.data();
+      let data = this.header_doc.data();
 
       Object.keys(data).forEach(section => {
         forKeyVal(data[section], (name, val) => {
@@ -420,20 +424,17 @@ export default {
       this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
     };
 
-    if (this.headerDoc != undefined) {
-      this.load_header_doc(this.headerDoc);
-    };
-
     if (this.profile != undefined) {
       this.load_profile(this.profile);
     };
+
+    // Add a listener to the header document to update expected fields whenever they change
+    HeaderRef.onSnapshot(doc => {
+      this.load_header_doc(doc);
+    });
   },
 
   watch: {
-
-    headerDoc: function(new_header) {
-      this.load_header_doc(new_header);
-    },
 
     profile: function(doc) {
       this.load_profile(doc);
@@ -470,6 +471,7 @@ export default {
     load_header_doc: function(new_header) {
       let data = new_header.data();
 
+      this.header_doc = new_header;
       this.row_status = new Status();
 
       this.init_row_status(data, "required", Status.REQ);

@@ -10,7 +10,6 @@
     <div ref="body_fields" v-show="currentProfile != null">
       <ProfileFields
         :profile="currentProfile"
-        :headerDoc="header_doc"
         edit showOptionalFields
       />
 
@@ -83,7 +82,6 @@ export default {
     return {
       currentProfile: null,
       profile_snapshot: null,
-      header_doc: null,
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
@@ -97,8 +95,6 @@ export default {
   },
 
   mounted: async function() {
-    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-
     await this.load_profile_data();
   },
 
