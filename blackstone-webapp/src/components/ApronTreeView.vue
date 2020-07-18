@@ -97,6 +97,9 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 
+let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
+let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
+
 export default {
   name: 'apron_tree_view',
 
@@ -105,7 +108,7 @@ export default {
   },
 
   props: {
-    loadApronInfo: {
+    loadApronSkills: {
       type: Boolean,
       default: true,
     },
@@ -113,6 +116,11 @@ export default {
     apronSkills: {
       type: Object,
       default: null,
+    },
+
+    loadApronColors: {
+      type: Boolean,
+      default: true,
     },
 
     apronColors: {
@@ -133,7 +141,6 @@ export default {
 
   data: function() {
     return {
-      loaded_apron_info: null,
       loaded_apron_skills: [],
       loaded_apron_colors: [],
 
@@ -151,6 +158,11 @@ export default {
 
   computed: {
 
+    /* The object containing the apron skills
+     *
+     * Depending on the loadApronColors prop, this will either be passed in as a prop
+     * or loaded from the database
+     */
     apron_skills: function() {
       if (this.loadApronInfo == true && this.apronSkills == null) {
         return this.loaded_apron_skills;
@@ -159,6 +171,11 @@ export default {
       }
     },
 
+    /* The list of apron colors
+     *
+     * Depending on the loadApronColors prop, this will either be passed in as a prop
+     * or loaded from the database
+     */
     apron_colors: function() {
       if (this.loadApronInfo == true && this.apronColors == null) {
         return this.loaded_apron_colors;
@@ -210,25 +227,27 @@ export default {
 
   methods: {
     ensure_data_loaded: async function() {
+      // Load skills, if requested
+      if (this.loadApronSkills == true && this.apronSkills == null) {
+        await this.load_apron_skills();
+      }
 
-      // Load apron info, if requested based on props
-      if (this.loadApronInfo == true && this.apronInfo == null) {
-        await this.load_apron_info();
+      // Load colors, if requested
+      if (this.loadApronColors == true && this.apronColors == null) {
+        await this.load_apron_colors();
       }
     },
 
-    // Load the master copy of apron information
-    load_apron_info: async function() {
+    // Load the apron skills object from the database and save it to this object
+    load_apron_skills: async function() {
+      var loaded_skills = await ApronSkillsRef.get();
+      this.loaded_apron_skills = loaded_skills.data();
+    },
 
-      console.log("Loading data from Firebase...");
-
-      //  Retrieve the Apron information from the database
-      var snapshot = db.collection("ApronSkills").doc("Test Doc");
-      this.loaded_apron_info = await snapshot.get();
-
-      // Get the lists of skills and colors
-      this.loaded_apron_skills = this.loaded_apron_info.data()["Skills"];
-      this.loaded_apron_colors = this.loaded_apron_info.data()["Colors"];
+    // Load the list of colors from the database and save it to this object
+    load_apron_colors: async function() {
+      var loaded_colors = await ApronColorsRef.get();
+      this.loaded_apron_colors = loaded_colors.data()["Colors"];
     },
 
     // Apply a function to each skill, along with its color, group, and value
