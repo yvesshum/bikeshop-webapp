@@ -337,6 +337,13 @@ export default {
                         await db.collection("GlobalPeriods").doc(registration.id).update({Class: newFieldName})
                     }
 
+                    // Update entries in GlobalYouthProfile
+                    let youthProfileSnapshot = await db.collection("GlobalYouthProfile").where("Class", "==", this.modal.edit.original_field_name).get()
+                    for (let youthProfile of youthProfileSnapshot.docs) {
+                        await db.collection("GlobalYouthProfile").doc(youthProfile.id).update({Class: newFieldName})
+                    }
+
+
                     // Update Essay questions field name
                     let essays = await db.collection("GlobalVariables").doc("EssayQuestions").get();
                     var dat = essays.data();
