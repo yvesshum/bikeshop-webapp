@@ -11,25 +11,30 @@
         <br />
 
         <div v-if="detail_view != undefined">
+            <br />
             <table style="width: 95%; margin: auto; text-align:left;">
                 <tr>
                     <td style="width:5%;">{{ is_active(cur_period) ? "&#9745;" : "&#9744;" }}</td>
-                    <td style="width:47%;">Active in current quarter ({{cur_period}})</td>
-                    <td style="width:48%; text-align:center;">
+                    <td style="width:45%;">Active in current quarter ({{cur_period}})</td>
+                    <td style="width:5%;">{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
+                    <td style="width:45%;">Registered for next quarter ({{reg_period}})</td>
+                </tr>
+            </table>
+            <br />
+            </table>
+            <table style="width: 95%; margin: auto; text-align:left;">
+                <tr>
+                    <td style="width:45%; text-align:center;">
                         <span v-if="display.length == 0 || is_future_period(display)">
-                            <i>Choose a period below.</i>
+                            <i style="color: #999">Choose a period in the table below.</i>
                         </span>
                         <span v-else-if="is_active(display)">Youth's class in {{display}}:</span>
                         <span v-else><i>Youth was not active.</i></span>
                     </td>
-                </tr>
-                <tr>
-                    <td>{{ is_active(reg_period) ? "&#9745;" : "&#9744;" }}</td>
-                    <td>Registered for next quarter ({{reg_period}})</td>
                     <td>
                         <b-dropdown right id="dropdown-text" class="m-2"
                             :variant="dropdown_variant"
-                            :text="get_class(display)"
+                            :text="get_class_str(display)"
                             style="min-width: 100%;"
                             :disabled="display.length == 0"
                         >
@@ -37,11 +42,14 @@
                                 <i>Change the status and class for {{youth_name}} in {{display}}.</i>
                             </b-dropdown-text>
                             <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-group id="add-class" header="Classes" style="width: 240px;">
+                            <b-dropdown-group id="add-class" header="Set Class" style="width: 240px;">
                                 <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
                             </b-dropdown-group>
                             <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-item-button @click="set_class(display, null)">-none-</b-dropdown-item-button>
+                            <b-dropdown-group id="rem-class" header="Remove Class" style="width: 240px;">
+                                <b-dropdown-item-button @click="set_class(display, 'Unknown')">Unknown</b-dropdown-item-button>
+                                <b-dropdown-item-button @click="set_class(display, null)">-none-</b-dropdown-item-button>
+                            </b-dropdown-group>
                         </b-dropdown>
                     </td>
                 </tr>
@@ -66,12 +74,12 @@
                 <td v-for="s in seasons"
                     @mouseover="hover_cell(s, year)"
                     @click="select_cell(s, year)"
-                    style="cursor:pointer; text-align: left;"
+                    style="text-align: left;"
                     :class="get_cell_classes(s, year)"
                 >
                     <span v-if="is_future_period(s, year)"></span>
                     <span v-else-if="is_active(s, year)">
-                        &#9745; {{get_class(s,year)}}
+                        &#9745; {{get_class_str(s,year)}}
                     </span>
                     <span v-else>&#9744;</span>
                 </td>
@@ -164,7 +172,11 @@ export default {
                 return "- n/a -  ";
             }
             var period = Period.makePeriod(season, year);
-            var temp = this.active_periods[period.toString()];
+            return this.active_periods[period.toString()];
+        },
+
+        get_class_str: function(season, year) {
+            var temp = this.get_class(season, year);
             return (temp != null) ? temp : "Not Active";
         },
 
@@ -236,21 +248,24 @@ export default {
     table.table th.table-hov, table.table td.table-hov {
       background-color: #DFDFDF;
       /*background-color: #BBB;*/
+      cursor: pointer;
     }
 
     table.table th.table-sel, table.table td.table-sel {
       background-color: #CBE0FE;
       /*background-color: #9ABCEA;*/
+      cursor: pointer;
     }
 
     table.table th.table-hov-sel, table.table td.table-hov-sel {
       background-color: #B2C4DE;
       /*background-color: #769BCC;*/
+      cursor: pointer;
     }
 
     table.table td.table-unavailable {
         background-color: #c0c0c0;
-        cursor: pointer;
+        cursor: default;
     }
 
     table.table thead tr th.main_header {

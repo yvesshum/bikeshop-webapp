@@ -9,12 +9,14 @@
         <top-bar/>
         <h1 id="title">Submit Order Form</h1>
         <hr class="title">
+        <PageHeader pageCategory="Youth Headers" pageName="Submit Orders"></PageHeader>
 
         <div v-for="field in fields.required" :key="field.name">
             <div v-if="field.name !== 'Youth ID'" class="specialInputFields">
                 <span class="inline">{{field.name}}</span>
                 <span style="color: red">*</span>
-                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="{...args.specialInput, ...{placeholder: placeholders[field.name]}}"></SpecialInput>
+                <p style="color: grey">{{placeholders[field.name]}}</p>
+                <SpecialInput :inputType="field.type" v-model="field.value" :arguments="{...args.specialInput}"></SpecialInput>
 
             </div>
             <div v-else>
@@ -32,6 +34,7 @@
 
         <div v-for="field in fields.optional" :key="field.name" class="specialInputFields">
             <p>{{field.name}}</p>
+            <p style="color: grey">{{placeholders[field.name]}}</p>
             <SpecialInput v-model="fields.optional[youthIDFieldIndex].value" v-if="allReady" :inputType="field.type" :arguments="args.specialInput"></SpecialInput>
         </div>
 
@@ -88,13 +91,15 @@ import YouthIDSelector from '../../components/YouthIDSelector';
 import {Timestamp} from '@/firebase.js';
 import moment from 'moment';
 import SpecialInput from '../../components/SpecialInput'
+import PageHeader from "@/components/PageHeader.vue"
 import { initSpecialInputVal } from '../../scripts/SpecialInit';	
 
 export default {
     name: 'YouthSubmitOrders',
     components: {
         YouthIDSelector,
-        SpecialInput
+        SpecialInput,
+        PageHeader,
     },
     data() {
         return {
@@ -426,7 +431,7 @@ export default {
             this.$refs.YouthIDSelector[0].reset();
             for (let fieldType in this.fields) {
                 this.fields[fieldType].forEach(element => {
-                    element.value = null;
+                    element.value = initSpecialInputVal(element.type);
                 })
             }
             return true;

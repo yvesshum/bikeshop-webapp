@@ -141,6 +141,10 @@ Emits:
                 type: Object,
                 default: () => {},
             },
+            remove: {
+                type: Array,
+                default: () => [],
+            },
         },
         data () {
             return {
@@ -220,6 +224,9 @@ Emits:
                 var options;
                 var displays = new Object();
 
+                var options_to_use =
+                    this.options.filter(youth => !Youth.contains(this.remove, youth))
+
                 // Special case: If the search term is blank, match everything
                 // Note that the search function can handle this too, but in this case
                 // it's easier to just do this all at once
@@ -228,7 +235,7 @@ Emits:
 
                     // Create the unmarked displays for each option, and return all options
                     // Since there is no search, the Display fields will all be singleton arrays where the one element is an unmarked segment representing the whole string.
-                    this.options.forEach(opt => {
+                    options_to_use.forEach(opt => {
                         let temp = {};
                         Object.keys(opt).forEach(key => {
                             temp[key] = [{seg: opt[key], mark: false}];
@@ -236,10 +243,10 @@ Emits:
                         displays[opt["ID"]] = temp;
                     });
 
-                    options = this.options.sort(this.sort_options());
+                    options = options_to_use.sort(this.sort_options());
                 }
 
-                options = this.options.filter(option => {
+                options = options_to_use.filter(option => {
                     var valid = search(this.search_term, option, {
                         fields: Youth.requiredVals(),
                         remove_overlap: true,
@@ -529,6 +536,14 @@ Emits:
             periods: async function() {
                 this.options = await this.getData();
                 this.$emit("ready", this.options);
+            },
+
+            remove: function() {
+                console.log("this.remove", this.remove);
+                if (Youth.contains(this.remove, this.value)) {
+                    console.log("should reset to null");
+                    this.value = null;
+                };
             },
         },
 

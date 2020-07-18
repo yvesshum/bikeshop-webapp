@@ -113,7 +113,7 @@ export class Youth {
 	static concat_overwrite(list, new_youth) {
 		new_youth.forEach(youth => {
 			if (Youth.contains(list, youth)) {
-				Youth.replace_in_array(list, youth);
+				list = Youth.replace_in_array(list, youth);
 			}
 			else {
 				list.push(youth);

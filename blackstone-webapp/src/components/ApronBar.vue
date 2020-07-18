@@ -122,6 +122,8 @@ import ApronTableView from '@/components/ApronTableView';
 import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
 
+let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
+
 export default {
   name: 'apron_bar',
 
@@ -158,6 +160,8 @@ export default {
 
   data: function() {
     return {
+
+      apron_colors: [],
 
       // TODO: Draw these from database
       test_full_data: [
@@ -200,6 +204,10 @@ export default {
     this.$emit("load_start");
     await this.ensure_data_loaded();
     this.$emit("load_complete");
+  },
+
+  async mounted() {
+    this.apron_colors = await this.getColors();
   },
 
   computed: {
@@ -387,6 +395,11 @@ export default {
       }
 
       this.change_skills_modal = false;
+    },
+    
+    async getColors() {
+        let f = await ApronColorsRef.get();
+        return f.data()["Colors"];
     },
   }
 }
