@@ -394,25 +394,26 @@ export default {
                     }
 
                     // Delete from collections
-                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
-                    }
-                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.doc(path).set(data);
-                        })
-                    }
+                    // ^ We agreed to not do this cuz of display issues in youth profile
+                    // for (let j = 0; j < this.collectionsToEdit.length; j++) {
+                    //     let query = await db.collection(this.collectionsToEdit[j]).get();
+                    //     query.forEach(async doc => {
+                    //         let id = doc.id;
+                    //         let data = doc.data();
+                    //         delete data[this.modal.delete.field_name]
+                    //         await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                    //     })
+                    // }
+                    // for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
+                    //     let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                    //     query.forEach(async doc => {
+                    //         let id = doc.id;
+                    //         let path = doc.ref.path
+                    //         let data = doc.data();
+                    //         delete data[this.modal.delete.field_name]
+                    //         await db.doc(path).set(data);
+                    //     })
+                    // }
 
                     // Delete locally 
                     this.field_data.splice(i, 1);
