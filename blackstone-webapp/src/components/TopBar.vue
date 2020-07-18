@@ -26,6 +26,7 @@
 
 <script>
     import {firebase} from '../firebase'
+    import {isStaff} from '../scripts/getPrivilege'
     export default {
         name: 'TopBar',
         props: {
@@ -66,15 +67,8 @@
         },
         async mounted() {
             this.getButtonText();
-            const currentUser = await firebase.auth().currentUser;
-            console.log('c', currentUser.email);
-            if (currentUser) {
-                if (currentUser.email === "staff@blackstonebikes.com") {
-                    this.isStaff = true;
-                }
-            }
-            console.log(this.isStaff);
-            }
+            this.isStaff = await isStaff()
+        }
     }
 </script>
 

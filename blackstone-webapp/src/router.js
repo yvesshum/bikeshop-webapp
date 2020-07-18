@@ -32,6 +32,8 @@ import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
 import ClassSettings from './views/admin/ClassSettings';
 import PageHeaders from './views/admin/PageHeaders';
+import {isAdmin, isStaff, isLoggedIn} from './scripts/getPrivilege'
+
 Vue.use(Router);
 
 const router = new Router({
@@ -260,7 +262,7 @@ const router = new Router({
             component: PageHeaders,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -269,7 +271,7 @@ const router = new Router({
             component: EssayQuestionsSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -278,7 +280,7 @@ const router = new Router({
           component: ClassSettings,
           meta: {
               requiresAuth: true,
-              requiresStaff: true
+              requiresAdmin: true
           }
         },
         {
@@ -287,7 +289,7 @@ const router = new Router({
             component: YouthOrderSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -296,7 +298,7 @@ const router = new Router({
             component: YouthProfileStaffSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -305,7 +307,7 @@ const router = new Router({
             component: ApronColorsSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -314,7 +316,7 @@ const router = new Router({
             component: HourLoggingCategoriesSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -323,7 +325,7 @@ const router = new Router({
             component: PeriodSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
 
@@ -331,22 +333,28 @@ const router = new Router({
     ]
 });
 
+const getIsStaff = isStaff
+const getIsAdmin = isAdmin
+const getIsLoggedIn = isLoggedIn
+
 router.beforeEach(async (to, from, next) => {
-    const currentUser = await firebase.auth().currentUser;
-    let isStaff = false;
-    if (currentUser) {
-        if (currentUser.email === "staff@blackstonebikes.com") {
-            console.log("isStaff")
-            isStaff = true;
-        }
-    }
+    console.log(isStaff)
+    let isStaff = await getIsStaff()
+    let isAdmin = await getIsAdmin()
+    const loggedIn = await getIsLoggedIn()
+
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const requiresStaff = to.matched.some(record => record.meta.requiresStaff);
+    const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
 
-    if (requiresAuth && !currentUser) next('login');
-    else if (!requiresAuth && currentUser) next('Home');
+
+    if (requiresAuth && !loggedIn) next('login');
+    else if (!requiresAuth && loggedIn) next('Home');
     else if (requiresAuth && requiresStaff && !isStaff) {
         window.alert("You do not have permissions to see this page!");
+        next('Home');
+    } else if (requiresAuth && requiresAdmin && !isAdmin) {
+        window.alert("Sorry but you don't have admin privillege to see this page")
         next('Home');
     }
     else {
