@@ -11,6 +11,7 @@
           variant="primary"
           @click="decrement_apron"
           v-b-tooltip.hover.html="'Decrement Apron Color'"
+          v-if="allow_edits"
         >-</b-button>
         <ApronProgressBar
           style="display: inline-block;"
@@ -23,24 +24,20 @@
           variant="primary"
           @click="increment_apron"
           v-b-tooltip.hover.html="'Increment Apron Color'"
+          v-if="allow_edits"
         >+</b-button>
       </div>
 
       <div style="clear: both;"></div>
     </div>
 
-    <MatchTable
-      ref="match_table"
-      style="clear: both;"
-      :checkedData="checked_data"
-      :fullData="test_full_data"
-      :headingData="test_headers"
-      editable
-      matchBy="name"
-      @selected="s => selected_skills = s"
-      @changes="c => changed_skills = c"
-    >
-    </MatchTable>
+    <ApronTableView
+      :loadApronInfo="false"
+      :apronSkills="apron_skills"
+      :apronColors="apron_colors"
+      :achievedSkills="achieved_skills"
+      :achievedColor="achieved_color"
+    />
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
@@ -67,12 +64,14 @@
       <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
       <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
     </div> -->
-    <div v-if="has_changes">
-      <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
-      <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
-    </div>
-    <div v-else>
-      <b-button disabled>Select skills to add or remove</b-button>
+    <div v-if="allow_edits">
+      <div v-if="has_changes">
+        <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
+        <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
+      </div>
+      <div v-else>
+        <b-button disabled>Use the left column above to add & remove skills</b-button>
+      </div>
     </div>
 
     <b-modal v-model="change_skills_modal">
@@ -119,6 +118,7 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
+import ApronTableView from '@/components/ApronTableView';
 import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
 
@@ -128,21 +128,36 @@ export default {
   components: {
     ApronImg,
     ApronProgressBar,
+    ApronTableView,
     MatchTable,
   },
 
-  props: ['profile'],
+  props: {
+    profile: Object,
+
+    allowEdits: {
+      type: Boolean,
+      default: false,
+    },
+
+    loadApronInfo: {
+      type: Boolean,
+      default: true,
+    },
+
+    apronSkills: {
+      type: Object,
+      default: null,
+    },
+
+    apronColors: {
+      type: Object,
+      default: null,
+    },
+  },
 
   data: function() {
     return {
-      // TODO: Draw these from database
-      apron_colors: [
-        {name: "Gray",   color: -1},
-        {name: "Green",  color: 140},
-        {name: "Red",    color: 0},
-        {name: "Purple", color: 270},
-        {name: "Black",  color: 361},
-      ],
 
       // TODO: Draw these from database
       test_full_data: [
@@ -174,14 +189,45 @@ export default {
 
       checked_data: [],
       apron_color: null,
+
+      loaded_apron_info: null,
+      loaded_apron_skills: null,
+      loaded_apron_colors: [],
     }
   },
 
-  mounted: function() {
-
+  created: async function() {
+    this.$emit("load_start");
+    await this.ensure_data_loaded();
+    this.$emit("load_complete");
   },
 
   computed: {
+
+    apron_skills: function() {
+      if (this.loadApronInfo == true && this.apronSkills == null) {
+        return this.loaded_apron_skills;
+      } else {
+        return this.apronSkills;
+      }
+    },
+
+    apron_colors: function() {
+      if (this.loadApronInfo == true && this.apronColors == null) {
+        return this.loaded_apron_colors;
+      } else {
+        return this.apronColors;
+      }
+    },
+
+    achieved_skills: function() {
+      return this.get_profile_field("Apron Skills", null);
+    },
+
+    achieved_color: function() {
+      return this.get_profile_field("Apron Color", "");
+    },
+
     profile_data: function() {
       return (this.profile == null) ? null : this.profile.data();
     },
@@ -224,6 +270,10 @@ export default {
     skills_to_remove: function() {
       return (this.changed_skills == null) ? [] : this.changed_skills.rem;
     },
+
+    allow_edits: function() {
+      return this.allowEdits != undefined;
+    },
   },
 
   watch: {
@@ -234,6 +284,21 @@ export default {
   },
 
   methods: {
+    ensure_data_loaded: async function() {
+      // Load profile, if requested
+      if (this.loadApronInfo == true && this.apronInfo == null) {
+        await this.load_apron_info();
+      }
+    },
+
+    load_apron_info: async function() {
+      var snapshot = db.collection("ApronSkills").doc("Test Doc");
+      this.loaded_apron_info = await snapshot.get();
+
+      this.loaded_apron_skills = this.loaded_apron_info.data()["Skills"];
+      this.loaded_apron_colors = this.loaded_apron_info.data()["Colors"];
+    },
+
     get_profile_field: function(field, default_value) {
       return (this.profile_data == null) ? default_value : this.profile_data[field];
     },
@@ -245,6 +310,18 @@ export default {
     get_apron_property: function(level, prop) {
       if (this.apron_colors == null || this.apron_colors[level] == null) return "";
       return this.apron_colors[level][prop];
+    },
+
+    get_skill_name: function(color, group, index) {
+      if ( this.apron_skills == null
+        || this.apron_skills[color] == null
+        || this.apron_skills[color][group] == null
+      ) {
+        return null;
+      }
+      else {
+        return this.apron_skills[color][group][index];
+      }
     },
 
     increment_apron: function() {
