@@ -25,7 +25,7 @@
         <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
         
-        <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
+        <h2 v-b-tooltip.hover title="This value will be shown as a hint when users fill out the Youth Registration Form">Form Hint editor</h2>  
         <hr class="subheading">  
         <PlaceholderEditor v-if="dataLoaded" placeholderRef="Youth Profile Placeholders" doc="Youth Profile"/>
         <hr class="divider">
