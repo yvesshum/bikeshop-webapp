@@ -101,7 +101,91 @@ Emits:
         </multiselect>
         </div>
 
-        <b-button v-b-tooltip.hover.html="tooltip_data" variant="info" squared>?</b-button>
+        <b-button v-b-tooltip.hover.html="info_msg" variant="info" @click="show_info_modal" squared>?</b-button>
+
+        <b-modal v-model="info_modal_visible" hide-footer lazy>
+            <template slot="modal-title"><span style="color: black;">Character Substitutions</span></template>
+            <!-- <p>Characters with diacritics, such as <b><i>é</i></b>, <b><i>ñ</i></b>, <b><i>ç</i></b>, and <b><i>ł</i></b>, may be entered without diacritics (i.e. as <b><i>e</i></b>, <b><i>n</i></b>, <b><i>c</i></b>, and <b><i>l</i></b>).</p> -->
+
+            <p>Characters with <b>diacritics</b> or <b>accent marks</b>, such as <b><code>é</code></b>, <b><code>ñ</code></b>, <b><code>ç</code></b>, and <b><code>ł</code></b>, may be entered without diacritics (i.e. as <b><code>e</code></b>, <b><code>n</code></b>, <b><code>c</code></b>, and <b><code>l</code></b>).</p>
+
+            <p>In addition, a large number of <b>special characters</b> may be replaced by characters from the standard US keyboard which either look similar or represent their pronunication.  These include:</p>
+
+            <!-- <table style="margin: auto; text-align: center">
+                <tbody>
+                    <tr>
+                        <td><b>Special Character</b></td>
+                        <td></td>
+                        <td><b>Search Equivalent</b></td>
+                    </tr>
+                    <tr v-for="char_obj in special_chars">
+                        <td><b><code>
+                            <span v-if="char_obj.show_caps">{{char_obj.special.toUpperCase()}}</span>{{char_obj.special}}
+                        </code></b></td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td><b><code>{{char_obj.regular}}</code></b></td>
+                    </tr>
+                </tbody>
+            </table> -->
+
+            <table style="margin: auto; text-align: center">
+                <tbody>
+                    <tr>
+                        <td><b>Special Character:</b></td>
+                        <td v-for="char_obj in special_chars" style="padding: 0px 15px;"><b><code>
+                            <span v-if="char_obj.show_caps">{{char_obj.special.toUpperCase()}}</span>{{char_obj.special}}
+                        </code></b></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td v-for="char_obj in special_chars">&nbsp;⇕&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td><b>Search Equivalent:</b></td>
+                        <td v-for="char_obj in special_chars"><b><code>{{char_obj.regular}}</code></b></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br />
+
+            <p>This feature is intended to make the system inclusive to names from different linguistic backgrounds, while still making it easy to search for them on a standard US keyboard.</p>
+
+            <p>Some example searches are as follows:</p>
+            <table style="margin: auto; text-align: center">
+                <tbody>
+                    <tr>
+                        <td><b>Search Term</b></td>
+                        <td></td>
+                        <td><b>Potential Matches</b></td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>oe</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td>N<span class="search_highlight">oë</span>l, Z<span class="search_highlight">oë</span>, c<span class="search_highlight">œ</span>ur</td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>nun</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td><span class="search_highlight">Núñ</span>ez, <span class="search_highlight">Nun</span>n</td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>du</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td><span class="search_highlight">Du</span>ncan, <span class="search_highlight">Đư</span>ờng, Sigrí<span class="search_highlight">ðu</span>r</td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>á</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td style="padding: 0px 15px;">Hern<span class="search_highlight">á</span>ndez, Th<span class="search_highlight">á</span>i, V<span class="search_highlight">á</span>squez</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <br />
+            <p>Note that searching for an accented character will not bring up unaccented results.</p>
+
+        </b-modal>
     </div>
 </template>
 
@@ -159,39 +243,16 @@ Emits:
                 using_past: false,
 
                 is_busy: false,
+
+                info_modal_visible: false,
+                info_msg: "This bar accepts character substitutions. Click for more info."
             }
         },
 
         computed: {
 
-            // Creates the message displayed in the help tooltip
-            tooltip_data: function() {
-                let ret = `Characters with diacritics, such as ${str_list(["é","ñ","ç","ł"])}, may be entered plain (i.e. as ${str_list(["e","n","c","l"])}). `;
-
-                ret += "In addition, the following substitutions may be made:<br />";
-
-                SPECIAL_CHARS.forEach((char_obj) => {
-                    let c = char_obj.special;
-                    let r = char_obj.regular;
-                    let caps = char_obj.show_caps;
-
-                    if (char_obj.display) {
-                        ret += `${ (caps) ? c.toUpperCase() : "" }${c} ⇒ ${ r.bold() }<br />`;
-                    }
-                });
-
-                ret += "(The above list is not exhaustive)";
-
-                return ret;
-
-                function str_list(chars) {
-                    let str = "";
-                    for (var i = 0; i < chars.length-1; i++) {
-                        str += chars[i].bold().italics() + ", ";
-                    }
-                    str += "and " + chars[chars.length-1].bold().italics();
-                    return str;
-                };
+            special_chars: function() {
+                return SPECIAL_CHARS.filter(char_obj => char_obj.display);
             },
 
             /* Search algorithm:
@@ -525,6 +586,10 @@ Emits:
                         (acc, curr) => acc + displays[v.ID][curr].filter(s => s.mark).length, 0
                     );
                 }
+            },
+
+            show_info_modal: function() {
+                this.info_modal_visible = true;
             },
         },
 
