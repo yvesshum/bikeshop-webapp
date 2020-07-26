@@ -26,7 +26,15 @@
 				<b-table
 					:items="emails[`${this.selectedClass} ${this.selectedPeriod}`]"
 					show-empty
-				/>
+                    :busy="lookupLoading"
+				>
+                    <template v-slot:table-busy>
+                        <div class="text-center text-danger my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong>Loading...</strong>
+                        </div>
+                    </template>
+				</b-table>
 
 				<div
 					v-if="
