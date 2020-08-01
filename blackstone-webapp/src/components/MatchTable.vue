@@ -21,7 +21,7 @@ export default {
     Table,
   },
 
-  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable', 'groupBy'],
+  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable', 'args'],
 
   data: function() {
     return {
@@ -56,20 +56,14 @@ export default {
         },
       },
 
-      table_args: {
-        groupBy: this.groupBy,
-        resizeableRows: false,
-        resizeableColumns: false,
-        index: 'name',
+      default_table_args: {
+        index: this.matchBy,
 
         // Format the header to show number of skills achieved in each category
         groupHeader: function(value, count, data, group) {
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
           return `${value} Skills <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
-
-        // Allow multiple selection with ctrl and shift keys
-        selectable: true,
 
         // When row selection changes, propagate those changes upward
         rowSelectionChanged: (data, rows) => {
@@ -128,9 +122,17 @@ export default {
     heading_data: function() {
       return [ this.achieved_column, ...this.headingData ];
     },
+
+    table_args: function() {
+      return {...this.default_table_args, ...this.args(this.is_achieved_cell)};
+    },
   },
 
   methods: {
+
+    is_achieved_cell: function(cell) {
+      return cell.achieved;
+    },
 
     get_row_id: function(row) {
       return row[this.matchBy];

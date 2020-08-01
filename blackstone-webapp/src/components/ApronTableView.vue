@@ -140,8 +140,6 @@ export default {
     },
 
     achieved_skills_table: function() {
-      if (this.apron_skills == null) return [];
-
       let result = [];
       forEach_ObjObjArr(this.achievedSkills, (color, group, index, entry) => {
         // If the youth has this skill, add it to the list
@@ -186,6 +184,9 @@ export default {
 
           // Allow multiple selection with ctrl and shift keys
           selectable: true,
+
+          // Allow groups to open/close by clicking anywhere in header (not just the arrow)
+          groupToggleElement:"header",
 
           // Start with the youth's current apron open
           groupStartOpen: (value, count, data, group) => {
