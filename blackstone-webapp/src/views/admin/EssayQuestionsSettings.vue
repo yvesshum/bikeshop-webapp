@@ -4,7 +4,7 @@
         <h1>Essay Question Settings</h1>
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
-                    <b-button variant="success" @click="showAddModal" style="margin: 1%;" :disabled="!selected.length">Add Question</b-button>
+                    <b-button variant="success" @click="showAddModal" style="margin: 1%;">Add Question</b-button>
                     <b-button variant="info" @click="showEditModal"style="margin: 1%;" :disabled="!selected.length">Edit Question</b-button>
                     <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Delete Question</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
