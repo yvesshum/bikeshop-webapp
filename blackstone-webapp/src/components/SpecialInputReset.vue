@@ -4,7 +4,7 @@
     <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
     </SpecialInput>
 
-    <b-button ref="reset_button" squared :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
+    <b-button ref="reset_button" squared :disabled="!changed" :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
       <div v-if="get_original_string().length == 0">Clear</div>
       <div v-else>Reset</div>
     </b-button>

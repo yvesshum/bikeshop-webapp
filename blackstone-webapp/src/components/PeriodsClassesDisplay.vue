@@ -74,12 +74,19 @@
                 <td v-for="s in seasons"
                     @mouseover="hover_cell(s, year)"
                     @click="select_cell(s, year)"
-                    style="text-align: left;"
+                    style="text-align: left; position:relative;"
                     :class="get_cell_classes(s, year)"
                 >
                     <span v-if="is_future_period(s, year)"></span>
                     <span v-else-if="is_active(s, year)">
                         &#9745; {{get_class_str(s,year)}}
+                        <b-badge
+                            v-if="!class_list.includes(get_class_str(s, year))"
+                            pill variant="info"
+                            v-b-tooltip.hover.html="warning_msg"
+                            @click="show_warning_popup(get_class_str(s, year))"
+                            style="position:absolute; right:.5em; top:1.25em;"
+                        >?</b-badge>
                     </span>
                     <span v-else>&#9744;</span>
                 </td>
@@ -88,6 +95,14 @@
         </table>
 
         <div style="clear:both"></div>
+
+        <b-modal v-model="warning_modal_visible" hide-footer lazy>
+            <template slot="modal-title"><span style="color: black;">Removed Classes</span></template>
+            <p>It appears the class <code> {{warning_modal_class}} </code> does not exist, most likely because it has been deleted.</p>
+            <p><i>When a class is deleted, individual youth records of having attended that class are kept; however, no new youth can be added to that class in any period. This maintains backwards compatibility with previous records, and avoids having to delete the information when a class is deleted.</i></p>
+            <p><b>Please note</b> that if you change this youth's class for this period, you will NOT be able to set it back to its original value without re-adding <code> {{warning_modal_class}} </code> as a class.</p>
+            <p><i>If you believe this is in error, please check the list of classes.</i></p>
+        </b-modal>
     </div>
 </template>
 
@@ -102,6 +117,12 @@ export default {
         return {
             hover: "",
             selected: "",
+
+            // Tooltip text for warning message if old class
+            warning_msg: "This class does not exist - click for more info.",
+
+            warning_modal_visible: false,
+            warning_modal_class: "",
         }
     },
 
@@ -239,7 +260,12 @@ export default {
             else {
                 return match_hov ? "table-hov" : "" ;
             }
-        }
+        },
+
+        show_warning_popup: function(w_class) {
+            this.warning_modal_class = w_class;
+            this.warning_modal_visible = true;
+        },
     },
 }
 </script>
