@@ -16,7 +16,6 @@
         <ApronProgressBar
           style="display: inline-block;"
           :colors="apron_colors" :size="32" :level="apron_level"
-          @hover="hover"
         />
         <b-button
           style="display: inline-block; float: right"
@@ -385,14 +384,6 @@ export default {
       });
 
       this.apron_color = new_color;
-    },
-
-    hover: function(hover_data) {
-      let highlight_vals = Object.keys(hover_data)
-        .filter(h => hover_data[h] != undefined)
-        .map(h => parseInt(h));
-
-      this.$refs.match_table.highlight_values(highlight_vals, "apron");
     },
 
     show_skills_modal: function(val) {
