@@ -146,7 +146,7 @@ const router = new Router({
     },
     {
       path: "/email-lookup",
-      name: "emaik-lookup",
+      name: "email-lookup",
       component: EmailLookup,
       meta: {
         requiresAuth: true,
