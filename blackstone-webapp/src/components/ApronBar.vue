@@ -149,7 +149,7 @@ export default {
     },
 
     apronColors: {
-      type: Object,
+      type: Array,
       default: null,
     },
 
@@ -230,10 +230,20 @@ export default {
      * or loaded from the database
      */
     apron_colors: function() {
+
+      // If the parent isn't passing in an apronColors array, load them from the database manually
       if (this.loadApronColors == true && this.apronColors == null) {
         return this.loaded_apron_colors;
-      } else {
+      }
+
+      // If an apronColors array was passed in as a prop, return that
+      else if (this.apronColors != null) {
         return this.apronColors;
+      }
+
+      // Default to an empty array
+      else {
+        return [];
       }
     },
 
