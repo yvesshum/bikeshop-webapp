@@ -475,7 +475,10 @@ export default {
 
     init_row_status(data, field, stat) {
       forKeyVal(data[field], (name, val) => {
-        if (!this.is_ignored(name)) {
+        if (this.is_protected(name)) {
+          this.row_status.add_vue(this, name, Status.IMM);
+        }
+        else if (!this.is_ignored(name)) {
           this.row_status.add_vue(this, name, stat);
         }
       });
