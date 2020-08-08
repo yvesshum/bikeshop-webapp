@@ -34,7 +34,7 @@ import ClassSettings from './views/admin/ClassSettings';
 import PageHeaders from './views/admin/PageHeaders';
 import {isAdmin, isStaff, isLoggedIn} from './scripts/getPrivilege'
 import EmailLookup from "./views/staff/EmailLookup.vue";
-
+import BlogPageManager from './views/staff/BlogPageManager.vue'
 
 Vue.use(Router);
 
@@ -240,6 +240,15 @@ const router = new Router({
             path: '/stats',
             name: 'stats',
             component: Stats,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: true
+            }
+        },
+        {
+            path: '/blog-page-manager',
+            name: 'blog-page-manager',
+            component: BlogPageManager,
             meta: {
                 requiresAuth: true,
                 requiresStaff: true

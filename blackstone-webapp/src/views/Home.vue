@@ -104,6 +104,17 @@
                                 </b-card-body>
                             </b-collapse>
                         </b-card>
+
+                        <b-card no-body class="mb-0">
+                            <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
+                                <h5 href="#" v-b-toggle.accordion-6>Blog</h5>
+                            </b-card-header>
+                            <b-collapse id="accordion-6" accordion="my-accordion" role="tabpanel">
+                                <b-card-body>
+                                    <button onclick="location.href='/blog-page-manager'" class="btn btn-outline-info btn-block" type="button">Blog page manager</button>
+                                </b-card-body>
+                            </b-collapse>
+                        </b-card>
                 
                     </div>
                 </div>
