@@ -145,6 +145,7 @@
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
+    let existingRef = db.collection("GlobalVariables").doc("ExistingIDs");
 
     let periodRef = db.collection("GlobalPeriods").doc("metadata");
 
@@ -250,7 +251,7 @@
                 }
             },
             checkSet(value){
-                return (value != "" && value != undefined && value != null);
+                return (value != undefined && value != null && value != "");
             },
             async getEditFields() {
                 let f = await fieldsRef.get();
@@ -294,20 +295,55 @@
 
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingRegistrations").get();
-                this.items = this.formatCollection(snapshot);
+                this.items = await this.formatCollection(snapshot);
             },
 
-            formatCollection(snapshot) {
+            async formatCollection(snapshot) {
                 let ret = [];
-                snapshot.forEach(doc => {
+                var failure = false;
+                await snapshot.forEach(async function (doc) {
                     let data = doc.data();
+                    if(data["Unmerged"] != null && data["Unmerged"] == true){
+                        let curYouthReg = await db.collection("GlobalYouthProfile").doc(data["ReturningID"]).get();
+                        let curYouth = curYouthReg.data();
+                        if(curYouth != null){
+                          for(var key in curYouth){
+                            console.log("Key")
+                            console.log(key)
+                            console.log("Data")
+                            console.log(data)
+                            if(data[key] == undefined || data[key] == null){
+                              data[key] = curYouth[key];
+                            }
+                          }
+                          data["Unmerged"] = false;
+                        } else {
+                          failure = true
+                        }
+                    }
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Timestamp"] = this.formatTimeStampToDate(data["Timestamp"])
-                    data["Birthdate"] = this.formatTimeStampToDate(data["DOB"]);
+                    
+                    function formatTimeStampToDate(date){
+                        if(date != undefined && date != null){
+                            return moment(date.toDate()).format("YYYY-MM-DD");
+                        } else {
+                            return "No DOB";
+                        }
+                    }
                     if(data["New or Returning"] == "Returning Youth"){
                         data["New or Returning"] = "Returning Youth - ID: " + data["ReturningID"];
                     }
-                    ret.push(data);
+                    let status = await db.collection("GlobalPendingRegistrations").doc(doc.id).update(data);
+                    if(status){
+                      failure = true;
+                    }
+                    console.log(formatTimeStampToDate(data["Timestamp"]));
+                    console.log(formatTimeStampToDate(data["DOB"]));
+                    data["Timestamp"] = formatTimeStampToDate(data["Timestamp"])
+                    data["Birthdate"] = formatTimeStampToDate(data["DOB"]);
+                    if(!failure){
+                        ret.push(data);
+                    }
                 });
                 return ret;
             },
@@ -355,12 +391,15 @@
                       input["ActivePeriods"][this.currentSeason] = input["Class"];
                     }
                     if (this.checkSet(input["Old Essay Answers"])) {
-                      Console.log("Old Essay Answers: " + input["Old Essay Answers"]);
+                      console.log("Old Essay Answers: " + input["Old Essay Answers"]);
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
                     } else{
-                      Console.log("Old Essay Answers not set");
+                      console.log("Old Essay Answers not set");
                       input["Old Essay Answers"] = {};
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    }
+                    if (!this.checkSet(input["Apron Skills"])) {
+                      input["Apron Skills"] = {};
                     }
                     delete input["ReturningID"];
                     console.log(input)
@@ -414,7 +453,6 @@
                     })
 
                     console.log(newIDs[0])
-
                     let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
 
                     let input = {};
@@ -431,6 +469,9 @@
                     } else{
                       input["Old Essay Answers"] = {};
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
+                    }
+                    if (!this.checkSet(input["Apron Skills"])) {
+                      input["Apron Skills"] = {};
                     }
                     
                     delete input["ReturningID"];
@@ -458,6 +499,23 @@
                         this.closeLoadingModal();
                         window.alert("Err: Could not add to period collection");
                         this.editSelected = {};
+                        return null;
+                    }
+                    
+                    var existingUpdate = {};
+                    existingUpdate[newIDs[0].toString()] = true;
+                    
+                    let snapshot = await db.collection("GlobalYouthProfile").get();
+                    await snapshot.forEach(async function (doc) {
+                        let id = doc.id;
+                        existingUpdate[id] = true;
+                    });
+                    
+                    let existingStatus = await existingRef.set(existingUpdate);
+                    
+                    if (existingStatus) {
+                        this.closeLoadingModal();
+                        window.alert("Error on creating Global Youth Profile: " + row["Youth ID"]);
                         return null;
                     }
 
@@ -673,7 +731,6 @@
                       }
                 }
                 console.log("New values: " + JSON.stringify(newValues));
-
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     this.closeLoadingModal();
@@ -726,7 +783,7 @@
 
         },
 
-        async mounted() {
+        async mounted() {          
             await this.getHeaders();
             await this.getTData();
             let s = await periodRef.get();
