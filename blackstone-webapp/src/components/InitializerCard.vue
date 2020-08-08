@@ -54,7 +54,7 @@
         <!-- Modals -->
         <b-modal v-model = "edit_modalVisible" hide-footer lazy>
             <template slot = "modal-title">
-                Editing Field Name
+                Editing Initializer Name
             </template>
             <p style="margin-bottom: 0">Field Name</p>
             <b-form-textarea
@@ -71,6 +71,16 @@
 
             <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning" :disabled="!isValidFieldName">Save</b-button>
             <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
+
+        <b-modal v-model = "delete_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Delete Initializer
+            </template>
+            <p style="margin-bottom: 0">Are you sure you want to remove the initializer value for {{this.field}}?</p>
+
+            <b-button class="mt-3" block @click="deleteInitializer()" variant = "danger" :disabled="!isValidFieldName">Delete</b-button>
+            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
         <b-modal v-model = "loading_modalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
@@ -116,6 +126,7 @@ export default {
             loading_modalVisible: false,
             loading_modalHeader: "",
             input_field_type: null,
+            delete_modalVisible: false,
 
         }
     },
@@ -158,7 +169,14 @@ export default {
     },
     methods: {
         async onDeleteClicked() {
-            //TODO: Test this
+            this.delete_modalVisible = true;
+        },
+
+        delete_closeModal() {
+            this.delete_modalVisible = false;
+        },
+
+        async deleteInitializer() {
             this.showLoadingModal();
             let status2 = await rb.ref(this.rbRef + '/Unprotected').child(this.fieldText).remove()
             if (status2){
