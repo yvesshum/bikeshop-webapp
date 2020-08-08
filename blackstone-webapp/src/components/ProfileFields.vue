@@ -501,7 +501,7 @@ export default {
       this.row_status = new Status();
 
       this.init_row_status(data, "required", Status.REQ);
-      this.init_row_status(data, "hidden",   Status.IMM);
+      this.init_row_status(data, "hidden",   Status.NOT);
       if (this.show_optional_fields) {
         this.init_row_status(data, "optional", Status.NOT);
       }
