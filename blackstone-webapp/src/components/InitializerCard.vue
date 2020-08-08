@@ -79,7 +79,7 @@
             </template>
             <p style="margin-bottom: 0">Are you sure you want to remove the initializer value for {{this.field}}?</p>
 
-            <b-button class="mt-3" block @click="deleteInitializer()" variant = "danger" :disabled="!isValidFieldName">Delete</b-button>
+            <b-button class="mt-3" block @click="deleteInitializer()" variant = "danger">Delete</b-button>
             <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
@@ -177,6 +177,7 @@ export default {
         },
 
         async deleteInitializer() {
+            this.delete_closeModal()
             this.showLoadingModal();
             let status2 = await rb.ref(this.rbRef + '/Unprotected').child(this.fieldText).remove()
             if (status2){
