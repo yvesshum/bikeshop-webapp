@@ -291,7 +291,6 @@ Emits:
                 // Special case: If the search term is blank, match everything
                 // Note that the search function can handle this too, but in this case
                 // it's easier to just do this all at once
-                var num_terms = this.search_term.split(' ').filter(s => s.length > 0).length;
                 if (num_terms === 0) {
 
                     // Create the unmarked displays for each option, and return all options
@@ -333,11 +332,11 @@ Emits:
 
                     // Initialize a new object to store the display version of the option
                     // The display version will be broken up to indicate where the matches are, so they can be highlighted
-                    var opt_display = {};
+                    // var opt_display = {};
 
                     Youth.requiredVals().forEach(key => {
 
-                        var indices = valid[key].concat([[option[key].length,0]]);;
+                        var indices = valid[key].concat([[option[key].length,0]]);
                         var new_str = [];
 
                         // Use indices to cut the field into marked and unmarked substrings.
@@ -384,7 +383,7 @@ Emits:
                                     mark
                                 });
                             }
-                        };
+                        }
                     });
 
                     return true;
@@ -461,7 +460,7 @@ Emits:
                         }
                         return item;
                     });
-                };
+                }
 
                 // Get the years
                 var year_matrix = Period.makeMatrix(periods);
@@ -495,7 +494,7 @@ Emits:
                         // between youth_arr and new_profiles
                         youth_arr = Youth.concat_unique(youth_arr, new_profiles);
                     });
-                };
+                }
 
                 // Sort the result
                 youth_arr = youth_arr.sort();
@@ -604,11 +603,9 @@ Emits:
             },
 
             remove: function() {
-                console.log("this.remove", this.remove);
                 if (Youth.contains(this.remove, this.value)) {
-                    console.log("should reset to null");
                     this.value = null;
-                };
+                }
             },
         },
 
