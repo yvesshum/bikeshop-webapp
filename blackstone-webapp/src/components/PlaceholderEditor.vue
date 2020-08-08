@@ -16,7 +16,7 @@
         <br>
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
-                Add a placeholder <font-awesome-icon icon="plus" class ="icon alt"/>
+                Add a hint <font-awesome-icon icon="plus" class ="icon alt"/>
             </b-button>
         <br>
         </b-button-group>
@@ -33,7 +33,7 @@
             <b-form-textarea
                     id="textarea"
                     v-model="newFieldName"
-                    placeholder="This must match one of the current fields, but not one that already has a placeholder"
+                    placeholder="This must match one of the current fields, but not one that already has a hint"
                     :state="isValidField"
                     size="sm"
                     rows="1"
@@ -119,7 +119,6 @@ export default {
         },
 
         formatNames(obj) {
-            console.log(obj);
             let ret = [];
             let keys = Object.keys(obj)
             for (let i = 0; i < keys.length; i++) {
@@ -145,7 +144,6 @@ export default {
             this.new_closeModal();
             let val = {}
             val[this.newFieldName] = this.newPlaceholderText;
-            console.log(val);
             rb.ref(this.placeholderRef).update(val).then(err => {
                 if (err) window.alert("Error on saving new placeholder in realtime database, ref: " + this.doc)
                 else this.msg_showModal("Success!", "Added a new placeholder")

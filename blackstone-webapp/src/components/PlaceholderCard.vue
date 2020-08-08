@@ -122,6 +122,17 @@ export default {
         }
         
     },
+    watch: {
+        placeholder: function(newVal, oldVal) {
+            this.processProps()
+        },
+        field: function(newVal, oldVal) {
+            this.processProps()
+        },
+        existingFieldNames: function(newVal, oldVal) {
+            this.processProps()
+        },
+    },
     computed: {
         isDisabled: function() {
             return this.status === "success"
@@ -176,24 +187,28 @@ export default {
         showLoadingModal(title) { 
             this.loading_modalHeader = title;
             this.loading_modalVisible = true;
+        },
+
+        processProps() {
+            //check status by seeing if the field name exists in the GlobalFieldsCollection document
+            if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
+                this.status = "success";
+                this.statusIcon = "check-circle",
+                this.statusMsg = ""
+                }
+            else { 
+                this.status = "danger"
+                this.statusIcon = "exclamation-triangle"
+                this.statusMsg = "Unable to find a corresponding field name! Please edit or remove this!"
+            }
+            this.fieldText = this.field;
+            this.placeholderText = this.placeholder;
         }
 
 
     },
     mounted() {
-        //check status by seeing if the field name exists in the GlobalFieldsCollection document
-        if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
-            this.status = "success";
-            this.statusIcon = "check-circle",
-            this.statusMsg = ""
-        }
-        else { 
-            this.status = "danger"
-            this.statusIcon = "exclamation-triangle"
-            this.statusMsg = "Unable to find a corresponding field name! Please edit or remove this!"
-        }
-        this.fieldText = this.field;
-        this.placeholderText = this.placeholder;
+        this.processProps()
         this.ready = true;
 
     }

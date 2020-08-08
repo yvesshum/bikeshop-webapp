@@ -144,6 +144,16 @@ export default {
                 this.editInitialText = newVal
                 this.input_field_type = type
             }
+        },
+
+        field: function() {
+            this.processProps()
+        },
+        existingFieldNames: function() {
+            this.processProps()
+        },
+        initializer: function() {
+            this.processProps()
         }
     },
     methods: {
@@ -195,33 +205,34 @@ export default {
         showLoadingModal(title) { 
             this.loading_modalHeader = title;
             this.loading_modalVisible = true;
+        },
+
+        processProps() {
+            //check status by seeing if the field name exists in an array of hidden fields
+            if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
+                this.status = "success";
+                this.statusIcon = "check-circle",
+                this.statusMsg = ""
+            }
+            else { 
+                this.status = "danger"
+                this.statusIcon = "exclamation-triangle"
+                this.statusMsg = "Unable to find a corresponding hidden field! Please check the field name again!"
+            }
+            this.fieldText = this.field;
+            this.initialText = this.initializer;
+            this.editFieldName = this.field
+
+            if (this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})) {
+                let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
+                let newVal = initSpecialInputVal(type);
+                this.editInitialText = newVal
+                this.input_field_type = type
+            }
         }
-
-
     },
     mounted() {
-        //check status by seeing if the field name exists in an array of hidden fields
-        if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
-            this.status = "success";
-            this.statusIcon = "check-circle",
-            this.statusMsg = ""
-        }
-        else { 
-            this.status = "danger"
-            this.statusIcon = "exclamation-triangle"
-            this.statusMsg = "Unable to find a corresponding hidden field! Please check the field name again!"
-        }
-        this.fieldText = this.field;
-        this.initialText = this.initializer;
-        this.editFieldName = this.field
-
-        if (this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})) {
-            let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
-            let newVal = initSpecialInputVal(type);
-            this.editInitialText = newVal
-            this.input_field_type = type
-        }
-
+        this.processProps()
         this.ready = true;
 
     },
