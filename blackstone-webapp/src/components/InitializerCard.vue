@@ -177,6 +177,7 @@ export default {
         },
 
         async deleteInitializer() {
+            this.delete_closeModal()
             this.showLoadingModal();
             let status2 = await rb.ref(this.rbRef + '/Unprotected').child(this.fieldText).remove()
             if (status2){

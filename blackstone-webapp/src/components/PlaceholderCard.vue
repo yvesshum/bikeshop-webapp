@@ -90,6 +90,16 @@
                 </div>
             </div>
         </b-modal>
+
+        <b-modal v-model = "delete_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Delete Hint
+            </template>
+            <p style="margin-bottom: 0">Are you sure you want to remove the hint value for {{this.field}}?</p>
+
+            <b-button class="mt-3" block @click="deleteHint()" variant = "danger">Delete</b-button>
+            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
     </div>
 
     
@@ -119,6 +129,7 @@ export default {
             editPlaceholderText: "",
             loading_modalVisible: false,
             loading_modalHeader: "",
+            delete_modalVisible: false,
         }
         
     },
@@ -139,8 +150,15 @@ export default {
         }
     },
     methods: {
-        async onDeleteClicked() {
-            //TODO: Test this
+        onDeleteClicked() {
+            this.delete_modalVisible = true
+        },
+        delete_closeModal() {
+            this.delete_modalVisible = false
+        },
+
+        async deleteHint() {
+            this.delete_closeModal()
             this.showLoadingModal();
             let status2 = await rb.ref(this.rbRef).child(this.fieldText).remove()
             if (status2){
