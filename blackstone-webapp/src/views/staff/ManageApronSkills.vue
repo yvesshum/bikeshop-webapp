@@ -327,7 +327,7 @@
                 this.groups = [];
                 await this.getTData();
                 this.closeLoadingModal();
-                this.showModal("Table Refreshed", "If you see something unexpected check the firebase backend console");
+                this.showModal("Table Refreshed", "The table should contain the latest information");
             },
             async apronColorSelected(new_color){
               this.selected_color = new_color;

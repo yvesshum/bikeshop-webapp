@@ -94,7 +94,6 @@
             </b-card-body>
           </b-collapse>
         </b-card>
-
         
         <b-card no-body class="mb-0">
           <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
@@ -115,18 +114,38 @@
     <div role="tablist" >
       <b-card no-body class="mb-0">
         <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
-          <h5 href="#" v-b-toggle.accordion-8>Admin Panel</h5>
+          <h5 href="#" v-b-toggle.accordion-8>Modify Youth Registration</h5>
         </b-card-header>
         <b-collapse id="accordion-8" accordion="my-accordion" role="tabpanel">
           <b-card-body>
-            <!-- <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form</button>
-            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration</button>
+            <button onclick="location.href='/youth-profile-staff-settings'" class="btn btn-outline-success btn-block" type="button">Youth Profile and Registration fields</button>
+            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Set Current Period Settings</button>
+            <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Manage Essay Questions</button>
+            <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Manage Class Settings</button>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+
+      <b-card no-body class="mb-0">
+        <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
+          <h5 href="#" v-b-toggle.accordion-9>Modify Youth Activity</h5>
+        </b-card-header>
+        <b-collapse id="accordion-9" accordion="my-accordion" role="tabpanel">
+          <b-card-body>
+            <button onclick="location.href='/youth-order-settings'" class="btn btn-outline-success btn-block" type="button">Youth Order Form fields</button>
             <button onclick="location.href='/hour-logging-categories-settings'" class="btn btn-outline-success btn-block" type="button">Hour Logging Categories</button>
-            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Apron Colors</button>
-            <button onclick="location.href='/period-settings'" class="btn btn-outline-success btn-block" type="button">Period Settings</button> -->
-            <button onclick="location.href='/essay-questions-settings'" class="btn btn-outline-success btn-block" type="button">Essay Questions</button>
-            <button onclick="location.href='/class-settings'" class="btn btn-outline-success btn-block" type="button">Class Settings</button>
-            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Page Headers</button>
+            <button onclick="location.href='/apron-colors-settings'" class="btn btn-outline-success btn-block" type="button">Create/Edit Apron Colors</button>
+          </b-card-body>
+        </b-collapse>
+      </b-card>
+
+      <b-card no-body class="mb-0">
+        <b-card-header header-tag="header" class="p-1 bg-success" role="tab">
+          <h5 href="#" v-b-toggle.accordion-10>Change Page Description</h5>
+        </b-card-header>
+        <b-collapse id="accordion-10" accordion="my-accordion" role="tabpanel">
+          <b-card-body>
+            <button onclick="location.href='/page-headers'" class="btn btn-outline-success btn-block" type="button">Set Page Headers</button>
           </b-card-body>
         </b-collapse>
       </b-card>
@@ -144,86 +163,86 @@ import SpecialInput from '../components/SpecialInput.vue'
 import {firebase} from '@/firebase.js';
 
 export default {
-  name: 'home',
-  components: {
-    SpecialInput
-  },
-  data() {
-      return {
-          isStaff: false,
-          ready: false
-      }
-  },
-  methods: {
-  },
-  async mounted() {
-        const currentUser = await firebase.auth().currentUser;
-        console.log('c', currentUser.email);
-        if (currentUser) {
-            if (currentUser.email === "staff@blackstonebikes.com") {
-                this.isStaff = true;
+    name: 'home',
+    components: {
+        SpecialInput
+    },
+    data() {
+            return {
+                    isStaff: false,
+                    ready: false
             }
-        }
-        console.log(this.isStaff);
-        this.ready = true;
+    },
+    methods: {
+    },
+    async mounted() {
+                const currentUser = await firebase.auth().currentUser;
+                console.log('c', currentUser.email);
+                if (currentUser) {
+                        if (currentUser.email === "staff@blackstonebikes.com") {
+                                this.isStaff = true;
+                        }
+                }
+                console.log(this.isStaff);
+                this.ready = true;
 
-  }
+    }
 }
 </script>
 
 <style>
 a, a:hover, a:active, a:link {
-  color:inherit;
-  text-decoration: none;
+    color:inherit;
+    text-decoration: none;
  }
 
 h5 {
-  padding: 0.5rem;
-  color: white;
-  cursor: pointer;
+    padding: 0.5rem;
+    color: white;
+    cursor: pointer;
 }
 
 h5:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .heading {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  color: black;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    color: black;
 }
 
 .home {
-  justify-content: center;
-  text-align: center;
-  background-image: url("../assets/Bike_Stock.jpg");
-  background-size: 100%;
-  background-attachment: fixed;
+    justify-content: center;
+    text-align: center;
+    background-image: url("../assets/Bike_Stock.jpg");
+    background-size: 100%;
+    background-attachment: fixed;
 }
 
 .options {
-  margin: 1rem;
+    margin: 1rem;
 }
 
 .page {
-  display: inline;
-  margin: 0.5rem;
-  border-radius: 0.5rem;
-  border: 0.1rem solid lightblue;
-  color: #007399;
-  width: 20rem;
-  height: 8rem;
+    display: inline;
+    margin: 0.5rem;
+    border-radius: 0.5rem;
+    border: 0.1rem solid lightblue;
+    color: #007399;
+    width: 20rem;
+    height: 8rem;
 }
 
 h4 {
-  color: black;
+    color: black;
 }
 
 #menu_container {
-  padding-top: 6rem;
-  margin: auto;
-  max-width: 750px;
-  background-color: #ffffff;
+    padding-top: 6rem;
+    margin: auto;
+    max-width: 750px;
+    background-color: #ffffff;
 }
 
 </style>

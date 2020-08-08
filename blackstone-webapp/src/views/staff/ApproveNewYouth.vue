@@ -329,6 +329,9 @@
                 let row = this.selected[0];
 
                 this.showLoadingModal("Doing some work in the background...");
+                
+                let s = await periodRef.get();
+                this.currentSeason = s.data()["CurrentRegistrationPeriod"];
 
                 var newIDs = []
                 
@@ -514,7 +517,7 @@
             async getNewData() {
                 await this.getTData();
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
-                this.showModal("Table Refreshed!", "If you see something unexpected check the firebase backend console")
+                this.showModal("Table Refreshed!", "The table should contain the latest information")
 
             },
 
@@ -554,7 +557,7 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer-table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted registration", "successfully deleted registration with ID of " + this.rejectingDocumentID);
+                this.showModal("Successfully deleted registration", "successfully deleted registration");
                 this.rejectingDocumentID = "";
 
             },

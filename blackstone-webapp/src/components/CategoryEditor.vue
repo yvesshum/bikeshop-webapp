@@ -1,7 +1,8 @@
 <!--
 Pretty much works the same as CategoryEditor, with a few modifications.
 -->
-<template><div>
+<template>
+<div>
     <b-button-group style="margin-bottom:10px">
         <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
         <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
@@ -61,10 +62,11 @@ Pretty much works the same as CategoryEditor, with a few modifications.
                 placeholder="Edit here.."
                 rows="1"
                 max-rows="3"
+                :state="isValidEditingCategoryName"
         ></b-form-textarea>
         <br>
-        <strong style="color: red">Please check if you have a duplicate category name before saving so bad things won't happen.</strong>
-        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning">Save and change all existing uses of the category</b-button>
+        <strong>(This new name must not already exist)</strong>
+        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditingCategoryName" variant="warning">Save and change all existing uses of the category</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
@@ -95,12 +97,13 @@ Pretty much works the same as CategoryEditor, with a few modifications.
                 rows="1"
                 max-rows="3"
         ></b-form-textarea>
-        <b-button class="mt-3" block @click="addCategory(); add_closeModal()" variant = "warning" :disabled="!isValidNewCategoryName">Add a new category and change all existing documents to have this category and value</b-button>
+        <b-button class="mt-3" block @click="addCategory(); add_closeModal()" variant = "warning" :disabled="!isValidNewCategoryName">Add a new category and change all existing documents to include this category</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
 
-</div></template>
+</div>
+</template>
 
 <script>
 import draggable from 'vuedraggable'
@@ -122,7 +125,14 @@ export default {
     },
     computed: {
         isValidNewCategoryName: function() {
-            return !this.category_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.category_name) > -1}) && this.modal.add.category_name.length > 0
+            let res = !this.category_data.some(field => field.data === this.modal.add.category_name) && this.modal.add.category_name.length > 0
+            return res
+        },
+
+        isValidEditingCategoryName: function() {
+            let res = !this.category_data.some(field => field.data === this.modal.edit.category_name) && this.modal.edit.category_name.length > 0
+            console.log(res)
+            return res
         }
     },
     data() {
@@ -151,7 +161,7 @@ export default {
                 add: {
                     visible: false,
                     category_name: "",
-                    initial_value: 0
+                    initial_value: 0 // Deprecated, it's pretty much always 0 lol
                 }
             }
         }
@@ -182,7 +192,8 @@ export default {
         },
 
         resetOrdering() {
-            this.category_data = this.category_data_initial_copy;
+            this.category_data = this.parse(this.category_data_initial_copy); // DEEP copy
+
         },
 
         async saveOrdering() {
@@ -202,7 +213,7 @@ export default {
                 window.alert("Error on updating Global Categories Collection doc: " + this.sourceDocument);
                 return null;
             }
-            this.category_data_initial_copy = this.category_data;
+            this.category_data_initial_copy = this.parse(this.category_data); // DEEP COPY
             this.closeLoadingModal();
             this.showMsgModal("Success", "The ordering has been saved.");
         },
@@ -263,7 +274,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
@@ -274,7 +285,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
                             console.log(data);
@@ -289,7 +300,7 @@ export default {
                     //Updating the copied version. Since ordering may have changed, we'll need to search through this.
                     for (let j = 0; j < this.category_data_initial_copy.length; j++) {
                         if (this.category_data_initial_copy[j].data === this.modal.edit.original_category_name) {
-                            this.category_data_initial_copy[j] = newCategoryName
+                            this.category_data_initial_copy[j].data = newCategoryName
                         }
                     }
 
@@ -323,7 +334,7 @@ export default {
                         let query = await db.collection(this.collectionsToEdit[j]).get();
                         query.forEach(async doc => {
                             let id = doc.id;
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.category_name]
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
@@ -333,7 +344,7 @@ export default {
                         query.forEach(async doc => {
                             let id = doc.id;
                             let path = doc.ref.path
-                            let data = this.parse(doc.data());
+                            let data = doc.data();
                             delete data[this.modal.delete.category_name]
                             await db.doc(path).set(data);
                         })
@@ -341,9 +352,10 @@ export default {
 
                     // Delete locally 
                     this.category_data.splice(i, 1);
-                    
+
+                    // Ordering might be different, have to search for it again
                     for (let j = 0; j < this.category_data_initial_copy.length; j ++) {
-                        if (this.category_data_initial_copy[j].data) {
+                        if (this.category_data_initial_copy[j].data === this.modal.delete.category_name) {
                             this.category_data_initial_copy.splice(j, 1);
                             break;
                         }
@@ -367,7 +379,6 @@ export default {
             updatedCategories.push(this.modal.add.category_name);
             let updateObject = {};
             updateObject[this.sourceFieldName] = updatedCategories;
-
             let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
             if (updateStatus) {
                 window.alert("Error on updating GlobalCategoriesCollection on firebase. " + updateStatus);
@@ -379,8 +390,8 @@ export default {
                 let query = await db.collection(this.collectionsToEdit[j]).get();
                 query.forEach(async doc => {
                     let id = doc.id;
-                    let data = this.parse(doc.data());
-                    data[this.modal.add.category_name] = this.modal.add.initial_value;
+                    let data = doc.data();
+                    data[this.modal.add.category_name] = 0;
                     await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                 })
             }
@@ -389,8 +400,8 @@ export default {
                 query.forEach(async doc => {
                     let id = doc.id;
                     let path = doc.ref.path
-                    let data = this.parse(doc.data());
-                    data[this.modal.add.category_name] = this.modal.add.initial_value;
+                    let data = doc.data();
+                    data[this.modal.add.category_name] = 0;
                     await db.doc(path).set(data);
                 })
             }
@@ -400,9 +411,8 @@ export default {
             this.category_data.push({"data": this.modal.add.category_name});
             this.category_data_initial_copy.push({"data": this.modal.add.category_name});
 
-            // // Reset
+            // Reset
             this.modal.add.category_name = "";
-            this.modal.add.initial_value = "";
 
             this.closeLoadingModal();
             this.showMsgModal("Success!", "Added a new category in GlobalCategoriesCollection and corresponding documents.");

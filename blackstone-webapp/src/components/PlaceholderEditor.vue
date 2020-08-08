@@ -9,7 +9,7 @@
                 :field="element.field"
                 :placeholder="element.placeholder"
                 :existingFieldNames="existingFieldNames"
-                rbRef="Submit Orders Placeholders"
+                :rbRef="placeholderRef"
             />
         </div>
         <p v-if="data.length === 0">No user-defined placeholders found</p>
@@ -173,8 +173,8 @@ export default {
             this.dataLoaded = true;
         })
         this.listenerRef = rb.ref(this.placeholderRef).on('value', snapshot => {
-                this.data = this.formatData(snapshot.val());
-                this.forceUpdate();
+            this.data = this.formatData(snapshot.val());
+            this.forceUpdate();
         });
     },
 
