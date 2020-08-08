@@ -453,7 +453,6 @@
                     })
 
                     console.log(newIDs[0])
-
                     let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
 
                     let input = {};
