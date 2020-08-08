@@ -32,88 +32,92 @@ import SpecialInputDemo from './views/staff/SpecialInputDemo.vue';
 import PeriodSettings from './views/admin/PeriodSettings.vue'
 import ClassSettings from './views/admin/ClassSettings';
 import PageHeaders from './views/admin/PageHeaders';
+import {isAdmin, isStaff, isLoggedIn} from './scripts/getPrivilege'
+import EmailLookup from "./views/staff/EmailLookup.vue";
+
+
 Vue.use(Router);
 
 const router = new Router({
-    mode: 'history',
-    base: process.env.BASE_URL,
-    routes: [
-        {
-            path: '*',
-            redirect: '/login'
-        },
-        {
-            path: '/',
-            redirect: '/login'
-        },
-        {
-            path: '/Home',
-            name: 'Home',
-            component: Home,
-            meta: {
-                requiresAuth: true,
-                requiresStaff: false
-            }
-        },
-        {
-            path: '/login',
-            name: 'login',
-            component: Login
-        },
-        {
-            path: '/TestHome',
-            name: 'TestHome',
-            component: TestHome,
-            meta: {
-                requiresAuth: true
-            }
-        },
-        {
-            path: '/check-in',
-            name: 'check-in',
-            component: CheckIn,
-            meta: {
-                requiresAuth: true,
-                requiresStaff: false
-            }
-        },
-        {
-            path: '/profile-lookup',
-            name: 'profile-lookup',
-            component: ProfileLookup,
-            meta: {
-                requiresAuth: true,
-                requiresStaff: false
-            }
-        },
-        {
-            path: '/profile-lookup-staff',
-            name: 'profile-lookup-staff',
-            component: ProfileLookupStaff,
-            meta: {
-                requiresAuth: true,
-                requiresStaff: true
-            }
-        },
-        {
-            path: '/submit-orders',
-            name: 'submit-orders',
-            component: YouthSubmitOrders,
-            meta:{
-                requiresAuth: true,
-                requiresStaff: false
-            }
-        },
+  mode: "history",
+  base: process.env.BASE_URL,
+  routes: [
+    {
+      path: "*",
+      redirect: "/login",
+    },
+    {
+      path: "/",
+      redirect: "/login",
+    },
+    {
+      path: "/Home",
+      name: "Home",
+      component: Home,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: false,
+      },
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: Login,
+    },
+    {
+      path: "/TestHome",
+      name: "TestHome",
+      component: TestHome,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: "/check-in",
+      name: "check-in",
+      component: CheckIn,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: false,
+      },
+    },
+    {
+      path: "/profile-lookup",
+      name: "profile-lookup",
+      component: ProfileLookup,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: false,
+      },
+    },
+    {
+      path: "/profile-lookup-staff",
+      name: "profile-lookup-staff",
+      component: ProfileLookupStaff,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: true,
+      },
+    },
+    {
+      path: "/submit-orders",
+      name: "submit-orders",
+      component: YouthSubmitOrders,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: false,
+      },
+    },
 
-        {
-            path: '/approve-orders',
-            name: 'approve-orders',
-            component: ApproveOrders,
-            meta:{
-                requiresAuth: true,
-                requiresStaff: true
-            }
-        },
+    {
+      path: "/approve-orders",
+      name: "approve-orders",
+      component: ApproveOrders,
+      meta: {
+        requiresAuth: true,
+        requiresStaff: true,
+      },
+    },
 
         {
             path: '/check-orders',
@@ -141,6 +145,15 @@ const router = new Router({
                 requiresAuth: true,
                 requiresStaff: false
             }
+        },
+        {
+            path: "/email-lookup",
+            name: "email-lookup",
+            component: EmailLookup,
+            meta: {
+              requiresAuth: true,
+              requiresStaff: true,
+            },
         },
         {
             path: '/transfer-hours',
@@ -251,8 +264,6 @@ const router = new Router({
             }
         },
 
-
-
         // Admin Panels
         {
             path: '/page-headers',
@@ -260,7 +271,7 @@ const router = new Router({
             component: PageHeaders,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -269,7 +280,7 @@ const router = new Router({
             component: EssayQuestionsSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -278,7 +289,7 @@ const router = new Router({
           component: ClassSettings,
           meta: {
               requiresAuth: true,
-              requiresStaff: true
+              requiresAdmin: true
           }
         },
         {
@@ -287,7 +298,7 @@ const router = new Router({
             component: YouthOrderSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -296,7 +307,7 @@ const router = new Router({
             component: YouthProfileStaffSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -305,7 +316,7 @@ const router = new Router({
             component: ApronColorsSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -314,7 +325,7 @@ const router = new Router({
             component: HourLoggingCategoriesSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
         {
@@ -323,7 +334,7 @@ const router = new Router({
             component: PeriodSettings,
             meta: {
                 requiresAuth: true,
-                requiresStaff: true
+                requiresAdmin: true
             }
         },
 
@@ -331,28 +342,33 @@ const router = new Router({
     ]
 });
 
+const getIsStaff = isStaff
+const getIsAdmin = isAdmin
+const getIsLoggedIn = isLoggedIn
+
 router.beforeEach(async (to, from, next) => {
-    const currentUser = await firebase.auth().currentUser;
-    let isStaff = false;
-    if (currentUser) {
-        if (currentUser.email === "staff@blackstonebikes.com") {
-            console.log("isStaff")
-            isStaff = true;
-        }
-    }
+    console.log(isStaff)
+    let isStaff = await getIsStaff()
+    let isAdmin = await getIsAdmin()
+    const loggedIn = await getIsLoggedIn()
+
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
     const requiresStaff = to.matched.some(record => record.meta.requiresStaff);
+    const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
 
-    if (requiresAuth && !currentUser) next('login');
-    else if (!requiresAuth && currentUser) next('Home');
+
+    if (requiresAuth && !loggedIn) next('login');
+    else if (!requiresAuth && loggedIn) next('Home');
     else if (requiresAuth && requiresStaff && !isStaff) {
         window.alert("You do not have permissions to see this page!");
+        next('Home');
+    } else if (requiresAuth && requiresAdmin && !isAdmin) {
+        window.alert("Sorry but you don't have admin privillege to see this page")
         next('Home');
     }
     else {
         next();
     }
 });
-
 
 export default router;

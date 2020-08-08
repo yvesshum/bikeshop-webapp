@@ -54,7 +54,7 @@
         <!-- Modals -->
         <b-modal v-model = "edit_modalVisible" hide-footer lazy>
             <template slot = "modal-title">
-                Editing Field Name
+                Editing Initializer Name
             </template>
             <p style="margin-bottom: 0">Field Name</p>
             <b-form-textarea
@@ -71,6 +71,16 @@
 
             <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" variant = "warning" :disabled="!isValidFieldName">Save</b-button>
             <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
+
+        <b-modal v-model = "delete_modalVisible" hide-footer lazy>
+            <template slot = "modal-title">
+                Delete Initializer
+            </template>
+            <p style="margin-bottom: 0">Are you sure you want to remove the initializer value for {{this.field}}?</p>
+
+            <b-button class="mt-3" block @click="deleteInitializer()" variant = "danger">Delete</b-button>
+            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
 
         <b-modal v-model = "loading_modalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
@@ -116,6 +126,7 @@ export default {
             loading_modalVisible: false,
             loading_modalHeader: "",
             input_field_type: null,
+            delete_modalVisible: false,
 
         }
     },
@@ -144,11 +155,29 @@ export default {
                 this.editInitialText = newVal
                 this.input_field_type = type
             }
+        },
+
+        field: function() {
+            this.processProps()
+        },
+        existingFieldNames: function() {
+            this.processProps()
+        },
+        initializer: function() {
+            this.processProps()
         }
     },
     methods: {
         async onDeleteClicked() {
-            //TODO: Test this
+            this.delete_modalVisible = true;
+        },
+
+        delete_closeModal() {
+            this.delete_modalVisible = false;
+        },
+
+        async deleteInitializer() {
+            this.delete_closeModal()
             this.showLoadingModal();
             let status2 = await rb.ref(this.rbRef + '/Unprotected').child(this.fieldText).remove()
             if (status2){
@@ -195,33 +224,34 @@ export default {
         showLoadingModal(title) { 
             this.loading_modalHeader = title;
             this.loading_modalVisible = true;
+        },
+
+        processProps() {
+            //check status by seeing if the field name exists in an array of hidden fields
+            if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
+                this.status = "success";
+                this.statusIcon = "check-circle",
+                this.statusMsg = ""
+            }
+            else { 
+                this.status = "danger"
+                this.statusIcon = "exclamation-triangle"
+                this.statusMsg = "Unable to find a corresponding hidden field! Please check the field name again!"
+            }
+            this.fieldText = this.field;
+            this.initialText = this.initializer;
+            this.editFieldName = this.field
+
+            if (this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})) {
+                let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
+                let newVal = initSpecialInputVal(type);
+                this.editInitialText = newVal
+                this.input_field_type = type
+            }
         }
-
-
     },
     mounted() {
-        //check status by seeing if the field name exists in an array of hidden fields
-        if (this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.field}).length) {
-            this.status = "success";
-            this.statusIcon = "check-circle",
-            this.statusMsg = ""
-        }
-        else { 
-            this.status = "danger"
-            this.statusIcon = "exclamation-triangle"
-            this.statusMsg = "Unable to find a corresponding hidden field! Please check the field name again!"
-        }
-        this.fieldText = this.field;
-        this.initialText = this.initializer;
-        this.editFieldName = this.field
-
-        if (this.existingFieldNames.some(f => {return Object.keys(f)[0] === this.editFieldName})) {
-            let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.editFieldName})[0][this.editFieldName]
-            let newVal = initSpecialInputVal(type);
-            this.editInitialText = newVal
-            this.input_field_type = type
-        }
-
+        this.processProps()
         this.ready = true;
 
     },

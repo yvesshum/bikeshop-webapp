@@ -31,7 +31,7 @@
         <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Order Form" :collectionsToEdit="['GlobalPendingOrders']" :subcollectionsToEdit="['Order Log']"/>
         <hr class="divider">
         
-        <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
+        <h2 v-b-tooltip.hover title="Hints that will be shown when someone fills out the Submit Order Form">Hint editor</h2>  
         <hr class="subheading">  
         <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
 

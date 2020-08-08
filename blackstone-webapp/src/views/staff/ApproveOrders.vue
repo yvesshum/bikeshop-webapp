@@ -124,14 +124,16 @@
                 this.selected = items;
             },
             async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("StaffOrderApproval").get();
+                let headers = await db.collection("GlobalFieldsCollection").doc("Youth Order Form").get();
                 headers = headers.data();
                 let fields = [];
-                for (let i = 0; i < headers.fields.length; i++) {
-                  fields.push({key: Object.keys(headers.fields[i])[0], sortable: true});
-                }
+                ["required", "optional", "hidden"].forEach(fieldType => {
+                    for (let i = 0; i < headers[fieldType].length; i++) {
+                      fields.push({key: Object.keys(headers[fieldType][i])[0], sortable: true});
+                    }
+                })
                 this.fields = fields;
-                  },
+            },
 
             async getTData() {
                 let snapshot = await db.collection("GlobalPendingOrders").get();
