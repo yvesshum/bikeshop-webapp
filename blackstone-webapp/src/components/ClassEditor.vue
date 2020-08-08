@@ -2,7 +2,8 @@
 //TODO:  Adding and deleting not working well
 //TODO: Initial value must have something in it, cannot be undefined 
 
-<template><div>
+<template>
+<div>
     <b-button-group style="margin-bottom:10px">
         <b-button variant="warning" @click="resetOrdering">Reset Ordering</b-button>
         <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
@@ -126,7 +127,8 @@
     </b-modal>
 
 
-</div></template>
+</div>
+</template>
 
 <script>
 import draggable from 'vuedraggable'
@@ -305,28 +307,51 @@ export default {
                         return null;
                     }
 
-                    // Updating all the collections that needs an update
-                    let query = await db.collection("GlobalPeriods").doc(new Date().getFullYear().toString().substr(-2)).get();
-                    var seasons = ["Summer ", "Winter ", "Spring "].map(x=>x+new Date().getFullYear().toString().substr(-2));
-                    seasons.forEach(season=>{
-                      if(!!query.data()[season]) query.data()[season].forEach(async (doc, index)=>{
-                        if(doc.Class === this.modal.edit.original_field_name) {
-                          doc.Class = newFieldName;
-                          let updateValue = {};
-                          updateValue[season] = [];
-                          updateValue[season][index] = doc;
-                          await db.collection("GlobalPeriods").doc(new Date().getFullYear().toString().substr(-2)).update(updateValue)
+                    // Update entries in GlobalPeriods
+                    let globalPeriodsSnapshot = await db.collection("GlobalPeriods").get()
+                    for (let doc of globalPeriodsSnapshot.docs) {
+                        if (doc.id != 'metadata') {
+                            let docData = doc.data()
+                            // Loop through each season key in docData, check if class matches original field name 
+                            let updatedDoc = {}
+                            for (let season in docData) {
+                                updatedDoc[season] = []
+                                for (let entry of docData[season]) {
+                                    if (entry.Class === this.modal.edit.original_field_name) {
+                                        updatedDoc[season].push({
+                                            ...entry,
+                                            Class: newFieldName
+                                        })
+                                    } else {
+                                        updatedDoc[season].push({...entry})
+                                    }
+                                }
+                            }
+                            await db.collection("GlobalPeriods").doc(doc.id).update(updatedDoc)
                         }
-                      })
-                    })
+                    }
 
+                    // Update entries in GlobalPendingRegistrations
+                    let registrationSnapshot = await db.collection("GlobalPeriods").where("Class", "==", this.modal.edit.original_field_name).get()
+                    for (let registration of registrationSnapshot.docs) {
+                        await db.collection("GlobalPeriods").doc(registration.id).update({Class: newFieldName})
+                    }
+
+                    // Update entries in GlobalYouthProfile
+                    let youthProfileSnapshot = await db.collection("GlobalYouthProfile").where("Class", "==", this.modal.edit.original_field_name).get()
+                    for (let youthProfile of youthProfileSnapshot.docs) {
+                        await db.collection("GlobalYouthProfile").doc(youthProfile.id).update({Class: newFieldName})
+                    }
+
+
+                    // Update Essay questions field name
                     let essays = await db.collection("GlobalVariables").doc("EssayQuestions").get();
                     var dat = essays.data();
                     for(var key in dat){
-                      if(key === this.modal.edit.original_field_name){
-                        dat[newFieldName] = dat[key];
-                        delete dat[key];
-                      }
+                        if (key === this.modal.edit.original_field_name){
+                            dat[newFieldName] = dat[key];
+                            delete dat[key];
+                        }
                     }
                     db.collection("GlobalVariables").doc("EssayQuestions").set(dat);
                     // query.forEach(async doc => {
@@ -376,25 +401,26 @@ export default {
                     }
 
                     // Delete from collections
-                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
-                    }
-                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.doc(path).set(data);
-                        })
-                    }
+                    // ^ We agreed to not do this cuz of display issues in youth profile
+                    // for (let j = 0; j < this.collectionsToEdit.length; j++) {
+                    //     let query = await db.collection(this.collectionsToEdit[j]).get();
+                    //     query.forEach(async doc => {
+                    //         let id = doc.id;
+                    //         let data = doc.data();
+                    //         delete data[this.modal.delete.field_name]
+                    //         await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
+                    //     })
+                    // }
+                    // for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
+                    //     let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                    //     query.forEach(async doc => {
+                    //         let id = doc.id;
+                    //         let path = doc.ref.path
+                    //         let data = doc.data();
+                    //         delete data[this.modal.delete.field_name]
+                    //         await db.doc(path).set(data);
+                    //     })
+                    // }
 
                     // Delete locally 
                     this.field_data.splice(i, 1);

@@ -6,11 +6,11 @@
     </b-button-group>
 
     <draggable v-model="field_data" @start="drag=true" @end="drag=false">
-        <FieldCard
+        <ColorEditorCard
             v-for="item in field_data"
-            :key="Object.keys(item.data)[0]"
-            :field="Object.keys(item.data)[0]"
-            :type="Object.values(item.data)[0]"
+            :key="item.name"
+            :field="item.name"
+            :color="item.color"
             :isProtected="item.isProtected"
             v-on:editClicked="editButtonClicked"
             v-on:deleteClicked="deleteButtonClicked"
@@ -20,7 +20,7 @@
     <br>
     <b-button-group>
         <b-button variant="info" @click="addButtonClicked">
-            Add a field <font-awesome-icon icon="plus" class ="icon alt"/>
+            Add an Apron Color <font-awesome-icon icon="plus" class ="icon alt"/>
         </b-button>
     </b-button-group>
 
@@ -50,16 +50,14 @@
     </b-modal>
 
     <!-- Editing -->
-    <!-- TODO: Add a note to say that if they want to change field type, they will need to delete the field along with all instances of its usage and create another one with an initial value-->
-    <!-- TODO: Add text that says what the original name was on top -->
     <b-modal v-model = "modal.edit.visible" hide-footer lazy>
         <template slot = "modal-title">
             Editing Field Name
         </template>
-        <p>Note: If you wish to edit the field type, delete the field and create new one</p>
+        <p>Note: If you wish to edit the Apron Color, delete this entry and create new one</p>
         <br>
-        <p>Original Field Name: {{this.modal.edit.original_field_name}}</p>
-        <p>New Field Name:</p>
+        <p>Original Apron Color Name: {{this.modal.edit.original_field_name}}</p>
+        <p>New Apron Color name:</p>
         <b-form-textarea
                 id="textarea"
                 v-model="modal.edit.field_name"
@@ -70,8 +68,8 @@
         ></b-form-textarea>
         <br>
         <br>
-        <strong style="color: black">Note: Field name must not already exist under required, optional, or hidden.</strong>
-        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditFieldName" variant = "warning">Save and change all existing uses of the field</b-button>
+        <strong style="color: black">Note: Apron color must be unique!</strong>
+        <b-button class="mt-3" block @click="save_edit(); edit_closeModal()" :disabled="!isValidEditFieldName" variant = "warning">Save and rename all existing uses of the apron color</b-button>
         <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
@@ -83,16 +81,16 @@
         <div class="d-block text-center">
             <h3>Are you sure you want to delete {{modal.delete.field_name}}?</h3>
         </div>
-        <b-button class="mt-3" block @click="deleteField(); delete_closeModal()" variant = "danger">Permanently delete this field and remove all existing uses of this field</b-button>
+        <b-button class="mt-3" block @click="deleteField(); delete_closeModal()" variant = "danger">Permanently delete this apron color (Affected youth will need to be reassigned aprons)</b-button>
         <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
     </b-modal>
 
     <!-- Adding -->
     <b-modal v-model = "modal.add.visible" hide-footer lazy>
         <template slot = "modal-title">
-            Adding A Field
+            Adding an Apron Color
         </template>
-        <p style="margin-bottom: 0">Field Name</p>
+        <p style="margin-bottom: 0">Color Name</p>
         <b-form-textarea
             id="textarea"
             v-model="modal.add.field_name"
@@ -100,24 +98,14 @@
             :state="isValidNewFieldName"
             size="sm"
             rows="1"
-                max-rows="3"
-        ></b-form-textarea>
-        <p style="margin-bottom: 0">Field Type</p>
-        <b-form-select
-            id="textarea"
-            v-model="modal.add.field_type"
-            :options="modal.edit.options"
-            placeholder="Edit here.."
-            rows="1"
             max-rows="3"
-            @change="handle_field_type_change"
-        ></b-form-select>
-        <p style="margin-bottom: 0">Initial Value (For existing documents)</p>
-        <SpecialInput :inputType="modal.add.field_type" ref="addInput" v-model="modal.add.initial_value"/>
-        <p>Check that this field does not exist under required, optional, or hidden, or else bad things might happen</p>
-        <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName && modal.add.initial_value == null">Add a new field and change all existing documents to have this field and value</b-button>
+        ></b-form-textarea>
+        <br>
+        <SpecialInput inputType="Color" ref="addInput" v-model="modal.add.initial_value"/>
+        <br>
+        <p>Check that this color name does not already exist</p>
+        <b-button class="mt-3" block @click="addField(); add_closeModal()" variant = "warning" :disabled="!isValidNewFieldName">Add new apron color</b-button>
         <b-button class="mt-3" block @click="add_closeModal()" variant="success">Cancel</b-button>
-
     </b-modal>
 
 
@@ -126,16 +114,16 @@
 
 <script>
 import draggable from 'vuedraggable'
-import FieldCard from '../components/FieldCard.vue'
+import ColorEditorCard from '../components/ColorEditorCard.vue'
 import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
 import { initSpecialInputVal } from '../scripts/SpecialInit';	
 
 export default {
-    name: 'fieldEditor',
+    name: 'ColorEditor',
     components: {
-        FieldCard,
+        ColorEditorCard,
         draggable,
         SpecialInput
     },
@@ -148,13 +136,13 @@ export default {
     },
     computed: {
         isValidNewFieldName: function() {
-            let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
+            let check1 = !this.field_data.some(f => {return f.name == this.modal.add.field_name}) && this.modal.add.field_name.length > 0
             let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // No symbols!
             return check1 && check2
         },
 
         isValidEditFieldName: function() {
-            let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.edit.field_name) > -1}) && this.modal.edit.field_name.length > 0
+            let check1 = !this.field_data.some(f => {return f.name == this.modal.edit.field_name}) && this.modal.edit.field_name.length > 0
             let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // No symbols!
             return check1 && check2
         }
@@ -189,7 +177,7 @@ export default {
                     visible: false,
                     field_name: "",
                     field_type: "String",
-                    initial_value: null
+                    initial_value: ""
                 }
             }
         }
@@ -197,11 +185,12 @@ export default {
     mounted() {
         this.field_data = this.elements;
         this.field_data_initial_copy = JSON.parse(JSON.stringify(this.field_data));
-
         // Grab input types
         db.collection("GlobalVariables").doc("SpecialInput").get().then(query => {
-            this.modal.edit.options = query.data().types
+            this.modal.edit.options = query.data().types;
         })
+        this.modal.add.initial_value = initSpecialInputVal("Color");
+
     },
     methods: {
         handle_field_type_change(type) {	
@@ -228,7 +217,6 @@ export default {
         addButtonClicked() {
             this.modal.add.field_name = "";
             this.modal.add.field_type = "String";
-            this.modal.add.initial_value = "";
             this.modal.add.visible = true;
         },
 
@@ -240,20 +228,21 @@ export default {
             this.showLoadingModal("One second...");
             let fields = [];
             this.field_data.forEach(field => {
-                fields.push(field.data);
+                fields.push({name: field.name, color: field.color}); // get rid of isProtected
             });
 
             let updateVal = {};
             updateVal[this.sourceFieldName] = fields;
+            console.warn('uv', updateVal)
 
-            let updateStatus = await db.collection("GlobalFieldsCollection")
+            let updateStatus = await db.collection("GlobalVariables")
                                 .doc(this.sourceDocument).update(updateVal);
             
             if (updateStatus) {
-                window.alert("Error on updating Global Fields Collection doc: " + this.sourceDocument);
+                window.alert("Error on updating GlobalVariables, doc: " + this.sourceDocument);
                 return null;
             }
-            this.field_data_initial_copy = this.field_data;
+            this.field_data_initial_copy = JSON.parse(JSON.stringify(this.field_data));
             this.closeLoadingModal();
             this.showMsgModal("Success", "The ordering has been saved.");
         },
@@ -293,59 +282,57 @@ export default {
             let newFieldName = this.modal.edit.field_name;
             let fieldType = this.modal.edit.field_type;
             for (let i = 0; i < this.field_data.length; i++) {
-                if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
+                if (this.field_data[i].name === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection
                     //reshape
-                    let updatedFieldNames = this.field_data.map(element => {
-                        return element.data
+                    let updatedFields = this.field_data.map(element => {
+                        let ret = element; 
+                        delete element.isProtected;
+                        return ret
                     })
-                    delete updatedFieldNames[i][this.modal.edit.original_field_name];
-                    updatedFieldNames[i][newFieldName] = fieldType;
-                    let updateObject = {};
-                    updateObject[this.sourceFieldName] = updatedFieldNames;
 
-                    let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+                    updatedFields[i].name = this.modal.edit.field_name
+                    let updateObject = {};
+                    updateObject[this.sourceFieldName] = updatedFields;
+
+                    let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
+                        window.alert("Error on updating GlobalVariables on firebase. " + err);
                         return null;
                     }
 
-                    // Updating all the collections that needs an update
-                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-                            console.warn(this.collectionsToEdit[j], id, data)
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
-                    }
-                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-                            console.warn(path, data)
+                    // Update Apron Skills, Youth Profile 
+                     // For each category we modify the existing entry with the new name
 
-                            await db.doc(path).set(data);
-                        })
+                    let apronSkillsQuery = await db.collection("GlobalVariables").doc("Apron Skills").get(); 
+                    let apronSkills = apronSkillsQuery.data()
+                    for (let category in apronSkills) {
+                        apronSkills[category][this.modal.edit.field_name] = JSON.parse(JSON.stringify(apronSkills[category][this.modal.edit.original_field_name]))
+                        delete apronSkills[category][this.modal.edit.original_field_name]
                     }
+                    await db.collection("GlobalVariables").doc("Apron Skills").update(apronSkills);
+
+                    let youthProfilesSnapshot = await db.collection("GlobalYouthProfile").where("Apron Color", "==", this.modal.edit.original_field_name).get()
+                    await Promise.all(
+                        youthProfilesSnapshot.docs.map(async doc => {
+                            let youthProfile = doc.data()
+                            youthProfile['Apron Color'] = this.modal.edit.field_name;
+                            await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
+                        })
+                    )
 
                     //Local Update
-                    let newVal = {};
-                    newVal[newFieldName] = fieldType;
-                    this.field_data[i].data = newVal;
+                    let localUpdateObject = {
+                        name: this.modal.edit.field_name,
+                        color: this.field_data[i].color,
+                        isProtected: false
+                    }
+                    this.field_data[i] = localUpdateObject;
 
                     //Updating the copied version. Since ordering may have changed, we'll need to search through this.
                     for (let j = 0; j < this.field_data_initial_copy.length; j++) {
-                        if (Object.keys(this.field_data_initial_copy[j].data)[0] === this.modal.edit.original_field_name) {
-                            delete this.field_data_initial_copy[j][this.modal.edit.original_field_name]
-                            this.field_data_initial_copy[j][newFieldName] = fieldType;
+                        if (this.field_data_initial_copy[j].name === this.modal.edit.original_field_name) {
+                            this.field_data_initial_copy[j] = JSON.parse(JSON.stringify(localUpdateObject))
                         }
                     }
 
@@ -358,47 +345,49 @@ export default {
         async deleteField() {
             this.delete_closeModal();
             this.showLoadingModal();
+            let updatedFields = this.field_data.map(element => {
+                let ret = element; 
+                delete element.isProtected;
+                return ret
+            })
 
-            let updatedFields = this.field_data.map(element => {return element.data});
             for (let i = 0; i < updatedFields.length; i ++) {
-                if (Object.keys(updatedFields[i])[0] === this.modal.delete.field_name) {
+                if (updatedFields[i].name === this.modal.delete.field_name) {
                     // Delete from global fields collection
                     updatedFields.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedFields;
 
-                    let deleteStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateValue);
+                    let deleteStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateValue);
                     if (deleteStatus) {
-                        window.alert("Error on removing a field in GlobalFieldsCollection. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
+                        window.alert("Error on removing a field in GlobalVariables. Field: " + this.modal.delete.field_name + ", doc: " + this.sourceDocument);
                         return null;
                     }
 
-                    // Delete from collections
-                    for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
+                    // TODO:
+                    // Update Apron Skills, Youth Profile 
+                    // For each Skill Category we delete the apron color key and its contents
+                    let apronSkillsQuery = await db.collection("GlobalVariables").doc("Apron Skills").get(); 
+                    let apronSkills = apronSkillsQuery.data()
+                    for (let category in apronSkills) {
+                        delete apronSkills[category][this.modal.delete.field_name]
                     }
-                    for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            await db.doc(path).set(data);
+                    await db.collection("GlobalVariables").doc("Apron Skills").update(apronSkills);
+
+                    let youthProfilesSnapshot = await db.collection("GlobalYouthProfile").where("Apron Color", "==", this.modal.delete.field_name).get()
+                    await Promise.all(
+                        youthProfilesSnapshot.docs.map(async doc => {
+                            let youthProfile = doc.data()
+                            youthProfile['Apron Color'] = "";
+                            await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
                         })
-                    }
+                    )
 
                     // Delete locally 
                     this.field_data.splice(i, 1);
                     
                     for (let j = 0; j < this.field_data_initial_copy.length; j ++) {
-                        if (Object.keys(this.field_data_initial_copy[j].data)[0]) {
+                        if (this.field_data_initial_copy[j].name == this.modal.delete.field_name) {
                             this.field_data_initial_copy.splice(j, 1);
                             break;
                         }
@@ -418,65 +407,49 @@ export default {
             this.showLoadingModal();
 
             // Update GlobalFieldsCollection
-            let updatedFields = this.field_data.map(element => {return element.data})
+            let updatedFields = this.field_data.map(element => {
+                let ret = element; 
+                delete element.isProtected;
+                return ret
+            })
             let fieldObject = {}
-            fieldObject[this.modal.add.field_name] = this.modal.add.field_type;
+            fieldObject['name'] = this.modal.add.field_name;
+            fieldObject['color'] = this.modal.add.initial_value.hex;
             updatedFields.push(fieldObject);
             let updateObject = {};
             updateObject[this.sourceFieldName] = updatedFields;
-            let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
+
+
+            let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
             if (updateStatus) {
-                window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
+                window.alert("Error on updating GlobalVariables on firebase. " + updateStatus);
                 return null;
             }
 
-            //Update Collections
-            for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                let query = await db.collection(this.collectionsToEdit[j]).get();
-                for (let q of query.docs) {
-                    let id = q.id;
-                    let data = q.data();
-
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-
-                    await db.collection(this.collectionsToEdit[j]).doc(id).update(data);
-
-                }
+            // Update for GlobalVariables -> Apron Skills 
+            // For each category we create a new key (new apron color) with empty array
+            let apronSkillsQuery = await db.collection("GlobalVariables").doc("Apron Skills").get(); 
+            let apronSkills = apronSkillsQuery.data()
+            for (let category in apronSkills) {
+                apronSkills[category][this.modal.add.field_name] = []
             }
-
-
-            for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                for (let q of query.docs) {
-                    // console.log('query', q)
-                    let id = q.id;
-                    let path = q.ref.path
-                    let data = q.data();
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-
-                    await db.doc(path).update(data);
-                }
-            }
-
+            await db.collection("GlobalVariables").doc("Apron Skills").update(apronSkills);
 
             //Updating Locally 
             let localUpdateObject = {
-                data: {},
+                name: this.modal.add.field_name,
+                color: this.modal.add.initial_value.hex,
                 isProtected: false
             }
-            localUpdateObject.data[this.modal.add.field_name] = this.modal.add.field_type;
             this.field_data.push(localUpdateObject);
             this.field_data_initial_copy.push(localUpdateObject);
 
             // Reset
             this.modal.add.field_name = "";
-            this.modal.add.field_type = "String"
-            // this.$refs.addInput.updateInputType("String"); // no need to do this turns out 
-
             this.modal.add.initial_value = "";
 
             this.closeLoadingModal();
-            this.showMsgModal("Success!", "Added a new field in GlobalFieldsCollection and corresponding documents.");
+            this.showMsgModal("Success!", "Added a new apron color!");
         }
 
     }

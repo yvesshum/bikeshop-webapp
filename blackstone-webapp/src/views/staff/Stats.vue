@@ -625,6 +625,7 @@ export default {
                         ret += `<p>Q: ${sanitizeHtml(question)}</p><p>A: ${sanitizeHtml(x["Essay"][question])}</p><br/>`
                     }
                     x["Essay"] = ret
+                    console.warn("Essay", ret)
                 }
                 if (x["Old Essay Answers"]) {
                     let ret = ""

@@ -1,42 +1,42 @@
 <template>
     <div v-if="dataLoaded">
         <div class="content">
-        <top-bar/>
-        <br>
-        <h1>Period Settings</h1>
-        <hr class="title">
-        <div style="width: 80%; margin: 0 auto">
-            <h4 v-b-tooltip.hover title="Current active period">Current Period:</h4>
-            <b-form-select v-model="currentPeriodSelection" :options="periodOptions"></b-form-select>
-            <hr>
-            <h4 v-b-tooltip.hover title="Period that youths are being registered into">Registration Period:</h4>
-            <b-form-select v-model="registrationPeriodSelection" :options="periodOptions"></b-form-select>
+            <top-bar/>
+            <br>
+            <h1>Period Settings</h1>
+            <hr class="title">
+            <div style="width: 80%; margin: 0 auto">
+                <h4 v-b-tooltip.hover title="Current active period">Current Period:</h4>
+                <b-form-select v-model="currentPeriodSelection" :options="periodOptions"></b-form-select>
+                <hr>
+                <h4 v-b-tooltip.hover title="Period that youths are being registered into">Registration Period:</h4>
+                <b-form-select v-model="registrationPeriodSelection" :options="periodOptions"></b-form-select>
 
-            <b-button style="margin: 1%" variant="success" @click="save">Save</b-button>
-        </div>
+                <b-button style="margin: 1%" variant="success" @click="save">Save</b-button>
+            </div>
 
-        <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
-            <div class="d-block text-center">
-                <div slot="table-busy" class="text-center text-danger my-2">
-                    <b-spinner class="align-middle"></b-spinner>
-                    <strong> Loading...</strong>
+            <b-modal v-model = "loadingModalVisible" hide-footer lazy hide-header-close no-close-on-esc no-close-on-backdrop>
+                <div class="d-block text-center">
+                    <div slot="table-busy" class="text-center text-danger my-2">
+                        <b-spinner class="align-middle"></b-spinner>
+                        <strong> Loading...</strong>
+                    </div>
                 </div>
-            </div>
-        </b-modal>
+            </b-modal>
 
-        <b-modal v-model = "successModalVisible" hide-footer lazy >
-            <template slot="modal-title">
-                Success
-            </template>
-            <div class="d-block text-center">
-                <h3>Succesfully changed current period to {{this.currentPeriodSelection}}
-                    , and registration period to {{this.registrationPeriodSelection}}
-                </h3>
-            </div>
-            <b-button class="mt-3" block @click="successModalVisible = false" variant = "primary">ok</b-button>
-        </b-modal>
-        
-        <SettingsBottomNote/>
+            <b-modal v-model = "successModalVisible" hide-footer lazy >
+                <template slot="modal-title">
+                    Success
+                </template>
+                <div class="d-block text-center">
+                    <h3>Succesfully changed current period to {{this.currentPeriodSelection}}
+                        , and registration period to {{this.registrationPeriodSelection}}
+                    </h3>
+                </div>
+                <b-button class="mt-3" block @click="successModalVisible = false" variant = "primary">ok</b-button>
+            </b-modal>
+            
+            <SettingsBottomNote/>
         </div>
         <Footer/>
     </div>
@@ -52,7 +52,6 @@ export default {
     name: 'PeriodSettings',
     components: {
         SettingsBottomNote,
-
     },
     data() {
         return {

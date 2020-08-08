@@ -108,7 +108,8 @@ export default {
             ready: {
                 selector: false,
                 placeholders: false,
-                fields: false
+                fields: false,
+                initializers: false
             },
             fields: {
                 required: [], // {name: "", type: "", value: null}
@@ -116,6 +117,7 @@ export default {
                 hidden: []
             },
             placeholders: {},
+            initializers: {},
             args: {
                 specialInput: {
                     style: "text-align: center"
@@ -206,8 +208,25 @@ export default {
         },
         async setPlaceholders(placeholders) {
             this.placeholders = placeholders;
-            console.log('p', this.placeholders);
             this.ready.placeholders = true;
+        },
+
+        async getInitializers() {
+            let initializers = await rb.ref("Submit Orders Initializers").once('value').then(snapshot => { 
+                return snapshot.val()
+            })
+            return initializers;
+        },
+
+        setInitializers(initializers) {
+            let protectedInitializers = initializers.Protected;
+            let unprotectedInitializers = initializers.Unprotected;
+            this.initializers = {
+                protectedInitializers,
+                unprotectedInitializers
+            }
+            this.ready.initializers = true;
+            
         },
 
         //other/////////////////////////////////////////////////////
@@ -399,7 +418,13 @@ export default {
                 payload[field.name] = field.value;
             })
             this.fields.hidden.forEach(field => {
-                payload[field.name] = field.value;
+                if (this.initializers.protectedInitializers[field.name] != null) {
+                    payload[field.name] = this.initializers.protectedInitializers[field.name]
+                } else if (this.initializers.unprotectedInitializers[field.name] != null) {
+                    payload[field.name] = this.initializers.unprotectedInitializers[field.name]
+                } else {
+                    payload[field.name] = field.value;
+                }
             })
 
             let periodQuery = await db.collection("GlobalPeriods").doc('metadata').get();
@@ -445,10 +470,14 @@ export default {
 
     },
     async mounted() {
-        let fieldQuery = await this.queryFields();
-        let placeholderQuery = await this.queryPlaceholders();
-        await this.setFields(fieldQuery);
-        await this.setPlaceholders(placeholderQuery);
+        let queries = await Promise.all([
+            await this.queryFields(),
+            await this.queryPlaceholders(),
+            await this.getInitializers(),
+        ])
+        await this.setFields(queries[0]);
+        await this.setPlaceholders(queries[1]);
+        await this.setInitializers(queries[2])
     },
 
 

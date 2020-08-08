@@ -24,6 +24,7 @@
 				<br />
 
 				<b-table
+          style="margin: 1rem 0 2rem"
 					:items="emails[`${this.selectedClass} ${this.selectedPeriod}`]"
 					show-empty
                     :busy="lookupLoading"
@@ -42,13 +43,13 @@
 							emails[`${this.selectedClass} ${this.selectedPeriod}`].length > 0
 					"
 				>
-					<b-button @click="copyAllEmails" variant="success"
+					<b-button class="copy_button" @click="copyAllEmails" variant="success"
 						>Copy all emails to clipboard</b-button
 					>
-					<b-button @click="copyPrimaryEmails" variant="info"
+					<b-button class="copy_button" @click="copyPrimaryEmails" variant="info"
 						>Copy primary parent emails to clipboard</b-button
 					>
-					<b-button @click="copySecondaryEmails" variant=""
+					<b-button class="copy_button" @click="copySecondaryEmails" variant=""
 						>Copy secondary parent emails to clipboard</b-button
 					>
 				</div>
@@ -189,4 +190,9 @@ export default {
 	},
 };
 </script>
-<style scoped></style>
+
+<style scoped>
+.copy_button {
+  margin: 5px;
+}
+</style>

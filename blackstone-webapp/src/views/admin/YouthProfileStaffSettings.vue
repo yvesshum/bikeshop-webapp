@@ -25,7 +25,7 @@
         <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
         
-        <h2 v-b-tooltip.hover title="">Placeholder editor</h2>  
+        <h2 v-b-tooltip.hover title="This value will be shown as a hint when users fill out the Youth Registration Form">Form Hint editor</h2>  
         <hr class="subheading">  
         <PlaceholderEditor v-if="dataLoaded" placeholderRef="Youth Profile Placeholders" doc="Youth Profile"/>
         <hr class="divider">
@@ -83,11 +83,12 @@ export default {
         
         async getFields() {
             let fields = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
-            fields = fields.data();            if (fields == null) { 
+            fields = fields.data();            
+            if (fields == null) { 
                 window.alert("Unable to get Youth Profile fields from Global Fields Collection");
             }
             else {
-                let protectedFields = ["Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log", "Class"]
+                let protectedFields = ["DOB", "Youth ID", "First Name", "Last Name", "Hours Spent", "Hours Earned", "Pending Hours", "Work Log", "Transfer Log", "ActivePeriods", "Order Log", "Class", "Primary Parent or Guardian Name", "Primary Parent or Guardian Phone", "Secondary Parent or Guardian Name", "Secondary Parent or Guardian Phone", "Apron Color", "Secondary Parent or Guardian Email", "Primary Parent or Guardian Email"]
                 this.parseFields(fields["required"], this.fields.required, protectedFields);
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);

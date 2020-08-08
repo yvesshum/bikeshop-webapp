@@ -121,7 +121,8 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns an email string -->
         <div v-else-if="input === 'Email'">
-            <b-form-input :value="value" @input="$emit('input', $event)" type="email" :state="isValidEmail()" :style="args.style"></b-form-input>
+            <!-- <b-form-input :value="value" @input="$emit('input', $event)" type="email" :style="args.style"></b-form-input> -->
+            <EmailWrapper :value="value" @input="$emit('input', $event)"/>
         </div>
 
         <!-- Returns a positive integer -->
@@ -166,6 +167,10 @@ use v-model. Whenever one of these is changed, it updates the other.
             ></b-form-textarea>
         </div>
 
+        <div v-else-if="input === 'Color'">
+            <compact-picker :value="value" @input="$emit('input',$event)"/>
+        </div>
+
         <!-- String Input -->
         <div v-else>
             <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
@@ -179,12 +184,13 @@ import { VueTelInput } from 'vue-tel-input'
 import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
+import { Compact } from 'vue-color'
 // import { Datetime } from 'vue-datetime'
 import Datetime from '../components/datetimeTimestamp'
 import 'vue-datetime/dist/vue-datetime.css'
 import Datepicker from '../components/datepickerTimestamp';
 import SpecialNumberInput from '../components/SpecialNumberInput'
-
+import EmailWrapper from '../components/EmailWrapper'
 
 export default {
     name: 'SpecialInput',
@@ -201,6 +207,7 @@ export default {
             default: function (){ return {} }
         },
     },
+
     data() {
         return {
             input: null,
@@ -242,32 +249,19 @@ export default {
          * PUBLIC METHOD TO BE CALLED WHEN TYPE NEEDS TO BE UPDATED 
          */
         updateInputType(type) {  
-            console.log("updateinput type called. type: ", type);
-            console.log("current vmodel value:", this.value);
             this.input = type;
-            if (this.inputType === "Class" && this.classOptions[0].value == null) {
+            if (this.input === "Class" && this.classOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getClassOptions();
             }
-            else if (this.inputType === "Period" && this.periodOptions[0].value == null) {
+            else if (this.input === "Period" && this.periodOptions[0].value == null) {
                 //only get it once, avoid api spam
                 this.getPeriodOptions();
-            }
+            } 
         },
 
         isValidPhoneNumber() {
             return (this.value == null) ? false : (this.value.toString().length === 10 && !isNaN(this.value));
-        },
-
-        isValidEmail() {
-
-            if (this.value == null) return false
-            else {
-                let data = this.value.split("@")
-
-                return (data[0] != null && data[1] != null)
-            }
-            
         },
 
         async getClassOptions() {
@@ -282,6 +276,7 @@ export default {
                     text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
+            console.log("Class options", this.classOptions)
         },
 
         async getPeriodOptions() {
@@ -327,6 +322,8 @@ export default {
         Datetime,
         Datepicker,
         SpecialNumberInput,
+        'compact-picker': Compact,
+        EmailWrapper,
     }
 
 }

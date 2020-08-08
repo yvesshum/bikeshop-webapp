@@ -1,7 +1,7 @@
 //  Usage <InitializerEditor v-if="dataLoaded" initializerRef="Youth Profile Initializers" doc="Youth Profile"/>
 <template>
     <div >
-        <p v-b-tooltip.hover title="Field Name, Initializer Value, Status, Edit, Delete" v-if="data.length !== 0">Hint</p>
+        <p v-b-tooltip.hover title="Field Name, Initializer Value, Status, Edit, Delete" v-if="data.length !== 0">Hint?</p>
         <div  v-if="dataLoaded">
             <InitializerCard 
                 v-for="element in data"
@@ -15,13 +15,13 @@
         <p v-if="data.length === 0">No user-defined initializers found</p>
         <br>
 
+
         <b-button-group>
             <b-button variant="info" @click="addButtonClicked">
                 Add an initializer <font-awesome-icon icon="plus" class ="icon alt"/>
             </b-button>
         <br>
         </b-button-group>
-
 
 
         <!-- Modals -->
@@ -39,16 +39,10 @@
                     rows="1"
                     max-rows="3"
             ></b-form-textarea>
-            <p style="margin-bottom: 0">Initializer Text</p>
-            <b-form-textarea
-                    id="textarea"
-                    v-model="newInitializerText"
-                    placeholder="Enter a value"
-                    :state="isValidInitializer"
-                    size="sm"
-                    rows="1"
-                    max-rows="3"
-            ></b-form-textarea>
+            <p style="margin-bottom: 0">Initializer Value</p>
+
+            <SpecialInput :inputType="input_field_type" ref="addInput" v-model="newInitializerText"/>
+
             <b-button class="mt-3" block @click="save_new(); new_closeModal()" variant = "warning" :disabled="!(isValidFieldName && isValidInitializer)">Save</b-button>
             <b-button class="mt-3" block @click="new_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
@@ -70,6 +64,9 @@
 import {rb} from '@/firebase.js';
 import {db} from '@/firebase.js';
 import InitializerCard from './InitializerCard.vue';
+import SpecialInput from '../components/SpecialInput.vue'
+import { initSpecialInputVal } from '../scripts/SpecialInit';	
+
 
 export default {
     name: 'InitializerEditor',
@@ -78,24 +75,37 @@ export default {
         doc: String
     },
     components: {
-        InitializerCard
+        InitializerCard,
+        SpecialInput
     },
     computed: {
         isValidFieldName: function() {
+            console.warn('isValidFieldName called', this.existingFieldNames, this.newFieldName)
             return this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName}).length > 0 && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
         },
 
         isValidInitializer: function() {
-            return this.newInitializerText.length > 0
+            return this.newInitializerText != null
         }
     },
+    watch: {
+        newFieldName: function() {
+            if (this.isValidFieldName) {
+                let type = this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName})[0][this.newFieldName]
+                let newVal = initSpecialInputVal(type);
+                this.input_field_type = type
+                this.$refs.addInput.updateInputType(type);	
+                this.newInitializerText = newVal
+            }
+        }
+    },
+
     data() {
         return {
             data: [],
             existingFieldNames: [],
             dataLoaded: false,
             newFieldName: "",
-            newInitializerText: "",
             new_modalVisible: false,
             msg_modalVisible: false,
             msg_modal_title: "",
@@ -103,8 +113,8 @@ export default {
             detachSnapshot: "",
             listenerRef: "",
 
-
-
+            input_field_type: "string",
+            newInitializerText: "",
         }
     },
     methods: {
@@ -141,6 +151,7 @@ export default {
 
         addButtonClicked() {
             this.newFieldName = "";
+            this.newInitializerText = ""
             this.new_modalVisible = true;
             
         },
@@ -173,6 +184,8 @@ export default {
     async mounted() {
         this.detachSnapshot = db.collection("GlobalFieldsCollection").doc(this.doc).onSnapshot(doc => {
             this.existingFieldNames = this.formatNames(doc.data());
+            console.warn(this.existingFieldNames)
+
             this.dataLoaded = true;
         });
 
