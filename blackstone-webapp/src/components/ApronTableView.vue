@@ -76,7 +76,7 @@ export default {
     return {
       headers: [
         {title:"Name", field:"name"},
-        {title:"Topic", field:"group", width: 200},
+        {title:"Category", field:"category", width: 200},
       ],
 
       change_level_modal: false,
@@ -131,11 +131,33 @@ export default {
       }
     },
 
+    colors_to_indices: function() {
+      var result = {};
+      for (let i in this.apronColors) {
+        result[this.apronColors[i].name] = i;
+      }
+      return result;
+    },
+
+    // Flatten the nested object structure of the skills in the database to individual rows
+    // as used by Tabulator
     apron_skills_table: function() {
       let result = [];
-      forEach_ObjObjArr(this.apron_skills, (color, group, index, entry) => {
-        result.push({color, group, name: entry});
+      forEach_ObjObjArr(this.apron_skills, (category, color, index, entry) => {
+        result.push({color, category, name: entry});
       });
+
+      // Sort entries by color, then category, then name
+      result.sort((a, b) => {
+        if (a.color == b.color) {
+          if (a.category == b.category) {
+            return a.name.localeCompare(b.name);
+          }
+          return a.category.localeCompare(b.category);
+        }
+        return this.color_to_index(a.color) - this.color_to_index(b.color);
+      });
+
       return result;
     },
 
@@ -188,10 +210,11 @@ export default {
           // Allow groups to open/close by clicking anywhere in header (not just the arrow)
           groupToggleElement:"header",
 
-          // Start with the youth's current apron open
-          groupStartOpen: (value, count, data, group) => {
-            return value = this.achievedColor;
-          },
+          // Tabulator isn't recreated each time a youth is loaded so this won't work
+          // // Start with the youth's current apron open
+          // groupStartOpen: (value, count, data, group) => {
+          //   return value == this.achievedColor;
+          // },
 
           // Display the number of achieved skills for this apron in the header
           groupHeader: (value, count, data, group) => {
@@ -258,6 +281,10 @@ export default {
     get_apron_property: function(level, prop) {
       if (this.apron_colors == null || this.apron_colors[level] == null) return "";
       return this.apron_colors[level][prop];
+    },
+
+    color_to_index: function(color) {
+      return this.colors_to_indices[color];
     },
   }
 }
