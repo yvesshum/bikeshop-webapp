@@ -151,6 +151,7 @@ export default {
 
         addButtonClicked() {
             this.newFieldName = "";
+            this.newInitializerText = ""
             this.new_modalVisible = true;
             
         },
