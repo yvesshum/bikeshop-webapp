@@ -40,7 +40,7 @@
                           <div v-for="field in requiredFields">
                             <div v-if="field.name == 'Class'">
                               <div class = "specialDiv">
-                                <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
+                                <p class="field_header">Registration {{field.name}}<span style="color: red"> *</span></p>
                                   <p style="color: grey">{{placeholders[field.name]}}</p>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
