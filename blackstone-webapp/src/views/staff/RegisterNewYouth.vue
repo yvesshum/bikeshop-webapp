@@ -33,14 +33,15 @@
                   <b-collapse id="accordion-returning" visible accordion="my-accordion" role="tabpanel">
                       <div v-if="returningYouth == 'Returning Youth'">
                       
-                        <p class="field_header">Enter Your Youth ID:</p>
+                          <p class="field_header">Enter Your Youth ID:<span style="color: red"> *</span></p>
                           <div class = "specialDiv">
                               <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
                           </div>
                           <div v-for="field in requiredFields">
                             <div v-if="field.name == 'Class'">
                               <div class = "specialDiv">
-                                <p class="field_header">{{field.name}}</p>
+                                <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
+                                  <p style="color: grey">{{placeholders[field.name]}}</p>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
                               </div>
@@ -49,6 +50,7 @@
                                 <div v-for="question in essayQuestions[field.value]">
                                   <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
+                                      <p style="color: grey">{{placeholders[field.name]}}</p>
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
                                     </div>
@@ -60,8 +62,9 @@
                       <div v-for="field in requiredFields">
                           <div class="each_field">
                               <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
-                                <p class="field_header">{{field.name}}</p>
+                                <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
                                 <div class = "specialDiv">
+                                  <p style="color: grey">{{placeholders[field.name]}}</p>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
                                 </div>
@@ -70,6 +73,7 @@
                                   <div v-for="question in essayQuestions[field.value]">
                                     <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
+                                      <p style="color: grey">{{placeholders[field.name]}}</p>
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
                                     </div>
@@ -95,6 +99,7 @@
                             <div v-if="field.name != 'Class'">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
+                                <p style="color: grey">{{placeholders[field.name]}}</p>
                                 <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                 </SpecialInput>
                               </div>
@@ -105,6 +110,7 @@
                           <div class="each_field">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
+                                <p style="color: grey">{{placeholders[field.name]}}</p>
                                 <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                 </SpecialInput>
                               </div>
@@ -124,8 +130,8 @@
                 New Youth registered!
             </template>
             <div class="d-block text-center">
-                <h3 v-if="returningYouth == 'New Youth'">Successfully submitted a new youth registration for {{currentName}} to be in {{currentClass}} class</h3>
-                <h3 v-if="returningYouth == 'Returning Youth'">Successfully submitted a returning youth registration for {{currentName}} to be in {{currentClass}} class</h3>
+                <h3 v-if="returningYouth == 'New Youth'">Successfully submitted a new youth registration for {{currentName}} to be in the {{currentClass}} class</h3>
+                <h3 v-if="returningYouth == 'Returning Youth'">Successfully submitted a returning youth registration for Youth ID {{currentName}} to be in the {{currentClass}} class</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -175,6 +181,7 @@
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
     let essayRef = db.collection("GlobalVariables").doc("EssayQuestions");
+    let existingRef = db.collection("GlobalVariables").doc("ExistingIDs");
     
     // let quarterRef = db.collection("GlobalVariables").doc("CurrentActiveQuarter")
     export default {
@@ -196,7 +203,7 @@
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
                 YouthProfile: {},
-                newID: "123",
+                // newID: "123",
                 placeholders: {},
                 arguments: {
                     "placeholder": "0"
@@ -286,15 +293,17 @@
                     var input = {};
                     
                     if(this.returningYouth == "Returning Youth"){
-                        let selectedYouth = await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
-                        input = selectedYouth.data();
-                        if (input == null) {
+                        let existingData = await existingRef.get(); // await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
+                        console.log("Checking if exists");
+                        let exists = existingData.data()[this.returningYouthID];
+                        if (exists == null || exists == false) {
                             this.errorFields = ["Returning Youth ID"];
                             this.loadingModalVisible = false;
                             this.showErrorModal();
                             return null;
                         }
                         input["New or Returning"] = "Returning Youth";
+                        input["Unmerged"] = true;
                         input["ReturningID"] = this.returningYouthID;
                     } else {
                         input["New or Returning"] = "New Youth";
@@ -370,7 +379,11 @@
                     }
                     
                     this.currentClass = input["Class"];
-                    this.currentName = input["First Name"] + " " + input["Last Name"];
+                    if(this.returningYouth != "Returning Youth"){
+                        this.currentName = input["First Name"] + " " + input["Last Name"];
+                    } else {
+                        this.currentName = this.returningYouthID;
+                    }
                     let currentClass = input["Class"];
                     console.log("Current class " + currentClass);
                     input["Essay"] = {}
@@ -380,11 +393,12 @@
                         input["Essay"][questionSubmit.split("\n").join("\\n")]
                           = answer.split("\n").join("\\n");
                     }
-                    let submitRef = db.collection("GlobalPendingRegistrations").doc();
+                    console.log("About to submit")
+                    // let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
                     // rb.ref('Youth Profile Initializers').off("value", this.listenerRef);
-                    let submitStatus = await submitRef.set(input)
+                    let submitStatus = await db.collection("GlobalPendingRegistrations").doc().set(input)
                     if(this.returningYouth == "Returning Youth"){
                         if (submitStatus) {
                             window.alert("Error adding returning registration");
@@ -394,8 +408,9 @@
                             window.alert("Error adding new registration");
                         }
                     }
+                    console.log("Submitted!")
                         // console.log("Document written with ID: ", submitRef.id);
-                    this.newID = submitRef.id;
+                    // this.newID = submitRef.id;
                     
                     // Clear the fields
                     for (let i = 0; i < this.requiredFields.length; i ++) {

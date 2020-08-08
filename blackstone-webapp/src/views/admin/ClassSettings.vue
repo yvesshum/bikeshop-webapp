@@ -7,7 +7,7 @@
 
         <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Class editor</h2>
         <hr class="subheading">
-        <h3 v-b-tooltip.hover title="These are the current hour logging Categories for youth">Classes:</h3>
+        <h3 v-b-tooltip.hover title="These are the current classes for youth">Classes:</h3>
         <ClassEditor sourceFieldName="Classes" :elements="fields.Classes" sourceDocument="Classes" :collectionsToEdit="['GlobalPeriods']" :subcollectionsToEdit="['metadata']"/>
 
         <hr class="divider">
@@ -61,7 +61,7 @@ export default {
       fields = fields.data();
       console.log(fields);
       if (fields == null) {
-        window.alert("Unable to get Hour Logging Categories from Global Variables");
+        window.alert("Unable to get metadata from Global Periods");
       }
       else {
         this.parseFields(fields["Classes"], this.fields.Classes);
