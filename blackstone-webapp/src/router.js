@@ -35,7 +35,7 @@ import PageHeaders from './views/admin/PageHeaders';
 import {isAdmin, isStaff, isLoggedIn} from './scripts/getPrivilege'
 import EmailLookup from "./views/staff/EmailLookup.vue";
 import BlogPageManager from './views/staff/BlogPageManager.vue'
-
+import BlogPage from './views/general/BlogPage.vue'
 Vue.use(Router);
 
 const router = new Router({
@@ -346,6 +346,18 @@ const router = new Router({
                 requiresAdmin: true
             }
         },
+        
+        
+        // General
+        {
+            path: '/blog-page',
+            name: 'blog-page',
+            component: BlogPage,
+            meta: {
+                requiresAuth: true,
+                requiresStaff: false
+            }
+        }
 
 
     ]

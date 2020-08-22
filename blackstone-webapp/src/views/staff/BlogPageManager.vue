@@ -5,28 +5,24 @@
             <!-- Manage blog pages -->
             <h1 class="title">Blog Page Manager</h1>
             <PageHeader pageCategory="Staff Headers" pageName="Blog Page Manager"></PageHeader>
-            <b-container fluid>
-                <b-row v-for="(blogs, index) in groupedBlogs" :key="index" style="margin: 0 auto">
-                    <b-col v-for="blog in blogs" :key="blog.id">
-                        <b-card
-                            :title="blog.name"
-                            style="max-width: 20rem; margin: 0 auto"
-                            class="mb-2"
-                            tag="article"
-                        >
-                            <b-card-text>{{blog.description}}</b-card-text>
-                            <div class="buttonBox">
-                                <b-button variant="info" @click="handleViewClicked(blog.id)">view</b-button>
-                                <b-button variant="primary" @click="handleEditClicked(blog.id)">edit</b-button>
-                                <b-button
-                                    variant="danger"
-                                    @click="handleDeleteClicked(blog.id)"
-                                >delete</b-button>
-                            </div>
-                        </b-card>
-                    </b-col>
-                </b-row>
-            </b-container>
+            <div v-for="blog in groupedBlogs" :key="blog.id">
+                <div class="border d-flex rounded cardContainer">
+                    <div style="flex: 4; align-items: flex-start">
+                        <div class>
+                            <h1 class="cardText">{{blog.name}}</h1>
+                            <p class="cardText">{{blog.description}}</p>
+                            <p
+                                style="text-align: left; font-style: italic"
+                            >Created on: {{blog.created.toDate().toLocaleDateString()}}</p>
+                        </div>
+                    </div>
+                    <div stlye="flex: 1" class="d-flex flex-column justify-content-around">
+                        <b-button variant="info" @click="handleViewClicked(blog.id)">view</b-button>
+                        <b-button variant="primary" @click="handleEditClicked(blog.id)">edit</b-button>
+                        <b-button variant="danger" @click="handleDeleteClicked(blog.id)">delete</b-button>
+                    </div>
+                </div>
+            </div>
             <br />
             <b-button variant="success" @click="handleAddClicked">Add a new blog</b-button>
         </div>
@@ -121,6 +117,21 @@
             >Save blog</b-button>
             <b-button class="mt-3" block @click="edit_closeModal()" variant="success">Cancel</b-button>
         </b-modal>
+
+        <!-- Deleting -->
+        <b-modal v-model="modal.delete.visible" hide-footer lazy>
+            <template slot="modal-title">Deleting Blog page</template>
+            <div class="d-block text-center">
+                <h3>Are you sure you want to delete {{modal.delete.blog_name}}?</h3>
+            </div>
+            <b-button
+                class="mt-3"
+                block
+                @click="deleteBlog()"
+                variant="danger"
+            >Permanently delete this blog along with all posts</b-button>
+            <b-button class="mt-3" block @click="delete_closeModal()" variant="success">Cancel</b-button>
+        </b-modal>
     </div>
 </template>
 
@@ -128,8 +139,9 @@
 import { db } from "../../firebase";
 import PageHeader from "@/components/PageHeader.vue";
 import { chunk } from "lodash";
+import { deleteCollection } from "@/scripts/dbUtils.js";
 export default {
-    name: "BlogPage",
+    name: "BlogPageManager",
 
     data() {
         return {
@@ -146,6 +158,11 @@ export default {
                     visible: false,
                     blog_name: "",
                     blog_description: "",
+                    blog_id: "",
+                },
+                delete: {
+                    visible: false,
+                    blog_name: "",
                     blog_id: "",
                 },
                 loading: {
@@ -171,7 +188,7 @@ export default {
                     return 0;
                 }
             });
-            return chunk(sortedBlogs, 4);
+            return sortedBlogs;
         },
     },
 
@@ -198,11 +215,13 @@ export default {
         },
 
         handleViewClicked(id) {
-            console.log(id);
+            location.href = `/blog-page?id=${id}`
         },
 
-        handleDeleteClicked(id) {
-            console.log(id);
+        handleDeleteClicked(blogID) {
+            this.modal.delete.blog_id = blogID;
+            this.modal.delete.blog_name = this.blogs[blogID].name;
+            this.modal.delete.visible = true;
         },
 
         async addBlog() {
@@ -248,15 +267,46 @@ export default {
             this.modal.msg.visible = true;
         },
 
+        async deleteBlog() {
+            this.modal.delete.visible = false;
+            this.modal.loading.visible = true;
+            try {
+                console.log("1", this.modal.delete.blog_id);
+                console.log(deleteCollection);
+                await deleteCollection(
+                    db,
+                    db
+                        .collection("GlobalBlogs")
+                        .doc(this.modal.delete.blog_id)
+                        .collection("Posts"),
+                    20
+                );
+                console.log("2", this.modal.delete.blog_id);
+                await db
+                    .collection("GlobalBlogs")
+                    .doc(this.modal.delete.blog_id)
+                    .delete();
+            } catch (error) {
+                console.error(error);
+                window.alert(`An error has occured. Error: ${error}.`);
+                return null;
+            }
+
+            this.modal.msg.title = "Success!";
+            this.modal.msg.text = "Successfully deleted the blog";
+            this.modal.loading.visible = false;
+            this.modal.msg.visible = true;
+        },
+
         // Modal methods
         add_closeModal() {
-            this.modal.add.blogName = "";
+            this.modal.add.blog_name = "";
             this.modal.add.blog_description = "";
             this.modal.add.visible = false;
         },
 
         edit_closeModal() {
-            this.modal.edit.blogName = "";
+            this.modal.edit.blog_name = "";
             this.modal.edit.blog_description = "";
             this.modal.edit.visible = false;
         },
@@ -265,6 +315,12 @@ export default {
             this.modal.msg.title = "";
             this.modal.msg.text = "";
             this.modal.msg.visible = false;
+        },
+
+        delete_closeModal() {
+            this.modal.delete.blog_name = "";
+            this.modal.delete.blog_id = "";
+            this.modal.delete.visible = false;
         },
     },
 
@@ -292,5 +348,20 @@ export default {
 .buttonBox {
     justify-content: space-evenly;
     display: flex;
+}
+
+.cardText {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40rem;
+}
+
+.cardContainer {
+    width: 50rem;
+    height: 10rem;
+    margin: 20px auto;
+    padding: 1rem;
 }
 </style>
