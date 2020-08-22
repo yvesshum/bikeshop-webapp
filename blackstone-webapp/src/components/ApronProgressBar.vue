@@ -41,6 +41,19 @@ export default {
         }
       }
     },
+
+    selectType: {
+      type: String,
+      default: "none",
+      validator: val => {
+        return ["none", "select_single", "toggle_single", "toggle_multiple"]
+      }
+    },
+
+    value: {
+      type: [String, Array],
+      default: null,
+    },
   },
 
   data: function() {
@@ -74,8 +87,52 @@ export default {
 
     mouse_click: function(n, active) {
       let curr = this.hover[n];
-      this.$set(this.hover, n, (curr == undefined || curr == "hover") ? "click" : "hover");
-      this.$emit("click", {level: n, active});
+
+      switch (this.selectType) {
+
+        // Don't allow any selection
+        case "none":
+          break;
+
+        // When an apron is clicked, switch to its color, regardless of previous value
+        // If a "no color" value isn't possible
+        case "select_single":
+          this.hover = {};
+          this.$set(this.hover, n, "click");
+          this.$emit("input", this.apron_name(n));
+          break;
+
+        // When an apron is clicked, toggle to it
+        case "toggle_single":
+
+          // If clicked apron is selected, switch it back to hover
+          if (curr == "click") {
+            this.$set(this.hover, n, "hover");
+            this.$emit("input", null);
+          }
+
+          // If clicked apron is not selected, remove all other selections and select it
+          else {
+            this.hover = {};
+            this.$set(this.hover, n, "click");
+            this.$emit("input", this.apron_name(n));
+          }
+
+          break;
+
+        case "toggle_multiple":
+          // Toggle the clicked apron
+          this.$set(this.hover, n, (curr == undefined || curr == "hover") ? "click" : "hover");
+          this.$emit("input",
+            Object.keys(this.hover).filter(key => this.hover[key] == "click").map(this.apron_name)
+          );
+          break;
+
+        default:
+        break;
+
+      }
+
       this.$emit("hover", this.hover);
     },
   },

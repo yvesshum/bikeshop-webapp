@@ -22,6 +22,7 @@
         <ApronProgressBar
           style="display: inline-block;"
           :colors="apron_colors" :size="32" :level="apron_level"
+          selectType="none"
         />
         <b-button
           style="display: inline-block; float: right"
