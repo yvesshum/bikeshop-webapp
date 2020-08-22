@@ -110,6 +110,10 @@ export default {
         this.row_status.set(row, new_rows.includes(row) ? Status.USE : Status.NOT);
       });
     },
+
+    table: function(new_table) {
+      this.$emit("table", new_table);
+    },
   },
 
   computed: {

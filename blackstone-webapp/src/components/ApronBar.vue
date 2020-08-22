@@ -2,7 +2,13 @@
   <div class="apron_bar">
 
     <div class="title_container">
-      <h3 class="apron_color_title">Apron Color: {{apron_color}}</h3>
+
+      <h3>Apron Skills</h3>
+
+      <div class="apron_color_title">
+        <h4>Current Apron: {{apron_color}}</h4>
+        <h4 v-if="!is_final_color">Next Apron: {{next_apron_color}}</h4>
+      </div>
 
       <div class="progress_bar_container">
         <b-button
@@ -36,6 +42,7 @@
       :apronColors="apron_colors"
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
+      :showColor="show_color"
     />
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
@@ -195,7 +202,8 @@ export default {
       changed_skills: null,
 
       checked_data: [],
-      apron_color: null,
+
+      show_color: null,
 
       loaded_apron_skills: null,
       loaded_apron_colors: [],
@@ -244,6 +252,18 @@ export default {
       else {
         return [];
       }
+    },
+
+    apron_color: function() {
+      return this.get_profile_field("Apron Color", null)
+    },
+
+    is_final_color: function() {
+      return this.apron_level == this.apron_colors.length;
+    },
+
+    next_apron_color: function() {
+      return this.is_final_color ? null : this.get_apron_property(this.apron_level + 1, 'name');
     },
 
     achieved_skills: function() {
@@ -305,7 +325,8 @@ export default {
   watch: {
     profile: function() {
       this.checked_data = this.get_profile_field("Apron Skills", []);
-      this.apron_color = this.get_profile_field("Apron Color", null);
+
+      this.show_color = this.is_final_color ? this.apron_color : this.next_apron_color;
     },
   },
 
@@ -430,6 +451,7 @@ export default {
     margin: auto;
     padding: 5px;
     float: left;
+    text-align: left;
   }
 
   .progress_bar_container {

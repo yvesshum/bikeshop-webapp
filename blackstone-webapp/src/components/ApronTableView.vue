@@ -12,6 +12,7 @@
       matchBy="name"
       @selected="s => selected_skills = s"
       @changes="c => changed_skills = c"
+      @table="handle_table"
     />
 
   </div>
@@ -70,6 +71,11 @@ export default {
       type: String,
       default: "",
     },
+
+    showColor: {
+      type: String,
+      default: null,
+    },
   },
 
   data: function() {
@@ -91,6 +97,8 @@ export default {
 
       checked_data: [],
       apron_color: null,
+
+      table: null,
 
       loaded_apron_skills: [],
       loaded_apron_colors: [],
@@ -210,11 +218,14 @@ export default {
           // Allow groups to open/close by clicking anywhere in header (not just the arrow)
           groupToggleElement:"header",
 
-          // Tabulator isn't recreated each time a youth is loaded so this won't work
-          // // Start with the youth's current apron open
-          // groupStartOpen: (value, count, data, group) => {
-          //   return value == this.achievedColor;
-          // },
+          // Ensure that only one group is open at any time by closing all other groups
+          // Looks like this runs before whatever callback actually toggles the group open/closed on click, so if we hide an open group, it will be switched back to open, which is what we want
+          groupClick: (e, group) => {
+            this.table.getGroups().forEach(g => g.hide());
+          },
+
+          // Start all groups closed
+          groupStartOpen: false,
 
           // Display the number of achieved skills for this apron in the header
           groupHeader: (value, count, data, group) => {
@@ -230,7 +241,15 @@ export default {
   },
 
   watch: {
-
+    showColor: function() {
+      this.table.getGroups().forEach(group => {
+        if (group.getKey() == this.showColor) {
+          group.show();
+        } else {
+          group.hide();
+        }
+      });
+    },
   },
 
   methods: {
@@ -285,6 +304,10 @@ export default {
 
     color_to_index: function(color) {
       return this.colors_to_indices[color];
+    },
+
+    handle_table: function(table) {
+      this.table = table;
     },
   }
 }
