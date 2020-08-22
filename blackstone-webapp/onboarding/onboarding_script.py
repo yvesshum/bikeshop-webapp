@@ -141,7 +141,7 @@ def main():
             newYouth = ifGivenOptionalBool(row, "Safety Policy", "Safety Policy Checked", newYouth)
             newYouth = ifGivenOptionalBool(row, "Liability Waiver", "Liability and Release Consents", newYouth)
             newYouth = ifGivenOptional(row, "Medical Concerns", "Allergies or Medical Issues", newYouth)
-            # newYouth = ifGivenOptionalBool(row, "Seek Medical Help", "", newYouth)
+            newYouth = ifGivenOptionalBool(row, "Seek Medical Help", "Seek medical help", newYouth)
             newYouth = ifGivenOptionalBool(row, "Media Release", "Publicity Waiver", newYouth)
             newYouth = ifGivenOptional(row, "Apron Start of 2020", "Apron Color", newYouth)
             newYouth = ifGivenOptional(row, "Year Started", "Year Started", newYouth)
