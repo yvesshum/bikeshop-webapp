@@ -11,7 +11,7 @@
       editable
       matchBy="name"
       @selected="s => selected_skills = s"
-      @changes="c => changed_skills = c"
+      @changes="handle_changes"
       @table="handle_table"
     />
 
@@ -304,6 +304,11 @@ export default {
 
     color_to_index: function(color) {
       return this.colors_to_indices[color];
+    },
+
+    handle_changes: function(changes) {
+      this.changed_skills = changes;
+      this.$emit('changed', changes);
     },
 
     handle_table: function(table) {

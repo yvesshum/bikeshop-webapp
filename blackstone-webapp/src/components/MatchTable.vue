@@ -30,10 +30,11 @@ export default {
       table: null,
 
       achieved_column: {
+        title:"Achieved?",
         field:"achieved",
         formatter:"tickCross",
         formatterParams: {crossElement: false},
-        width: 10,
+        width: 115,
         align: "center",
         headerSort: false,
         editable: this.editable != undefined,
@@ -124,7 +125,7 @@ export default {
     },
 
     heading_data: function() {
-      return [ this.achieved_column, ...this.headingData ];
+      return [ ...this.headingData, this.achieved_column ];
     },
 
     table_args: function() {

@@ -43,6 +43,7 @@
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
       :showColor="show_color"
+      @changed="c => changed_skills = c"
     />
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
