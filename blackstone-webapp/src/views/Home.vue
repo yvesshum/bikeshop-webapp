@@ -328,7 +328,7 @@ h5:hover {
     justify-content: center;
     text-align: center;
     background-image: url("../assets/Bike_Stock.jpg");
-    background-size: 100%;
+    background-size: cover;
     background-attachment: fixed;
 }
 
@@ -342,8 +342,6 @@ h5:hover {
     border-radius: 0.5rem;
     border: 0.1rem solid lightblue;
     color: #007399;
-    width: 20rem;
-    height: 8rem;
 }
 
 h4 {
