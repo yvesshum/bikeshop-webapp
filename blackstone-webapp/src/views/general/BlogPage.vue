@@ -4,17 +4,9 @@
             <top-bar />
             <h1 class="title">{{this.blog.name}}</h1>
             <PageHeader pageCategory="Staff Headers" pageName="Blog Page"></PageHeader>
-            <p>general info</p>
-            <p>{{this.blog.name}}</p>
-            <p>{{this.blog.description}}</p>
-            <p>{{this.blog.created}}</p>
-            <br />
-            <p>Posts are stored in this.blogPosts</p>
-            <p v-for="post in blogPosts" :key="post.id">{{JSON.stringify(post)}}</p>
-
             <!-- Blog post cards -->
             <div style="padding: 0 1rem">
-              <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post"/>
+                <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" />
             </div>
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
@@ -50,8 +42,8 @@ export default {
     },
 
     components: {
-      PageHeader,
-      BlogPostCard,
+        PageHeader,
+        BlogPostCard,
     },
 
     methods: {
@@ -68,8 +60,12 @@ export default {
             } else {
                 postQuery = await ref.startAfter(lastSeenDocSnapshot).get();
             }
-            this.lastSeenDocSnapshot =
-                postQuery.docs[postQuery.docs.length - 1];
+            if (!postQuery.empty) {
+                this.lastSeenDocSnapshot =
+                    postQuery.docs[postQuery.docs.length - 1];
+            } else {
+                window.alert("There aren't any more posts!");
+            }
 
             return postQuery.docs.map((doc) => {
                 return {
@@ -80,6 +76,7 @@ export default {
         },
 
         async fetchMoreBlogs() {
+            console.log("fetch", this.lastSeenDocSnapshot);
             let posts = await this.getBlogPosts(this.lastSeenDocSnapshot);
             this.blogPosts = this.blogPosts.concat(posts);
         },
@@ -108,4 +105,7 @@ export default {
 </script>
 
 <style scoped>
+.postHeader {
+    width: 100%;
+}
 </style>
