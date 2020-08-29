@@ -91,93 +91,92 @@ def main():
     protected = ref.get()
     
     for index, row in table.iterrows():
-        if index == 9:
-            ID = str(row["ID"])
-            
-            dashed = row["ID & Name"].split("-")
-            fullName = "-".join(dashed[:len(dashed) - 1])
-            confirmID = dashed[len(dashed) - 1]
-            if confirmID != ID:
-                print("ID columns in CSV don\'t match. Something\'s wrong")
-                quit()
-            nameRecord1 = parseName(fullName)
-            nameRecord2 = parseName(row["Name"])
-            if nameRecord1 == None or nameRecord2 == None:
-                print("Could not parse name. Something\'s wrong")
-                quit()
-            if (nameRecord1["first"] != nameRecord2["first"]) or (nameRecord1["last"] != nameRecord2["last"]):
-                print("Name columns in CSV don\'t match. Something\'s wrong")
-                quit()
-            print(nameRecord1["first"])
-            print(nameRecord1["last"])
-            
-            newYouth = {}
-            
-            newYouth["First Name"] = nameRecord1["first"]
-            newYouth["Last Name"] = nameRecord1["last"]
-            newYouth = ifGivenRequired(row, "Parent/Guardian Name", "Primary Parent or Guardian Name", newYouth)
-            newYouth = ifGivenRequired(row, "Relationship to Youth", "Primary Parent or Guardian Relationship", newYouth)
-            newYouth = ifGivenRequired(row, "Parent/Guardian Phone Number", "Primary Parent or Guardian Phone", newYouth)
-            newYouth = ifGivenRequired(row, "Parent/Guardian Email", "Primary Parent or Guardian Email", newYouth)
-            newYouth = ifGivenRequired(row, "Parent Best Method of Contact", "Parent best method of contact", newYouth)
-            newYouth = ifGivenRequired(row, "2020 Classes + Activities", "Class", newYouth)
-            if isSet(row["Date of Birth"]):
-                newYouth["DOB"] = datetime.datetime.strptime(row["Date of Birth"], "%m/%d/%Y")
-            if isSet(row["Address"]) and isSet(row["Zipcode"]):
-                newYouth["Home Address"] = str(row["Address"]) + ", " + str(row["Zipcode"])
-            elif isSet(row["Address"]):
-                newYouth["Home Address"] = str(row["Address"])
-            elif isSet(row["Zipcode"]):
-                newYouth["Home Address"] =  str(row["Zipcode"])
-            if isSet(row["Youth Sex/Gender"]):
-                if row["Youth Sex/Gender"] == "Male":
-                    newYouth["Gender"] = "M"
-                elif row["Youth Sex/Gender"] == "Female":
-                    newYouth["Gender"] = "F"
-                else:
-                    newYouth["Gender"] = "Other"
-            
-            if isSet(row["Youth Race/Ethnicity"]):
-                if row["Youth Sex/Gender"] == "Black/African-American/African Diaspora":
-                    newYouth["Race"] = "Black or African American"
-                elif row["Youth Sex/Gender"] == "White/Caucasian":
-                    newYouth["Race"] = "White"
-                elif row["Youth Sex/Gender"] == "Native/1st Nations/Indiginous":
-                    newYouth["Race"] = "American Indian/Alaskan Native"
-                else:
-                    newYouth["Race"] = "Mixed race, other, or prefer not to say"
-            newYouth = ifGivenOptional(row, "Youth Race/Ethnicity", "Race", newYouth)
-            
-            newYouth = ifGivenOptionalBool(row, "Qualifies for Free/Reduced Lunch", "Qualified for free or reduced lunch?", newYouth)
-            newYouth = ifGivenOptionalBool(row, "Safety Policy", "Safety Policy Checked", newYouth)
-            newYouth = ifGivenOptionalBool(row, "Liability Waiver", "Liability and Release Consents", newYouth)
-            newYouth = ifGivenOptional(row, "Medical Concerns", "Allergies or Medical Issues", newYouth)
-            newYouth = ifGivenOptionalBool(row, "Seek Medical Help", "Seek medical help", newYouth)
-            newYouth = ifGivenOptionalBool(row, "Media Release", "Publicity Waiver", newYouth)
-            newYouth = ifGivenOptional(row, "Apron Start of 2020", "Apron Color", newYouth)
-            newYouth = ifGivenOptional(row, "Year Started", "Year Started", newYouth)
-            if isSet(row["Year Started"]):
-                newYouth["Start Date"] = datetime.datetime.strptime("1/2/" + str(int(row["Year Started"])), "%m/%d/%Y")
-            newYouth["Apron Skills"] = {}
-            newYouth["Old Essay Answers"] = {}
-            newYouth["Essay"] = {}
-            newYouth["ActivePeriods"] = {}
-            
-            for key in protected.keys():
-                newYouth[key] = protected[key]
-            
-            youth_ref = cloud_db.collection(u'GlobalYouthProfile').document(ID)
-
-            y = youth_ref.get()
-            print(y)
-            if y.exists and not overwrite:
-                print("Not overwriting")
-                ydict = y.to_dict()
-                for key in ydict.keys():
-                    newYouth[key] = ydict[key]
-                youth_ref.set(newYouth)
+        ID = str(row["ID"])
+        
+        dashed = row["ID & Name"].split("-")
+        fullName = "-".join(dashed[:len(dashed) - 1])
+        confirmID = dashed[len(dashed) - 1]
+        if confirmID != ID:
+            print("ID columns in CSV don\'t match. Something\'s wrong")
+            quit()
+        nameRecord1 = parseName(fullName)
+        nameRecord2 = parseName(row["Name"])
+        if nameRecord1 == None or nameRecord2 == None:
+            print("Could not parse name. Something\'s wrong")
+            quit()
+        if (nameRecord1["first"] != nameRecord2["first"]) or (nameRecord1["last"] != nameRecord2["last"]):
+            print("Name columns in CSV don\'t match. Something\'s wrong")
+            quit()
+        print(nameRecord1["first"])
+        print(nameRecord1["last"])
+        
+        newYouth = {}
+        
+        newYouth["First Name"] = nameRecord1["first"]
+        newYouth["Last Name"] = nameRecord1["last"]
+        newYouth = ifGivenRequired(row, "Parent/Guardian Name", "Primary Parent or Guardian Name", newYouth)
+        newYouth = ifGivenRequired(row, "Relationship to Youth", "Primary Parent or Guardian Relationship", newYouth)
+        newYouth = ifGivenRequired(row, "Parent/Guardian Phone Number", "Primary Parent or Guardian Phone", newYouth)
+        newYouth = ifGivenRequired(row, "Parent/Guardian Email", "Primary Parent or Guardian Email", newYouth)
+        newYouth = ifGivenRequired(row, "Parent Best Method of Contact", "Parent best method of contact", newYouth)
+        newYouth = ifGivenRequired(row, "2020 Classes + Activities", "Class", newYouth)
+        if isSet(row["Date of Birth"]):
+            newYouth["DOB"] = datetime.datetime.strptime(row["Date of Birth"], "%m/%d/%Y")
+        if isSet(row["Address"]) and isSet(row["Zipcode"]):
+            newYouth["Home Address"] = str(row["Address"]) + ", " + str(row["Zipcode"])
+        elif isSet(row["Address"]):
+            newYouth["Home Address"] = str(row["Address"])
+        elif isSet(row["Zipcode"]):
+            newYouth["Home Address"] =  str(row["Zipcode"])
+        if isSet(row["Youth Sex/Gender"]):
+            if row["Youth Sex/Gender"] == "Male":
+                newYouth["Gender"] = "M"
+            elif row["Youth Sex/Gender"] == "Female":
+                newYouth["Gender"] = "F"
             else:
-                youth_ref.set(newYouth)
+                newYouth["Gender"] = "Other"
+        
+        if isSet(row["Youth Race/Ethnicity"]):
+            if row["Youth Sex/Gender"] == "Black/African-American/African Diaspora":
+                newYouth["Race"] = "Black or African American"
+            elif row["Youth Sex/Gender"] == "White/Caucasian":
+                newYouth["Race"] = "White"
+            elif row["Youth Sex/Gender"] == "Native/1st Nations/Indiginous":
+                newYouth["Race"] = "American Indian/Alaskan Native"
+            else:
+                newYouth["Race"] = "Mixed race, other, or prefer not to say"
+        newYouth = ifGivenOptional(row, "Youth Race/Ethnicity", "Race", newYouth)
+        
+        newYouth = ifGivenOptionalBool(row, "Qualifies for Free/Reduced Lunch", "Qualified for free or reduced lunch?", newYouth)
+        newYouth = ifGivenOptionalBool(row, "Safety Policy", "Safety Policy Checked", newYouth)
+        newYouth = ifGivenOptionalBool(row, "Liability Waiver", "Liability and Release Consents", newYouth)
+        newYouth = ifGivenOptional(row, "Medical Concerns", "Allergies or Medical Issues", newYouth)
+        newYouth = ifGivenOptionalBool(row, "Seek Medical Help", "Seek medical help", newYouth)
+        newYouth = ifGivenOptionalBool(row, "Media Release", "Publicity Waiver", newYouth)
+        newYouth = ifGivenOptional(row, "Apron Start of 2020", "Apron Color", newYouth)
+        if isSet(row["Year Started"]):
+            newYouth["Start Date"] = datetime.datetime.strptime("1/2/" + str(int(row["Year Started"])), "%m/%d/%Y")
+        newYouth["Apron Skills"] = {}
+        newYouth["Old Essay Answers"] = {}
+        newYouth["Essay"] = {}
+        newYouth["ActivePeriods"] = {}
+        
+        for key in protected.keys():
+            newYouth[key] = protected[key]
+        
+        youth_ref = cloud_db.collection(u'GlobalYouthProfile').document(ID)
+
+        y = youth_ref.get()
+        print(y)
+        if y.exists and not overwrite:
+            ydict = y.to_dict()
+            for key in ydict.keys():
+                newYouth[key] = ydict[key]
+            newYouth.pop('Year Started', None)
+            newYouth.pop('Race', None)
+            youth_ref.set(newYouth)
+        else:
+            youth_ref.set(newYouth)
     
 
 if __name__== "__main__":

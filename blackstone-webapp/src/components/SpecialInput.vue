@@ -211,7 +211,7 @@ export default {
     data() {
         return {
             input: null,
-            args: {},
+            args: {}, 
             ready: false,
             raceOptions: [
                 { value: null, text: 'Please select a race' },
