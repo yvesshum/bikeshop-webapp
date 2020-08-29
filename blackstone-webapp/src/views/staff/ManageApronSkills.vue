@@ -201,7 +201,7 @@
                     specialInput: {
                         style: "text-align: center"
                     }
-                },
+                }
             };
         },
         methods: {
