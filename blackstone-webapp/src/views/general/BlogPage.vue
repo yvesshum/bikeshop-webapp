@@ -19,6 +19,8 @@
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
 
+            <NewBlogPost />
+
             <Footer />
         </div>
         <div v-else>
@@ -31,6 +33,7 @@
 import { db } from "../../firebase";
 import PageHeader from "@/components/PageHeader.vue";
 import BlogPostCard from "@/components/BlogPostCard.vue";
+import NewBlogPost from "@/components/NewBlogPost.vue";
 
 const limit = 1;
 export default {
@@ -52,6 +55,7 @@ export default {
     components: {
       PageHeader,
       BlogPostCard,
+      NewBlogPost,
     },
 
     methods: {

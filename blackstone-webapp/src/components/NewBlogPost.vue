@@ -37,6 +37,11 @@
 				</b-form-group>
 
 
+        <b-form-group id="input-group-4" label="Post Content:" label-for="input-4">
+					<vue-editor id="input-4" v-model="content"></vue-editor>
+				</b-form-group>
+        
+
         <b-button type="submit" variant="success">Submit</b-button>
         <b-button type="reset" variant="danger">Reset</b-button>
 			</b-form>
@@ -45,6 +50,8 @@
 </template>
 
 <script>
+import { VueEditor } from "vue2-editor";
+
 export default {
   name: "NewBlogPost",
   data() {
@@ -52,8 +59,11 @@ export default {
         title: '',
         subtitle: '',
         name: '',
-        post: '',
+        content: '<h1>Some initial content</h1>',
       }
+  },
+  components: {
+    VueEditor,
   },
 	methods: {
 		onSubmit(evt) {
@@ -65,7 +75,7 @@ export default {
 			this.title = "";
       this.subtitle = "";
       this.name = "";
-			this.post = "";
+			this.content = "";
 		},
 	},
 };
@@ -73,7 +83,7 @@ export default {
 
 <style scoped>
 .post_form {
-  width: 800px; 
+  max-width: 800px; 
   text-align: left;
   padding: 1.5rem;
 }
