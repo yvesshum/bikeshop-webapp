@@ -172,8 +172,7 @@ def main():
             ydict = y.to_dict()
             for key in ydict.keys():
                 newYouth[key] = ydict[key]
-            newYouth.pop('Year Started', None)
-            newYouth.pop('Race', None)
+            # newYouth.pop('Race', None)   # Should add race back in once figured out how to handle unfamiliar inputs
             youth_ref.set(newYouth)
         else:
             youth_ref.set(newYouth)
