@@ -38,7 +38,7 @@
 
 
         <b-form-group id="input-group-4" label="Post Content:" label-for="input-4">
-					<vue-editor id="input-4" v-model="content"></vue-editor>
+					<RichTextEditor id="input-4"/>
 				</b-form-group>
         
 
@@ -50,7 +50,7 @@
 </template>
 
 <script>
-import { VueEditor } from "vue2-editor";
+import RichTextEditor from "@/components/RichTextEditor.vue";
 
 export default {
   name: "NewBlogPost",
@@ -59,11 +59,10 @@ export default {
         title: '',
         subtitle: '',
         name: '',
-        content: '<h1>Some initial content</h1>',
       }
   },
   components: {
-    VueEditor,
+    RichTextEditor,
   },
 	methods: {
 		onSubmit(evt) {
