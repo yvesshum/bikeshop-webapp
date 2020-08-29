@@ -78,34 +78,64 @@
         <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
       </div>
       <div v-else>
-        <b-button disabled>Use the left column above to add & remove skills</b-button>
+        <b-button disabled>Use the <i>Achieved?</i> column above to add & remove skills</b-button>
       </div>
     </div>
 
     <b-modal v-model="change_skills_modal">
       <template slot="modal-title">
-        Please confirm the following.
+        <h2 style="color:black;">{{change_skills_effect ? "Save" : "Discard"}} Changes</h2>
       </template>
 
-      <h4>The following changes will be {{change_skills_effect ? "saved" : "discarded"}}:</h4>
-      <br />
+      <div v-if="skills_to_add.length > 0">
 
-      <table style="margin: auto;">
-        <tr>
-          <th class="change_modal_header">Removed Skills</th>
-          <th class="change_modal_header">Added Skills</th>
-        </tr>
-        <tr>
-          <td class="change_modal_cell_remove">
-            <div v-for="skill in skills_to_remove">{{skill}}</div>
-          </td>
-          <td class="change_modal_cell_add">
-            <ul>
-              <li v-for="skill in skills_to_add">{{skill}}</li>
-            </ul>
-          </td>
-        </tr>
-      </table>
+        <p>
+          The following skills will {{change_skills_effect ? "be " : ""}}<b>{{change_skills_effect ? "added " : "not be added "}}</b>to {{youth_name}}'s profile.
+        </p>
+
+        <table style="margin: auto;">
+          <tr>
+            <td class="change_modal_header" style="width:25%">Apron Color</td>
+            <td class="change_modal_header" style="width:50%">Skill Name</td>
+            <td class="change_modal_header" style="width:25%">Skill Category</td>
+          </tr>
+          <tr v-for="(skill, index) in skills_to_add" class="change_modal_cell_add">
+            <td v-if="index == 0 || skills_to_add[index-1].color != skill.color" :rowspan="add_row_spans[index]" style="border-right: 1px solid black;">
+              <ApronImg :color="apron_name_to_color(skill.color, 'color')" :size="48" style="margin-top: 10px;" />
+              {{skill.color}}
+            </td>
+            <td>{{skill.name}}</td>
+            <td>{{skill.category}}</td>
+          </tr>
+        </table>
+
+      </div>
+
+      <br>
+
+      <div v-if="skills_to_remove.length > 0">
+
+        <p>
+          The following skills will {{change_skills_effect ? "be " : ""}}<b>{{change_skills_effect ? "removed from " : "remain in "}}</b> {{youth_name}}'s profile.
+        </p>
+
+        <table style="margin: auto;">
+          <tr>
+            <td class="change_modal_header" style="width:25%">Apron Color</td>
+            <td class="change_modal_header" style="width:50%">Skill Name</td>
+            <td class="change_modal_header" style="width:25%">Skill Category</td>
+          </tr>
+          <tr v-for="(skill, index) in skills_to_remove" class="change_modal_cell_remove">
+            <td v-if="index == 0 || skills_to_remove[index-1].color != skill.color" :rowspan="remove_row_spans[index]" style="border-right: 1px solid black;">
+              <ApronImg :color="apron_name_to_color(skill.color, 'color')" :size="48" style="margin-top: 10px;" />
+              {{skill.color}}
+            </td>
+            <td>{{skill.name}}</td>
+            <td>{{skill.category}}</td>
+          </tr>
+        </table>
+
+      </div>
 
       <template slot="modal-footer" slot-scope="{cancel}">
         <b-button class="mt-3" block @click="accept_skills_modal" :variant="change_skills_effect ? 'success' : 'danger'">
@@ -209,6 +239,9 @@ export default {
 
       loaded_apron_skills: null,
       loaded_apron_colors: [],
+
+      add_row_spans: [],
+      remove_row_spans: [],
     }
   },
 
@@ -310,14 +343,54 @@ export default {
       return this.skills_to_add.length > 0 || this.skills_to_remove.length > 0;
     },
 
-    // TODO: Attach the type of the skill (mechanical, life, etc) to these objects
+
     skills_to_add: function() {
-      return (this.changed_skills == null) ? [] : this.changed_skills.add;
+
+      if (this.changed_skills == null) return [];
+
+      this.add_row_spans = [];
+
+      var spans = this.changed_skills.add.reduce((acc, curr, i) => {
+        let color = curr.getData().color;
+        if (acc.color != color) {
+          acc.color = color;
+          acc.spans.push({index: i, num: 1});
+        }
+        else {
+          acc.spans[acc.spans.length-1].num ++;
+        }
+        return acc;
+      }, {color: null, spans: []}).spans;
+
+      spans.forEach(({index, num}) => this.add_row_spans[index] = num);
+
+      return this.changed_skills.add.map(row => row.getData());
     },
 
+
     skills_to_remove: function() {
-      return (this.changed_skills == null) ? [] : this.changed_skills.rem;
+
+      if (this.changed_skills == null) return [];
+
+      this.rem_row_spans = [];
+
+      var spans = this.changed_skills.rem.reduce((acc, curr, i) => {
+        let color = curr.getData().color;
+        if (acc.color != color) {
+          acc.color = color;
+          acc.spans.push({index: i, num: 1});
+        }
+        else {
+          acc.spans[acc.spans.length-1].num ++;
+        }
+        return acc;
+      }, {color: null, spans: []}).spans;
+
+      spans.forEach(({index, num}) => this.remove_row_spans[index] = num);
+
+      return this.changed_skills.rem.map(row => row.getData());
     },
+
 
     allow_edits: function() {
       return this.allowEdits != undefined;
@@ -368,6 +441,11 @@ export default {
     get_apron_property: function(level, prop) {
       if (this.apron_colors == null || this.apron_colors[level] == null) return "";
       return this.apron_colors[level][prop];
+    },
+
+    apron_name_to_color: function(name) {
+      var level = this.apron_colors.map(c => c.name).indexOf(name);
+      return this.get_apron_property(level, "color");
     },
 
     get_skill_name: function(color, group, index) {
