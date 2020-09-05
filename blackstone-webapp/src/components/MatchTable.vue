@@ -21,7 +21,28 @@ export default {
     Table,
   },
 
-  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable', 'args'],
+  props: {
+    fullData: {
+      type: Array
+    },
+
+    checkedData: {
+      type: Array
+    },
+
+    headingData: {},
+
+    matchBy: {
+      type: [String, Array],
+    },
+
+    editable: {
+      type: Boolean,
+      default: false,
+    },
+
+    args: {},
+  },
 
   data: function() {
     return {
@@ -121,7 +142,39 @@ export default {
   computed: {
     table_data: function() {
       return this.fullData.map(c => {
-        return {achieved: this.checkedData.includes(c[this.matchBy]), ...c};
+
+        var achieved = false;
+
+        // matchBy     -> ["name", "category", "color"]
+        // checkedData -> [{name, category, color}, {name, category, color}]
+        // c           -> {name: ???, category: ???, color: ???}
+
+        // If matching by an array, check each element
+        if (Array.isArray(this.matchBy)) {
+
+          var matchByFields = this.matchBy.map(field => c[field]);
+
+          // Loop through until a match is found
+          for (var i = 0; i < this.checkedData.length; i++) {
+            var thing = true;
+
+            for (var j = 0; j < this.matchBy.length; j++) {
+              thing = thing && (matchByFields[j] == this.checkedData[i][j]);
+            }
+
+            if (thing) {
+              achieved = true;
+              break;
+            }
+          }
+        }
+
+        // If matching by a string, can just check for that field's value
+        else if (typeof this.matchBy === "string") {
+          return this.checkedData.includes(c[this.matchBy]);
+        }
+
+        return {achieved, ...c};
       })
     },
 

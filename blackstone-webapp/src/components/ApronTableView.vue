@@ -9,7 +9,7 @@
       :headingData="headers"
       :args="table_args"
       editable
-      matchBy="name"
+      :matchBy="['name', 'category', 'color']"
       @selected="s => selected_skills = s"
       @changes="handle_changes"
       @table="handle_table"
@@ -181,7 +181,9 @@ export default {
         if (this.achievedSkills[color.name] !== undefined) {
 
           forKeyVal(this.achievedSkills[color.name].Skills, (category, skills) => {
-            result = result.concat(skills);
+            skills.forEach(skill => {
+              result.push([skill, category, color.name]);
+            })
           });
         }
       });
