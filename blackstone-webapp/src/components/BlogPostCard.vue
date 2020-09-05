@@ -29,15 +29,15 @@
         </b-modal>
 
         <!-- Edit modal -->
-        <b-modal title="Title" v-model="showEditModal" size="xl" hide-footer hide-header no-fade>
-            <NewBlogPost
-                :title="PostObj.title"
-                :subtitle="PostObj.subtitle"
-                :name="PostObj.posterName"
-                :content="PostObj.content"
-                :submitCallback="handleBlogEdit"
-            />
-        </b-modal>
+        <NewBlogPost
+            :title="PostObj.title"
+            :subtitle="PostObj.subtitle"
+            :name="PostObj.posterName"
+            :content="PostObj.content"
+            :show="showEditModal"
+            @close="showEditModal = false"
+            :submitCallback="handleNewBlogPage"
+        />
 
         <!-- Msg -->
         <b-modal v-model="modal.msg.visible" hide-footer lazy>

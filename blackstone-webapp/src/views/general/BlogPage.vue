@@ -18,10 +18,6 @@
             <NewBlogPost
                 :show="showPostForm"
                 @close="showPostForm = false"
-                title="Some title"
-                subtitle="Some subtitle"
-                name="Yves"
-                content="<h2>hi</h2>"
                 :submitCallback="handleNewBlogPage"
             />
 
