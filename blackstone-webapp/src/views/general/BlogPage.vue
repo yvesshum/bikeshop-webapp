@@ -2,11 +2,11 @@
     <div>
         <div v-if="ready">
             <top-bar />
+            <h1 class="title">{{ this.blog.name }}</h1>
             <PageHeader
                 :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
                 pageName="Blog Page"
             ></PageHeader>
-            <h1 class="title">{{ this.blog.name }}</h1>
             <p>{{this.blog.description}}</p>
             <!-- Blog post cards -->
             <div style="padding: 0 1rem">
@@ -15,7 +15,7 @@
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
 
-            <NewBlogPost title="Some title" subtitle="Some subtitle" name="Yves" content="<h2>hi</h2>"/>
+            <NewBlogPost :submitCallback="handleNewBlogPage" />
 
             <Footer />
         </div>
@@ -101,6 +101,7 @@ export default {
                 return {
                     id: doc.id,
                     ...doc.data(),
+                    parentBlogID: this.blog.id,
                 };
             });
         },
@@ -114,6 +115,8 @@ export default {
         closeMsgModal() {
             this.modal.msg.visible = false;
         },
+
+        async handleNewBlogPage() {},
     },
 
     async mounted() {

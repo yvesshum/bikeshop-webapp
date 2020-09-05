@@ -1,18 +1,18 @@
 <template>
-    <div>
+    <div v-if="ready">
         <b-card class="post_card">
-            <span class="delete_button" @click="handlePostDelete(Post.id)" v-if="isStaff">Delete</span>
-            <div class="container" @click="viewBlogPost(Post.id)">
+            <span class="delete_button" @click="handlePostDelete(PostObj.id)" v-if="isStaff">Delete</span>
+            <div class="container" @click="viewBlogPost(PostObj.id)">
                 <b-row style="margin: 1.25rem 0; width: 100%;">
                     <b-col class="blog_post_image" cols="3"></b-col>
                     <b-col style="margin-left: 1rem; text-align: left;" cols="9">
                         <b-card-title style="padding-right: 1.5rem">
                             {{
-                            Post.title
+                            PostObj.title
                             }}
                         </b-card-title>
                         <b-card-sub-title style="margin-bottom: 8px;">
-                            <i>By {{ Post.posterName }}</i>
+                            <i>By {{ PostObj.posterName }}</i>
                         </b-card-sub-title>
                         <b-card-sub-title>Posted {{ posted }}</b-card-sub-title>
                     </b-col>
@@ -22,10 +22,47 @@
 
         <!-- Post modal -->
         <b-modal title="Title" v-model="showPostModal" size="xl" hide-footer hide-header no-fade>
-            <BlogPostContent :post="Post" :closeHandler="closePostModal" />
+            <BlogPostContent :post="PostObj" :closeHandler="closePostModal" />
             <b-button id="editButton" variant="info" @click="onEditClicked" v-show="isStaff">
                 <font-awesome-icon icon="pen" class="icon alt" />
             </b-button>
+        </b-modal>
+
+        <!-- Edit modal -->
+        <b-modal title="Title" v-model="showEditModal" size="xl" hide-footer hide-header no-fade>
+            <NewBlogPost
+                :title="PostObj.title"
+                :subtitle="PostObj.subtitle"
+                :name="PostObj.posterName"
+                :content="PostObj.content"
+                :submitCallback="handleBlogEdit"
+            />
+        </b-modal>
+
+        <!-- Msg -->
+        <b-modal v-model="modal.msg.visible" hide-footer lazy>
+            <template slot="modal-title">{{modal.msg.title}}</template>
+            <div class="d-block text-center">
+                <h3>{{modal.msg.text}}</h3>
+            </div>
+            <b-button class="mt-3" block @click="closeMsgModal" variant="primary">ok!</b-button>
+        </b-modal>
+
+        <!-- Loading -->
+        <b-modal
+            v-model="modal.loading.visible"
+            hide-footer
+            lazy
+            hide-header-close
+            no-close-on-esc
+            no-close-on-backdrop
+        >
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </div>
         </b-modal>
     </div>
 </template>
@@ -34,6 +71,8 @@
 import BlogPostContent from "@/components/BlogPostContent.vue";
 import moment from "moment";
 import { isStaff } from "@/scripts/getPrivilege.js";
+import NewBlogPost from "@/components/NewBlogPost.vue";
+import { db } from "@/firebase.js";
 export default {
     name: "BlogPostCard",
 
@@ -44,12 +83,25 @@ export default {
     data() {
         return {
             showPostModal: false,
+            showEditModal: false,
             isStaff: false,
+            ready: false,
+            modal: {
+                msg: {
+                    visible: false,
+                    title: "",
+                    text: "",
+                },
+                loading: {
+                    visible: false,
+                },
+            },
+            PostObj: {},
         };
     },
     computed: {
         posted: function () {
-            return moment(this.Post.time.toDate()).format(
+            return moment(this.PostObj.time.toDate()).format(
                 "MMM dd, YY, hh:mm a"
             );
         },
@@ -71,15 +123,49 @@ export default {
 
         onEditClicked() {
             console.log("clicked");
+            this.showEditModal = true;
+        },
+
+        async handleBlogEdit(blogObj) {
+            this.showEditModal = false;
+            this.modal.loading.visible = true;
+            try {
+                await db
+                    .collection("GlobalBlogs")
+                    .doc(this.PostObj.parentBlogID)
+                    .collection("Posts")
+                    .doc(this.PostObj.id)
+                    .update(blogObj);
+            } catch (error) {
+                window.alert(`An error has occured. Error: ${error}`);
+                return;
+            }
+            console.log("old post obj", this.PostObj);
+            this.PostObj = {
+                ...this.PostObj,
+                ...blogObj,
+            };
+
+            this.modal.msg.title = "Success";
+            this.modal.msg.text = "Succesfully edited the blog post";
+            this.modal.loading.visible = false;
+            this.modal.msg.visible = true;
+        },
+
+        closeMsgModal() {
+            this.modal.msg.visible = false;
         },
     },
 
     async mounted() {
         this.isStaff = await isStaff();
+        this.PostObj = this.Post;
+        this.ready = true;
     },
 
     components: {
         BlogPostContent,
+        NewBlogPost,
     },
 };
 </script>
