@@ -262,7 +262,19 @@ export default {
               (acc, curr) => acc += (is_achieved_func(curr) ? 1 : 0)
               , 0
             );
-            return `${value} Apron Skills <span style='float:right;'>${num_achieved}/${count} Achieved</span>`;
+
+            var apron_level = this.achievedSkills[value];
+
+            // If applicable, display the date this apron level was earned
+            if (apron_level != undefined && apron_level.Achieved !== false) {
+              let date = new Date(apron_level.Achieved.seconds * 1000);
+              return `${value} Apron Skills <span style='float:right;'>Earned ${date.toDateString()} &mdash; ${num_achieved}/${count} Achieved</span>`;
+            }
+
+            // Otherwise, just display the name and the number achieved
+            else {
+              return `${value} Apron Skills <span style='float:right;'>${num_achieved}/${count} Achieved</span>`;
+            }
           },
         };
       };
