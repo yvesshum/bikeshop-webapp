@@ -24,6 +24,7 @@ import {db} from '@/firebase';
 import {firebase} from '@/firebase';
 import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
+import {forKeyVal} from '@/scripts/ParseDB.js';
 import {forEach_ObjObjArr} from '@/scripts/ParseDB.js';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
@@ -170,13 +171,21 @@ export default {
     },
 
     achieved_skills_table: function() {
+
+      if (this.achievedSkills == null) return [];
+
       let result = [];
-      forEach_ObjObjArr(this.achievedSkills, (color, group, index, entry) => {
-        // If the youth has this skill, add it to the list
-        if (entry) {
-          result.push(this.get_skill_name(color, group, index));
+
+      this.apronColors.forEach(color => {
+
+        if (this.achievedSkills[color.name] !== undefined) {
+
+          forKeyVal(this.achievedSkills[color.name].Skills, (category, skills) => {
+            result = result.concat(skills);
+          });
         }
       });
+
       return result;
     },
 
