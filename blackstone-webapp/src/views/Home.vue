@@ -65,7 +65,7 @@
                         <b-collapse id="accordion-12" accordion="my-accordion" role="tabpanel">
                             <b-card-body>
                                 <button
-                                    onclick="location.href='/blog-page-manager'"
+                                    onclick="location.href='/blog-page-list'"
                                     class="btn btn-outline-info btn-block"
                                     type="button"
                                 >Blog pages</button>
