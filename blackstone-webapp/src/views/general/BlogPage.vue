@@ -2,11 +2,12 @@
     <div>
         <div v-if="ready">
             <top-bar />
-            <h1 class="title">{{ this.blog.name }}</h1>
             <PageHeader
                 :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
                 pageName="Blog Page"
             ></PageHeader>
+            <h1 class="title">{{ this.blog.name }}</h1>
+            <p>{{this.blog.description}}</p>
             <!-- Blog post cards -->
             <div style="padding: 0 1rem">
                 <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" />
