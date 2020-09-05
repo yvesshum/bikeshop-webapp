@@ -1,7 +1,6 @@
 <template>
   <b-container>
-    <b-button variant="success" style="margin: 1rem;" @click="showForm = true">Add New Blog</b-button>
-    <b-modal v-model="showForm" size="lg" :hide-footer="true">
+    <b-modal v-model="showModal" size="lg" @hidden="closeModal" :hide-footer="true">
       <div style="padding: 1rem 2rem;">
       <b-card-title style="margin-bottom: 1rem">Create a blog post!</b-card-title>
       <b-form @submit="onSubmit" @reset="onReset">
@@ -58,6 +57,7 @@ import { VueEditor } from "vue2-editor";
 export default {
   name: "NewBlogPost",
   props: {
+    show: Boolean,
     title: {
       default: "",
       type: String
@@ -75,9 +75,16 @@ export default {
       type: String
     }
   },
+  watch: {
+    show: function(newVal) {
+      if (newVal) {
+        this.showModal = true;
+      }
+    }
+  },
   data() {
     return {
-      showForm: false,
+      showModal: false,
       blogTitle: this.title,
       blogSubtitle: this.subtitle,
       blogPosterName: this.name,
@@ -100,6 +107,9 @@ export default {
     VueEditor,
   },
   methods: {
+    closeModal() {
+      this.$emit('close');
+    },
     onSubmit(evt) {
       evt.preventDefault();
       alert(this.title);
@@ -116,12 +126,6 @@ export default {
 </script>
 
 <style scoped>
-.post_form {
-  max-width: 800px;
-  text-align: left;
-  padding: 1.5rem;
-}
-
 .form-group {
   margin-bottom: 1.25rem;
 }

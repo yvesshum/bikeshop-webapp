@@ -14,7 +14,13 @@
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
 
-            <NewBlogPost title="Some title" subtitle="Some subtitle" name="Yves" content="<h2>hi</h2>"/>
+            <NewBlogPost :show="showPostForm" @close="showPostForm = false"
+              title="Some title" subtitle="Some subtitle" name="Yves" content="<h2>hi</h2>"/>
+
+             <!-- New Post Button -->
+            <b-button id="newPostButton" variant="success" @click="showPostForm = true">
+              <font-awesome-icon icon="plus" class="icon alt" />
+            </b-button>
 
             <Footer />
         </div>
@@ -47,6 +53,7 @@ export default {
     name: "BlogPage",
     data() {
         return {
+            showPostForm: false,
             ready: false,
             isStaff: false,
             blog: {
@@ -143,5 +150,14 @@ export default {
 <style scoped>
 .postHeader {
     width: 100%;
+}
+
+#newPostButton {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
 }
 </style>
