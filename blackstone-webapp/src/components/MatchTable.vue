@@ -46,14 +46,15 @@ export default {
 
           this.row_status.set(row_id, new_status);
 
-          var changes = {
-            "add": this.row_status.filter(Status.ADD),
-            "rem": this.row_status.filter(Status.REM),
-            "use": this.row_status.filter(Status.O),
-            "not": this.row_status.filter(Status.X),
-          };
+          var add = this.table.getRows().filter(row =>
+            this.row_status.is_status(row.getData()[this.matchBy], Status.ADD)
+          );
 
-          this.$emit("changes", changes);
+          var rem = this.table.getRows().filter(row =>
+            this.row_status.is_status(row.getData()[this.matchBy], Status.REM)
+          );
+
+          this.$emit("changes", {add, rem});
         },
       },
 
