@@ -81,10 +81,6 @@ export default {
 
   data: function() {
     return {
-      headers: [
-        {title:"Name", field:"name"},
-        {title:"Category", field:"category", width: 200},
-      ],
 
       change_level_modal: false,
       change_level_effect: 0,
@@ -207,6 +203,28 @@ export default {
 
     allow_edits: function() {
       return this.allowEdits != undefined;
+    },
+
+
+
+    // The headers to use in the table
+    headers: function() {
+
+      // Custom sorter that ensures apron color groups stay in proper order regardless of sort
+      var sorter = (a, b, aRow, bRow, column, dir, sorterParams) => {
+        var aColor = aRow.getData().color;
+        var bColor = bRow.getData().color;
+        if (aColor !== bColor) {
+          return this.apronColors.indexOf(aColor) - this.apronColors.indexOf(bColor);
+        }
+        return a.localeCompare(b);
+      }
+
+      // The headers
+      return [
+        {title:"Name", field:"name", sorter: sorter},
+        {title:"Category", field:"category", width: 200, sorter: sorter},
+      ];
     },
 
 
