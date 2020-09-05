@@ -15,7 +15,7 @@
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
 
-            <NewBlogPost />
+            <NewBlogPost title="Some title" subtitle="Some subtitle" name="Yves" content="<h2>hi</h2>"/>
 
             <Footer />
         </div>

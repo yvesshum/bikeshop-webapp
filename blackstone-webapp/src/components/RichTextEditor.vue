@@ -11,7 +11,7 @@ export default {
   name: "RichTextEditor",
   data() {
     return {
-      content: "<h1>Some example content</h1>",
+      content: "",
       customToolbar: [
         [{ header: [false, 1, 2, 3, 4, 5, 6] }],
         ["bold", "italic", "underline"],
