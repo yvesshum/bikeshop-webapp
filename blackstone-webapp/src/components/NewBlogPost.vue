@@ -129,12 +129,12 @@ export default {
         closeMsgModal() {
             this.modal.msg.visible = false;
         },
-        watch: {
-            show: function (newVal) {
-                if (newVal) {
-                    this.showModal = true;
-                }
-            },
+    },
+    watch: {
+        show: function (newVal) {
+            if (newVal) {
+                this.showModal = true;
+            }
         },
     },
 };
