@@ -3,8 +3,11 @@
         <div class="content">
             <top-bar />
             <!-- Manage blog pages -->
-            <h1 class="title">Blog Page Manager</h1>
-            <PageHeader pageCategory="Staff Headers" pageName="Blog Page Manager"></PageHeader>
+            <h1 class="title">Blog Page {{isStaff ? "Manager" : "List"}}</h1>
+            <PageHeader
+                :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
+                :pageName="isStaff ? 'Blog Page Manager' : 'Blog Page List'"
+            ></PageHeader>
             <div v-for="blog in groupedBlogs" :key="blog.id">
                 <div class="border d-flex rounded cardContainer">
                     <div style="flex: 4; align-items: flex-start">
@@ -18,13 +21,21 @@
                     </div>
                     <div stlye="flex: 1" class="d-flex flex-column justify-content-around">
                         <b-button variant="info" @click="handleViewClicked(blog.id)">view</b-button>
-                        <b-button variant="primary" @click="handleEditClicked(blog.id)">edit</b-button>
-                        <b-button variant="danger" @click="handleDeleteClicked(blog.id)">delete</b-button>
+                        <b-button
+                            v-if="isStaff"
+                            variant="primary"
+                            @click="handleEditClicked(blog.id)"
+                        >edit</b-button>
+                        <b-button
+                            v-if="isStaff"
+                            variant="danger"
+                            @click="handleDeleteClicked(blog.id)"
+                        >delete</b-button>
                     </div>
                 </div>
             </div>
             <br />
-            <b-button variant="success" @click="handleAddClicked">Add a new blog</b-button>
+            <b-button v-if="isStaff" variant="success" @click="handleAddClicked">Add a new blog</b-button>
         </div>
         <Footer />
 
@@ -137,6 +148,7 @@
 
 <script>
 import { db } from "../../firebase";
+import { isStaff } from "@/scripts/getPrivilege.js";
 import PageHeader from "@/components/PageHeader.vue";
 import { chunk } from "lodash";
 import { deleteCollection } from "@/scripts/dbUtils.js";
@@ -147,6 +159,7 @@ export default {
         return {
             blogs: {},
             ready: false,
+            isStaff: false,
             unsubscribe: null,
             modal: {
                 add: {
@@ -215,7 +228,7 @@ export default {
         },
 
         handleViewClicked(id) {
-            location.href = `/blog-page?id=${id}`
+            location.href = `/blog-page?id=${id}`;
         },
 
         handleDeleteClicked(blogID) {
@@ -262,7 +275,7 @@ export default {
                 return null;
             }
             this.modal.msg.title = "Success!";
-            this.modal.msg.text = "Successfully edited a new blog";
+            this.modal.msg.text = "Successfully edited the blog";
             this.modal.loading.visible = false;
             this.modal.msg.visible = true;
         },
@@ -325,6 +338,8 @@ export default {
     },
 
     async mounted() {
+        this.isStaff = await isStaff();
+
         this.unsubscribe = db
             .collection("GlobalBlogs")
             .onSnapshot((blogSnapshot) => {
