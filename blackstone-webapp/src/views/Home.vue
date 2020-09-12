@@ -314,7 +314,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 a,
 a:hover,
 a:active,
