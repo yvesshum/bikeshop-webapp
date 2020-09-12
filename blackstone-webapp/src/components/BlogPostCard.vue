@@ -227,7 +227,7 @@ export default {
 
 .post_card {
     max-width: 600px;
-    margin: 1.5rem auto;
+    margin: 1rem auto;
     float: none;
 }
 

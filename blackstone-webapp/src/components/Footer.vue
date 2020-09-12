@@ -10,7 +10,7 @@
     }
 </script>
 
-<style scoped>
+<style>
 
 footer {
     text-align: center;
@@ -19,6 +19,10 @@ footer {
     color: grey;
     padding: 2.5rem 0 2rem 0;
     width: 100%;
+}
+
+.content {
+  min-height: calc(100vh - 110px);
 }
 
 </style>
