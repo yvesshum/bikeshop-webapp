@@ -1,6 +1,7 @@
 <template>
     <div>
-        <div v-if="ready">
+      <div v-if="ready">
+        <div class="content">
             <top-bar />
             <h1 class="title">{{ this.blog.name }}</h1>
             <PageHeader
@@ -25,7 +26,8 @@
             <b-button id="newPostButton" variant="success" @click="showPostForm = true">
                 <font-awesome-icon icon="plus" class="icon alt" />
             </b-button>
-
+            
+            </div>
             <Footer />
         </div>
         <div v-else>

@@ -15,10 +15,10 @@
 footer {
     text-align: center;
     font-size: 15px;
-  background-color: #fff;
+    background-color: #fff;
     color: grey;
-  padding: 2.5rem 0 2rem 0;
-  width: 100%;
+    padding: 2.5rem 0 2rem 0;
+    width: 100%;
 }
 
 </style>
