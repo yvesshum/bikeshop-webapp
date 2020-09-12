@@ -27,6 +27,7 @@
                 id="newPostButton"
                 variant="success"
                 @click="showPostForm = true"
+                v-if="isStaff"
             >
                 <font-awesome-icon icon="plus" class="icon alt" />
             </b-button>
