@@ -75,7 +75,7 @@ export default {
             default: "",
             type: String,
         },
-        editCallback: {
+        submitCallback: {
             default: () => {},
             type: Function,
         },
@@ -116,6 +116,7 @@ export default {
                 subtitle: this.blogSubtitle,
                 title: this.blogTitle,
             });
+            this.onReset(evt)
         },
 
         onReset(evt) {
@@ -134,6 +135,8 @@ export default {
         show: function (newVal) {
             if (newVal) {
                 this.showModal = true;
+            } else {
+                this.showModal = false;
             }
         },
     },

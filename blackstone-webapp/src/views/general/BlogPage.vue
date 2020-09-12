@@ -8,10 +8,10 @@
                 :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
                 pageName="Blog Page"
             ></PageHeader>
-            <p>{{this.blog.description}}</p>
+            <p>{{ this.blog.description }}</p>
             <!-- Blog post cards -->
             <div style="padding: 0 1rem">
-                <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" />
+                <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" :deleteCallback="postDeleteCallback"/>
             </div>
 
             <b-button @click="fetchMoreBlogs">load more blogs</b-button>
@@ -19,11 +19,15 @@
             <NewBlogPost
                 :show="showPostForm"
                 @close="showPostForm = false"
-                :submitCallback="handleNewBlogPage"
+                :submitCallback="handleNewBlogPost"
             />
 
             <!-- New Post Button -->
-            <b-button id="newPostButton" variant="success" @click="showPostForm = true">
+            <b-button
+                id="newPostButton"
+                variant="success"
+                @click="showPostForm = true"
+            >
                 <font-awesome-icon icon="plus" class="icon alt" />
             </b-button>
             
@@ -38,23 +42,42 @@
 
         <!-- Msg -->
         <b-modal v-model="modal.msg.visible" hide-footer lazy>
-            <template slot="modal-title">{{modal.msg.title}}</template>
+            <template slot="modal-title">{{ modal.msg.title }}</template>
             <div class="d-block text-center">
-                <h3>{{modal.msg.text}}</h3>
+                <h3>{{ modal.msg.text }}</h3>
             </div>
-            <b-button class="mt-3" block @click="closeMsgModal" variant="primary">ok!</b-button>
+            <b-button class="mt-3" block @click="closeMsgModal" variant="primary"
+                >ok!</b-button
+            >
+        </b-modal>
+
+        <!-- Loading -->
+        <b-modal
+            v-model="modal.loading.visible"
+            hide-footer
+            lazy
+            hide-header-close
+            no-close-on-esc
+            no-close-on-backdrop
+        >
+            <div class="d-block text-center">
+                <div slot="table-busy" class="text-center text-danger my-2">
+                    <b-spinner class="align-middle"></b-spinner>
+                    <strong>Loading...</strong>
+                </div>
+            </div>
         </b-modal>
     </div>
 </template>
 
 <script>
-import { db } from "../../firebase";
+import { db, Timestamp } from "../../firebase";
 import PageHeader from "@/components/PageHeader.vue";
 import BlogPostCard from "@/components/BlogPostCard.vue";
 import NewBlogPost from "@/components/NewBlogPost.vue";
 import { isStaff } from "@/scripts/getPrivilege.js";
 
-const limit = 1;
+const limit = 10;
 export default {
     name: "BlogPage",
     data() {
@@ -76,6 +99,9 @@ export default {
                     text: "",
                     visible: false,
                 },
+                loading: {
+                    visible: false
+                }
             },
         };
     },
@@ -101,11 +127,10 @@ export default {
                 postQuery = await ref.startAfter(lastSeenDocSnapshot).get();
             }
             if (!postQuery.empty) {
-                this.lastSeenDocSnapshot =
-                    postQuery.docs[postQuery.docs.length - 1];
+                this.lastSeenDocSnapshot = postQuery.docs[postQuery.docs.length - 1];
             } else {
                 this.modal.msg.title = "";
-                this.modal.msg.text = "No posts found!";
+                this.modal.msg.text = "All posts are retreived";
                 this.modal.msg.visible = true;
             }
 
@@ -128,7 +153,36 @@ export default {
             this.modal.msg.visible = false;
         },
 
-        async handleNewBlogPage() {},
+        async handleNewBlogPost(postObj) {
+            this.showPostForm = false;
+            this.modal.loading.visible = true;
+
+            try {
+                await db
+                    .collection("GlobalBlogs")
+                    .doc(this.blog.id)
+                    .collection("Posts")
+                    .add({
+                        ...postObj,
+                        time: Timestamp.fromDate(new Date()),
+                    });
+            }
+            catch (error) {
+                window.alert(error)    
+                return null;
+            }
+
+            this.blogPosts = await this.getBlogPosts(null)
+
+            this.modal.loading.visible = false;
+            this.modal.msg.text = "Successfully added a new post "
+            this.modal.msg.title = "Success"
+            this.modal.msg.visible = true
+        },
+
+        async postDeleteCallback(postObj) {
+            this.blogPosts = await this.getBlogPosts(null)
+        }
     },
 
     async mounted() {

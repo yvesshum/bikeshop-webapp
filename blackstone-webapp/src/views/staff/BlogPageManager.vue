@@ -147,7 +147,8 @@
 </template>
 
 <script>
-import { db } from "../../firebase";
+import { db, Timestamp } from "../../firebase";
+
 import { isStaff } from "@/scripts/getPrivilege.js";
 import PageHeader from "@/components/PageHeader.vue";
 import { chunk } from "lodash";
@@ -246,6 +247,7 @@ export default {
                 await db.collection("GlobalBlogs").add({
                     name,
                     description,
+                    created: Timestamp.fromDate(new Date())
                 });
             } catch (error) {
                 window.alert(`An error has occured. Error: ${error}.`);
