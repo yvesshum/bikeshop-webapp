@@ -9,8 +9,8 @@
             <p class="posted">Posted {{ posted }}</p>
             <p class="posted">by {{ post.posterName }}</p>
         </div>
-
-        <p v-html="post.content"></p>
+        <hr class="divider">
+        <span v-html="post.content"></span>
     </div>
 </template>
 
@@ -23,12 +23,6 @@ export default {
     props: {
         post: Object,
         closeHandler: Function,
-    },
-
-    watch: {
-        post: function (newv, old) {
-            console.warn("changed!", newv, old);
-        },
     },
 
     computed: {
@@ -72,5 +66,9 @@ export default {
     position: absolute;
     top: 5pt;
     right: 5pt;
+}
+
+.divider {
+      width: 100%
 }
 </style>
