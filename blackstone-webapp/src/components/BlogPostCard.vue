@@ -117,7 +117,7 @@ export default {
     computed: {
         posted: function () {
             return moment(this.PostObj.time.toDate()).format(
-                "MMM dd, YY, hh:mm a"
+                "ddd, MMM DD YYYY, hh:mm a"
             );
         },
     },

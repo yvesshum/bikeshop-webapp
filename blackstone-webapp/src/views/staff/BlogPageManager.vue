@@ -340,7 +340,7 @@ export default {
     },
 
     async mounted() {
-        this.isStaff = await isStaff();
+        this.isStaff = this.$route.name === "blog-page-manager"
 
         this.unsubscribe = db
             .collection("GlobalBlogs")
