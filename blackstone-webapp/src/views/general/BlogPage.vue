@@ -201,7 +201,6 @@ export default {
             this.blogPosts = posts;
 
             this.isStaff = await isStaff();
-            this.isStaff = false;
         } catch (err) {
         } finally {
             this.ready = true;
