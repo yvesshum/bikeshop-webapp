@@ -320,6 +320,20 @@ export default {
                             await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
                         })
                     )
+                    // Update youth Apron Skills map with new name
+                    let youthApronsSnapshot = await db.collection("GlobalYouthProfile").get()
+                    await Promise.all(
+                        youthApronsSnapshot.docs.map(async doc => {
+                            let youthProfile = doc.data()
+                            if(youthProfile['Apron Skills Alt'] != undefined &&
+                              youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name] != undefined){
+                                let color_data = youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name];
+                                youthProfile['Apron Skills Alt'][this.modal.edit.field_name] = color_data;
+                                delete youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name];
+                                await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
+                            }
+                        })
+                    )
 
                     //Local Update
                     let localUpdateObject = {
@@ -380,6 +394,19 @@ export default {
                             let youthProfile = doc.data()
                             youthProfile['Apron Color'] = "";
                             await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
+                        })
+                    )
+                    
+                    // delete youth Apron Skills with this color
+                    let youthApronsSnapshot = await db.collection("GlobalYouthProfile").get()
+                    await Promise.all(
+                        youthApronsSnapshot.docs.map(async doc => {
+                            let youthProfile = doc.data()
+                            if(youthProfile['Apron Skills Alt'] != undefined &&
+                              youthProfile['Apron Skills Alt'][this.modal.delete.field_name] != undefined){
+                                delete youthProfile['Apron Skills Alt'][this.modal.delete.field_name];
+                                await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
+                            }
                         })
                     )
 

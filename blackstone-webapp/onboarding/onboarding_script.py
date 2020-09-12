@@ -11,6 +11,7 @@ import datetime
 
 def exitWithError():
     print("Usage: python3 onboarding.py -f=filename [-t=overwrite]")
+    print("Requires a blackstone-key.json private key to access firebase with read/write privileges")
     quit()
     
 def isSet(val):
@@ -80,8 +81,10 @@ def main():
       "storageBucket": "blackstone-production.appspot.com"
     }
     
-    cred = credentials.Certificate("blackstone-key.json")
-    firebase_admin.initialize_app(cred, config)
+    try:
+        cred = credentials.Certificate("blackstone-key.json")
+    except:
+        exitWithError()
 
     cloud_db = firestore.client()
     
