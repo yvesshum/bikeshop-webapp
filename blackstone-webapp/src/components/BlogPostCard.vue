@@ -159,6 +159,7 @@ export default {
         },
 
         async handleBlogEdit(blogObj) {
+            this.showPostModal = false
             this.showEditModal = false;
             this.modal.loading.visible = true;
             try {
