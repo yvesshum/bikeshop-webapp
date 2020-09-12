@@ -14,7 +14,7 @@
                 <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" :deleteCallback="postDeleteCallback"/>
             </div>
 
-            <b-button @click="fetchMoreBlogs">load more blogs</b-button>
+            <b-button style="margin-top: 1rem" @click="fetchMoreBlogs">load more blogs</b-button>
 
             <NewBlogPost
                 :show="showPostForm"

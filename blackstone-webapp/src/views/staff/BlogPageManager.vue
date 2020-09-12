@@ -8,11 +8,12 @@
                 :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
                 :pageName="isStaff ? 'Blog Page Manager' : 'Blog Page List'"
             ></PageHeader>
-            <div v-for="blog in groupedBlogs" :key="blog.id">
+            <div class="classBlogsWrapper">
+              <div v-for="blog in groupedBlogs" :key="blog.id">
                 <div class="border d-flex rounded cardContainer">
                     <div style="flex: 4; align-items: flex-start">
                         <div class>
-                            <h1 class="cardText">{{blog.name}}</h1>
+                            <h2 class="cardText">{{blog.name}}</h2>
                             <p class="cardText">{{blog.description}}</p>
                             <p
                                 style="text-align: left; font-style: italic"
@@ -33,6 +34,7 @@
                         >delete</b-button>
                     </div>
                 </div>
+            </div>
             </div>
             <br />
             <b-button v-if="isStaff" variant="success" @click="handleAddClicked">Add a new blog</b-button>
@@ -376,9 +378,13 @@ export default {
 }
 
 .cardContainer {
-    width: 50rem;
+    max-width: 50rem;
     height: 10rem;
     margin: 20px auto;
     padding: 1rem;
+}
+
+.classBlogsWrapper {
+  padding: 0 1rem
 }
 </style>
