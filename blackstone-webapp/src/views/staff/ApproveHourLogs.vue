@@ -635,9 +635,9 @@
 margin-bottom: 1rem;
 position: sticky;
 }
+
 .title {
 margin-bottom: 1rem;
 padding: 0 1rem;
 }
-
 </style>
