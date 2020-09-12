@@ -1,8 +1,9 @@
 <template>
   <div class="profile_field_display">
-
-    {{ value_string }}
-
+    <div v-if="type!='Essay'" >
+      {{ value_string }}
+    </div>
+    <pre v-else class="essay">{{value_string}}</pre>
   </div>
 </template>
 
@@ -56,6 +57,22 @@ export default {
         case "Date":
           let date = get_as_date(val);
           return date.toDateString();
+        
+        case "Essay":
+          let essays = val;
+          var essayText = "";
+          for(const cls in essays){
+            essayText += "Class - " + cls + ":\n";
+            for (const question in essays[cls]){
+              essayText += "\tQuestion: " + question.split("\\n").join("\n\t") + "\n";
+              essayText += "\tAnswer: " + essays[cls][question].split("\\n").join("\n\t") + "\n";
+              essayText += "\t--------\n"
+            }
+          }
+          essayText = essayText.trim();
+          console.log(essayText);
+          return essayText;
+          
 
         // Everything else is fine as is
         default:
@@ -72,5 +89,14 @@ export default {
     border: 2px solid green;
     background-color: lightgreen;
     text-align: center;
+  }
+  
+  .essay {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    overflow-x: auto;
+    display: inline;
+    word-wrap: break-word;
+    text-align: left;
   }
 </style>
