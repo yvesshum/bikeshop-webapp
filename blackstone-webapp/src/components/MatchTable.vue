@@ -271,21 +271,35 @@ export default {
     },
 
     accept_changes: function() {
+
+      // row_status object has a native function to handle accepting changes
       this.row_status.update();
+
+      // Get rid of the bold/highlighting that marks changed rows
       this.table.getRows().forEach(r => r.reformat());
+
+      // Emit that there are now no changes, since all previous changes are now the default
       this.$emit("changes", null);
     },
 
     discard_changes: function() {
+
+      // Reset the row_status object
       this.row_status.reset();
+
+      // Go through each row in the table and reset its "achieved" field to the original value
       this.table.getRows().forEach(row => {
-        let row_data = row.getData();
-        let row_name = this.get_row_id(row_data);
+
+        // Check whether the current row should be achieved or not
+        let row_name = this.get_row_id(row.getData());
         let achieved = this.row_status.is_status(row_name, Status.O);
 
-        this.table.updateData([{...row_data, achieved}]);
+        // Update the row and ensure the change displays
+        row.update({achieved});
         row.reformat();
-      })
+      });
+
+      // Emit that there are no changes
       this.$emit("changes", null);
     },
   },

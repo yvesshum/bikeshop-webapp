@@ -45,6 +45,7 @@
       :achievedColor="achieved_color"
       :showColor="show_color"
       @changed="c => changed_skills = c"
+      @load_complete="a => apron_view = a"
     />
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
@@ -242,6 +243,8 @@ export default {
 
       add_row_spans: [],
       remove_row_spans: [],
+
+      apron_view: null,
     }
   },
 
@@ -506,12 +509,12 @@ export default {
         });
 
         // If update succeeds, update all skills locally
-        this.$refs.match_table.accept_changes();
+        this.apron_view.accept_changes();
       }
 
       // Reset all the changed but unsaved skills to their original values
       else {
-        this.$refs.match_table.discard_changes();
+        this.apron_view.discard_changes();
       }
 
       this.change_skills_modal = false;

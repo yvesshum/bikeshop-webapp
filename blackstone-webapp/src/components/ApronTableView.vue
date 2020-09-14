@@ -105,7 +105,7 @@ export default {
   created: async function() {
     this.$emit("load_start");
     await this.ensure_data_loaded();
-    this.$emit("load_complete");
+    this.$emit("load_complete", this);
   },
 
   computed: {
@@ -354,6 +354,14 @@ export default {
 
     handle_table: function(table) {
       this.table = table;
+    },
+
+    accept_changes: function() {
+      this.$refs.match_table.accept_changes();
+    },
+
+    discard_changes: function() {
+      this.$refs.match_table.discard_changes();
     },
   }
 }
