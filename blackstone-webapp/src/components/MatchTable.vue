@@ -193,8 +193,18 @@ export default {
       return cell.achieved;
     },
 
+    // Get a unique identifier for each row, as specified by the matchBy prop
     get_row_id: function(row) {
-      return row[this.matchBy];
+
+      // Matching by multiple fields - format as strings separated by |, e.g. "|A|B|C|"
+      if (Array.isArray(this.matchBy)) {
+        return this.matchBy.reduce((acc, curr) => {return acc + row[curr] + "|"}, "|");
+      }
+
+      // Matching by single field - grab it from the row
+      else {
+        return row[this.matchBy];
+      }
     },
 
     select_value: function(field, value) {
