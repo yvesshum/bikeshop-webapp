@@ -68,11 +68,11 @@ export default {
           this.row_status.set(row_id, new_status);
 
           var add = this.table.getRows().filter(row =>
-            this.row_status.is_status(row.getData()[this.matchBy], Status.ADD)
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
           );
 
           var rem = this.table.getRows().filter(row =>
-            this.row_status.is_status(row.getData()[this.matchBy], Status.REM)
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
           );
 
           this.$emit("changes", {add, rem});
@@ -110,27 +110,39 @@ export default {
   },
 
   mounted: function() {
-    this.fullData.forEach(row => {
-      let row_id = this.get_row_id(row);
-      let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+    this.fullData.forEach(row_data => {
+      let row_id = this.get_row_id(row_data);
+      let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
       this.row_status.add_vue(this, row_id, status);
     });
   },
 
   watch: {
-    fullData: function(new_rows) {
-      new_rows.forEach(row => {
-        let row_id = this.get_row_id(row);
-        let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+
+    // Any time the full set of data updates, add new rows to the row_status object as necessary
+    fullData: function(new_row_data) {
+
+      // Loop through each row data object in the full set
+      this.fullData.forEach(row_data => {
+        let row_id = this.get_row_id(row_data);
+
+        // If data not yet in table, check its status in checkedData and add it
         if (!this.row_status.has_key(row_id)) {
+          let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
           this.row_status.add_vue(this, row_id, status);
         }
       });
     },
 
-    checkedData: function(new_rows) {
-      this.row_status.forEach(row => {
-        this.row_status.set(row, new_rows.includes(row) ? Status.USE : Status.NOT);
+
+    // Any time the checked data updates, set the row_status object to match it
+    checkedData: function(new_row_data) {
+
+      // For each row_data object in the full set, update it to match the new checkedData
+      this.fullData.forEach(row_data => {
+        let row_id = this.get_row_id(row_data);
+        let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
+        this.row_status.set(row_id, status);
       });
     },
 
@@ -141,41 +153,7 @@ export default {
 
   computed: {
     table_data: function() {
-      return this.fullData.map(c => {
-
-        var achieved = false;
-
-        // matchBy     -> ["name", "category", "color"]
-        // checkedData -> [{name, category, color}, {name, category, color}]
-        // c           -> {name: ???, category: ???, color: ???}
-
-        // If matching by an array, check each element
-        if (Array.isArray(this.matchBy)) {
-
-          var matchByFields = this.matchBy.map(field => c[field]);
-
-          // Loop through until a match is found
-          for (var i = 0; i < this.checkedData.length; i++) {
-            var thing = true;
-
-            for (var j = 0; j < this.matchBy.length; j++) {
-              thing = thing && (matchByFields[j] == this.checkedData[i][j]);
-            }
-
-            if (thing) {
-              achieved = true;
-              break;
-            }
-          }
-        }
-
-        // If matching by a string, can just check for that field's value
-        else if (typeof this.matchBy === "string") {
-          return this.checkedData.includes(c[this.matchBy]);
-        }
-
-        return {achieved, ...c};
-      })
+      return this.fullData.map(c => { return {achieved: this.in_checked_data(c), ...c}; });
     },
 
     heading_data: function() {
@@ -205,6 +183,40 @@ export default {
       else {
         return row[this.matchBy];
       }
+    },
+
+    in_checked_data: function(row) {
+      var achieved = false;
+
+        // matchBy     -> ["name", "category", "color"]
+        // checkedData -> [{name, category, color}, {name, category, color}]
+        // row         -> {name: ???, category: ???, color: ???}
+
+        // If matching by an array, check each element
+        if (Array.isArray(this.matchBy)) {
+
+          var matchByFields = this.matchBy.map(field => row[field]);
+
+          // Loop through until a match is found
+          for (var i = 0; i < this.checkedData.length; i++) {
+            var thing = true;
+
+            for (var j = 0; j < this.matchBy.length; j++) {
+              thing = thing && (matchByFields[j] == this.checkedData[i][j]);
+            }
+
+            if (thing) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+        // If matching by a string, can just check for that field's value
+        else if (typeof this.matchBy === "string") {
+          return this.checkedData.includes(row[this.matchBy]);
+        }
     },
 
     select_value: function(field, value) {
