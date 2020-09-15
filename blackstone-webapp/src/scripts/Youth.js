@@ -110,6 +110,10 @@ export class Youth {
 		// return list.concat( new_youth.filter(youth => !Youth.contains(list, youth)) );
 	}
 
+	// For each youth in new_youth:
+	//   - If that youth object exists in the list, replace it with the version in new_youth
+	//   - If not, append that object to the list
+	// Useful for changing other properties of the youth objects beside the mandatory name/ID
 	static concat_overwrite(list, new_youth) {
 		new_youth.forEach(youth => {
 			if (Youth.contains(list, youth)) {
@@ -120,5 +124,15 @@ export class Youth {
 			}
 		});
 		return list;
+	}
+
+	// Removes all youth in youth_to_remove from list
+	static remove_all(list, youth_to_remove) {
+		return list.filter(youth => !Youth.contains(youth_to_remove, youth));
+	}
+
+	// Combination of concat_overwrite and remove_all, for convenience
+	static update_list(list, youth_to_change, youth_to_remove) {
+		return Youth.remove_all(Youth.concat_overwrite(list, youth_to_change), youth_to_remove);
 	}
 }

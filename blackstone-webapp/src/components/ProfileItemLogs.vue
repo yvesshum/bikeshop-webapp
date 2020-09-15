@@ -55,9 +55,16 @@ import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
+import {forKeyVal} from "@/scripts/ParseDB";
 
 const moment = require("moment");
 var Tabulator = require("tabulator-tables");
+
+// The location of the Order Log header fields in the database
+var OrderLogHeadersRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
+
+// Fields from database for the Order Log that we don't want to show on this page
+var excluded_order_fields = [ "Youth ID", "First Name", "Last Name", "Status" ];
 
 export default {
   name: 'profile_item_logs',
@@ -110,30 +117,6 @@ export default {
         },
       ],
 
-      order_log_headers: [
-        { // The name of the item
-          title: "Item Name", field: "Item Name", headerFilter: true,
-        },
-        { // The ID number of the item
-          title: "Item ID", field: "Item ID", headerFilter: true,
-        },
-        { // The date and time of the order
-          title: "Date", field: "Order Date", formatter: this.format_date_time,
-          ...this.get_date_filter_args(true),
-          sorter: this.date_sorter,
-        },
-        { // The cost of the item (in hours)
-          title: "Cost", field: "Item Total Cost",
-          formatter: cell => cell.getValue() + " Hours",
-          ...this.get_hour_filter_args(),
-          sorter: this.hour_sorter,
-        },
-        { // Notes
-          title: "Notes", field: "Notes", formatter: this.format_notes,
-          headerFilter: true,
-        },
-      ],
-
       trans_log_headers: [
         { // The name of the recipient
           title: "To Name", field: "To Name",
@@ -162,6 +145,10 @@ export default {
       hour_categories: [],
 
 
+      // The actual headers will be generated based on what's retrieved from the database
+      order_log_headers_from_db: [],
+
+
       // Other Tabulator arguments for the tables
       extra_args: {
 
@@ -171,6 +158,11 @@ export default {
         ],
       },
     };
+  },
+
+  mounted: async function() {
+    var order_log_headers_db = await OrderLogHeadersRef.get();
+    this.order_log_headers_from_db = order_log_headers_db.data();
   },
 
   computed: {
@@ -188,6 +180,86 @@ export default {
           "Period": data["Period"],
         };
       };
+    },
+
+
+    order_log_headers: function() {
+      var table_headers = [];
+
+      // Define this here to grab the fields in this order
+      var groups = ["required", "hidden", "optional"];
+
+      // Loop through each desired table column from the database
+      // Stored as key/val pairs, where the key is the field's name and the value is its type
+      for (let i in groups) {
+        forKeyVal(this.order_log_headers_from_db[groups[i]], (field_name, field_type) => {
+
+          // Skip the fields we don't want to show - mostly the youth's info, since it'll be all over the page anyways, and that saves space in the table
+          if (excluded_order_fields.includes(field_name)) {
+            return;
+          }
+
+          // Use different formatter/filter/sorter depending on the field's type
+          switch (field_type) {
+
+            case "Datetime":
+              table_headers.push({
+
+                // Use the field name as the title
+                title: field_name, field: field_name,
+
+                // Mark as a date for sorting later
+                __is_date__: true,
+
+                // Use the date/time formatter, filter, and sorter
+                formatter: this.format_date_time,
+                ...this.get_date_filter_args(true),
+                sorter: this.date_sorter,
+              });
+              break;
+
+            case "Hours":
+              table_headers.push({
+                title: field_name, field: field_name,
+
+                // Use the hour formatter, filter, and sorter
+                formatter: cell => cell.getValue() + " Hours",
+                ...this.get_hour_filter_args(),
+                sorter: this.hour_sorter,
+              });
+              break;
+
+            // If the field_name is specifically Notes, add it specially; otherwise fall through to the default case
+            case "String":
+              if (field_name == "Notes") {
+                table_headers.push({
+                  title: field_name, field: field_name, headerFilter: true,
+                  formatter: this.format_notes,
+                });
+                break;
+              }
+
+            // If none of the types above, add it pretty much as-is
+            case "Phone":
+            default:
+              console.log(field_name);
+              table_headers.push({
+                title: field_name, field: field_name, headerFilter: true,
+              });
+              break;
+          }
+        })
+      }
+
+      // Ensure all dates come first and the Notes field comes last
+      // TODO: Do something other than __is_date__ field if possible, since Tabulator throws a warning
+      table_headers = table_headers.sort((a, b) => {
+        if (a.__is_date__ || b.title == "Notes") return -1;
+        // if (a.title == "Notes" || b.__is_date__) return 1;
+        return 1;
+      });
+
+      return table_headers;
     },
   },
 

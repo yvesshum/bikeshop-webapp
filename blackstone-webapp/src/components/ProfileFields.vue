@@ -50,30 +50,28 @@
               <td class="section_name" colspan="3"> {{section.Name}}: </td>
             </tr>
 
-            <tr v-if="show_section(section.Name)" v-for="field in section.Data">
-              <div v-if="!specially_not_editable_fields.includes(field)">
-                <td style="margin: auto; padding: 3px;">
-                  <ToggleButton
-                    onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
-                    @Toggle="status => set_row_status(field, status)"
-                    v-model="fields_used[field]"
-                    v-show="section.Name != 'Required'"
-                  ></ToggleButton>
-                </td>
+            <tr v-if="show_section(section.Name) && !is_protected(field)" v-for="field in section.Data">
+              <td style="margin: auto; padding: 3px;">
+                <ToggleButton
+                  onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
+                  @Toggle="status => set_row_status(field, status)"
+                  v-model="fields_used[field]"
+                  v-show="section.Name != 'Required'"
+                ></ToggleButton>
+              </td>
 
-                <td :class="{changed_title: is_changed(field) && is_used(field)}">
-                  {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
-                </td>
+              <td :class="{changed_title: is_changed(field) && is_used(field)}">
+                {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
+              </td>
 
-                <td style="padding: 3px;">
-                  <SpecialInputReset
-                    v-show="section.Name == 'required' || is_used(field)"
-                    :defaultValue="local_values[field]"
-                    :name="field" :type="field_types[field]"
-                    @Mounted="i => input_fields[field] = i"
-                  ></SpecialInputReset>
-                </td>
-              </div>
+              <td style="padding: 3px;">
+                <SpecialInputReset
+                  v-show="section.Name == 'Required' || is_used(field)"
+                  :defaultValue="local_values[field]"
+                  :name="field" :type="field_types[field]"
+                  @Mounted="i => input_fields[field] = i"
+                ></SpecialInputReset>
+              </td>
 
             </tr>
 
@@ -210,9 +208,57 @@ import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
+let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+
+
+// Fields which should not be editable through the youth profile page/popup
+// The fields on this list which may need to be changed are handled on other pages or
+// in other components.
+// These fields will not be loaded when the profile is.
+const IgnoredFields = [
+
+  // Apron Items handled in the Apron Bar
+  "Apron Color", "Apron Skills",
+
+  // Logs handled in their own pages and displayed in ProfileItemLogs
+  "Work Log", "Transfer Log", "Order Log",
+
+  // Registration items shouldn't be edited here
+  "Registration Period", "Essay", "New or Returning",
+
+  // Period and Class information handled in ManagePeriods
+  "Class", "ActivePeriods",
+];
+
+
+// Fields that should be loaded, but should not be editable in the popup modal.
+const ProtectedFields = [
+
+  // Youths' active hours handled by the hour tracking system
+  "Hours Spent", "Pending Hours", "Hours Earned",
+];
+
+
+// Fields that should be loaded, but should not display in the main table
+const SpeciallyDisplayedFields = [
+
+  // Youth name displayed in bold on top of the page
+  "First Name", "Last Name",
+
+  // Youths' hours displayed in large numbers
+  "Hours Earned", "Hours Spent", "Pending Hours",
+];
+
+// Fields that are both protected and specially displayed will be loaded, but that's about it
+
+// Conceptually, Protected Fields are ones you want to display but not edit, while Specially Displayed Fields are ones you want to be editable but not display (or handle the display of separately from the main table).
+
+// The only thing is, if a field is both, instead of being both displayed and editable, it's neither displayed nor editable. This is good for regulated fields like the youth's hours, which we want to highlight in the display, but don't want to allow any edits to here.
+
+
 export default {
   name: 'profile_fields',
-  props: ["profile", "headerDoc", "edit", "showOptionalFields", "hideFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
     HoursDisplay,
@@ -226,34 +272,6 @@ export default {
     return {
       // Track whether currently in edit mode
       edit_mode: false,
-
-      // Fields which are displayed outside the general table, but which should still be editable from the popup modal
-      specially_displayed_fields: [
-        "First Name",
-        "Last Name",
-        "Hours Earned",
-        "Hours Spent",
-        "Pending Hours",
-        "ActivePeriods",
-      ],
-      
-      // Fields which are displayed in the general table, but which should not be editable from the popup modal
-      specially_not_editable_fields: [
-        "Old Essay Answers"
-      ],
-
-      // Fields which should not be editable from the popup modal
-      hidden_fields: [
-        "Apron Color",
-        "Apron Skills",
-        "Work Log",
-        "Transfer Log",
-        "Order Log",
-        "Registration Period",
-        "Essay",
-        "New or Returning",
-        "Class",
-      ],
 
       temp_fields: [],
 
@@ -270,6 +288,8 @@ export default {
       fields_used: {},
 
       show_edit_modal: false,
+
+      header_doc: null,
     }
   },
 
@@ -292,18 +312,26 @@ export default {
       }
     },
 
-    table_sections: function() {
-      if (this.headerDoc == null) return [];
+    // Collate hard-coded ignored fields with any fields passed in via prop
+    ignored_fields: function() {
+      if (this.ignoreFields != null) {
+        return [...IgnoredFields, ...this.ignoreFields];
+      } else {
+        return IgnoredFields;
+      }
+    },
 
-      let data = this.headerDoc.data();
+    table_sections: function() {
+      if (this.header_doc == null) return [];
+
+      let data = this.header_doc.data();
       let temp = [];
-      let hidden_fields = this.hidden_fields;
-      
-      make_section("Required", "required");
-      make_section("", "hidden");
+
+      make_section.call(this, "Required", "required");
+      make_section.call(this, "Hidden", "hidden");
       
       if (this.show_optional_fields) {
-        make_section("Optional", "optional");
+        make_section.call(this, "Optional", "optional");
       }
 
       temp.push({Name: "Non-Standard", Data: this.temp_fields});
@@ -315,9 +343,9 @@ export default {
         // Temp var to store all fields in this section
         let Data = [];
 
-        // Loop through name/val pairs in this section
+        // Save all non-hidden fields in this section to the result
         forKeyVal(data[section], (name, val) => {
-          if (!hidden_fields.includes(name)) {
+          if (!this.is_ignored(name)) {
             Data.push(name);
           }
         });
@@ -350,15 +378,14 @@ export default {
     },
 
     field_types: function() {
-      if (this.headerDoc == null) return {};
+      if (this.header_doc == null) return {};
 
       let temp = new Object();
-      temp["Old Essay Answers"] = "Essay";
-      let data = this.headerDoc.data();
+      let data = this.header_doc.data();
 
       Object.keys(data).forEach(section => {
         forKeyVal(data[section], (name, val) => {
-          if (!this.is_hidden(name)) {
+          if (!this.is_ignored(name)) {
             temp[name] = val;
           }
         });
@@ -423,25 +450,17 @@ export default {
   },
 
   mounted: function() {
-    // TODO: Make a computed value to allow dynamic field hiding?
-    if (this.hideFields != null) {
-      this.hidden_fields = [...this.hidden_fields, ...this.hideFields];
-    };
-
-    if (this.headerDoc != undefined) {
-      this.load_header_doc(this.headerDoc);
-    };
-
     if (this.profile != undefined) {
       this.load_profile(this.profile);
     };
+
+    // Add a listener to the header document to update expected fields whenever they change
+    HeaderRef.onSnapshot(doc => {
+      this.load_header_doc(doc);
+    });
   },
 
   watch: {
-
-    headerDoc: function(new_header) {
-      this.load_header_doc(new_header);
-    },
 
     profile: function(doc) {
       this.load_profile(doc);
@@ -456,7 +475,10 @@ export default {
 
     init_row_status(data, field, stat) {
       forKeyVal(data[field], (name, val) => {
-        if (!this.is_hidden(name)) {
+        if (this.is_protected(name)) {
+          this.row_status.add_vue(this, name, Status.IMM);
+        }
+        else if (!this.is_ignored(name)) {
           this.row_status.add_vue(this, name, stat);
         }
       });
@@ -468,28 +490,25 @@ export default {
     },
 
     show_container: function(key) {
+      if (this.row_status == null) return false;
       return (
         (this.row_status.is_status(key, Status.U) || this.row_status.is_status(key, Status.USE_T))
-        && !this.specially_displayed_fields.includes(key)
+        && !this.is_specially_displayed(key)
       );
     },
 
     load_header_doc: function(new_header) {
       let data = new_header.data();
 
+      this.header_doc = new_header;
       this.row_status = new Status();
 
       this.init_row_status(data, "required", Status.REQ);
-      this.init_row_status(data, "hidden",   Status.IMM);
+      this.init_row_status(data, "hidden",   Status.NOT);
       if (this.show_optional_fields) {
         this.init_row_status(data, "optional", Status.NOT);
       }
 
-      // Have to use Vue.$set to make the new properties reactive (dynamic updates)
-      this.row_status.keys().forEach(key => {
-        this.$set(this.local_values, key, undefined);
-        this.$set(this.fields_used, key, false);
-      });
     },
 
     load_profile: function(doc) {
@@ -499,7 +518,9 @@ export default {
       // Clear the old data from the screen
       this.row_status.set_all_safe(Status.NOT);
       Object.keys(this.local_values).forEach(key => {
+        // Set to undefined rather than deleting to keep it reactive w Vue
         this.local_values[key] = undefined;
+        this.fields_used[key] = false;
       });
 
       // Delete temporary fields from previous profile (if applicable)
@@ -515,7 +536,7 @@ export default {
         var data = doc.data();        
 
         for (var key in data) {
-          if (this.is_hidden(key)) continue;
+          if (this.is_ignored(key)) continue;
 
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
@@ -530,15 +551,16 @@ export default {
               this.set_row_status(key, Status.USE);
             }
 
-            this.local_values[key] = data[key];
-            this.fields_used[key] = true;
+            // Have to use Vue.$set to make the new properties reactive (dynamic updates)
+            this.$set(this.local_values, key, data[key]);
+            this.$set(this.fields_used, key, true);
           }
         };
       }
 
       function field_used(field) {
         // TODO: This might have to be more sophisticated for different data types
-        return field != "";
+        return field !== null && field !== undefined && field !== "";
       };
     },
 
@@ -562,8 +584,19 @@ export default {
       return this.fields_used[field];
     },
 
-    is_hidden: function(field) {
-      return this.hidden_fields.includes(field);
+    // Whether the field is ignored - see IgnoredFields above
+    is_ignored: function(field) {
+      return this.ignored_fields.includes(field);
+    },
+
+    // Whether the field is protected - see ProtectedFields above
+    is_protected: function(field) {
+      return ProtectedFields.includes(field);
+    },
+
+    // Whether the field is specially displayed - see SpeciallyDisplayedFields above
+    is_specially_displayed: function(field) {
+      return SpeciallyDisplayedFields.includes(field);
     },
 
     is_changed: function(field) {
