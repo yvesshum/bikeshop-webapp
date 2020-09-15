@@ -21,7 +21,7 @@
               )" style="margin: 1%;">Refresh Table</b-button>
         </div>
         <br>
-        <DraggableTable :colors="colors" :groups="groups" :categories="categories" />
+        <DraggableTable :colors="colors" :groups="groups" :categories="categories" :changes="changes" />
         
         <b-modal v-model = "addCategoryModalVisible" hide-footer lazy>
             <template slot = "modal-title">
@@ -50,7 +50,7 @@
               <br>
               <h4>Select skill color: </h4>
               <ApronColorSelector
-                style="display: inline-block;" :size="32" :selected="selected_color" hideGray=true
+                style="display: inline-block;" :size="32" :selected="selected_color" :hideGray="true"
                 @input="apronColorSelected"
               />
               <br>
@@ -202,6 +202,8 @@
                         style: "text-align: center"
                     }
                 },
+                // Dictionary from [category, color, skill] to [new color, new category, new skill] or null
+                changes : {},
             };
         },
         methods: {
@@ -306,7 +308,74 @@
                 }
                 this.closeLoadingModal();
                 let check = ApronSkillsRef.set(input);
+                let snapshot = await db.collection("GlobalYouthProfile").get();
+                let changes = this.changes;
+                await snapshot.forEach(async function (doc) {
+                    let data = doc.data();
+                    var changed = false;
+                    for(const change_string in changes){
+                        if(changes[change_string] != null){
+                            let change_key = change_string.split("\n");
+                            let old_category = change_key[0];
+                            let old_color = change_key[1];
+                            let old_skill = change_key[2];
+                            if(changes[change_string] == false){
+                                if(data["Apron Skills Alt"] != undefined && data["Apron Skills Alt"][old_color] != undefined && data["Apron Skills Alt"][old_color]["Skills"][old_category] != undefined){
+                                    console.log("Has skill and category")
+                                    let skill_array = data["Apron Skills Alt"][old_color]["Skills"][old_category];
+                                    let orig_length = skill_array.length;
+                                    console.log(orig_length)
+                                    data["Apron Skills Alt"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
+                                    let new_length = data["Apron Skills Alt"][old_color]["Skills"][old_category].length;
+                                    console.log(new_length)
+                                    if(new_length < orig_length){
+                                        console.log("deleting!")
+                                        changed = true;
+                                    }
+                                }
+                                continue
+                            }
+                            let new_category = changes[change_string][0];
+                            let new_color = changes[change_string][1];
+                            let new_skill = changes[change_string][2];
+                            if(data["Apron Skills Alt"] != undefined && data["Apron Skills Alt"][old_color] != undefined && data["Apron Skills Alt"][old_color]["Skills"][old_category] != undefined){
+                                for(var i = 0; i < data["Apron Skills Alt"][old_color]["Skills"][old_category].length; i++){
+                                    // console.log(data["Apron Skills"][old_category][old_color][i])
+                                    // console.log(old_skill)
+                                    if(data["Apron Skills Alt"][old_color]["Skills"][old_category][i] == old_skill){
+                                        console.log("Making a change!")
+                                        data["Apron Skills Alt"][old_color]["Skills"][old_category].splice(i, 1);
+                                        if(data["Apron Skills Alt"][new_color] != undefined){
+                                            if(data["Apron Skills Alt"][new_color]["Skills"][new_category] != undefined){
+                                                data["Apron Skills Alt"][new_color]["Skills"][new_category].push(new_skill)
+                                            } else {
+                                                data["Apron Skills Alt"][new_color]["Skills"][new_category] = [new_skill]
+                                            }
+                                        } else {
+                                            console.log("Moving to a brand new color")
+                                            data["Apron Skills Alt"][new_color] = {};
+                                            data["Apron Skills Alt"][new_color]["Achieved"] = false;
+                                            data["Apron Skills Alt"][new_color]["Skills"] = {}
+                                            data["Apron Skills Alt"][new_color]["Skills"][new_category] = [new_skill];
+                                        }
+                                        changed = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if(changed){
+                        let status = await db.collection("GlobalYouthProfile").doc(doc.id).update(data);
+                    }
+                });
                 if(check){
+                  this.colors = [];
+                  this.categories = [];
+                  this.groups = [];
+                  this.changes = {};
+                  await this.getTData();
+                  this.closeLoadingModal();
                   this.showModal("Success", "New apron categories and skills submitted");
                 }else{
                   this.showModal("Error", "Unable to submit apron skills, this may be an internet connection problem");
@@ -325,6 +394,7 @@
                 this.colors = [];
                 this.categories = [];
                 this.groups = [];
+                this.changes = {};
                 await this.getTData();
                 this.closeLoadingModal();
                 this.showModal("Table Refreshed", "The table should contain the latest information");
@@ -390,6 +460,54 @@
             closeAddSkillModal() {
                 this.addSkillModalVisible = false;
             },
+            change_existing(old_value, new_value, change_type){
+                for(const change_string in this.changes){
+                    let change_key = change_string.split("\n")
+                    var old_category, old_color, old_skill;
+                    var changed = false;
+                    if(this.changes[change_string] == null){
+                        old_category = change_key[0];
+                        old_color = change_key[1];
+                        old_skill = change_key[2];
+                    } else if(this.changes[change_string] == false){
+                        continue
+                    } else {
+                        old_category = this.changes[change_string][0];
+                        old_color = this.changes[change_string][1];
+                        old_skill = this.changes[change_string][2];
+                    }
+                    if(change_type == "del_category" && old_category == old_value){
+                      this.changes[change_string] = false
+                    }
+                    if(change_type == "del_color" && old_color == old_value){
+                      this.changes[change_string] = false
+                    }
+                    if(change_type == "del_skill" && old_category + "\n" + old_color + "\n" + old_skill == old_value){
+                      this.changes[change_string] = false
+                    }
+                    if(change_type == "category" && old_category == old_value){
+                        this.changes[change_string] = [new_value, old_color, old_skill];
+                        changed = true;
+                    }
+                    if(change_type == "color" && old_color == old_value){
+                        this.changes[change_string] = [old_category, new_value, old_skill];
+                        changed = true;
+                    }
+                    if(change_type == "skill" && old_skill == old_value){
+                        this.changes[change_string] = [old_category, old_color, new_value];
+                        changed = true;
+                    }
+                    if(change_type == "move" && old_category + "\n" + old_color + "\n" + old_skill == old_value){
+                        let new_category = new_value.split("\n")[0];
+                        let new_color = new_value.split("\n")[1];
+                        this.changes[change_string] = [new_category, new_color, old_skill];
+                        changed = true;
+                    }
+                    if(changed && change_string == this.changes[change_string].join("\n")){
+                        this.changes[change_string] = null
+                    }
+                }
+            },
             showRenameCategoryModal() {
                 this.errorMsg = "";
                 this.renamed_category = initSpecialInputVal("String");
@@ -432,6 +550,7 @@
                       this.groups[i]["category"] = this.renamed_category;
                   }
               }
+              this.change_existing(this.selected_category, this.renamed_category, "category")
             },
             async delete_category(){
               for(var i = 0; i < this.categories.length; i++){
@@ -439,6 +558,8 @@
                       this.categories.splice(i, 1);
                       let new_groups = this.groups.filter(group => group.category != this.selected_category);
                       this.groups = new_groups;
+                      this.change_existing(this.selected_category, null, "del_category")
+                      console.log(this.changes)
                       return
                   }
               }
@@ -482,6 +603,7 @@
                   if(categoryData[category][color] != undefined){
                     for(var i = 0; i < categoryData[category][color].length; i++){
                       skills.push({ skill : categoryData[category][color][i] });
+                      this.changes[category + "\n" + color + "\n" + categoryData[category][color][i]] = null
                     }
                   }
                   this.groups.push({

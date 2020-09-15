@@ -36,6 +36,7 @@
     "vue-tabulator": "^1.0.0",
     "vue-tel-input": "^4.0.0",
     "vue2-datepicker": "^3.2.2",
+    "vue2-editor": "^2.10.2",
     "vuedraggable": "^2.23.0",
     "vuefire": "^2.1.0",
     "vuejs-datepicker": "^1.6.2",

@@ -301,7 +301,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .check-in-out-button {
   height: 150px;
   width: 150px;
@@ -321,9 +321,5 @@ export default {
 
 .input-field {
     margin-bottom: 1rem
-}
-
-.content {
-  min-height: calc(100vh - 110px);
 }
 </style>

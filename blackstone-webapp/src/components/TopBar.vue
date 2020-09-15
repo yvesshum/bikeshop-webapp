@@ -10,9 +10,12 @@
                   <b-collapse class="navbar-collapse" id="navcol-1">
                       <ul class="nav navbar-nav mr-auto"></ul>
                       <span class="navbar-text actions">
-                        <a class="nav_button" href="/Home">Dashboard</a>
+                        <a class="nav_button" href="/Home" v-if="show_logout_option">Dashboard</a>
                         <a class="nav_button" href="/emergency-contacts" v-if="show_logout_option && isStaff" >Emergency</a>
                         <a class="btn btn-light action-button" role="button" @click="logout" v-if="show_logout_option">Log Out</a>
+
+                        <!-- Before Login -->
+                        <a class="btn btn-light action-button" role="button" href="/login" v-if="!show_logout_option">Log In</a>
                       </span>
                   </b-collapse>
               </div>

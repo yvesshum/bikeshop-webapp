@@ -424,7 +424,7 @@
     }
 </script>
 
-<style>
+<style scoped>
 .title {
   margin-bottom: 1rem;
 }

@@ -540,8 +540,10 @@ export default {
 
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
-              this.temp_fields.push(key);
-              this.row_status.add_vue(this, key, Status.USE_T);
+              if(!this.specially_not_editable_fields.includes(key)){
+                this.temp_fields.push(key);
+                this.row_status.add_vue(this, key, Status.USE_T);
+              }
             }
 
             // Empty string means unused field
@@ -689,7 +691,10 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if (stat == Status.REM || stat == Status.REM_T) {
+        if(input_field == undefined){
+          message = "undefined";
+        }
+        else if (stat == Status.REM || stat == Status.REM_T) {
           message = "removed";
         }
         else if (input_field.is_blank()) {
@@ -703,7 +708,7 @@ export default {
         }
 
         // If message has been set, then a change has been made to this field
-        if (message != null) {
+        if (message != null && input_field != undefined) {
           this.changes_list[key] = {
               message,
               new_val: input_field.get_changed_string(),
@@ -802,8 +807,10 @@ export default {
     reset_changes: function() {
       this.row_status.reset();
       this.row_status.unfilter(Status.IMM).forEach(field => {
-        this.input_fields[field].reset();
-        this.fields_used[field] = this.row_status.is_status(field, Status.O);
+        if(this.input_fields[field] != undefined){
+            this.input_fields[field].reset();
+            this.fields_used[field] = this.row_status.is_status(field, Status.O);
+        }
       });
     },
 

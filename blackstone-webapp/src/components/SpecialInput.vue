@@ -211,7 +211,7 @@ export default {
     data() {
         return {
             input: null,
-            args: {},
+            args: {}, 
             ready: false,
             raceOptions: [
                 { value: null, text: 'Please select a race' },
@@ -221,6 +221,7 @@ export default {
                 { value: "Native Hawaiian/Other Pacific Islander", text: 'Native Hawaiian/Other Pacific Islander' },
                 { value: "Black or African American", text: 'Black or African American' },
                 { value: "White", text: 'White' },
+                { value: "Mixed race, other, or prefer not to say", text: 'Mixed race, other, or prefer not to say' },
             ],
             gradeOptions: [
                 { value: null, text: 'Please select a grade' },
