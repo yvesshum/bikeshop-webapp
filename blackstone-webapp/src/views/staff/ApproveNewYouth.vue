@@ -387,6 +387,7 @@
                     delete input["Timestamp"];
                     delete input["New or Returning"];
                     delete input["ReturningID"];
+                    delete input["Unmerged"];
                     if(this.checkSet(input["ActivePeriods"])){
                       input["ActivePeriods"][this.currentSeason] = input["Class"];
                     }
@@ -461,6 +462,9 @@
                     delete input["Birthdate"];
                     delete input["Timestamp"];
                     delete input["New or Returning"];
+                    delete input["Unmerged"];
+
+                    input["Start Date"] = new Date();
 
                     input["ActivePeriods"] = {};
                     input["ActivePeriods"][this.currentSeason] = input["Class"];
@@ -720,14 +724,16 @@
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
                       var value = this.editSelected[i]["Value"];
-                      if(this.editSelected[i]["NewValue"] != undefined){
+                      if(this.checkSet(this.editSelected[i]["NewValue"])){
                           value = this.editSelected[i]["NewValue"];
                       }
                       if(this.editSelected[i]["Type"] == "Essay"){
                           newValues["Essay"][category.split("\n").join("\\n")]
                             = value.split("\n").join("\\n");
-                      } else{
-                          newValues[category] = value;
+                      } else {
+                          if(this.checkSet(value)){
+                              newValues[category] = value;
+                          }
                       }
                 }
                 console.log("New values: " + JSON.stringify(newValues));

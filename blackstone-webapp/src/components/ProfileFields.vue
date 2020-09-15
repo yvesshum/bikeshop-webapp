@@ -51,27 +51,29 @@
             </tr>
 
             <tr v-if="show_section(section.Name)" v-for="field in section.Data">
-              <td style="margin: auto; padding: 3px;">
-                <ToggleButton
-                  onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
-                  @Toggle="status => set_row_status(field, status)"
-                  v-model="fields_used[field]"
-                  v-show="section.Name != 'Required'"
-                ></ToggleButton>
-              </td>
+              <div v-if="!specially_not_editable_fields.includes(field)">
+                <td style="margin: auto; padding: 3px;">
+                  <ToggleButton
+                    onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
+                    @Toggle="status => set_row_status(field, status)"
+                    v-model="fields_used[field]"
+                    v-show="section.Name != 'Required'"
+                  ></ToggleButton>
+                </td>
 
-              <td :class="{changed_title: is_changed(field) && is_used(field)}">
-                {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
-              </td>
+                <td :class="{changed_title: is_changed(field) && is_used(field)}">
+                  {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
+                </td>
 
-              <td style="padding: 3px;">
-                <SpecialInputReset
-                  v-show="section.Name == 'required' || is_used(field)"
-                  :defaultValue="local_values[field]"
-                  :name="field" :type="field_types[field]"
-                  @Mounted="i => input_fields[field] = i"
-                ></SpecialInputReset>
-              </td>
+                <td style="padding: 3px;">
+                  <SpecialInputReset
+                    v-show="section.Name == 'required' || is_used(field)"
+                    :defaultValue="local_values[field]"
+                    :name="field" :type="field_types[field]"
+                    @Mounted="i => input_fields[field] = i"
+                  ></SpecialInputReset>
+                </td>
+              </div>
 
             </tr>
 
@@ -234,6 +236,11 @@ export default {
         "Pending Hours",
         "ActivePeriods",
       ],
+      
+      // Fields which are displayed in the general table, but which should not be editable from the popup modal
+      specially_not_editable_fields: [
+        "Old Essay Answers"
+      ],
 
       // Fields which should not be editable from the popup modal
       hidden_fields: [
@@ -346,6 +353,7 @@ export default {
       if (this.headerDoc == null) return {};
 
       let temp = new Object();
+      temp["Old Essay Answers"] = "Essay";
       let data = this.headerDoc.data();
 
       Object.keys(data).forEach(section => {
@@ -511,8 +519,10 @@ export default {
 
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
-              this.temp_fields.push(key);
-              this.row_status.add_vue(this, key, Status.USE_T);
+              if(!this.specially_not_editable_fields.includes(key)){
+                this.temp_fields.push(key);
+                this.row_status.add_vue(this, key, Status.USE_T);
+              }
             }
 
             // Empty string means unused field
@@ -648,7 +658,10 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if (stat == Status.REM || stat == Status.REM_T) {
+        if(input_field == undefined){
+          message = "undefined";
+        }
+        else if (stat == Status.REM || stat == Status.REM_T) {
           message = "removed";
         }
         else if (input_field.is_blank()) {
@@ -662,7 +675,7 @@ export default {
         }
 
         // If message has been set, then a change has been made to this field
-        if (message != null) {
+        if (message != null && input_field != undefined) {
           this.changes_list[key] = {
               message,
               new_val: input_field.get_changed_string(),
@@ -761,8 +774,10 @@ export default {
     reset_changes: function() {
       this.row_status.reset();
       this.row_status.unfilter(Status.IMM).forEach(field => {
-        this.input_fields[field].reset();
-        this.fields_used[field] = this.row_status.is_status(field, Status.O);
+        if(this.input_fields[field] != undefined){
+            this.input_fields[field].reset();
+            this.fields_used[field] = this.row_status.is_status(field, Status.O);
+        }
       });
     },
 

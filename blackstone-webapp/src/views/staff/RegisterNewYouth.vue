@@ -3,6 +3,7 @@
         <div class="content">
         <top-bar omitEmail/>
         
+        <div v-if="!confirmation">
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
         
         <div class = "topDiv">
@@ -125,7 +126,7 @@
         </div>
 
 
-        <b-modal v-model = "modalVisible" hide-footer lazy>
+        <!-- <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">
                 New Youth registered!
             </template>
@@ -134,7 +135,7 @@
                 <h3 v-if="returningYouth == 'Returning Youth'">Successfully submitted a returning youth registration for Youth ID {{currentName}} to be in the {{currentClass}} class</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
-        </b-modal>
+        </b-modal> -->
 
         <b-modal v-model = "errorModalIsVisible" hide-footer lazy>
             <template slot="modal-title">
@@ -159,6 +160,12 @@
                 </div>
             </div>
         </b-modal>
+        </div>
+        <div v-else>
+          <h4 v-if="returningYouth == 'New Youth'" style="margin: 25px">Successfully submitted a new youth registration for {{currentName}} to be in the {{currentClass}} class</h4>
+          <h4 v-else style="margin: 25px">Successfully submitted a returning youth registration for Youth ID {{currentName}} to be in the {{currentClass}} class</h4>
+          <b-button class="bg-info" onclick="location.href='/register-new-youth'" size="lg">Submit another registration</b-button>
+        </div>
         </div>
         <Footer/>
     </div>
@@ -198,7 +205,8 @@
                 requiredFields: [],
                 optionalFields: [],
                 hiddenFields: [],
-                modalVisible: false,
+                // modalVisible: false,
+                confirmation: false,
                 loadingModalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
@@ -454,7 +462,8 @@
                         // console.error("Error adding document: ", error);
                     // });
                     this.loadingModalVisible = false;
-                    this.showModal();
+                    this.confirmation = true;
+                    // this.showModal();
                 }
             },
             //returns an array of fields that are not valid
@@ -483,12 +492,12 @@
             parse(item) {
                 return JSON.parse(JSON.stringify(item));
             },
-            showModal() {
-                this.modalVisible = true;
-            },
-            closeModal() {
-                this.modalVisible = false;
-            },
+            // showModal() {
+            //     this.modalVisible = true;
+            // },
+            // closeModal() {
+            //     this.modalVisible = false;
+            // },
             showErrorModal() {
                 this.errorModalVisible = true;
             },

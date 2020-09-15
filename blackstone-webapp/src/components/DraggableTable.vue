@@ -17,9 +17,9 @@
             <div class="col table-categories"> <b>{{ category }}</b> </div>
               <div v-for="color in colors" v-if="color.name != 'Gray'" class="table-col col-sm">
                 <div v-for="group in getGroupsByColorCategory(color, category)" class="dragArea">
-                  <draggable element="div" class="dragArea" v-model="group.skills" :options="getOptions(group)" :move="onMove" @start="isDragging=true" @end="isDragging=false">
-                     <transition-group type="transition" :name="'flip-list'" tag="ul" class="dragAreaFinal">
-                        <div class="sdt-tag sdt-tag-item table-cell" v-for="(element, index) in group.skills" :key="element.skill"  :style="getColorStyle(color)">
+                  <draggable element="div" class="dragArea" v-model="group.skills" :options="getOptions(group)" :move="onMove" @start="isDragging=true" @end="onEnd">
+                     <transition-group type="transition" :accessKey="category + '\n' + color.name" :name="'flip-list'" tag="ul" class="dragAreaFinal">
+                        <div class="sdt-tag sdt-tag-item table-cell" v-for="(element, index) in group.skills" :accessKey="element.skill" :key="element.skill"  :style="getColorStyle(color)">
                            <!-- <textarea>{{ element.skill }}</textarea>  contenteditable? -->
                            <div
                              @keypress="restrictChars($event);"
@@ -38,8 +38,8 @@
         <div class="trashcan">
           <img src="@/assets/trash.svg" alt="Trashcan: ">
           Drag a skill here to delete it
-          <draggable element="span" :options="getOptions(placeholder)" :move="onMove" @start="isDragging=true" @end="isDragging=false">
-             <transition-group type="transition" :name="'flip-list'" class="trashcan-center" tag="ul">
+          <draggable element="span" :options="getOptions(placeholder)" :move="onMove" @start="isDragging=true" @end="onEndDelete">
+             <transition-group type="transition" accessKey="trashcan" :name="'flip-list'" class="trashcan-center" tag="ul">
                 
              </transition-group>
           </draggable>
@@ -65,6 +65,7 @@ export default {
     colors:    { type: Array,  default: [],   },
     categories:     { type: Array,  default: [],   },
     groups: { type: Array,  default: [],   },
+    changes : { type: Object, default : {}, }
   },
   data () {
     return {
@@ -74,6 +75,54 @@ export default {
     }
   },
   methods:{
+    change_existing(old_value, new_value, change_type){
+        for(const change_string in this.changes){
+            let change_key = change_string.split("\n")
+            var old_category, old_color, old_skill;
+            var changed = false;
+            if(this.changes[change_string] == null){
+                old_category = change_key[0];
+                old_color = change_key[1];
+                old_skill = change_key[2];
+            } else if(this.changes[change_string] == false){
+                continue
+            } else {
+                old_category = this.changes[change_string][0];
+                old_color = this.changes[change_string][1];
+                old_skill = this.changes[change_string][2];
+            }
+            if(change_type == "del_category" && old_category == old_value){
+              this.changes[change_string] = false
+            }
+            if(change_type == "del_color" && old_color == old_value){
+              this.changes[change_string] = false
+            }
+            if(change_type == "del_skill" && old_category + "\n" + old_color + "\n" + old_skill == old_value){
+              this.changes[change_string] = false
+            }
+            if(change_type == "category" && old_category == old_value){
+                this.changes[change_string] = [new_value, old_color, old_skill];
+                changed = true;
+            }
+            if(change_type == "color" && old_color == old_value){
+                this.changes[change_string] = [old_category, new_value, old_skill];
+                changed = true;
+            }
+            if(change_type == "skill" && old_skill == old_value){
+                this.changes[change_string] = [old_category, old_color, new_value];
+                changed = true;
+            }
+            if(change_type == "move" && old_category + "\n" + old_color + "\n" + old_skill == old_value){
+                let new_category = new_value.split("\n")[0];
+                let new_color = new_value.split("\n")[1];
+                this.changes[change_string] = [new_category, new_color, old_skill];
+                changed = true;
+            }
+            if(changed && change_string == this.changes[change_string].join("\n")){
+                this.changes[change_string] = null
+            }
+        }
+    },
     restrictChars($event){
         if ($event.charCode === 13) {
             $event.preventDefault();
@@ -84,6 +133,7 @@ export default {
     },
     reskill($event, category, color, index){
       var group = this.getGroupsByColorCategory(color, category);
+      this.change_existing(group[0].skills[index].skill, $event.target.innerText, "skill")
       group[0].skills[index].skill = $event.target.innerText;
     },
     getGroupsByColorCategory( color, category){
@@ -119,10 +169,30 @@ export default {
         from.tags.splice(index, 1);
       }
     },
+    onEndDelete(evt){
+        let old_category = evt.from.accessKey.split("\n")[0];
+        let old_color = evt.from.accessKey.split("\n")[1];
+        let old_skill = evt.item.accessKey;
+        this.isDragging = false;
+        this.change_existing(old_category + "\n" + old_color + "\n" + old_skill, new_category + "\n" + new_color, "del_skill")
+    },
     onMove ({relatedContext, draggedContext}) {
       const relatedElement = relatedContext.element;
       const draggedElement = draggedContext.element;
       return true;
+    },
+    onEnd(evt) {
+      let old_category = evt.from.accessKey.split("\n")[0];
+      let old_color = evt.from.accessKey.split("\n")[1];
+      let old_skill = evt.item.accessKey;
+      if(evt.to.accessKey == "trashcan"){
+          this.change_existing(old_category + "\n" + old_color + "\n" + old_skill, null, "del_skill")
+      } else {
+          let new_category = evt.to.accessKey.split("\n")[0];
+          let new_color = evt.to.accessKey.split("\n")[1];
+          this.change_existing(old_category + "\n" + old_color + "\n" + old_skill, new_category + "\n" + new_color, "move")
+      }
+      this.isDragging = false;
     },
     getOptions(place) {
       return  {
