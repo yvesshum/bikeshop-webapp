@@ -208,7 +208,7 @@ export default {
     
 }
 </script>
-<style scoped>\
+<style scoped>
 a, a:hover, a:active, a:link {
   color:inherit;
   text-decoration: none;
@@ -221,7 +221,6 @@ h5 {
 }
 
 .header-container {
-  /* padding-top: 6rem; */
   margin: auto;
   max-width: 750px;
   background-color: #ffffff;
