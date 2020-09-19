@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Home from "./views/Home.vue";
-import { firebase } from "./firebase.js";
 import Login from "./views/Login.vue";
 import CheckIn from "./views/youth/CheckIn.vue";
 import ProfileLookup from "./views/youth/ProfileLookup.vue";
@@ -366,7 +365,6 @@ const getIsAdmin = isAdmin;
 const getIsLoggedIn = isLoggedIn;
 
 router.beforeEach(async (to, from, next) => {
-  console.log(isStaff);
   let isStaff = await getIsStaff();
   let isAdmin = await getIsAdmin();
   const loggedIn = await getIsLoggedIn();
