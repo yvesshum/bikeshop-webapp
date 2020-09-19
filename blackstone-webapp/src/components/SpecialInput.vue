@@ -164,6 +164,7 @@ use v-model. Whenever one of these is changed, it updates the other.
                 :placeholder="args.placeholder"
                 rows="3"
                 max-rows="6"
+                maxlength="3000"
             ></b-form-textarea>
         </div>
 
@@ -173,7 +174,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+            <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder" maxlength="400"></b-form-input>
         </div>
     </div>
 </template>

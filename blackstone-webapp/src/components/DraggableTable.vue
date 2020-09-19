@@ -133,8 +133,12 @@ export default {
     },
     reskill($event, category, color, index){
       var group = this.getGroupsByColorCategory(color, category);
-      this.change_existing(group[0].skills[index].skill, $event.target.innerText, "skill")
-      group[0].skills[index].skill = $event.target.innerText;
+      console.log("Inner text: " + $event.target.innerText)
+      let new_skill = $event.target.innerText.substring(0, 100);
+      console.log(new_skill);
+      this.change_existing(group[0].skills[index].skill, new_skill, "skill")
+      $event.target.innerText = $event.target.innerText.substring(0,100);
+      group[0].skills[index].skill = new_skill;
     },
     getGroupsByColorCategory( color, category){
       for(var i = 0; i < this.groups.length; i++){
