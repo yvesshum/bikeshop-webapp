@@ -8,7 +8,9 @@
                 :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
                 pageName="Blog Page"
             ></PageHeader>
-            <p>{{ this.blog.description }}</p>
+            <div style="margin: 1.5rem 1.75rem 2rem;">
+              {{ this.blog.description }}
+            </div>
             <!-- Blog post cards -->
             <div style="padding: 0 1rem">
                 <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" :deleteCallback="postDeleteCallback"/>
@@ -222,5 +224,6 @@ export default {
     width: 60px;
     height: 60px;
     border-radius: 30px;
+    z-index: 10;
 }
 </style>

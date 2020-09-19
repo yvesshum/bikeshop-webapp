@@ -30,6 +30,7 @@
 
         <!-- Edit modal -->
         <NewBlogPost
+            :edit="true"
             :title="PostObj.title"
             :subtitle="PostObj.subtitle"
             :name="PostObj.posterName"
@@ -242,7 +243,7 @@ export default {
     position: absolute;
     top: 1.25rem;
     right: 1rem;
-    z-index: 10;
+    z-index: 1;
 }
 
 .delete_button:hover {

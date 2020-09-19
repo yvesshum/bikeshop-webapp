@@ -2,7 +2,7 @@
     <b-container>
         <b-modal v-model="showModal" size="lg" @hidden="closeModal" :hide-footer="true">
             <div style="padding: 1rem 2rem;">
-                <b-card-title style="margin-bottom: 1rem">Create a blog post!</b-card-title>
+                <b-card-title style="margin-bottom: 1rem">{{ modalTitle }}</b-card-title>
                 <b-form @submit="onSubmit" @reset="onReset">
                     <!-- Title -->
                     <b-form-group id="input-group-1" label="Title:" label-for="input-1">
@@ -43,7 +43,7 @@
                     </b-form-group>
 
                     <b-button type="submit" variant="success" style="margin-right: 12px">Submit</b-button>
-                    <b-button type="reset" variant="danger">Reset</b-button>
+                    <b-button type="reset" variant="danger">{{ resetText }}</b-button>
                 </b-form>
             </div>
         </b-modal>
@@ -59,6 +59,10 @@ export default {
     name: "NewBlogPost",
     props: {
         show: Boolean,
+        edit: {
+            default: false,
+            type: Boolean,
+        },
         title: {
             default: "",
             type: String,
@@ -101,6 +105,14 @@ export default {
             ],
         };
     },
+    computed: {
+      modalTitle() {
+        return this.edit ? "Edit Blog Post" : "Create a Blog Post!"
+      },
+      resetText() {
+        return this.edit ? "Reset Edits" : "Reset"
+      }
+    },
     components: {
         VueEditor,
     },
@@ -121,10 +133,17 @@ export default {
 
         onReset(evt) {
             evt.preventDefault();
-            this.blogTitle = "";
-            this.blogSubtitle = "";
-            this.blogPosterName = "";
-            this.blogContent = "";
+            if (this.edit) {
+              this.blogTitle = this.title;
+              this.blogSubtitle = this.subtitle;
+              this.blogPosterName = this.name;
+              this.blogContent = this.content;
+            } else {
+              this.blogTitle = "";
+              this.blogSubtitle = "";
+              this.blogPosterName = "";
+              this.blogContent = "";
+            }
         },
 
         closeMsgModal() {
