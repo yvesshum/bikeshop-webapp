@@ -3,7 +3,6 @@ import Router from "vue-router";
 import Home from "./views/Home.vue";
 import { firebase } from "./firebase.js";
 import Login from "./views/Login.vue";
-import TestHome from "./views/TestHome.vue";
 import CheckIn from "./views/youth/CheckIn.vue";
 import ProfileLookup from "./views/youth/ProfileLookup.vue";
 import ProfileLookupStaff from "./views/staff/ProfileLookupAndEditing.vue";
@@ -63,14 +62,6 @@ const router = new Router({
       path: "/login",
       name: "login",
       component: Login,
-    },
-    {
-      path: "/TestHome",
-      name: "TestHome",
-      component: TestHome,
-      meta: {
-        requiresAuth: true,
-      },
     },
     {
       path: "/check-in",
