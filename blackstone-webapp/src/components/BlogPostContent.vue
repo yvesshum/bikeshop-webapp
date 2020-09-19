@@ -9,6 +9,7 @@
       <p class="posted">Posted {{ posted }}</p>
       <p class="posted">by {{ post.posterName }}</p>
     </div>
+    <hr class="divider">
     <vue-editor
       v-model="postContent"
       disabled
@@ -90,5 +91,10 @@ export default {
 test >>> .owql-align-center {
   border-width: 1rem;
   border-color: blue;
+}
+
+::v-deep #quill-container {
+  border: none;
+  margin: -12px -15px
 }
 </style>
