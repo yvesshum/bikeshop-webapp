@@ -1,7 +1,10 @@
 <template>
   <div class="special_input_reset">
 
-    <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args" v-model="edit_value" style="display: inline-block;">
+    <SpecialInput ref="edit_input" :inputType="type" :arguments="input_args"
+      :value="inner_value" @input="v => edit_value = v"
+      style="display: inline-block;"
+    >
     </SpecialInput>
 
     <b-button ref="reset_button" squared :disabled="!changed" :variant="reset_variant" v-on:click="reset()" style="display: inline-block; float: right;" v-b-tooltip.hover.html="tooltip_data">
@@ -64,6 +67,17 @@ export default {
       return (this.changed && this.get_original_string().length > 0)
         ? `Reset to ${this.get_original_string()}`
         : "";
+    },
+
+    // This is the value passed down to the SpecialInput element
+    // Since datepicker doesn't seem to support null/undefined inputs, this creates an imitation empty date object if there is no entry for it in the database
+    inner_value: function() {
+      if (this.type == "Date" && this.edit_value == null) {
+        return {toDate: () => {return {toISOString: () => ""}}};
+      }
+      else {
+        return this.edit_value;
+      }
     },
   },
 
@@ -131,6 +145,9 @@ export default {
         // Display a date in standard datestring format
         // TODO: Native js Date() is setting one day behind, for some reason
         case "Date":
+          if (val == null) {
+            return "";
+          }
           let date = this.get_as_date(val);
           return date.toDateString();
 
