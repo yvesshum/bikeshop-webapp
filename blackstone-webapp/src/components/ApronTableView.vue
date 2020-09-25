@@ -258,6 +258,13 @@ export default {
 
           // Display the number of achieved skills for this apron in the header
           groupHeader: (value, count, data, group) => {
+
+            // If the achievedSkills prop has not yet been passed, we don't have anything to display
+            // Removing this doesn't break anything, it just throws a bunch of console errors on window resize, so this is a bit cleaner from the front-end
+            if (this.achievedSkills == null) {
+              return "";
+            }
+
             let num_achieved = data.reduce(
               (acc, curr) => acc += (is_achieved_func(curr) ? 1 : 0)
               , 0
