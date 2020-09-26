@@ -121,8 +121,6 @@ Emits:
                         if (should_load(this.loaded_groups[key])) {
                             this.loaded_groups[key] = GROUP.LOADING;
 
-                            console.log("Group:", group);
-
                             // Query the database for all docs in this group
                             this.collection.where(this.groupBy, "==", key).get().then(
 
@@ -132,10 +130,10 @@ Emits:
                                     this.loaded_groups[key] = GROUP.LOADED;
                                 },
 
-                                // Catch an error
+                                // If query fails, set group status to FAILED and close it
                                 error => {
                                     this.loaded_groups[key] = GROUP.FAILED;
-                                    // TODO: Manually close the group
+                                    group.hide();
                                 }
                             );
                         };
