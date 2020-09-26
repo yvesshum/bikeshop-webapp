@@ -52,7 +52,7 @@ import { db } from "../../firebase";
 import moment from "moment";
 import ProfileFields from "@/components/ProfileFields.vue"
 import ApronBar from "@/components/ApronBar.vue"
-import CollectionTable from "@/components/CollectionTable.vue"
+// import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
 import PageHeader from "@/components/PageHeader.vue"

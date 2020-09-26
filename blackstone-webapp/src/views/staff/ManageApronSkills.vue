@@ -320,13 +320,13 @@
                             let old_color = change_key[1];
                             let old_skill = change_key[2];
                             if(changes[change_string] == false){
-                                if(data["Apron Skills Alt"] != undefined && data["Apron Skills Alt"][old_color] != undefined && data["Apron Skills Alt"][old_color]["Skills"][old_category] != undefined){
+                                if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
                                     console.log("Has skill and category")
-                                    let skill_array = data["Apron Skills Alt"][old_color]["Skills"][old_category];
+                                    let skill_array = data["Apron Skills"][old_color]["Skills"][old_category];
                                     let orig_length = skill_array.length;
                                     console.log(orig_length)
-                                    data["Apron Skills Alt"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
-                                    let new_length = data["Apron Skills Alt"][old_color]["Skills"][old_category].length;
+                                    data["Apron Skills"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
+                                    let new_length = data["Apron Skills"][old_color]["Skills"][old_category].length;
                                     console.log(new_length)
                                     if(new_length < orig_length){
                                         console.log("deleting!")
@@ -338,25 +338,25 @@
                             let new_category = changes[change_string][0];
                             let new_color = changes[change_string][1];
                             let new_skill = changes[change_string][2];
-                            if(data["Apron Skills Alt"] != undefined && data["Apron Skills Alt"][old_color] != undefined && data["Apron Skills Alt"][old_color]["Skills"][old_category] != undefined){
-                                for(var i = 0; i < data["Apron Skills Alt"][old_color]["Skills"][old_category].length; i++){
+                            if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
+                                for(var i = 0; i < data["Apron Skills"][old_color]["Skills"][old_category].length; i++){
                                     // console.log(data["Apron Skills"][old_category][old_color][i])
                                     // console.log(old_skill)
-                                    if(data["Apron Skills Alt"][old_color]["Skills"][old_category][i] == old_skill){
+                                    if(data["Apron Skills"][old_color]["Skills"][old_category][i] == old_skill){
                                         console.log("Making a change!")
-                                        data["Apron Skills Alt"][old_color]["Skills"][old_category].splice(i, 1);
-                                        if(data["Apron Skills Alt"][new_color] != undefined){
-                                            if(data["Apron Skills Alt"][new_color]["Skills"][new_category] != undefined){
-                                                data["Apron Skills Alt"][new_color]["Skills"][new_category].push(new_skill)
+                                        data["Apron Skills"][old_color]["Skills"][old_category].splice(i, 1);
+                                        if(data["Apron Skills"][new_color] != undefined){
+                                            if(data["Apron Skills"][new_color]["Skills"][new_category] != undefined){
+                                                data["Apron Skills"][new_color]["Skills"][new_category].push(new_skill)
                                             } else {
-                                                data["Apron Skills Alt"][new_color]["Skills"][new_category] = [new_skill]
+                                                data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill]
                                             }
                                         } else {
                                             console.log("Moving to a brand new color")
-                                            data["Apron Skills Alt"][new_color] = {};
-                                            data["Apron Skills Alt"][new_color]["Achieved"] = false;
-                                            data["Apron Skills Alt"][new_color]["Skills"] = {}
-                                            data["Apron Skills Alt"][new_color]["Skills"][new_category] = [new_skill];
+                                            data["Apron Skills"][new_color] = {};
+                                            data["Apron Skills"][new_color]["Achieved"] = false;
+                                            data["Apron Skills"][new_color]["Skills"] = {}
+                                            data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill];
                                         }
                                         changed = true;
                                         break;
