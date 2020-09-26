@@ -3,7 +3,7 @@
 		<div v-if="ready">
 			<top-bar />
 			<h1>Class Email Lookup</h1>
-			<b-container>
+			<div>
 				<div style="margin: 0 auto; width: 30rem">
 					<p>Select class:</p>
 					<SpecialInput inputType="Class" v-model="selectedClass" />
@@ -53,7 +53,7 @@
 						>Copy secondary parent emails to clipboard</b-button
 					>
 				</div>
-			</b-container>
+			</div>
 			<Footer />
 		</div>
 		<div v-else class="loading">
