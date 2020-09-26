@@ -112,7 +112,7 @@ export default {
           sorter: this.work_hours_sorter
         },
         { // Notes
-          title: "Notes", field: "Notes", formatter: this.format_notes,
+          title: "Notes", field: "Notes", formatter: "textarea",
           headerFilter: true,
         },
       ],
@@ -137,7 +137,7 @@ export default {
           sorter: this.date_sorter,
         },
         { // Notes
-          title: "Notes", field: "Notes", formatter: this.format_notes,
+          title: "Notes", field: "Notes", formatter: "textarea",
           headerFilter: true,
         },
       ],
@@ -234,7 +234,7 @@ export default {
               if (field_name == "Notes") {
                 table_headers.push({
                   title: field_name, field: field_name, headerFilter: true,
-                  formatter: this.format_notes,
+                  formatter: "textarea",
                 });
                 break;
               }
@@ -368,11 +368,6 @@ export default {
       });
 
       return `<div>${time}</div>`;
-    },
-
-    format_notes: function(cell) {
-      let val = cell.getValue();
-      return `<i>${val == null ? "" : val}</i>`
     },
 
 
