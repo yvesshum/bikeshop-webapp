@@ -273,7 +273,7 @@ export default {
             var apron_level = this.achievedSkills[value];
 
             // If applicable, display the date this apron level was earned
-            if (apron_level != undefined && apron_level.Achieved !== false) {
+            if (apron_level != undefined && apron_level.Achieved !== false && apron_level.Achieved !== undefined) {
               let date = new Date(apron_level.Achieved.seconds * 1000);
               return `${value} Apron Skills <span style='float:right;'>Earned ${date.toDateString()} &mdash; ${num_achieved}/${count} Achieved</span>`;
             }
