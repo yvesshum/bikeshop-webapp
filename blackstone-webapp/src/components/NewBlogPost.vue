@@ -1,5 +1,4 @@
 <template>
-    <b-container>
         <b-modal v-model="showModal" size="lg" @hidden="closeModal" :hide-footer="true">
             <div style="padding: 1rem 2rem;">
                 <b-card-title style="margin-bottom: 1rem">{{ modalTitle }}</b-card-title>
@@ -51,7 +50,6 @@
                 </b-form>
             </div>
         </b-modal>
-    </b-container>
 </template>
 
 <script>
