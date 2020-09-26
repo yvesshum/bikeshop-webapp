@@ -153,7 +153,7 @@ export default {
     await this.ensure_data_loaded();
     this.$emit("load_complete");
 
-    console.log(this.tree_boxes);
+    // console.log(this.tree_boxes);
   },
 
   computed: {
@@ -216,7 +216,7 @@ export default {
         });
       });
 
-      console.log(result);
+      // console.log(result);
       return result;
     },
   },
@@ -313,7 +313,7 @@ export default {
           return `tree-skills-container ${top} ${bottom}`;
         default:
           return "";
-      };
+      }
     },
 
     get_box_style: function(box) {

@@ -219,7 +219,7 @@ export default {
       let categoryHourSum = 0;
       for (let category in this.hours) {
         categoryHourSum += this.parseHours(this.hours[category]);
-        console.log(this.hours[category]);
+        // console.log(this.hours[category]);
       }
 
       //add to GlobbalPendingHours

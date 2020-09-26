@@ -48,7 +48,7 @@ export default {
     },
 
     parseFields(items, dest) {
-      console.log(items);
+      // console.log(items);
       for (let i = 0; i < items.length; i ++) {
         dest.push({
           "data": items[i],
@@ -59,7 +59,7 @@ export default {
     async getFields() {
       let fields = await db.collection("GlobalPeriods").doc("metadata").get();
       fields = fields.data();
-      console.log(fields);
+      // console.log(fields);
       if (fields == null) {
         window.alert("Unable to get metadata from Global Periods");
       }

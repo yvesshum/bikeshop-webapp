@@ -480,7 +480,7 @@ export default {
         "Apron Color": new_color,
       };
 
-      console.log("Saving changes to database:", changes);
+      // console.log("Saving changes to database:", changes);
 
       db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
         window.alert("Error: " + err);

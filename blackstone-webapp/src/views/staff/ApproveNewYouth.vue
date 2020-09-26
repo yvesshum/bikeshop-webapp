@@ -197,9 +197,9 @@
               let s = await db.collection("GlobalPeriods").doc(currentYear).get();
               var current = s.data();
               for(var i = 0; i < current[this.currentSeason].length; i++){
-                  console.log(current[this.currentSeason][i])
-                  console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
-                  console.log("Row returning id: " + row["ReturningID"]);
+                  // console.log(current[this.currentSeason][i])
+                  // console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                  // console.log("Row returning id: " + row["ReturningID"]);
                   if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
                       current[this.currentSeason].splice(i, 1);
                   }
@@ -224,7 +224,7 @@
                 let questions = this.essayQuestions[currentClass];
                 var currentAnswersLocal = [];
                 if(this.checkSet(questions)){
-                    console.log("Questions: " + questions)
+                    // console.log("Questions: " + questions)
                     for (let i = 0; i < questions.length; i++){
                         if(this.checkSet(curRow["Essay"][questions[i]])){
                             currentAnswersLocal.push({
@@ -308,10 +308,10 @@
                         let curYouth = curYouthReg.data();
                         if(curYouth != null){
                           for(var key in curYouth){
-                            console.log("Key")
-                            console.log(key)
-                            console.log("Data")
-                            console.log(data)
+                            // console.log("Key")
+                            // console.log(key)
+                            // console.log("Data")
+                            // console.log(data)
                             if(data[key] == undefined || data[key] == null){
                               data[key] = curYouth[key];
                             }
@@ -337,8 +337,8 @@
                     if(status){
                       failure = true;
                     }
-                    console.log(formatTimeStampToDate(data["Timestamp"]));
-                    console.log(formatTimeStampToDate(data["DOB"]));
+                    // console.log(formatTimeStampToDate(data["Timestamp"]));
+                    // console.log(formatTimeStampToDate(data["DOB"]));
                     data["Timestamp"] = formatTimeStampToDate(data["Timestamp"])
                     data["Birthdate"] = formatTimeStampToDate(data["DOB"]);
                     if(!failure){
@@ -392,10 +392,10 @@
                       input["ActivePeriods"][this.currentSeason] = input["Class"];
                     }
                     if (this.checkSet(input["Old Essay Answers"])) {
-                      console.log("Old Essay Answers: " + input["Old Essay Answers"]);
+                      // console.log("Old Essay Answers: " + input["Old Essay Answers"]);
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
                     } else{
-                      console.log("Old Essay Answers not set");
+                      // console.log("Old Essay Answers not set");
                       input["Old Essay Answers"] = {};
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
                     }
@@ -403,21 +403,21 @@
                       input["Apron Skills"] = {};
                     }
                     delete input["ReturningID"];
-                    console.log(input)
+                    // console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
-                    console.log("Current year " + currentYear);
-                    console.log("Current season " + this.currentSeason);
+                    // console.log("Current year " + currentYear);
+                    // console.log("Current season " + this.currentSeason);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
                     if(current[this.currentSeason] == undefined){
                         current[this.currentSeason] = [];
-                        console.log("New Season");
+                        // console.log("New Season");
                     }
                     for(var i = 0; i < current[this.currentSeason].length; i++){
-                        console.log(current[this.currentSeason][i])
-                        console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
-                        console.log("Row returning id: " + row["ReturningID"]);
+                        // console.log(current[this.currentSeason][i])
+                        // console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                        // console.log("Row returning id: " + row["ReturningID"]);
                         if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
                             this.closeLoadingModal();
                             this.overwriteID = row["ReturningID"];
@@ -448,12 +448,12 @@
                     }
                 } else {
                     await rb.ref('Youth ID Number').once("value", snapshot => {
-                        console.log("Snapshot value: ")
-                        console.log(snapshot.val())
+                        // console.log("Snapshot value: ")
+                        // console.log(snapshot.val())
                         newIDs.push(snapshot.val()["value"]);
                     })
 
-                    console.log(newIDs[0])
+                    // console.log(newIDs[0])
                     let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
 
                     let input = {};
@@ -480,15 +480,15 @@
                     
                     delete input["ReturningID"];
 
-                    console.log(input)
+                    // console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
-                    console.log("Current year: " + currentYear);
+                    // console.log("Current year: " + currentYear);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
                     if(current[this.currentSeason] == undefined){
                         current[this.currentSeason] = [];
-                        console.log("New Season");
+                        // console.log("New Season");
                     }
                     current[this.currentSeason].push({
                       "Class" : row["Class"],
@@ -496,8 +496,8 @@
                       "ID" : newIDs[0].toString(),
                       "Last Name" : row["Last Name"]
                     });
-                    console.log("Current season: " + this.currentSeason);
-                    console.log("Current: " + current[this.currentSeason]);
+                    // console.log("Current season: " + this.currentSeason);
+                    // console.log("Current: " + current[this.currentSeason]);
                     let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
                     if (periodStatus) {
                         this.closeLoadingModal();
@@ -524,7 +524,7 @@
                     }
 
                     let logStatus = await submitRef.set(input);
-                    console.log("Has set input")
+                    // console.log("Has set input")
 
                     if (logStatus) {
                         this.closeLoadingModal();
@@ -533,7 +533,7 @@
                     }
                 }
 
-                console.log("About to delete registration")
+                // console.log("About to delete registration")
                 let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
 
                 if (status) {
@@ -649,7 +649,7 @@
                         Type: req_vals[i]
                     });
                 }
-                console.log(currentClass)
+                // console.log(currentClass)
                 var opt_keys = [];
                 var opt_vals = [];
                 forKeyVal(fields["optional"], function(name, val, n) {
@@ -665,7 +665,7 @@
                     });
                 }
                 var questions = this.essayQuestions[currentClass];
-                console.log(questions);
+                // console.log(questions);
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i ++){
                         if(this.checkSet(curRow["Essay"][questions[i]])){
@@ -686,7 +686,7 @@
                     }
                 }
                 this.editSelected = editSelectedLocal;
-                console.log(this.editSelected, this.selected);
+                // console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
             
@@ -719,8 +719,8 @@
 
                 var newValues = {}
                 newValues["Essay"] = this.selected[0]["Essay"];
-                console.log("Old Essays")
-                console.log(newValues["Essay"])
+                // console.log("Old Essays")
+                // console.log(newValues["Essay"])
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
                       var value = this.editSelected[i]["Value"];
@@ -736,7 +736,7 @@
                           }
                       }
                 }
-                console.log("New values: " + JSON.stringify(newValues));
+                // console.log("New values: " + JSON.stringify(newValues));
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     this.closeLoadingModal();
@@ -748,9 +748,9 @@
 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
-                        console.log(this.editSelected);
+                        // console.log(this.editSelected);
                         for(var index in this.editSelected){
-                            console.log(this.editSelected[index]);
+                            // console.log(this.editSelected[index]);
                             if(this.editSelected[index].NewValue != undefined){
                                 if(this.editSelected[index].Type != "Essay"){
                                     if(this.editSelected[index].Category == "DOB"){

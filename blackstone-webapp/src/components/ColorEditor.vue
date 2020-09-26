@@ -194,9 +194,9 @@ export default {
     },
     methods: {
         handle_field_type_change(type) {	
-            console.log('handle field type change called', type);	
+            // console.log('handle field type change called', type);	
             this.modal.add.initial_value = initSpecialInputVal(type);	
-            console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
+            // console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
             this.$refs.addInput.updateInputType(type);	
         },
 
@@ -233,7 +233,7 @@ export default {
 
             let updateVal = {};
             updateVal[this.sourceFieldName] = fields;
-            console.warn('uv', updateVal)
+            // console.warn('uv', updateVal)
 
             let updateStatus = await db.collection("GlobalVariables")
                                 .doc(this.sourceDocument).update(updateVal);

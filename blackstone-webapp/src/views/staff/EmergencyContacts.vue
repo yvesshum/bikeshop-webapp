@@ -122,11 +122,11 @@ export default {
     },
 
     load_start: function() {
-      console.log("Load has started");
+      // console.log("Load has started");
     },
 
     load_complete: function() {
-      console.log("Load is complete");
+      // console.log("Load is complete");
       this.allReady = true;
     },
   },

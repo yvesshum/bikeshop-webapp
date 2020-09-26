@@ -92,7 +92,7 @@ export default {
             years.push(moment().add(1, 'years').format("YY"));
 
             for (let i = 0; i < years.length; i++) {
-                console.log('l', this.periods.seasons)
+                // console.log('l', this.periods.seasons)
                 for (let j = 0; j < this.periods.seasons.length; j++) {
                     this.periodOptions.push({
                         value: this.periods.seasons[j] + " " + years[i],

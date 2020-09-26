@@ -205,9 +205,9 @@ export default {
     },
     methods: {
         handle_field_type_change(type) {	
-            console.log('handle field type change called', type);	
+            // console.log('handle field type change called', type);	
             this.modal.add.initial_value = initSpecialInputVal(type);	
-            console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
+            // console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
             this.$refs.addInput.updateInputType(type);	
         },
 
@@ -318,7 +318,7 @@ export default {
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            console.warn(this.collectionsToEdit[j], id, data)
+                            // console.warn(this.collectionsToEdit[j], id, data)
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
                     }
@@ -330,7 +330,7 @@ export default {
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            console.warn(path, data)
+                            // console.warn(path, data)
 
                             await db.doc(path).set(data);
                         })

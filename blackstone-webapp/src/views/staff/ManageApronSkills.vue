@@ -493,20 +493,20 @@ export default {
                 data["Apron Skills Alt"][old_color]["Skills"][old_category] !=
                   undefined
               ) {
-                console.log("Has skill and category");
+                // console.log("Has skill and category");
                 let skill_array =
                   data["Apron Skills Alt"][old_color]["Skills"][old_category];
                 let orig_length = skill_array.length;
-                console.log(orig_length);
+                // console.log(orig_length);
                 data["Apron Skills Alt"][old_color]["Skills"][
                   old_category
                 ] = skill_array.filter(skill_name => skill_name != old_skill);
                 let new_length =
                   data["Apron Skills Alt"][old_color]["Skills"][old_category]
                     .length;
-                console.log(new_length);
+                // console.log(new_length);
                 if (new_length < orig_length) {
-                  console.log("deleting!");
+                  // console.log("deleting!");
                   changed = true;
                 }
               }
@@ -535,7 +535,7 @@ export default {
                     i
                   ] == old_skill
                 ) {
-                  console.log("Making a change!");
+                  // console.log("Making a change!");
                   data["Apron Skills Alt"][old_color]["Skills"][
                     old_category
                   ].splice(i, 1);
@@ -554,7 +554,7 @@ export default {
                       ] = [new_skill];
                     }
                   } else {
-                    console.log("Moving to a brand new color");
+                    // console.log("Moving to a brand new color");
                     data["Apron Skills Alt"][new_color] = {};
                     data["Apron Skills Alt"][new_color]["Achieved"] = false;
                     data["Apron Skills Alt"][new_color]["Skills"] = {};
@@ -787,7 +787,7 @@ export default {
           );
           this.groups = new_groups;
           this.change_existing(this.selected_category, null, "del_category");
-          console.log(this.changes);
+          // console.log(this.changes);
           return;
         }
       }
@@ -831,7 +831,7 @@ export default {
         this.categories.push(category);
         for (var j = 0; j < this.colors.length; j++) {
           let color = this.colors[j].name;
-          console.log("Mount color " + color);
+          // console.log("Mount color " + color);
           var skills = [];
           if (categoryData[category][color] != undefined) {
             for (var i = 0; i < categoryData[category][color].length; i++) {

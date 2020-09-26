@@ -270,21 +270,21 @@ export default {
             this.classOptions = [];
             // { value: "12", text: '12' },
             let classes = query.data().Classes
-            console.log(classes);
+            // console.log(classes);
             classes.forEach(c => {
                 this.classOptions.push({
                     value: Object.keys(c)[0],
                     text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
-            console.log("Class options", this.classOptions)
+            // console.log("Class options", this.classOptions)
         },
 
         async getPeriodOptions() {
             let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
             this.periodOptions = [];
             seasons = seasons.data().Seasons;
-            console.log('sget', seasons);
+            // console.log('sget', seasons);
             let years = [];
             years.push(moment().subtract(1, 'years').format("YY"));
             years.push(moment().format("YY"));

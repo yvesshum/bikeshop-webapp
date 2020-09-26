@@ -156,7 +156,7 @@ export default {
       this.viewProfileModalVisible = true;
       let snapshot = db.collection("GlobalYouthProfile").doc(ID);
       this.currentProfile = await snapshot.get();
-      console.log(this.currentProfile.data())
+      // console.log(this.currentProfile.data())
       // window.alert("This is an upcoming feature :) look forward to it!")
     }
   },

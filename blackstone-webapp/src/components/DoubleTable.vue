@@ -113,11 +113,11 @@
             } else {
                 if (this._placeholders.left == null) {
                     this._placeholders.left = "";
-                };
+                }
                 if (this._placeholders.right == null) {
                     this._placeholders.right = "";
-                };
-            };
+                }
+            }
 
             // Initialize what options will be passed to both tables
             this.args = {...this.default_args, ...this.options};
@@ -213,7 +213,7 @@
 
                         // Default - Unrecognized specifier
                         default:
-                            console.log("Invalid specifier \"" + key + "\" in pending_data object.");
+                            // console.log("Invalid specifier \"" + key + "\" in pending_data object.");
                             break;
                     }
                 }.bind(this));
@@ -253,7 +253,7 @@
 
             // Runs if row movement fails for some reason
             row_change_fail: function(fromRow, toRow, fromTable){
-                console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
+                // console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
             },
 
             // Manually move a row to one table, removing from the other if applicable
@@ -271,16 +271,16 @@
                     from_table = this.left_table;
                 }
                 else {
-                    console.log("Unrecognized side \"" + to_side + "\". Please use \"left\" or \"right\".");
+                    // console.log("Unrecognized side \"" + to_side + "\". Please use \"left\" or \"right\".");
                     return;
-                };
+                }
 
                 this.remove_row(row, from_table, false);
                 to_table.addRow(row);
 
                 if (allow_emit) {
                     this.emit_updates();
-                };
+                }
             },
 
             // Remove a row from the given table
@@ -291,7 +291,7 @@
 
                 if (allow_emit) {
                     this.emit_updates();
-                };
+                }
             },
         }
     }

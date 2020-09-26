@@ -352,7 +352,7 @@ export default {
 
         // Add fields to array of sections
         temp.push({Name, Data});
-      };
+      }
     },
 
     table_sections_show: function() {
@@ -452,7 +452,7 @@ export default {
   mounted: function() {
     if (this.profile != undefined) {
       this.load_profile(this.profile);
-    };
+    }
 
     // Add a listener to the header document to update expected fields whenever they change
     HeaderRef.onSnapshot(doc => {
@@ -555,13 +555,13 @@ export default {
             this.$set(this.local_values, key, data[key]);
             this.$set(this.fields_used, key, true);
           }
-        };
+        }
       }
 
       function field_used(field) {
         // TODO: This might have to be more sophisticated for different data types
         return field !== null && field !== undefined && field !== "";
-      };
+      }
     },
 
     // Set the status of a given field in the Status object and make appropriate changes
@@ -669,8 +669,8 @@ export default {
           if (this.is_changed(poss[n])) {
             return true;
           }
-        };
-      };
+        }
+      }
 
       // If we made it this far, there must not be any changes
       return false;
@@ -714,7 +714,7 @@ export default {
               new_val: input_field.get_changed_string(),
               old_val: input_field.get_original_string(),
           };
-        };
+        }
       });
     },
 
@@ -772,7 +772,7 @@ export default {
         else {
           this.local_values[key] = this.input_fields[key].get_changed_value();
         }
-      };
+      }
 
       // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
@@ -788,7 +788,7 @@ export default {
         if (this.input_fields[key].is_blank()) {
           this.set_row_status(key, Status.X);
           this.fields_used[key] = false;
-        };
+        }
       });
     },
 

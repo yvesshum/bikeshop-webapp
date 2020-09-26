@@ -50,7 +50,7 @@ export function forKeyVal(arr, op) {
 		Object.keys(arr).forEach(key => { op(key, arr[key]); })
 	}
 
-};
+}
 
 
 
@@ -99,7 +99,7 @@ export function mapKeyVal(arr, op) {
 
 	// Return the result array
 	return result;
-};
+}
 
 
 /* Maps a one- or two-input function onto the key/value pairs of an Object.
@@ -167,7 +167,7 @@ export function forEach_ObjObjArr(obj, f) {
 			}
 		});
 	});
-};
+}
 
 
 // Error checking to get a Date object from the database
@@ -176,7 +176,7 @@ export function get_as_date(date_obj) {
   return (date_obj.toDate == undefined)
 	? new Date(date_obj.seconds * 1000)
 	: date_obj.toDate();
-};
+}
 
 
 

@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "bikeshoptesting-9e034",
+    "production": "blackstone-production"
+  }
+}

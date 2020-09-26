@@ -151,7 +151,7 @@ export default {
     },
 
     async fetchMoreBlogs() {
-      console.log("fetch", this.lastSeenDocSnapshot);
+      // console.log("fetch", this.lastSeenDocSnapshot);
       let posts = await this.getBlogPosts(this.lastSeenDocSnapshot);
       this.blogPosts = this.blogPosts.concat(posts);
     },

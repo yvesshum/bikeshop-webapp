@@ -140,7 +140,7 @@ export class Period {
 	        new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
 	     } else {
 	        new_period = new Period(Period.seasons[index+1], this.year);
-	     };
+	     }
 
 	     return new_period;
 	}
@@ -171,7 +171,7 @@ export class Period {
 	        new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
 	     } else {
 	        new_period = new Period(Period.seasons[index-1], this.year);
-	     };
+	     }
 
 	     return new_period;
 	}
@@ -232,7 +232,7 @@ export class Period {
 		});
 		return result;
 	}
-};
+}
 
 Period.prototype.toString = function() {
 	return `${this.season} ${this.year}`;

@@ -479,14 +479,14 @@ Emits:
 
                         // If the given period does not exist, send a warning in the console and skip to the next period
                         if (new_profiles == undefined) {
-                            console.warn("Cannot load youths from period \"" + Period.concat(season, year) + "\".");
+                            // console.warn("Cannot load youths from period \"" + Period.concat(season, year) + "\".");
                             return;
                         }
 
                         // If there are any duplicates within the period, send a warning
                         let duplicates = Youth.duplicates(new_profiles);
                         if (duplicates.length > 0) {
-                            console.warn("Duplicate profiles found in \"" + Period.concat(season, year) + "\": ", duplicates);
+                            // console.warn("Duplicate profiles found in \"" + Period.concat(season, year) + "\": ", duplicates);
                         }
 
                         // Add non-duplicate youth to the full array
@@ -575,7 +575,7 @@ Emits:
 
                     // If we've made it to this point, all of the fields in the profile are identical
                     // TODO: Error handling for this case
-                    console.warn("Identical profiles found: ", a, b);
+                    // console.warn("Identical profiles found: ", a, b);
                     return 0;
                 };
 

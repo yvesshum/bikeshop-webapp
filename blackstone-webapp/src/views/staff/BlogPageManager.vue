@@ -288,8 +288,8 @@ export default {
             this.modal.delete.visible = false;
             this.modal.loading.visible = true;
             try {
-                console.log("1", this.modal.delete.blog_id);
-                console.log(deleteCollection);
+                // console.log("1", this.modal.delete.blog_id);
+                // console.log(deleteCollection);
                 await deleteCollection(
                     db,
                     db
@@ -298,13 +298,13 @@ export default {
                         .collection("Posts"),
                     20
                 );
-                console.log("2", this.modal.delete.blog_id);
+                // console.log("2", this.modal.delete.blog_id);
                 await db
                     .collection("GlobalBlogs")
                     .doc(this.modal.delete.blog_id)
                     .delete();
             } catch (error) {
-                console.error(error);
+                // console.error(error);
                 window.alert(`An error has occured. Error: ${error}.`);
                 return null;
             }
@@ -353,7 +353,7 @@ export default {
     },
 
     beforeDestroy() {
-        console.log("Removing observer");
+        // console.log("Removing observer");
         this.unsubscribe();
     },
 

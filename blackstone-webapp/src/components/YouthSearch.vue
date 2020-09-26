@@ -57,7 +57,7 @@ export default {
   	// Helper function for setting with default
   	function set_with_default(value, default_value) {
   		return (value != null) ? value : default_value;
-  	};
+  	}
   },
 
   data: function() {

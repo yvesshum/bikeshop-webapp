@@ -70,7 +70,7 @@ export default {
             }
           }
           essayText = essayText.trim();
-          console.log(essayText);
+          // console.log(essayText);
           return essayText;
           
 

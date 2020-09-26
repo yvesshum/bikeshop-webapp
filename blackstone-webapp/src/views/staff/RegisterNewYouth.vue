@@ -291,10 +291,10 @@
                     return null;
                 } else {
                     this.loadingModalVisible = true;
-                    console.log("Required fields")
-                    console.log(this.requiredFields)
-                    console.log("Optional fields")
-                    console.log(this.optionalFields)
+                    // console.log("Required fields")
+                    // console.log(this.requiredFields)
+                    // console.log("Optional fields")
+                    // console.log(this.optionalFields)
                     // let quarter = await this.getQuarter()
                     // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                     
@@ -302,7 +302,7 @@
                     
                     if(this.returningYouth == "Returning Youth"){
                         let existingData = await existingRef.get(); // await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
-                        console.log("Checking if exists");
+                        // console.log("Checking if exists");
                         let exists = existingData.data()[this.returningYouthID];
                         if (exists == null || exists == false) {
                             this.errorFields = ["Returning Youth ID"];
@@ -317,16 +317,16 @@
                         input["New or Returning"] = "New Youth";
                         //hidden field initializers
                         await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
-                            console.log("Hidden listener")
-                            console.log(snapshot.val())
+                            // console.log("Hidden listener")
+                            // console.log(snapshot.val())
                             let hiddenProtectedInitializers = snapshot.val()["Protected"];
                             let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
                             for (let key in hiddenProtectedInitializers) {
-                                console.log("Protected hidden")
+                                // console.log("Protected hidden")
                                 input[key] = hiddenProtectedInitializers[key]
                             }
                             for (let key in hiddenUnprotectedInitializers) { 
-                                console.log("Unprotected hidden")
+                                // console.log("Unprotected hidden")
                                 input[key] = hiddenUnprotectedInitializers[key]
                             }
                         })
@@ -344,11 +344,11 @@
                             }
                         } else if(this.returningYouth == "Returning Youth") {
                             if(data[i]["type"] == "Date"){
-                                console.log(initSpecialInputVal(data[i]["type"]));
+                                // console.log(initSpecialInputVal(data[i]["type"]));
                                 let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
                                 let given_date = this.getDMY(new Date(data[i]["value"].seconds * 1000));
-                                console.log(default_date);
-                                console.log(given_date);
+                                // console.log(default_date);
+                                // console.log(given_date);
                                 if (default_date != given_date){
                                     input[data[i]["name"]] = data[i]["value"];
                                 }
@@ -369,11 +369,11 @@
                             }
                         } else if(this.returningYouth == "Returning Youth") {
                             if(data[i]["type"] == "Date"){
-                              console.log(initSpecialInputVal(data[i]["type"]));
+                              // console.log(initSpecialInputVal(data[i]["type"]));
                               let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
                               let given_date = this.getDMY(new Date(data[i]["value"].seconds  * 1000));
-                              console.log(default_date);
-                              console.log(given_date);
+                              // console.log(default_date);
+                              // console.log(given_date);
                               if (default_date != given_date){
                                   input[data[i]["name"]] = data[i]["value"];
                               }
@@ -393,7 +393,7 @@
                         this.currentName = this.returningYouthID;
                     }
                     let currentClass = input["Class"];
-                    console.log("Current class " + currentClass);
+                    // console.log("Current class " + currentClass);
                     input["Essay"] = {}
                     for(var question in this.answers[currentClass]){
                         let answer = this.answers[currentClass][question]
@@ -401,7 +401,7 @@
                         input["Essay"][questionSubmit.split("\n").join("\\n")]
                           = answer.split("\n").join("\\n");
                     }
-                    console.log("About to submit")
+                    // console.log("About to submit")
                     // let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
@@ -416,7 +416,7 @@
                             window.alert("Error adding new registration");
                         }
                     }
-                    console.log("Submitted!")
+                    // console.log("Submitted!")
                         // console.log("Document written with ID: ", submitRef.id);
                     // this.newID = submitRef.id;
                     
@@ -454,7 +454,7 @@
                         
                         // var textareas = this.$el.querySelector(".each_field")
                         // for(let i = 0; i < textareas.length; i ++){
-                        //     console.log(textareas[i].value)
+                        //     // console.log(textareas[i].value)
                         //     textareas[i].value = "";
                         // }
 
@@ -529,14 +529,14 @@
                 if (current_period) {
                     current_active_youth.concat([youth_id]);
                     activePeriods.push(data["CurrentPeriod"]);
-                };
+                }
 
                 // Copy existing array of future active youth and adds youth_id if applicable
                 let future_active_youth = data["FutureActiveYouths"];
                 if (next_period) {
                     future_active_youth.concat([youth_id]);
                     activePeriods.push(data["FuturePeriod"]);
-                };
+                }
 
                 // Update the database with the (potentially) changed arrays
                 // db.collection("GlobalVariables").doc("ActivePeriods").update({
@@ -561,7 +561,7 @@
             let fields = await this.getFields();
             let options = await this.getOptions();
             this.essayQuestions = await this.getEssays();
-            console.log("Essay Questions: " + this.essayQuestions);
+            // console.log("Essay Questions: " + this.essayQuestions);
             for (var className in this.essayQuestions) {
                 this.answers[className] = {};
                 for(var i = 0; i < this.essayQuestions[className].length; i++){
@@ -571,7 +571,7 @@
                 }
             }
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
-                console.log("Reading placeholders")
+                // console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
             })
 

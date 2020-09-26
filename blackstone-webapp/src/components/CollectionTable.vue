@@ -121,7 +121,7 @@ Emits:
                         if (should_load(this.loaded_groups[key])) {
                             this.loaded_groups[key] = GROUP.LOADING;
 
-                            console.log("Group:", group);
+                            // console.log("Group:", group);
 
                             // Query the database for all docs in this group
                             this.collection.where(this.groupBy, "==", key).get().then(
@@ -138,12 +138,12 @@ Emits:
                                     // TODO: Manually close the group
                                 }
                             );
-                        };
+                        }
 
                         // Helper function to determine whether a database retrieval is necessary
                         function should_load(val) {
                             return val == GROUP.UNLOADED || val == GROUP.FAILED;
-                        };
+                        }
                     },
 
                     // Format the header bar for each group
@@ -176,8 +176,8 @@ Emits:
                                 case GROUP.FAILED:
                                     return "Load failed. Click to retry.";
                                     break;
-                            };
-                        };
+                            }
+                        }
                     },
                 };
 

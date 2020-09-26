@@ -204,7 +204,7 @@ export default {
 
         // If found more than once, flag it and use the first instance in the list
         else {
-          console.warn("Multiple instances of youth " + youth + " in period " + period);
+          // console.warn("Multiple instances of youth " + youth + " in period " + period);
           return {key: period, value: matches[0]["Class"]};
         }
       });

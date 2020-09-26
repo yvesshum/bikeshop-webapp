@@ -48,7 +48,7 @@ export default {
     },
 
     parseFields(items, dest) {
-      console.log(items);
+      // console.log(items);
       for (let i = 0; i < items.length; i ++) {
         dest.push({
           "data": items[i],

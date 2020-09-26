@@ -242,7 +242,7 @@ export default {
             // If none of the types above, add it pretty much as-is
             case "Phone":
             default:
-              console.log(field_name);
+              // console.log(field_name);
               table_headers.push({
                 title: field_name, field: field_name, headerFilter: true,
               });
@@ -287,7 +287,7 @@ export default {
       for (let i in this.hour_categories) {
         let category = this.hour_categories[i];
         obj[category] = data[category];
-      };
+      }
       return obj;
     },
 
@@ -440,7 +440,7 @@ export default {
           if (val >= 0 && val < arr.length) {
             return val;
           }
-          console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
+          // console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
           return null;
         }
 
@@ -449,12 +449,12 @@ export default {
         let fil = arr.filter(item => item.startsWith(val));
         switch (fil.length) {
           case 0:
-            console.warn(`Unknown ${type} "${val}".`);
+            // console.warn(`Unknown ${type} "${val}".`);
             break;
           case 1:
             return arr.indexOf(fil[0]);
           default:
-            console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
+            // console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
             break;
         }
         return null;

@@ -213,7 +213,7 @@ export default {
                 await db.collection("GlobalYouthProfile").doc(youth.ID).update({
                     "Pending Hours": newPendingHours
                 })
-                console.log('logged.')
+                // console.log('logged.')
             }
 
             //Reset locally

@@ -150,7 +150,7 @@ export default {
                 try {
                     this.$refs.addInput.updateInputType(type);
                 } catch (err) {
-                    console.warn(err)
+                    // console.warn(err)
                 }
                 this.editInitialText = newVal
                 this.input_field_type = type

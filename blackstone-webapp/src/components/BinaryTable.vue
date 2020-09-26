@@ -133,7 +133,7 @@ A Table with an editable active and inactive list, which can switch between disp
                 else {
                     this.accept_edits();
                     this.show_display_table();
-                };
+                }
             },
 
             edit_change: function(changes) {

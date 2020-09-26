@@ -43,7 +43,7 @@
         },
         async mounted() {
             await this.getHeaderText();
-            console.log("Header text: " + this.headerText);
+            // console.log("Header text: " + this.headerText);
         }
     }
 </script>

@@ -37,13 +37,13 @@
             login: function() {
                 firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(
                     user => {
-                        console.log(user);
+                        // console.log(user);
                         this.$router.replace('Home');
                         this.$emit("logged-in");
                     },
                     err => {
                         alert("Oops, something went wrong. You probably entered the wrong password.");
-                        console.log(err);
+                        // console.log(err);
                     }
                 )
             }

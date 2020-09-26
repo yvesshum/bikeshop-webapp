@@ -238,10 +238,10 @@ export default {
             this.field_data.forEach(field => {
                 fields.push(field.data);
             });
-            console.log(fields);
+            // console.log(fields);
             let updateVal = {};
             updateVal[this.sourceFieldName] = fields;
-            console.log(updateVal);
+            // console.log(updateVal);
             let updateStatus = await db.collection("GlobalPeriods").doc("metadata").update(updateVal);
 
             if (updateStatus) {
@@ -288,7 +288,7 @@ export default {
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
             let newFieldType = this.modal.edit.field_type;
-            console.log(this.modal.edit.original_field_name);
+            // console.log(this.modal.edit.original_field_name);
             for (let i = 0; i < this.field_data.length; i++) {
                 if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection

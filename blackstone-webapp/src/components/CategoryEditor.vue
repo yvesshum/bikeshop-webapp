@@ -131,7 +131,7 @@ export default {
 
         isValidEditingCategoryName: function() {
             let res = !this.category_data.some(field => field.data === this.modal.edit.category_name) && this.modal.edit.category_name.length > 0
-            console.log(res)
+            // console.log(res)
             return res
         }
     },
@@ -256,11 +256,11 @@ export default {
                         return element.data
                     })
 
-                    console.log('u', updatedCategoryNames)
+                    // console.log('u', updatedCategoryNames)
                     updatedCategoryNames[i] = newCategoryName;
                     let updateObject = {};
                     updateObject[this.sourceFieldName] = updatedCategoryNames;
-                    console.log(updateObject);
+                    // console.log(updateObject);
                     
 
                     let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
@@ -288,7 +288,7 @@ export default {
                             let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
-                            console.log(data);
+                            // console.log(data);
                             await db.doc(path).set(data);
                         })
                     }
@@ -321,7 +321,7 @@ export default {
                     updatedCategories.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedCategories;
-                    console.log(updateValue);
+                    // console.log(updateValue);
 
                     let deleteStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).set(updateValue);
                     if (deleteStatus) {

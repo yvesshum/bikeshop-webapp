@@ -170,7 +170,7 @@ export default {
     },
 
     viewBlogPost(post_id) {
-      console.log("Opening blog post: ", post_id);
+      // console.log("Opening blog post: ", post_id);
       this.showPostModal = true;
     },
 
@@ -179,7 +179,7 @@ export default {
     },
 
     onEditClicked() {
-      console.log("clicked");
+      // console.log("clicked");
       this.showEditModal = true;
     },
 
@@ -198,7 +198,7 @@ export default {
         window.alert(`An error has occured. Error: ${error}`);
         return;
       }
-      console.log("old post obj", this.PostObj);
+      // console.log("old post obj", this.PostObj);
       this.PostObj = {
         ...this.PostObj,
         ...blogObj
