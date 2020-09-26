@@ -454,6 +454,7 @@ function arr_indices(arr, sub) {
 
 
 
+// NOTE: Any column using this filter should set the field "HeaderFilterLiveFilter" to false in the header
 export function make_range_editor(type) {
     return (cell, onRendered, success, cancel, editorParams) => {
 
