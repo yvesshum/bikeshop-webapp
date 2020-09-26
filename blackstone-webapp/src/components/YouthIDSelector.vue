@@ -62,7 +62,7 @@ Emits:
             :internal-search="false"
             @search-change="val => search_term = val"
             :show-labels="false"
-            :block-keys="['Tab', 'Enter']"
+            :block-keys="['Tab']"
             :preserveSearch="true"
             :loading="is_busy"
             v-bind="args"
