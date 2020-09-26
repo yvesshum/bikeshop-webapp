@@ -56,7 +56,7 @@
                   onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
                   @Toggle="status => set_row_status(field, status)"
                   v-model="fields_used[field]"
-                  v-show="section.Name != 'Required'"
+                  v-show="show_x_button(section.Name)"
                 ></ToggleButton>
               </td>
 
@@ -495,6 +495,10 @@ export default {
         (this.row_status.is_status(key, Status.U) || this.row_status.is_status(key, Status.USE_T))
         && !this.is_specially_displayed(key)
       );
+    },
+
+    show_x_button: function(section) {
+      return section == "Optional" || section == "Non-Standard";
     },
 
     load_header_doc: function(new_header) {
