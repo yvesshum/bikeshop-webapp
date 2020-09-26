@@ -1,49 +1,45 @@
 <template>
-  <div>
-    <div v-if="ready">
-      <div class="content">
-        <top-bar />
-        <h1 class="title">{{ this.blog.name }}</h1>
-        <PageHeader
-          :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
-          pageName="Blog Page"
-        ></PageHeader>
-        <p>{{ this.blog.description }}</p>
-        <!-- Blog post cards -->
-        <div style="padding: 0 1rem">
-          <BlogPostCard
-            v-for="post in blogPosts"
-            :key="post.id"
-            :Post="post"
-            :deleteCallback="postDeleteCallback"
-          />
+    <div>
+      <div v-if="ready">
+        <div class="content">
+            <top-bar />
+            <h1 class="title">{{ this.blog.name }}</h1>
+            <PageHeader
+                :pageCategory="isStaff ? 'Staff Headers' : 'Youth Headers'"
+                pageName="Blog Page"
+            ></PageHeader>
+            <div style="margin: 1.5rem 1.75rem 2rem;">
+              {{ this.blog.description }}
+            </div>
+            <!-- Blog post cards -->
+            <div style="padding: 0 1rem">
+                <BlogPostCard v-for="post in blogPosts" :key="post.id" :Post="post" :deleteCallback="postDeleteCallback"/>
+            </div>
+
+            <b-button style="margin-top: 1rem" @click="fetchMoreBlogs">load more blogs</b-button>
+
+            <NewBlogPost
+                :show="showPostForm"
+                @close="showPostForm = false"
+                :submitCallback="handleNewBlogPost"
+            />
+
+            <!-- New Post Button -->
+            <b-button
+                id="newPostButton"
+                variant="success"
+                @click="showPostForm = true"
+                v-if="isStaff"
+            >
+                <font-awesome-icon icon="plus" class="icon alt" />
+            </b-button>
+            
+            </div>
+            <Footer />
         </div>
-
-        <b-button style="margin-top: 1rem" @click="fetchMoreBlogs"
-          >load more blogs</b-button
-        >
-
-        <NewBlogPost
-          :show="showPostForm"
-          @close="showPostForm = false"
-          :submitCallback="handleNewBlogPost"
-        />
-
-        <!-- New Post Button -->
-        <b-button
-          id="newPostButton"
-          variant="success"
-          @click="showPostForm = true"
-          v-if="isStaff"
-        >
-          <font-awesome-icon icon="plus" class="icon alt" />
-        </b-button>
-      </div>
-      <Footer />
-    </div>
-    <div v-else>
-      <b-spinner />
-    </div>
+        <div v-else>
+            <b-spinner />
+        </div>
 
     <!-- Modals -->
 
@@ -221,11 +217,12 @@ export default {
 }
 
 #newPostButton {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 30px;
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    z-index: 10;
 }
 </style>
