@@ -97,12 +97,12 @@ export default {
         },
         { // The check in time
           title: "Check In", field: "Check In", formatter: this.format_time,
-          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
+          ...this.get_time_filter_args(),
           sorter: this.time_sorter,
         },
         { // The check out time
           title: "Check Out", field: "Check Out", formatter: this.format_time,
-          headerFilter: make_range_editor("time"), headerFilterFunc: this.time_range_filter,
+          ...this.get_time_filter_args(),
           sorter: this.time_sorter,
         },
         { // The hours earned, broken down by category
@@ -641,6 +641,16 @@ export default {
 
     // Predefined column arguments for dates and for hours
 
+    // If headerFilterLiveFilter isn't set to false, the filters will apply then disappear unless the user clicks out of the box
+
+    get_time_filter_args: function() {
+      return {
+        headerFilter: make_range_editor("time"),
+        headerFilterFunc: this.time_range_filter,
+        headerFilterLiveFilter: false,
+      };
+    },
+
     get_date_filter_args: function(include_time) {
       let options = ["Year", "Month", "Date", "Weekday"];
       if (include_time) options.push("Time");
@@ -658,6 +668,7 @@ export default {
             {name: "not between", inclusive: true, num_inputs: 2}
           ],
         },
+        headerFilterLiveFilter: false,
       };
     },
 
@@ -666,6 +677,7 @@ export default {
         headerFilter: make_range_editor("number"),
         headerFilterFunc: this.numeric_range_filter,
         headerFilterParams: {minimum: 0, step: 0.5},
+        headerFilterLiveFilter: false,
       };
     },
 
