@@ -208,8 +208,6 @@ import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
-let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
-
 
 // Fields which should not be editable through the youth profile page/popup
 // The fields on this list which may need to be changed are handled on other pages or
@@ -258,7 +256,7 @@ const SpeciallyDisplayedFields = [
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "headerDoc", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
     HoursDisplay,
@@ -288,8 +286,6 @@ export default {
       fields_used: {},
 
       show_edit_modal: false,
-
-      header_doc: null,
     }
   },
 
@@ -322,9 +318,9 @@ export default {
     },
 
     table_sections: function() {
-      if (this.header_doc == null) return [];
+      if (this.headerDoc == null) return [];
 
-      let data = this.header_doc.data();
+      let data = this.headerDoc.data();
       let temp = [];
 
       make_section.call(this, "Required", "required");
@@ -378,10 +374,10 @@ export default {
     },
 
     field_types: function() {
-      if (this.header_doc == null) return {};
+      if (this.headerDoc == null) return {};
 
       let temp = new Object();
-      let data = this.header_doc.data();
+      let data = this.headerDoc.data();
 
       Object.keys(data).forEach(section => {
         forKeyVal(data[section], (name, val) => {
@@ -450,17 +446,23 @@ export default {
   },
 
   mounted: function() {
+
+    // Load the headers from the prop if it's set
+    if (this.headerDoc != undefined) {
+      this.load_header_doc(this.headerDoc);
+    };
+
+    // Load the profile from the prop if it's set
     if (this.profile != undefined) {
       this.load_profile(this.profile);
     };
-
-    // Add a listener to the header document to update expected fields whenever they change
-    HeaderRef.onSnapshot(doc => {
-      this.load_header_doc(doc);
-    });
   },
 
   watch: {
+
+    headerDoc: function(new_header) {
+      this.load_header_doc(new_header);
+    },
 
     profile: function(doc) {
       this.load_profile(doc);
@@ -504,7 +506,6 @@ export default {
     load_header_doc: function(new_header) {
       let data = new_header.data();
 
-      this.header_doc = new_header;
       this.row_status = new Status();
 
       this.init_row_status(data, "required", Status.REQ);

@@ -11,6 +11,7 @@
     <div ref="body_fields" v-show="currentProfile != null">
       <ProfileFields
         :profile="currentProfile"
+        :headerDoc="header_doc"
         edit showOptionalFields
       />
 
@@ -69,6 +70,8 @@ import {mapKeyVal} from "@/scripts/ParseDB.js";
 import {mapObj} from "@/scripts/ParseDB.js";
 import {Youth} from "@/scripts/Youth.js";
 
+let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+
 export default {
   name: 'profile_lookup_youth',
   components: {
@@ -85,6 +88,7 @@ export default {
     return {
       currentProfile: null,
       profile_snapshot: null,
+      header_doc: null,
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
@@ -98,6 +102,13 @@ export default {
   },
 
   mounted: async function() {
+    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
+
+    // // Add a listener to the header document to update expected fields whenever they change
+    // HeaderRef.onSnapshot(doc => {
+    //   this.header_doc = doc;
+    // });
+
     await this.load_profile_data();
   },
 
