@@ -499,17 +499,83 @@ export default {
       // Add all changed skills to the database
       if (this.change_skills_effect) {
 
-        // Make new changes object for apron skills list
-        let changes = {"Apron Skills": this.changed_skills.use};
+        // Construct new_skills object by running through the existing object and copying all
+        // the skills that aren't to be removed
+        var old_skills = this.achieved_skills;
+        var new_skills = {};
 
-        // Saves edits to firebase
-        db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
-          window.alert("Error: " + err);
-          return null;
+        // Loop through each apron color, copying the metadata and all the skills that the user hasn't selected for removal
+        Object.keys(old_skills).forEach(color => {
+
+          // Copy the metadata from the profile's version, without any of the skills
+          // Using spread operator makes sure these are cloned instead of reused, so that when we clear the Skills object it doesn't also delete the local version of the profile
+          new_skills[color] = {...old_skills[color]};
+          new_skills[color].Skills = {};
+
+          // Copy each category
+          Object.keys(old_skills[color].Skills).forEach(category => {
+
+            // Set the new_skills field to its corresponding field in old_skills, filtering out all the skills that the user just removed
+            new_skills[color].Skills[category] = old_skills[color].Skills[category].filter(skill => {
+
+              // Loop through each skill to be removed
+              // Using explicit for loop allows this to terminate as soon as the skill is found
+              for (var i = 0; i < this.skills_to_remove.length; i++) {
+                var curr = this.skills_to_remove[i];
+
+                // If the color, category, and skill fields match, this skill should be removed
+                if (curr.color == color && curr.category == category && curr.name == skill) {
+                  return false;
+                }
+              }
+
+              // If none of them matched, this skill should not be filtered out
+              return true;
+            });
+          });
         });
 
-        // If update succeeds, update all skills locally
-        this.apron_view.accept_changes();
+        // By this point, new_skills contains all the metadata and all the skills that the user wants to keep, but not yet any skills they want to add
+
+        // Loop through each skill to be added and put it in the new_skills object, creating as many containing fields (for apron colors & skills) as necessary
+        this.skills_to_add.forEach(skill => {
+
+          // Ensure the path to the skill's apron color & category exists by creating it if it doesn't already
+          // Use a switch statement rather than if statements to take advantage of fall-through
+          switch (true) {
+
+            // If the youth doesn't have an entry for this skill's color yet, make an empty one
+            case (new_skills[skill.color] == undefined):
+              new_skills[skill.color] = {Skills: {}, Achieved: false};
+
+            // If no entry for this skill's category yet, make an empty one
+            // Note that if entry for color didn't exist yet, entry for category won't either, so that case falls through to this one
+            case (new_skills[skill.color].Skills[skill.category] == undefined):
+              new_skills[skill.color].Skills[skill.category] = [];
+          }
+
+          // Now that we know this field exists, we can push the current skill to it
+          new_skills[skill.color].Skills[skill.category].push(skill.name);
+        });
+
+        // Make new changes object for apron skills list
+        let changes = {"Apron Skills": new_skills};
+
+        // Save changes to firebase
+        db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).then(
+
+          // Data updated successfully
+          // If update succeeds, update all skills locally
+          () => {
+            this.apron_view.accept_changes();
+          },
+
+          // Error updating database
+          (err) => {
+            window.alert("Error updating database: ", err);
+            return null;
+          }
+        );
       }
 
       // Reset all the changed but unsaved skills to their original values
@@ -517,6 +583,7 @@ export default {
         this.apron_view.discard_changes();
       }
 
+      // After saving or discarding changes, close the modal
       this.change_skills_modal = false;
     },
   }
