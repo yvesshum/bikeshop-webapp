@@ -86,154 +86,157 @@ import { isStaff } from "@/scripts/getPrivilege.js";
 import NewBlogPost from "@/components/NewBlogPost.vue";
 import { db } from "@/firebase.js";
 export default {
-    name: "BlogPostCard",
+  name: "BlogPostCard",
 
-    props: {
-        Post: Object,
-        deleteCallback: Function,
-    },
+  props: {
+    Post: Object,
+    deleteCallback: Function
+  },
 
-    data() {
-        return {
-            showPostModal: false,
-            showEditModal: false,
-            isStaff: false,
-            ready: false,
-            modal: {
-                msg: {
-                    visible: false,
-                    title: "",
-                    text: "",
-                },
-                conf: {
-                    visible: false,
-                },
-                loading: {
-                    visible: false,
-                },
-            },
-            PostObj: {},
-        };
-    },
-    computed: {
-        posted: function () {
-            return moment(this.PostObj.time.toDate()).format(
-                "ddd, MMM DD YYYY, hh:mm a"
-            );
+  data() {
+    return {
+      showPostModal: false,
+      showEditModal: false,
+      isStaff: false,
+      ready: false,
+      modal: {
+        msg: {
+          visible: false,
+          title: "",
+          text: ""
         },
-    },
-
-    methods: {
-        handlePostDeleteClick(post_id) {
-            this.modal.conf.visible = true;
+        conf: {
+          visible: false
         },
-
-        async handlePostDelete() {
-            this.modal.conf.visible = false;
-            this.modal.loading.visible = true;
-            try {
-                await db.collection("GlobalBlogs").doc(this.Post.parentBlogID).collection("Posts").doc(this.Post.id).delete()
-            } catch (error) {
-                window.alert(error);
-                return null;
-            }
-            await this.deleteCallback();
-            this.modal.loading.visible = false;
-            this.modal.msg.text = "Successfully deleted post"
-            this.modal.msg.visible = true;
-
-
-        },
-
-        viewBlogPost(post_id) {
-            console.log("Opening blog post: ", post_id);
-            this.showPostModal = true;
-        },
-
-        closePostModal() {
-            this.showPostModal = false;
-        },
-
-        onEditClicked() {
-            console.log("clicked");
-            this.showEditModal = true;
-        },
-
-        async handleBlogEdit(blogObj) {
-            this.showPostModal = false
-            this.showEditModal = false;
-            this.modal.loading.visible = true;
-            try {
-                await db
-                    .collection("GlobalBlogs")
-                    .doc(this.PostObj.parentBlogID)
-                    .collection("Posts")
-                    .doc(this.PostObj.id)
-                    .update(blogObj);
-            } catch (error) {
-                window.alert(`An error has occured. Error: ${error}`);
-                return;
-            }
-            console.log("old post obj", this.PostObj);
-            this.PostObj = {
-                ...this.PostObj,
-                ...blogObj,
-            };
-
-            this.modal.msg.title = "Success";
-            this.modal.msg.text = "Succesfully edited the blog post";
-            this.modal.loading.visible = false;
-            this.modal.msg.visible = true;
-        },
-
-        closeMsgModal() {
-            this.modal.msg.visible = false;
-        },
-
-        closeConfModal() {
-            this.modal.conf.visible = false;
+        loading: {
+          visible: false
         }
+      },
+      PostObj: {}
+    };
+  },
+  computed: {
+    posted: function() {
+      return moment(this.PostObj.time.toDate()).format(
+        "ddd, MMM DD YYYY, hh:mm a"
+      );
+    }
+  },
+
+  methods: {
+    handlePostDeleteClick(post_id) {
+      this.modal.conf.visible = true;
     },
 
-    async mounted() {
-        this.isStaff = await isStaff();
-        this.PostObj = this.Post;
-        this.ready = true;
+    async handlePostDelete() {
+      this.modal.conf.visible = false;
+      this.modal.loading.visible = true;
+      try {
+        await db
+          .collection("GlobalBlogs")
+          .doc(this.Post.parentBlogID)
+          .collection("Posts")
+          .doc(this.Post.id)
+          .delete();
+      } catch (error) {
+        window.alert(error);
+        return null;
+      }
+      await this.deleteCallback();
+      this.modal.loading.visible = false;
+      this.modal.msg.text = "Successfully deleted post";
+      this.modal.msg.visible = true;
     },
 
-    components: {
-        BlogPostContent,
-        NewBlogPost,
+    viewBlogPost(post_id) {
+      console.log("Opening blog post: ", post_id);
+      this.showPostModal = true;
     },
+
+    closePostModal() {
+      this.showPostModal = false;
+    },
+
+    onEditClicked() {
+      console.log("clicked");
+      this.showEditModal = true;
+    },
+
+    async handleBlogEdit(blogObj) {
+      this.showPostModal = false;
+      this.showEditModal = false;
+      this.modal.loading.visible = true;
+      try {
+        await db
+          .collection("GlobalBlogs")
+          .doc(this.PostObj.parentBlogID)
+          .collection("Posts")
+          .doc(this.PostObj.id)
+          .update(blogObj);
+      } catch (error) {
+        window.alert(`An error has occured. Error: ${error}`);
+        return;
+      }
+      console.log("old post obj", this.PostObj);
+      this.PostObj = {
+        ...this.PostObj,
+        ...blogObj
+      };
+
+      this.modal.msg.title = "Success";
+      this.modal.msg.text = "Succesfully edited the blog post";
+      this.modal.loading.visible = false;
+      this.modal.msg.visible = true;
+    },
+
+    closeMsgModal() {
+      this.modal.msg.visible = false;
+    },
+
+    closeConfModal() {
+      this.modal.conf.visible = false;
+    }
+  },
+
+  async mounted() {
+    this.isStaff = await isStaff();
+    this.PostObj = this.Post;
+    this.ready = true;
+  },
+
+  components: {
+    BlogPostContent,
+    NewBlogPost
+  }
 };
 </script>
 
 <style scoped>
-.container {
-    margin: 0;
-    cursor: pointer;
+.cardContainer {
+  margin: 0;
+  cursor: pointer;
 }
 
-.container:hover {
-    background-color: #f7f7f7;
+.cardContainer:hover {
+  background-color: #f7f7f7;
 }
 
 .card-body {
-    padding: 0;
+  padding: 0;
 }
 
 .content {
-    text-align: center;
+  text-align: center;
 }
 
 .post_card {
-    max-width: 600px;
-    margin: 1rem auto;
-    float: none;
+  max-width: 600px;
+  margin: 1rem auto;
+  float: none;
 }
 
 .card-subtitle {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 .delete_button {
@@ -247,22 +250,22 @@ export default {
 }
 
 .delete_button:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .blog_post_image {
-    margin: -1.25rem 0 -1.25rem -1rem;
-    padding: 0;
-    background-image: url("https://picsum.photos/400/400/?image=20");
-    background-size: cover;
+  margin: -1.25rem 0 -1.25rem -1rem;
+  padding: 0;
+  background-image: url("https://picsum.photos/400/400/?image=20");
+  background-size: cover;
 }
 
 #editButton {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    width: 60px;
-    height: 60px;
-    border-radius: 30px;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
 }
 </style>

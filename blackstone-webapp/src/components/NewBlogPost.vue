@@ -14,33 +14,37 @@
                         ></b-form-input>
                     </b-form-group>
 
-                    <!-- Subtitle -->
-                    <b-form-group id="input-group-2" label="Subtitle:" label-for="input-2">
-                        <b-form-input
-                            id="input-2"
-                            v-model="blogSubtitle"
-                            required
-                            placeholder="Your subtitle here"
-                        ></b-form-input>
-                    </b-form-group>
+        <!-- Subtitle -->
+        <b-form-group id="input-group-2" label="Subtitle:" label-for="input-2">
+          <b-form-input
+            id="input-2"
+            v-model="blogSubtitle"
+            required
+            placeholder="Your subtitle here"
+          ></b-form-input>
+        </b-form-group>
 
-                    <!-- Name -->
-                    <b-form-group id="input-group-3" label="Your Name:" label-for="input-3">
-                        <b-form-input
-                            id="input-3"
-                            v-model="blogPosterName"
-                            required
-                            placeholder="Enter name"
-                        ></b-form-input>
-                    </b-form-group>
+        <!-- Name -->
+        <b-form-group id="input-group-3" label="Your Name:" label-for="input-3">
+          <b-form-input
+            id="input-3"
+            v-model="blogPosterName"
+            required
+            placeholder="Enter name"
+          ></b-form-input>
+        </b-form-group>
 
-                    <b-form-group id="input-group-4" label="Post Content:" label-for="input-4">
-                        <vue-editor
-                            v-model="blogContent"
-                            :editorToolbar="customToolbar"
-                            id="input-4"
-                        ></vue-editor>
-                    </b-form-group>
+        <b-form-group
+          id="input-group-4"
+          label="Post Content:"
+          label-for="input-4"
+        >
+          <vue-editor
+            v-model="blogContent"
+            :editorToolbar="customToolbar"
+            id="input-4"
+          ></vue-editor>
+        </b-form-group>
 
                     <b-button type="submit" variant="success" style="margin-right: 12px">Submit</b-button>
                     <b-button type="reset" variant="danger">{{ resetText }}</b-button>
@@ -51,7 +55,6 @@
 </template>
 
 <script>
-//import RichTextEditor from "@/components/RichTextEditor.vue";
 import { VueEditor } from "vue2-editor";
 import { db } from "@/firebase.js";
 
@@ -130,9 +133,12 @@ export default {
             });
             this.onReset(evt)
         },
-
         onReset(evt) {
             evt.preventDefault();
+            this.blogTitle = "";
+            this.blogSubtitle = "";
+            this.blogPosterName = "";
+            this.blogContent = "";
             if (this.edit) {
               this.blogTitle = this.title;
               this.blogSubtitle = this.subtitle;
@@ -145,7 +151,6 @@ export default {
               this.blogContent = "";
             }
         },
-
         closeMsgModal() {
             this.modal.msg.visible = false;
         },
@@ -164,10 +169,10 @@ export default {
 
 <style scoped>
 .form-group {
-    margin-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
 }
 
 ::v-deep label {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }
 </style>
