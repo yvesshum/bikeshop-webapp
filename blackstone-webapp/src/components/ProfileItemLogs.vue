@@ -63,6 +63,9 @@ var Tabulator = require("tabulator-tables");
 // The location of the Order Log header fields in the database
 var OrderLogHeadersRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
+// The location of the hour logging categories in the database
+var HourCategoriesRef  = db.collection("GlobalVariables").doc("Hour Logging Categories");
+
 // Fields from database for the Order Log that we don't want to show on this page
 var excluded_order_fields = [ "Youth ID", "First Name", "Last Name", "Status" ];
 
@@ -74,10 +77,15 @@ export default {
   },
 
   mounted: async function() {
-    var hour_categories_doc = await db.collection("GlobalVariables").doc("Hour Logging Categories").get();
 
+    // Load the different categories hours can be logged under
+    var hour_categories_doc = await HourCategoriesRef.get();
     var data = hour_categories_doc.data();
     this.hour_categories = data["Categories"];
+
+    // Load the Order Log headers from the database
+    var order_log_headers_db = await OrderLogHeadersRef.get();
+    this.order_log_headers_from_db = order_log_headers_db.data();
   },
 
   data: function() {
@@ -158,11 +166,6 @@ export default {
         ],
       },
     };
-  },
-
-  mounted: async function() {
-    var order_log_headers_db = await OrderLogHeadersRef.get();
-    this.order_log_headers_from_db = order_log_headers_db.data();
   },
 
   computed: {
