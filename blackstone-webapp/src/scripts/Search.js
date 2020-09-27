@@ -511,7 +511,6 @@ export function make_range_editor(type) {
             let new_range = {min, max};
 
             // Submit the new range
-            console.log("Updating range: ", new_range);
             success(new_range);
         }
 
@@ -522,8 +521,6 @@ export function make_range_editor(type) {
             let min = edit1.value !== "" ? edit1.value : null;
             let max = edit2.value !== "" ? edit2.value : null;
             let new_range = {min, max};
-
-            console.log("Updating range from enter: ", new_range);
 
             switch (e.keyCode) {
 
