@@ -82,11 +82,11 @@ Emits:
         watch: {
             collection: async function(coll) {
 
+                // Make sure to clear table data any time the collection changes
+                this.tableData = [];
+
                 // No collection passed - clear the table data and stop the function
-                if (coll == null) {
-                    this.tableData = [];
-                    return;
-                }
+                if (coll == null) return;
 
                 this.$emit("load_start", null);
 
