@@ -644,6 +644,8 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
             new_filter.removeChild(incl_div);
             inclusive_active = false;
         }
+
+        align_dropdown();
       };
 
       select_op.style = "margin-left: 3px;";
@@ -766,6 +768,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
     // can be calculated
+    // TODO: View modes other than the default may not work as expected
     function create_align_dropdown() {
 
       // Position the menu horizontally based on the dropdown-align parameter
@@ -881,16 +884,19 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
                 // Align left if possible
                 if (btn_rect.left + men_rect.width < window.innerWidth) {
                     align_left(btn_rect, men_rect);
+                    dropdown.style['white-space'] = 'nowrap';
                 }
 
                 // Aligh right if possible
                 else if (btn_rect.right - men_rect.width > 0) {
                     align_right(btn_rect, men_rect);
+                    dropdown.style['white-space'] = 'nowrap';
                 }
 
                 // Align centered to the window if necessary
                 else {
-                    dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+                    dropdown.style.left = ((window.innerWidth - men_rect.width) / 2) + "px";
+                    dropdown.style['white-space'] = 'normal';
                 }
             }
       }
