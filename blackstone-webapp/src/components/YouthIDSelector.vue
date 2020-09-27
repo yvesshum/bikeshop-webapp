@@ -162,7 +162,7 @@ Emits:
                     <tr>
                         <td>"<b><code>oe</code></b>"</td>
                         <td>&nbsp;⇒&nbsp;</td>
-                        <td>N<span class="search_highlight">oë</span>l, Z<span class="search_highlight">oë</span>, c<span class="search_highlight">œ</span>ur</td>
+                        <td>N<span class="search_highlight">oe</span>l, Z<span class="search_highlight">oë</span>, c<span class="search_highlight">œ</span>ur</td>
                     </tr>
                     <tr>
                         <td>"<b><code>nun</code></b>"</td>
@@ -174,16 +174,30 @@ Emits:
                         <td>&nbsp;⇒&nbsp;</td>
                         <td><span class="search_highlight">Du</span>ncan, <span class="search_highlight">Đư</span>ờng, Sigrí<span class="search_highlight">ðu</span>r</td>
                     </tr>
-                    <tr>
-                        <td>"<b><code>á</code></b>"</td>
-                        <td>&nbsp;⇒&nbsp;</td>
-                        <td style="padding: 0px 15px;">Hern<span class="search_highlight">á</span>ndez, Th<span class="search_highlight">á</span>i, V<span class="search_highlight">á</span>squez</td>
-                    </tr>
                 </tbody>
             </table>
 
             <br />
             <p>Note that searching for an accented character will not bring up unaccented results.</p>
+            <table style="margin: auto; text-align: center">
+                <tbody>
+                    <tr>
+                        <td><b>Search Term</b></td>
+                        <td></td>
+                        <td><b>Match Pattern</b></td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>a</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td style="padding: 0px 15px;"><span class="search_highlight">Á</span>lv<span class="search_highlight">a</span>rez, C<span class="search_highlight">á</span>i, S<span class="search_highlight">a</span>r<span class="search_highlight">a</span>h</td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>á</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td style="padding: 0px 15px;"><span class="search_highlight">Á</span>lvarez, C<span class="search_highlight">á</span>i, Sarah</td>
+                    </tr>
+                </tbody>
+            </table>
 
         </b-modal>
     </div>
