@@ -5,7 +5,7 @@
 
     <h1 class="title">Profile Lookup and Editing</h1>
     <PageHeader pageCategory="Staff Headers" pageName="Profile Lookup and Editing"></PageHeader>
-    <YouthIDSelector @selected="load_youth" :args="{openDirection: 'bottom'}" />
+    <YouthIDSelector @selected="load_youth" usePeriodSwitch :args="{openDirection: 'bottom'}" />
     <br />
 
     <div ref="body_fields" v-show="currentProfile != null">

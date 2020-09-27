@@ -101,6 +101,15 @@ Emits:
         </multiselect>
         </div>
 
+        <b-button-group v-if="usePeriodSwitch">
+            <b-button v-for="btn in switch_buttons"
+                squared :variant="period_switch_value == btn.value ? 'primary' : 'outline-primary'"
+                @click="switch_to(btn)"
+            >
+                {{btn.name}}
+            </b-button>
+        </b-button-group>
+
         <b-button v-b-tooltip.hover.html="info_msg" variant="info" @click="show_info_modal" squared>?</b-button>
 
         <b-modal v-model="info_modal_visible" hide-footer lazy>
@@ -225,6 +234,10 @@ Emits:
                 type: [String, Array],
                 default: "current"
             },
+            usePeriodSwitch: {
+                type: Boolean,
+                default: false,
+            },
             sortBy: {
                 type: [String, Array],
                 default: () => Youth.requiredVals(),
@@ -259,7 +272,19 @@ Emits:
                 is_busy: false,
 
                 info_modal_visible: false,
-                info_msg: "This bar accepts character substitutions. Click for more info."
+                info_msg: "This bar accepts character substitutions. Click for more info.",
+
+                switch_buttons: [
+                    {
+                        name:  'Current',
+                        value: 'current'
+                    },
+                    {
+                        name:  'All',
+                        value: 'all'
+                    }
+                ],
+                period_switch_value: undefined,
             }
         },
 
@@ -267,6 +292,15 @@ Emits:
 
             special_chars: function() {
                 return SPECIAL_CHARS.filter(char_obj => char_obj.display);
+            },
+
+            periods_to_show: function() {
+                if (this.usePeriodSwitch) {
+                    return this.period_switch_value;
+                }
+                else {
+                    return this.periods;
+                }
             },
 
             /* Search algorithm:
@@ -458,13 +492,13 @@ Emits:
                 var periods = [];
 
                 // Parent set prop to "all" - wants all youth
-                if (this.periods == "all") {
+                if (this.periods_to_show == "all") {
                     periods = Period.enumerate(fp, rp);
                 }
 
                 // Replace instances of "current" and "next" with the appropriate names
                 else {
-                    let temp = (Array.isArray(this.periods)) ? this.periods : [this.periods];
+                    let temp = (Array.isArray(this.periods_to_show)) ? this.periods_to_show : [this.periods_to_show];
                     periods = temp.map((item) => {
                         if (item == "current") {
                             return ap;
@@ -604,6 +638,10 @@ Emits:
             show_info_modal: function() {
                 this.info_modal_visible = true;
             },
+
+            switch_to: function(btn) {
+                this.period_switch_value = btn.value;
+            },
         },
 
         watch: {
@@ -621,6 +659,11 @@ Emits:
                     this.value = null;
                 }
             },
+
+            period_switch_value: async function() {
+                this.options = await this.getData();
+                this.$emit("ready", this.options);
+            },
         },
 
         async mounted() {
@@ -629,7 +672,11 @@ Emits:
 
             // Emit the ready message
             this.$emit("ready", this.options);
-        }
+        },
+
+        created() {
+            this.period_switch_value = this.switch_buttons[0].value;
+        },
     }
 </script>
 
