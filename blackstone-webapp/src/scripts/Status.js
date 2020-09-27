@@ -162,7 +162,7 @@ const STATUS_ARRS = {
   [Status.O]: [Status.USE, Status.ADD, Status.REQ, Status.IMM, Status.USE_T, Status.ADD_T],
 
   // Used non-locally
-  [Status.U]: [Status.USE, Status.REQ, Status.IMM],
+  [Status.U]: [Status.USE, Status.REM, Status.REQ, Status.IMM],
 
   // Status can't be changed
   [Status.N]: [Status.REQ, Status.IMM],
