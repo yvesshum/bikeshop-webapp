@@ -105,6 +105,7 @@ Emits:
             <b-button v-for="btn in switch_buttons"
                 squared :variant="period_switch_value == btn.value ? 'primary' : 'outline-primary'"
                 @click="switch_to(btn)"
+                v-b-tooltip.hover.html="btn.msg"
             >
                 {{btn.name}}
             </b-button>
@@ -277,11 +278,13 @@ Emits:
                 switch_buttons: [
                     {
                         name:  'Current',
-                        value: 'current'
+                        value: 'current',
+                        msg:   'Display the current period only',
                     },
                     {
                         name:  'All',
-                        value: 'all'
+                        value: 'all',
+                        msg:   'Display youth from all periods',
                     }
                 ],
                 period_switch_value: undefined,
