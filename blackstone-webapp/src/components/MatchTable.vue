@@ -85,7 +85,7 @@ export default {
         // Format the header to show number of skills achieved in each category
         groupHeader: function(value, count, data, group) {
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
-          return `${value} Skills <span style='float:right;'>${achieved}/${count} Achieved</span>`;
+          return `${value} <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
 
         // When row selection changes, propagate those changes upward
