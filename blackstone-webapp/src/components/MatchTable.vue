@@ -161,14 +161,14 @@ export default {
     },
 
     table_args: function() {
-      return {...this.default_table_args, ...this.args(this.is_achieved_cell)};
+      return {...this.default_table_args, ...this.args(this.cell_is_status)};
     },
   },
 
   methods: {
 
-    is_achieved_cell: function(cell) {
-      return cell.achieved;
+    cell_is_status: function(cell_data, status) {
+      return this.row_status.is_status(this.get_row_id(cell_data), status);
     },
 
     // Get a unique identifier for each row, as specified by the matchBy prop

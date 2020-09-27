@@ -229,7 +229,7 @@ export default {
 
 
     table_args: function() {
-      return (is_achieved_func) => {
+      return (is_status) => {
 
         // Create the object
         return {
@@ -265,23 +265,27 @@ export default {
               return "";
             }
 
-            let num_achieved = data.reduce(
-              (acc, curr) => acc += (is_achieved_func(curr) ? 1 : 0)
-              , 0
-            );
+            // Get the number of achieved skills and number of pending changes for this group
+            var num_achieved = data.reduce((acc, c) => acc += (is_status(c, Status.U) ? 1 : 0), 0);
+            var num_pending  = data.reduce((acc, c) => acc += (is_status(c, Status.C) ? 1 : 0), 0);
 
             var apron_level = this.achievedSkills[value];
 
+            // Generate the apron color label
+            var label = `${value} Apron Skills`;
+
             // If applicable, display the date this apron level was earned
+            var datestamp = '';
             if (apron_level != undefined && apron_level.Achieved !== false && apron_level.Achieved !== undefined) {
               let date = new Date(apron_level.Achieved.seconds * 1000);
-              return `${value} Apron Skills <span style='float:right;'>Earned ${date.toDateString()} &mdash; ${num_achieved}/${count} Achieved</span>`;
+              datestamp = ` &mdash; Earned ${date.toDateString()}`;
             }
 
-            // Otherwise, just display the name and the number achieved
-            else {
-              return `${value} Apron Skills <span style='float:right;'>${num_achieved}/${count} Achieved</span>`;
-            }
+            // Generate pending and achieved messages
+            var pending  = num_pending > 0 ? `${num_pending} Pending Change${num_pending == 1 ? '' : 's'},` : '';
+            var achieved = `${num_achieved}/${count} Achieved`;
+
+            return `${label}${datestamp}<span style='float:right;'>${pending} ${achieved}</span>`;
           },
         };
       };
