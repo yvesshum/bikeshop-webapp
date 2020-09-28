@@ -154,7 +154,8 @@ export class Period {
 	}
 
 	static genNextStr(period) {
-		return Period.makePeriod(period).getNextStr();
+		let period_obj = Period.makePeriod(period);
+		return period_obj == null ? null : period_obj.getNextStr();
 	}
 
 	getPrev() {
@@ -185,7 +186,8 @@ export class Period {
 	}
 
 	static genPrevStr(period) {
-		return Period.makePeriod(period).getPrevStr();
+		let period_obj = Period.makePeriod(period);
+		return period_obj == null ? null : period_obj.getPrevStr();
 	}
 
 	static forEachRange(start, end, func) {
