@@ -161,7 +161,7 @@ export default {
   created: async function() {
     this.$emit("load_start");
     await this.ensure_data_loaded();
-    this.$emit("load_complete");
+    this.$emit("load_complete", this);
 
     console.log(this.tree_boxes);
   },
@@ -359,6 +359,14 @@ export default {
         return []
       }
       return this.achievedSkills[apron].Skills[category];
+    },
+
+    accept_changes: function() {
+      console.log("Changes should be accepted!");
+    },
+
+    discard_changes: function() {
+      console.log("Changes should be discarded!");
     },
   }
 }
