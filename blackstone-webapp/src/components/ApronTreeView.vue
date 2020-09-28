@@ -4,23 +4,33 @@
     <div class="tree-container">
 
       <div v-for="box in tree_boxes" :class="get_box_class(box)" :style="get_box_style(box)">
-        <div v-if="box.type == 'apron'" class="tree-apron-content">
-          <ApronImg :color="get_color_val(box.apron)" :size="48" />
+
+        <b-card v-if="box.type == 'apron'" class="tree-apron-content">
+          <ApronImg :color="get_color_val(box.apron)" :size="72" />
           <br />
           <span style="font-size: 24px">{{box.apron}} Apron</span>
           <br />
           <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-        </div>
-        <div v-else-if="box.type == 'category'" class="tree-category-content">
-          <span style="font-size: 24px">{{box.category}}</span>
-          <br />
-          <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-        </div>
-        <div v-else-if="box.type == 'skills'" class="tree-skills-content">
-          <ul>
-            <li v-for="skill in box.skills">{{skill}}</li>
-          </ul>
-        </div>
+          <b-progress :value="box.num_achieved" :max="box.num_total" animated
+            :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+          ></b-progress>
+        </b-card>
+
+        <b-card v-else-if="box.type == 'category'" class="tree-category-content" no-body>
+          <b-card-body style="padding:5px">
+            <span style="font-size: 24px">{{box.category}}</span>
+            <br />
+            <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
+            <b-progress :value="box.num_achieved" :max="box.num_total" animated
+              :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+            ></b-progress>
+          </b-card-body>
+        </b-card>
+
+        <b-list-group v-else-if="box.type == 'skills'" class="tree-skills-content">
+          <b-list-group-item v-for="skill in box.skills" :variant="skill.achieved ? 'success' : 'light'"><span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}</b-list-group-item>
+        </b-list-group>
+
       </div>
     </div>
 
@@ -185,35 +195,50 @@ export default {
     },
 
     tree_boxes: function() {
-      if (this.apron_skills == null) return [];
+      if (this.apron_skills == null || this.achievedSkills == null) return [];
 
       let result = [];
       Object.keys(this.apron_skills).forEach(apron => {
         let span = Object.keys(this.apron_skills[apron]).length;
-        result.push({
-          type: "apron",
-          apron,
-          span,
-          num_achieved: 0,
-          num_total: 8,
-        });
+
+        // Initialize the apron tile and push it into the list before the categories & skills
+        var apron_object = { type: "apron", apron, span };
+        result.push(apron_object);
+
+        var total = 0;
+        var achieved = 0;
+
         Object.keys(this.apron_skills[apron]).forEach((category, n) => {
+
+          var tot_list = this.apron_skills[apron][category];
+          var ach_list = this.get_achieved_skills_list(apron, category);
+
+          total    += tot_list.length;
+          achieved += ach_list.length;
+
+          // Create the category tile
           result.push({
             type: "category",
             apron, category,
             top: n == 0,
             bottom: n == span - 1,
-            num_achieved: 0,
-            num_total: 2,
+            num_achieved: ach_list.length,
+            num_total:    tot_list.length,
           });
+
+          // Create the skills list tile
           result.push({
             type: "skills",
             apron, category,
-            skills: this.apron_skills[apron][category],
+            skills: tot_list.map(skill => {return {skill, achieved: ach_list.includes(skill)};}),
             top: n == 0,
             bottom: n == span - 1,
           });
         });
+
+        // Update the apron tile with the properties that were computed running through each category in the forEach loop
+        apron_object.num_total    = total;
+        apron_object.num_achieved = achieved;
       });
 
       console.log(result);
@@ -324,6 +349,17 @@ export default {
         return "";
       }
     },
+
+    get_achieved_skills_list: function(apron, category) {
+      console.log(this.achievedSkills);
+      if ( this.achievedSkills == undefined
+        || this.achievedSkills[apron] == undefined
+        || this.achievedSkills[apron].Skills[category] == undefined
+        ) {
+        return []
+      }
+      return this.achievedSkills[apron].Skills[category];
+    },
   }
 }
 </script>
@@ -332,13 +368,12 @@ export default {
 
   .tree-container {
     display: grid;
-    grid-template-columns: 1fr 1fr 3fr; /*repeat(3, max-content); minmax(min-content, 1fr));*/
+    grid-template-columns: 20fr 24fr 48fr; /*repeat(3, max-content); minmax(min-content, 1fr));*/
     background-color: DodgerBlue;
     margin: 10px;
   }
 
   .tree-apron-container {
-    background-color: #f1f1f1;
     margin: 10px 2px 10px 10px;
     padding: 5px;
     display:flex;
@@ -347,11 +382,11 @@ export default {
   }
 
   .tree-apron-content {
-
+    justify-content: center;
+    height: 100%;
   }
 
   .tree-category-container {
-    background-color: #f1f1f1;
     padding: 5px;
     margin-right: 2px;
     margin-top: 1px;
@@ -362,11 +397,12 @@ export default {
   }
 
   .tree-category-content {
-
+    justify-content: center;
+    height: 100%;
   }
 
   .tree-skills-container {
-    background-color: #f1f1f1;
+    /*background-color: #f1f1f1;*/
     padding: 5px;
     margin-right: 10px;
     margin-top: 1px;
@@ -374,13 +410,11 @@ export default {
     text-align: left;
     display:flex;
     flex-direction: column;
-    justify-content: center;
   }
 
   .tree-skills-content {
     display:flex;
     flex-direction: column;
-    justify-content: center;
   }
 
   .tree-content-top {
