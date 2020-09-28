@@ -5,25 +5,31 @@
 
       <div v-for="box in tree_boxes" :class="get_box_class(box)" :style="get_box_style(box)">
 
-        <b-card v-if="box.type == 'apron'" class="tree-apron-content">
-          <ApronImg :color="get_color_val(box.apron)" :size="72" />
-          <br />
-          <span style="font-size: 24px">{{box.apron}} Apron</span>
-          <br />
-          <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-          <b-progress :value="box.num_achieved" :max="box.num_total" animated
-            :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
-          ></b-progress>
+        <b-card v-if="box.type == 'apron'" class="tree-apron-content" no-body>
+          <b-card-body class="tree-card-body-centered">
+            <div style="width: 100%;">
+              <ApronImg :color="get_color_val(box.apron)" :size="72" />
+              <br />
+              <span style="font-size: 24px">{{box.apron}} Apron</span>
+              <br />
+              <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
+              <b-progress :value="box.num_achieved" :max="box.num_total" animated
+                :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+              ></b-progress>
+            </div>
+          </b-card-body>
         </b-card>
 
         <b-card v-else-if="box.type == 'category'" class="tree-category-content" no-body>
-          <b-card-body style="padding:5px">
-            <span style="font-size: 24px">{{box.category}}</span>
-            <br />
-            <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-            <b-progress :value="box.num_achieved" :max="box.num_total" animated
-              :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
-            ></b-progress>
+          <b-card-body class="tree-card-body-centered">
+            <div style="width: 100%;">
+              <span style="font-size: 24px">{{box.category}}</span>
+              <br />
+              <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
+              <b-progress :value="box.num_achieved" :max="box.num_total" animated
+                :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+              ></b-progress>
+            </div>
           </b-card-body>
         </b-card>
 
@@ -162,8 +168,6 @@ export default {
     this.$emit("load_start");
     await this.ensure_data_loaded();
     this.$emit("load_complete", this);
-
-    console.log(this.tree_boxes);
   },
 
   computed: {
@@ -431,6 +435,13 @@ export default {
 
   .tree-content-bottom {
     margin-bottom: 10px;
+  }
+
+  .tree-card-body-centered {
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
 
