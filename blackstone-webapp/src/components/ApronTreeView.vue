@@ -14,8 +14,10 @@
               <br />
               <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
               <b-progress :value="box.num_achieved" :max="box.num_total" animated
-                :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+                :variant="box.num_achieved == box.num_total || box.earned != false ? 'success' : 'primary'"
               ></b-progress>
+              <br />
+              <span v-if="box.earned != false">Earned on {{get_earned_string(box)}}</span>
             </div>
           </b-card-body>
         </b-card>
@@ -204,9 +206,10 @@ export default {
       let result = [];
       Object.keys(this.apron_skills).forEach(apron => {
         let span = Object.keys(this.apron_skills[apron]).length;
+        let earned = this.achievedSkills[apron] == undefined ? false : this.achievedSkills[apron].Achieved;
 
         // Initialize the apron tile and push it into the list before the categories & skills
-        var apron_object = { type: "apron", apron, span };
+        var apron_object = { type: "apron", apron, span, earned };
         result.push(apron_object);
 
         var total = 0;
@@ -352,6 +355,15 @@ export default {
       else {
         return "";
       }
+    },
+
+    get_earned_string: function(box) {
+      return box.earned.toDate().toLocaleDateString(undefined, {
+        weekday: 'long',
+        year:    'numeric',
+        month:   'long',
+        day:     'numeric'
+      });
     },
 
     get_achieved_skills_list: function(apron, category) {
