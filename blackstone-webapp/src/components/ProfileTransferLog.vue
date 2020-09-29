@@ -7,6 +7,7 @@
       :visible="visible"
       :collection="collection"
       :headers="headers"
+      :docFormatter="doc_formatter"
       @table="handle_table"
     />
 
@@ -34,18 +35,23 @@ export default {
       table: null,
 
       headers: [
-        { // The name of the recipient
-          title: "To Name", field: "To Name",
-          headerFilter: true, headerFilterFunc: filter
+        { // The date and time of the order
+          title: "Date", field: "Date", __style__: "date",
         },
-        { // The ID of the recipient
-          title: "To ID", field: "To ID", headerFilter: true,
+        { // The name of the recipient
+          title: "Transaction Type", field: "Type",
+          editor: "select", headerFilter: true,
+          headerFilterParams: {"Sent": "Sent", "Received": "Received"}
         },
         { // The number of hours transferred
           title: "Amount Transferred", field: "Amount", __style__: "hours",
         },
-        { // The date and time of the order
-          title: "Date", field: "Date", __style__: "date",
+        { // The name of the recipient
+          title: "Other Person's Name", field: "Other Name",
+          headerFilter: true, headerFilterFunc: filter
+        },
+        { // The ID of the recipient
+          title: "Other Person's ID", field: "Other ID", headerFilter: true,
         },
         { // Notes
           title: "Notes", field: "Notes", __style__: "notes",
@@ -61,6 +67,21 @@ export default {
   },
 
   computed: {
+
+    // Generalize To & From Name/ID into one field, and add "Type" field to tell which one
+    doc_formatter: function() {
+      return (doc) => {
+        var data = doc.data();
+        var received = data["To ID"] == undefined;
+
+        return {
+          "Type":       received ? "Received"        : "Sent",
+          "Other Name": received ? data["From Name"] : data["To Name"],
+          "Other ID":   received ? data["From ID"]   : data["To ID"],
+          ...data
+        };
+      };
+    },
 
   },
 
