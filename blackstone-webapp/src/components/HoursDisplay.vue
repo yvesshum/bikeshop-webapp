@@ -1,12 +1,11 @@
 
 <template>
-	<div class="hours-display">
+	<b-card :footer="title" class="hours-display" v-bind="cardArgs">
 		<p class="hours-num">
 			<!-- This is all on one line to prevent spaces before the decimal point... -->
 			<span class="hours-whole">{{whole_component}}</span><span class="hours-decimal" v-show="!decimal_NaN">.{{decimal_component}}</span>
 		</p>
-		<p class="hours-name"> {{title}} </p>
-	</div>
+	</b-card>
 </template>
 
 <script>
@@ -31,7 +30,11 @@ export default {
 		decimalPlaces: {
 			type: Number,
 			default: 2,
-		}
+		},
+
+		cardArgs: {
+			type: Object,
+		},
 	},
 
 	methods: {
@@ -79,7 +82,7 @@ export default {
 	.hours-display {
 		display: inline-block;
 		text-align: center;
-		padding: 0px 15px;
+		margin: 0px 15px;
 	}
 
 	/* The div element containing the entire hour number */

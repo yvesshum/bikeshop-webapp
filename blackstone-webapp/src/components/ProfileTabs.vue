@@ -7,13 +7,17 @@
       v-model="current_tab"
     >
 
-      <b-tab title="Personal Information">
+      <b-tab title="Personal Info">
         <ProfileFields
           :profile="profile"
           :headerDoc="headerDoc"
           :edit="allow_edits" :disableWarnings="!allow_edits"
           showOptionalFields
         />
+      </b-tab>
+
+      <b-tab title="Hours">
+        <HoursStatsBar :profile="profile" style="margin:auto;" />
       </b-tab>
 
       <b-tab title="Classes">
@@ -63,6 +67,7 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 
 import ProfileFields from "@/components/ProfileFields.vue"
+import HoursStatsBar from "@/components/HoursStatsBar.vue"
 import ApronBar from "@/components/ApronBar.vue"
 import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
 import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
@@ -95,6 +100,7 @@ export default {
 
   components: {
     ProfileFields,
+    HoursStatsBar,
     ApronBar,
     ProfileItemLogs,
     PeriodsClassesDisplay,
@@ -146,13 +152,13 @@ export default {
       switch (open_tab) {
 
         // Apron Bar
-        case 2:
+        case 3:
           this.$nextTick(() => {
             this.apron_bar_content.redraw();
           });
 
         // Item Logs
-        case 3:
+        case 4:
           this.$nextTick(() => {
             if (this.item_logs_content != null) this.item_logs_content.redraw();
           });

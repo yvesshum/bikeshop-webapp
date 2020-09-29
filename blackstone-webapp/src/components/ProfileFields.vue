@@ -8,13 +8,6 @@
 
     <br />
 
-    <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
-      <HoursDisplay v-for="item in hour_fields" v-bind="item" />
-    </div>
-
-    <br />
-    <br />
-
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
       <tbody v-for="section in table_sections_show">
@@ -202,7 +195,6 @@ import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 
 import ToggleButton from '@/components/ToggleButton';
-import HoursDisplay from '@/components/HoursDisplay';
 import SpecialInputReset from '@/components/SpecialInputReset';
 import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
@@ -259,7 +251,6 @@ export default {
   props: ["profile", "headerDoc", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
-    HoursDisplay,
     SpecialInputReset,
     ProfileFieldDisplay,
     PeriodsClassesDisplay,
@@ -388,23 +379,6 @@ export default {
       });
 
       return temp;
-    },
-
-    hour_fields: function() {
-
-      // If local values hasn't been set yet, give an empty list
-      if (this.local_values == null) return [];
-
-      // Compute the spendable balance: earned - spent
-      let balance = this.local_values["Hours Earned"] - this.local_values["Hours Spent"];
-
-      // Return the list of objects
-      return [
-        {title: "Hours Earned",  value: this.local_values["Hours Earned"]},
-        {title: "Hours Spent",   value: this.local_values["Hours Spent"]},
-        {title: "Pending Hours", value: this.local_values["Pending Hours"]},
-        {title: "Spendable Balance", value: balance},
-      ];
     },
 
     youth_name: function() {
