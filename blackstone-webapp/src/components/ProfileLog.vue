@@ -1,53 +1,18 @@
 <template>
-  <div class="profile_item_logs">
-
-    <h2>Work Log</h2>
+  <div class="profile_log">
     <CollectionTable
       ref="work_log"
-      :heading_data="work_log_headers"
-      :collection="work_log_collection"
+      :heading_data="header_columns"
+      :collection="collection"
       groupBy="Period"
       :groupByOptions="periods"
       :progressiveLoad="true"
-      :doc_formatter="work_doc_formatter"
+      :doc_formatter="docFormatter"
       :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
-      @table="t => tables[0] = t"
+      @table="handle_table"
     ></CollectionTable>
-
-    <br />
-
-    <h2>Order Log</h2>
-    <CollectionTable
-      ref="order_log"
-      :heading_data="order_log_headers"
-      :collection="order_log_collection"
-      groupBy="Period"
-      :groupByOptions="periods"
-      :progressiveLoad="true"
-      :args="extra_args"
-      :visible="visible"
-      style="width:90%;margin:auto;"
-      @table="t => tables[1] = t"
-    ></CollectionTable>
-
-    <br />
-
-    <h2>Hour Transfer Log</h2>
-    <CollectionTable
-      ref="transfer_log"
-      :heading_data="trans_log_headers"
-      :collection="trans_log_collection"
-      groupBy="Period"
-      :groupByOptions="periods"
-      :progressiveLoad="true"
-      :args="extra_args"
-      :visible="visible"
-      style="width:90%;margin:auto;"
-      @table="t => tables[2] = t"
-    ></CollectionTable>
-
   </div>
 </template>
 
@@ -60,112 +25,23 @@ import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
-import {forKeyVal} from "@/scripts/ParseDB";
 
 const moment = require("moment");
 var Tabulator = require("tabulator-tables");
 
-// The location of the Order Log header fields in the database
-var OrderLogHeadersRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
-
-// The location of the hour logging categories in the database
-var HourCategoriesRef  = db.collection("GlobalVariables").doc("Hour Logging Categories");
-
-// Fields from database for the Order Log that we don't want to show on this page
-var excluded_order_fields = [ "Youth ID", "First Name", "Last Name", "Status" ];
-
 export default {
-  name: 'profile_item_logs',
-  props: ["snapshot", "periods", "visible"],
+  name: 'profile_log',
+  props: ["snapshot", "periods", "visible", "collection", "headers", "docFormatter"],
   components: {
     CollectionTable,
   },
 
   mounted: async function() {
-
-    // Load the different categories hours can be logged under
-    var hour_categories_doc = await HourCategoriesRef.get();
-    var data = hour_categories_doc.data();
-    this.hour_categories = data["Categories"];
-
-    // Load the Order Log headers from the database
-    var order_log_headers_db = await OrderLogHeadersRef.get();
-    this.order_log_headers_from_db = order_log_headers_db.data();
-
-    // Load the collections for each log
-    this.load_collections_from_snapshot(this.snapshot);
-
     this.$emit("load_complete", this);
   },
 
   data: function() {
     return {
-      work_log_collection: null,
-      order_log_collection: null,
-      trans_log_collection: null,
-
-      tables: [],
-
-      work_log_headers: [
-        { // The Date
-          title: "Date", field: "Date", formatter: this.format_date,
-          ...this.get_date_filter_args(false),
-          sorter: this.date_sorter,
-        },
-        { // The check in time
-          title: "Check In", field: "Check In", formatter: this.format_time,
-          ...this.get_time_filter_args(),
-          sorter: this.time_sorter,
-        },
-        { // The check out time
-          title: "Check Out", field: "Check Out", formatter: this.format_time,
-          ...this.get_time_filter_args(),
-          sorter: this.time_sorter,
-        },
-        { // The hours earned, broken down by category
-          title: "Hours", field: "Hours", formatter: this.format_work_hours,
-          ...this.get_hour_filter_args(),
-          headerFilterFunc: this.hour_range_filter,
-          sorter: this.work_hours_sorter
-        },
-        { // Notes
-          title: "Notes", field: "Notes", formatter: "textarea",
-          headerFilter: true,
-        },
-      ],
-
-      trans_log_headers: [
-        { // The name of the recipient
-          title: "To Name", field: "To Name",
-          headerFilter: true, headerFilterFunc: filter
-        },
-        { // The ID of the recipient
-          title: "To ID", field: "To ID", headerFilter: true,
-        },
-        { // The number of hours transferred
-          title: "Amount Transferred", field: "Amount",
-          formatter: cell => cell.getValue() + " Hours",
-          ...this.get_hour_filter_args(),
-          sorter: this.hour_sorter,
-        },
-        { // The date and time of the order
-          title: "Date", field: "Date", formatter: this.format_date,
-          ...this.get_date_filter_args(false),
-          sorter: this.date_sorter,
-        },
-        { // Notes
-          title: "Notes", field: "Notes", formatter: "textarea",
-          headerFilter: true,
-        },
-      ],
-
-      hour_categories: [],
-
-
-      // The actual headers will be generated based on what's retrieved from the database
-      order_log_headers_from_db: [],
-
-
       // Other Tabulator arguments for the tables
       extra_args: {
 
@@ -178,136 +54,79 @@ export default {
   },
 
   computed: {
+    header_columns: function() {
+      return this.headers.map(header => {
+        if (header.__style__ == undefined) {
+          return header;
+        }
 
-    // Helper function to group document data for the work log table
-    work_doc_formatter: function() {
-      return (doc) => {
-        var data = doc.data();
-        return {
-          "Date": [ data["Check In"], data["Check Out"] ],
-          "Check In": data["Check In"],
-          "Check Out": data["Check Out"],
-          "Hours": this.make_hours_obj(data),
-          "Notes": data["Notes"],
-          "Period": data["Period"],
-        };
-      };
-    },
+        var styling;
 
+        switch (header.__style__) {
 
-    order_log_headers: function() {
-      var table_headers = [];
+          case "date":
+            styling = {
+              formatter: this.format_date,
+              ...this.get_date_filter_args(false),
+              sorter: this.date_sorter
+            };
+            break;
 
-      // Define this here to grab the fields in this order
-      var groups = ["required", "hidden", "optional"];
+          case "datetime":
+            styling = {
+              formatter: this.format_date_time,
+              ...this.get_date_filter_args(true),
+              sorter: this.date_sorter,
+            };
+            break;
 
-      // Loop through each desired table column from the database
-      // Stored as key/val pairs, where the key is the field's name and the value is its type
-      for (let i in groups) {
-        forKeyVal(this.order_log_headers_from_db[groups[i]], (field_name, field_type) => {
+          case "time":
+            styling = {
+              formatter: this.format_time,
+              ...this.get_time_filter_args(),
+              sorter: this.time_sorter
+            };
+            break;
 
-          // Skip the fields we don't want to show - mostly the youth's info, since it'll be all over the page anyways, and that saves space in the table
-          if (excluded_order_fields.includes(field_name)) {
-            return;
-          }
+          case "work-hours":
+            styling = {
+              formatter: this.format_work_hours,
+              ...this.get_hour_filter_args(),
+              headerFilterFunc: this.hour_range_filter,
+              sorter: this.work_hours_sorter
+            };
+            break;
 
-          // Use different formatter/filter/sorter depending on the field's type
-          switch (field_type) {
+          case "hours":
+            styling = {
+              formatter: cell => cell.getValue() + " Hours",
+              ...this.get_hour_filter_args(),
+              sorter: this.hour_sorter,
+            };
+            break;
 
-            case "Datetime":
-              table_headers.push({
+          case "notes":
+            styling = {
+              formatter: "textarea",
+              headerFilter: true,
+            };
+            break;
+        }
 
-                // Use the field name as the title
-                title: field_name, field: field_name,
-
-                // Mark as a date for sorting later
-                __is_date__: true,
-
-                // Use the date/time formatter, filter, and sorter
-                formatter: this.format_date_time,
-                ...this.get_date_filter_args(true),
-                sorter: this.date_sorter,
-              });
-              break;
-
-            case "Hours":
-              table_headers.push({
-                title: field_name, field: field_name,
-
-                // Use the hour formatter, filter, and sorter
-                formatter: cell => cell.getValue() + " Hours",
-                ...this.get_hour_filter_args(),
-                sorter: this.hour_sorter,
-              });
-              break;
-
-            // If the field_name is specifically Notes, add it specially; otherwise fall through to the default case
-            case "String":
-              if (field_name == "Notes") {
-                table_headers.push({
-                  title: field_name, field: field_name, headerFilter: true,
-                  formatter: "textarea",
-                });
-                break;
-              }
-
-            // If none of the types above, add it pretty much as-is
-            case "Phone":
-            default:
-              console.log(field_name);
-              table_headers.push({
-                title: field_name, field: field_name, headerFilter: true,
-              });
-              break;
-          }
-        })
-      }
-
-      // Ensure all dates come first and the Notes field comes last
-      // TODO: Do something other than __is_date__ field if possible, since Tabulator throws a warning
-      table_headers = table_headers.sort((a, b) => {
-        if (a.__is_date__ || b.title == "Notes") return -1;
-        // if (a.title == "Notes" || b.__is_date__) return 1;
-        return 1;
+        delete header.__style__;
+        return {...styling, ...header};
       });
-
-      return table_headers;
-    },
-  },
-
-  watch: {
-    snapshot: function(snapshot) {
-      this.load_collections_from_snapshot(this.snapshot);
-    },
+    }
   },
 
   methods: {
 
     redraw: function() {
-      this.tables.forEach(table => {table.redraw()});
+      this.table.redraw();
     },
 
-    load_collections_from_snapshot: function(snapshot) {
-      if (snapshot == null) {
-        this.work_log_collection  = null;
-        this.order_log_collection = null;
-        this.trans_log_collection = null;
-      }
-
-      else {
-        this.work_log_collection  = snapshot.collection("Work Log");
-        this.order_log_collection = snapshot.collection("Order Log");
-        this.trans_log_collection = snapshot.collection("Transfer Log");
-      }
-    },
-
-    make_hours_obj: function(data) {
-      var obj = {};
-      for (let i in this.hour_categories) {
-        let category = this.hour_categories[i];
-        obj[category] = data[category];
-      };
-      return obj;
+    handle_table: function(table) {
+      this.$emit("table", table);
     },
 
     // =-= Formatters =-=-=

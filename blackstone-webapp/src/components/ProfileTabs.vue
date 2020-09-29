@@ -39,22 +39,29 @@
         />
       </b-tab>
 
-      <b-tab title="Hour Logs">
-        <ProfileItemLogs
+      <b-tab title="Work Log">
+        <ProfileWorkLog
           :snapshot="profileSnapshot"
           :periods="periods"
-          :visible="profile != null"
-          @load_complete="s => item_logs_content = s"
-        ></ProfileItemLogs>
+          @load_complete="s => work_log_content = s"
+        />
       </b-tab>
 
-      <!-- <b-tab title="Order Log">
-        Order log goes here
+      <b-tab title="Order Log">
+        <ProfileOrderLog
+          :snapshot="profileSnapshot"
+          :periods="periods"
+          @load_complete="s => order_log_content = s"
+        />
       </b-tab>
 
       <b-tab title="Hour Transfer Log">
-        Transfer log goes here
-      </b-tab> -->
+        <ProfileTransferLog
+          :snapshot="profileSnapshot"
+          :periods="periods"
+          @load_complete="s => trans_log_content = s"
+        />
+      </b-tab>
     </b-tabs>
   </div>
 </template>
@@ -69,7 +76,9 @@ import firebase_auth from 'firebase/auth';
 import ProfileFields from "@/components/ProfileFields.vue"
 import HoursStatsBar from "@/components/HoursStatsBar.vue"
 import ApronBar from "@/components/ApronBar.vue"
-import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
+import ProfileWorkLog from "@/components/ProfileWorkLog.vue";
+import ProfileOrderLog from "@/components/ProfileOrderLog.vue";
+import ProfileTransferLog from "@/components/ProfileTransferLog.vue";
 import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
 
 export default {
@@ -102,7 +111,9 @@ export default {
     ProfileFields,
     HoursStatsBar,
     ApronBar,
-    ProfileItemLogs,
+    ProfileWorkLog,
+    ProfileOrderLog,
+    ProfileTransferLog,
     PeriodsClassesDisplay,
   },
 
@@ -110,7 +121,9 @@ export default {
     return {
       current_tab: 0,
       apron_bar_content: null,
-      item_logs_content: null,
+      work_log_content:  null,
+      order_log_content: null,
+      trans_log_content: null,
     };
   },
 
@@ -156,12 +169,28 @@ export default {
           this.$nextTick(() => {
             this.apron_bar_content.redraw();
           });
+          break;
 
-        // Item Logs
+        // Work Log
         case 4:
           this.$nextTick(() => {
-            if (this.item_logs_content != null) this.item_logs_content.redraw();
+            if (this.work_log_content != null) this.work_log_content.redraw();
           });
+          break;
+
+        // Order Log
+        case 5:
+          this.$nextTick(() => {
+            if (this.order_log_content != null) this.order_log_content.redraw();
+          });
+          break;
+
+        // Transfer Log
+        case 6:
+          this.$nextTick(() => {
+            if (this.trans_log_content != null) this.trans_log_content.redraw();
+          });
+          break;
       };
     },
 
@@ -169,13 +198,8 @@ export default {
 
   methods: {
 
-    toggle_bar: function() {
-      this.test_toggle_bar = !this.test_toggle_bar;
-    },
-
     redraw_bar: function() {
       this.apron_skills_content.reload();
-      // this.apron_skills_content.reload();
     },
 
     load_header_doc: function(new_header) {},
