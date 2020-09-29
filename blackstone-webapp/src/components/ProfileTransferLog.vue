@@ -36,7 +36,7 @@ export default {
 
       headers: [
         { // The date and time of the order
-          title: "Date", field: "Date", __style__: "date",
+          title: "Date", field: "Date", __style__: "datetime",
         },
         { // The name of the recipient
           title: "Transaction Type", field: "Type",
