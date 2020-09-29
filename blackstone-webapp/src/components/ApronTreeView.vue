@@ -1,46 +1,77 @@
 <template>
   <div class="apron_tree_view">
 
-    <div class="tree-container">
+    <b-card no-body bg-variant="light">
 
-      <div v-for="box in tree_boxes" :class="get_box_class(box)" :style="get_box_style(box)">
+      <!-- Header -->
+      <b-card-header>
+        <h3>Apron Skills</h3>
+      </b-card-header>
 
-        <b-card v-if="box.type == 'apron'" class="tree-apron-content" no-body>
-          <b-card-body class="tree-card-body-centered">
-            <div style="width: 100%;">
-              <ApronImg :color="get_color_val(box.apron)" :size="72" />
-              <br />
-              <span style="font-size: 24px">{{box.apron}} Apron</span>
-              <br />
-              <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-              <b-progress :value="box.num_achieved" :max="box.num_total" animated
-                :variant="box.num_achieved == box.num_total || box.earned != false ? 'success' : 'primary'"
-              ></b-progress>
-              <br />
-              <span v-if="box.earned != false">Earned on {{get_earned_string(box)}}</span>
-            </div>
-          </b-card-body>
+      <b-card-body style="display: flex; align-content:center;">
+        <b-card no-body border-variant="light" bg-variant="light">
+
+          <b-tabs v-model="selected_tab"
+            vertical pills
+            nav-wrapper-class="w-25"
+            active-nav-item-class="font-weight-bold"
+          >
+            <b-tab v-for="(section, n) in tree_tabs"
+              :title-link-class="get_apron_tab_class(section, n)"
+            >
+
+              <template v-slot:title>
+                <b-card no-body :border-variant="selected_tab == n ? 'light' : ''">
+
+                  <b-card-body class="tree-card-body-centered" style="width: 100%;">
+                    <div style="flex: 0 0 25%;">
+                      <ApronImg :color="get_color_val(section.apron.apron)" :size="48" />
+                    </div>
+                    <div style="flex: 1;">
+                      <span style="font-size: 24px">{{section.apron.apron}} Apron</span>
+                      <b-progress :max="section.apron.num_total">
+                        <b-progress-bar :value="section.apron.num_achieved" animated :variant="(section.apron.num_achieved == section.apron.num_total) || (section.apron.earned != false) ? 'success' : 'primary'">
+                          <span v-if="section.apron.earned != false || section.apron.apron == showColor">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>
+                        </b-progress-bar>
+                      </b-progress>
+                      <span>{{get_earned_msg(section.apron)}}</span>
+                    </div>
+                  </b-card-body>
+
+                </b-card>
+              </template>
+
+              <b-card style="display: grid; grid-template-columns: 1fr 2fr;" no-body>
+                <div v-for="box in section.content" :class="get_box_class(box)" :style="get_box_style(box)">
+
+                  <b-card v-if="box.type == 'category'" class="tree-category-content" no-body>
+                    <b-card-body class="tree-card-body-centered">
+                      <div style="width: 100%;">
+                        <span style="font-size: 24px">{{box.category}}</span>
+                        <br />
+                        <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
+                        <b-progress :value="box.num_achieved" :max="box.num_total" animated
+                          :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
+                        ></b-progress>
+                      </div>
+                    </b-card-body>
+                  </b-card>
+
+                  <b-list-group v-else-if="box.type == 'skills'" class="tree-skills-content">
+                    <b-list-group-item v-for="skill in box.skills" :variant="skill.achieved ? 'success' : 'light'"><span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}</b-list-group-item>
+                  </b-list-group>
+
+                </div>
+              </b-card>
+
+            </b-tab>
+          </b-tabs>
         </b-card>
+      </b-card-body>
+    </b-card>
 
-        <b-card v-else-if="box.type == 'category'" class="tree-category-content" no-body>
-          <b-card-body class="tree-card-body-centered">
-            <div style="width: 100%;">
-              <span style="font-size: 24px">{{box.category}}</span>
-              <br />
-              <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-              <b-progress :value="box.num_achieved" :max="box.num_total" animated
-                :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
-              ></b-progress>
-            </div>
-          </b-card-body>
-        </b-card>
 
-        <b-list-group v-else-if="box.type == 'skills'" class="tree-skills-content">
-          <b-list-group-item v-for="skill in box.skills" :variant="skill.achieved ? 'success' : 'light'"><span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}</b-list-group-item>
-        </b-list-group>
 
-      </div>
-    </div>
 
     <!-- <div class="flex-container">
       <div class="apron-open">
@@ -155,6 +186,11 @@ export default {
       type: String,
       default: "",
     },
+
+    showColor: {
+      type: String,
+      default: null,
+    },
   },
 
   data: function() {
@@ -162,7 +198,7 @@ export default {
       loaded_apron_skills: [],
       loaded_apron_colors: [],
 
-      selected_color: "",
+      selected_tab: 0,
     };
   },
 
@@ -200,17 +236,17 @@ export default {
       }
     },
 
-    tree_boxes: function() {
+    tree_tabs: function() {
       if (this.apron_skills == null || this.achievedSkills == null) return [];
 
       let result = [];
+
       Object.keys(this.apron_skills).forEach(apron => {
         let span = Object.keys(this.apron_skills[apron]).length;
         let earned = this.achievedSkills[apron] == undefined ? false : this.achievedSkills[apron].Achieved;
 
-        // Initialize the apron tile and push it into the list before the categories & skills
-        var apron_object = { type: "apron", apron, span, earned };
-        result.push(apron_object);
+        // Initialize an array to hold category & skill list boxes
+        var content = [];
 
         var total = 0;
         var achieved = 0;
@@ -224,7 +260,7 @@ export default {
           achieved += ach_list.length;
 
           // Create the category tile
-          result.push({
+          content.push({
             type: "category",
             apron, category,
             top: n == 0,
@@ -234,7 +270,7 @@ export default {
           });
 
           // Create the skills list tile
-          result.push({
+          content.push({
             type: "skills",
             apron, category,
             skills: tot_list.map(skill => {return {skill, achieved: ach_list.includes(skill)};}),
@@ -243,12 +279,18 @@ export default {
           });
         });
 
-        // Update the apron tile with the properties that were computed running through each category in the forEach loop
-        apron_object.num_total    = total;
-        apron_object.num_achieved = achieved;
+        // Create the apron tile with properties that were computed in the forEach loop
+        var apron_object = {
+          type: "apron",
+          apron, span, earned,
+          num_total:    total,
+          num_achieved: achieved,
+        };
+
+        // Push the apron tab onto the result
+        result.push({ apron: apron_object, content });
       });
 
-      console.log(result);
       return result;
     },
   },
@@ -326,11 +368,16 @@ export default {
     },
 
     get_color_val: function(color) {
-      let val = this.get_apron_property(color, 'value', null);
-      // console.log(val);
-      // return this.apron_colors[color].value
-      return val;
-      // return this.get_apron_property(color, 'value');
+      return this.get_apron_property(color, 'color', null);
+    },
+
+    get_apron_tab_class: function(section, index) {
+      return [
+        'text-dark',
+        this.selected_tab == index
+          ? section.apron.earned != false ? 'bg-success' : 'bg-primary'
+          : 'bg-light',
+      ];
     },
 
     get_box_class: function(box) {
@@ -366,6 +413,20 @@ export default {
       });
     },
 
+    get_earned_msg: function(apron) {
+      if (apron.earned == false) {
+        if (apron.apron == this.showColor) {
+          return "Current Level";
+        }
+        return "";
+      }
+      return "Earned " + apron.earned.toDate().toLocaleDateString(undefined, {
+        year:    'numeric',
+        month:   'short',
+        day:     'numeric'
+      });
+    },
+
     get_achieved_skills_list: function(apron, category) {
       console.log(this.achievedSkills);
       if ( this.achievedSkills == undefined
@@ -384,6 +445,9 @@ export default {
     discard_changes: function() {
       console.log("Changes should be discarded!");
     },
+
+    // One of the functions required by the parent - doesn't actually have to do anything in this case
+    redraw: function() {}
   }
 }
 </script>
@@ -454,6 +518,17 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+
+
+  .nav-class-test {
+    width: 30%;
+  }
+
+  .active-nav-item-test {
+    border-color: red;
+    font-weight: bold;
   }
 
 
