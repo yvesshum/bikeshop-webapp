@@ -1,5 +1,6 @@
 <template>
   <div class="profile_item_logs">
+
     <h2>Work Log</h2>
     <CollectionTable
       ref="work_log"
@@ -12,6 +13,7 @@
       :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
+      @table="t => tables[0] = t"
     ></CollectionTable>
 
     <br />
@@ -27,6 +29,7 @@
       :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
+      @table="t => tables[1] = t"
     ></CollectionTable>
 
     <br />
@@ -42,7 +45,9 @@
       :args="extra_args"
       :visible="visible"
       style="width:90%;margin:auto;"
+      @table="t => tables[2] = t"
     ></CollectionTable>
+
   </div>
 </template>
 
@@ -86,6 +91,11 @@ export default {
     // Load the Order Log headers from the database
     var order_log_headers_db = await OrderLogHeadersRef.get();
     this.order_log_headers_from_db = order_log_headers_db.data();
+
+    // Load the collections for each log
+    this.load_collections_from_snapshot(this.snapshot);
+
+    this.$emit("load_complete", this);
   },
 
   data: function() {
@@ -94,8 +104,7 @@ export default {
       order_log_collection: null,
       trans_log_collection: null,
 
-      work_log_table: null,
-      order_log_table: null,
+      tables: [],
 
       work_log_headers: [
         { // The Date
@@ -268,7 +277,17 @@ export default {
 
   watch: {
     snapshot: function(snapshot) {
+      this.load_collections_from_snapshot(this.snapshot);
+    },
+  },
 
+  methods: {
+
+    redraw: function() {
+      this.tables.forEach(table => {table.redraw()});
+    },
+
+    load_collections_from_snapshot: function(snapshot) {
       if (snapshot == null) {
         this.work_log_collection  = null;
         this.order_log_collection = null;
@@ -281,9 +300,6 @@ export default {
         this.trans_log_collection = snapshot.collection("Transfer Log");
       }
     },
-  },
-
-  methods: {
 
     make_hours_obj: function(data) {
       var obj = {};

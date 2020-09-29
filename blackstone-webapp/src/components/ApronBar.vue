@@ -251,7 +251,11 @@ export default {
   created: async function() {
     this.$emit("load_start");
     await this.ensure_data_loaded();
-    this.$emit("load_complete");
+    this.$emit("load_complete", this);
+  },
+
+  mounted: function() {
+    this.initialize_data();
   },
 
   computed: {
@@ -402,13 +406,17 @@ export default {
 
   watch: {
     profile: function() {
-      this.checked_data = this.get_profile_field("Apron Skills", []);
-
-      this.show_color = this.is_final_color ? this.apron_color : this.next_apron_color;
+      this.initialize_data();
     },
   },
 
   methods: {
+
+    initialize_data: function() {
+      this.checked_data = this.get_profile_field("Apron Skills", []);
+      this.show_color = this.is_final_color ? this.apron_color : this.next_apron_color;
+    },
+
     ensure_data_loaded: async function() {
       // Load skills, if requested
       if (this.loadApronSkills == true && this.apronSkills == null) {
@@ -585,6 +593,10 @@ export default {
 
       // After saving or discarding changes, close the modal
       this.change_skills_modal = false;
+    },
+
+    redraw: function() {
+      this.apron_view.redraw();
     },
   }
 }

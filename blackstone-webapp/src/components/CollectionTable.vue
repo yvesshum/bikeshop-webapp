@@ -79,8 +79,37 @@ Emits:
             }
         },
 
+        mounted: async function() {
+            await this.load(this.collection)
+        },
+
         watch: {
             collection: async function(coll) {
+                this.load(coll);
+            },
+
+            // If the table headers change, replace them in the Tabulator object
+            heading_data: function(new_headers) {
+                if (this.table != null) this.table.setColumns(new_headers);
+            },
+
+            // If the table data changes, replace it in the Tabulator object
+            tableData: function(new_data) {
+                if (this.table != null) {
+                    this.table.replaceData(new_data);
+                    this.table.redraw();
+                };
+            },
+
+            visible: function(val) {
+                // console.log("Table: ", this.table);
+                if (this.table != null) this.table.redraw();
+            },
+        },
+
+        methods: {
+
+            load: async function(coll) {
 
                 // Make sure to clear table data any time the collection changes
                 this.tableData = [];
@@ -211,25 +240,6 @@ Emits:
 
                 this.$emit("load_complete", null);
             },
-
-            // If the table headers change, replace them in the Tabulator object
-            heading_data: function(new_headers) {
-                if (this.table != null) this.table.setColumns(new_headers);
-            },
-
-            // If the table data changes, replace it in the Tabulator object
-            tableData: function(new_data) {
-                if (this.table != null) this.table.replaceData(new_data);
-
-                this.table.redraw();
-            },
-
-            visible: function(val) {
-                this.table.redraw();
-            },
-        },
-
-        methods: {
 
             // Add a retrieved collection to the table
             addCollection: function(snapshot) {

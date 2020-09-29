@@ -294,6 +294,7 @@ export default {
 
   watch: {
     showColor: function() {
+      if (this.table == null) return "";
       this.table.getGroups().forEach(group => {
         if (group.getKey() == this.showColor) {
           group.show();
@@ -373,6 +374,10 @@ export default {
 
     discard_changes: function() {
       this.$refs.match_table.discard_changes();
+    },
+
+    redraw: function() {
+      this.table.redraw();
     },
   }
 }

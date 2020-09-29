@@ -8,38 +8,16 @@
     <YouthIDSelector @selected="load_youth" usePeriodSwitch :args="{openDirection: 'bottom'}" />
     <br />
 
-    <div ref="body_fields" v-show="currentProfile != null">
-      <ProfileFields
-        :profile="currentProfile"
-        :headerDoc="header_doc"
-        edit showOptionalFields
-      />
-
-      <br /><br />
-
-      <h3>Active Periods & Classes</h3>
-      <PeriodsClassesDisplay
-        :active_periods="current_active_periods"
-        :seasons="seasons"
-        v-bind="period_metadata"
-        disable_selection
-        style="max-width: 95%; margin:auto"
-      />
-
-      <br />
-
-      <!-- <ApronBar :profile="currentProfile" allowEdits /> -->
-
-      <br /><br />
-
-      <ProfileItemLogs
-        :snapshot="profile_snapshot"
-        :periods="periods"
-        :visible="currentProfile != null"
-      ></ProfileItemLogs>
-
-      <br /><br />
-    </div>
+    <ProfileTabs v-show="currentProfile != null"
+      :profile="currentProfile"
+      :profileSnapshot="profile_snapshot"
+      :headerDoc="header_doc"
+      :activePeriods="current_active_periods"
+      :seasons="seasons"
+      :periods="periods"
+      :period_metadata="period_metadata"
+      edit
+    />
 
     <div v-show="currentProfile == null">
       <br>
@@ -59,10 +37,7 @@ import firebase_auth from 'firebase/auth';
 
 import TopBar from '@/components/TopBar';
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
-import ProfileFields from "@/components/ProfileFields.vue"
-import ApronBar from "@/components/ApronBar.vue"
-import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
-import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
+import ProfileTabs from "@/components/ProfileTabs.vue";
 
 import PageHeader from "@/components/PageHeader.vue"
 import {Period} from "@/scripts/Period.js";
@@ -77,10 +52,7 @@ export default {
   components: {
     TopBar,
     YouthIDSelector,
-    ProfileFields,
-    ApronBar,
-    ProfileItemLogs,
-    PeriodsClassesDisplay,
+    ProfileTabs,
     PageHeader,
   },
 
