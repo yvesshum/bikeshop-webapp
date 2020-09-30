@@ -10,7 +10,7 @@
 
     <ProfileTabs v-show="currentProfile != null"
       :profile="currentProfile"
-      :profileSnapshot="profile_snapshot"
+      :profileSnapshot="profile_ref"
       :headerDoc="header_doc"
       :activePeriods="current_active_periods"
       :seasons="seasons"
@@ -23,6 +23,9 @@
       <br>
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
+
+    <RefTracker :reference="profile_ref" @snapshot="handle_profile_snapshot" />
+
     </div>
     <Footer/>
   </div>
@@ -38,6 +41,7 @@ import firebase_auth from 'firebase/auth';
 import TopBar from '@/components/TopBar';
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileTabs from "@/components/ProfileTabs.vue";
+import RefTracker from "@/components/RefTracker.vue";
 
 import PageHeader from "@/components/PageHeader.vue"
 import {Period} from "@/scripts/Period.js";
@@ -53,13 +57,14 @@ export default {
     TopBar,
     YouthIDSelector,
     ProfileTabs,
+    RefTracker,
     PageHeader,
   },
 
   data: function() {
     return {
       currentProfile: null,
-      profile_snapshot: null,
+      profile_ref: null,
       header_doc: null,
 
       periods_db: db.collection("GlobalPeriods"),
@@ -74,7 +79,7 @@ export default {
   },
 
   mounted: async function() {
-    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
+    this.header_doc = await HeaderRef.get();
 
     // // Add a listener to the header document to update expected fields whenever they change
     // HeaderRef.onSnapshot(doc => {
@@ -133,18 +138,20 @@ export default {
 
         // No id returned - clear the page
         if (youth == null) {
-          this.profile_snapshot = null;
+          this.profile_ref = null;
           this.currentProfile = null;
         }
 
         // Id returned - load profile for that youth
         else {
-          this.profile_snapshot = db.collection("GlobalYouthProfile").doc(youth.ID);
-          this.currentProfile = await this.profile_snapshot.get();
+          this.profile_ref = db.collection("GlobalYouthProfile").doc(youth.ID);
           this.current_active_periods = this.create_active_periods(youth, this.period_data);
         }
       },
 
+      handle_profile_snapshot: function({snapshot, update}) {
+        this.currentProfile = snapshot;
+      },
 
       create_active_periods: function(youth, period_data) {
 
