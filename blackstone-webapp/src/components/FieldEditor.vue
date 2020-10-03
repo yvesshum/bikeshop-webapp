@@ -407,7 +407,7 @@ export default {
                     this.modal.delete.field_name = "";
 
                     this.closeLoadingModal();
-                    this.showMsgModal("Success!", "Successfully deleted field in GlobalFieldsCollection and corresponding documents");
+                    this.showMsgModal("Success!", "Successfully deleted the field from the database and its corresponding documents");
 
                     break;
                 }
@@ -476,7 +476,7 @@ export default {
             this.modal.add.initial_value = "";
 
             this.closeLoadingModal();
-            this.showMsgModal("Success!", "Added a new field in GlobalFieldsCollection and corresponding documents.");
+            this.showMsgModal("Success!", "Added a new field in the database and its corresponding documents.");
         }
 
     }
