@@ -216,11 +216,25 @@ export default {
      * or loaded from the database
      */
     apron_skills: function() {
+      if (this.apron_colors.length < 1) return;
+
+      var temp;
       if (this.loadApronInfo == true && this.apronSkills == null) {
-        return this.loaded_apron_skills;
+        temp = this.loaded_apron_skills;
       } else {
-        return this.apronSkills;
+        temp = this.apronSkills;
       }
+
+      // Invert the apron colors and categories
+      return Object.keys(temp).reduce((acc, category) => {
+        this.apron_colors.forEach(({name}) => {
+          if (temp[category][name].length > 0) {
+            if (acc[name] == undefined) acc[name] = {};
+            acc[name][category] = temp[category][name];
+          }
+        });
+        return acc;
+      }, {});
     },
 
     /* The list of apron colors
@@ -428,7 +442,6 @@ export default {
     },
 
     get_achieved_skills_list: function(apron, category) {
-      console.log(this.achievedSkills);
       if ( this.achievedSkills == undefined
         || this.achievedSkills[apron] == undefined
         || this.achievedSkills[apron].Skills[category] == undefined
