@@ -38,7 +38,8 @@
     </div> -->
 
     <!-- <ApronTableView
-      :loadApronInfo="false"
+      :loadApronSkills="false"
+      :loadApronColors="false"
       :apronSkills="apron_skills"
       :apronColors="apron_colors"
       :achievedSkills="achieved_skills"
@@ -49,7 +50,8 @@
     /> -->
 
     <ApronTreeView
-      :loadApronInfo="false"
+      :loadApronSkills="false"
+      :loadApronColors="false"
       :apronSkills="apron_skills"
       :apronColors="apron_colors"
       :achievedSkills="achieved_skills"
