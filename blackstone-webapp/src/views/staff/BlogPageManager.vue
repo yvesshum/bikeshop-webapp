@@ -11,14 +11,12 @@
             <div class="classBlogsWrapper">
               <div v-for="blog in groupedBlogs" :key="blog.id">
                 <div class="border d-flex rounded cardContainer">
-                    <div style="flex: 4; align-items: flex-start">
-                        <div class>
-                            <h2 class="cardText">{{blog.name}}</h2>
-                            <p class="cardText">{{blog.description}}</p>
-                            <p
-                                style="text-align: left; font-style: italic"
-                            >Created on: {{blog.created.toDate().toLocaleDateString()}}</p>
-                        </div>
+                    <div class="blog_info_wrapper">
+                        <h2 class="cardText">{{blog.name}}</h2>
+                        <div class="cardText">{{blog.description}}</div>
+                        <p class="cardText"
+                            style="text-align: left; font-style: italic"
+                        >Created on: {{blog.created.toDate().toLocaleDateString()}}</p>
                     </div>
                     <div stlye="flex: 1" class="d-flex flex-column justify-content-around">
                         <b-button variant="info" @click="handleViewClicked(blog.id)">view</b-button>
@@ -364,6 +362,13 @@ export default {
 </script>
 
 <style scoped>
+.blog_info_wrapper {
+  flex: 4;
+  align-items: flex-start;
+  max-width: calc(100% - 70px);
+  padding-right: 8px;
+}
+
 .buttonBox {
     justify-content: space-evenly;
     display: flex;
@@ -374,11 +379,11 @@ export default {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 40rem;
 }
 
 .cardContainer {
     max-width: 50rem;
+    width: 100%;
     height: 10rem;
     margin: 20px auto;
     padding: 1rem;
