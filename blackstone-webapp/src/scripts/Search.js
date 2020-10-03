@@ -51,7 +51,7 @@ export function make_search(search_term, search_params) {
 
     // Special case: If the search term is blank, match everything
     if (num_terms === 0) {
-        return (opt) => true;
+        return (opt) => true;  // eslint-disable-line no-unused-vars
     }
 
     return (opt) => {
@@ -366,7 +366,7 @@ function remove_overlap_i(indices) {
     var new_indices = [];
 
     // Sort indices by the numerical values of their start positions, then filter out overlaps
-    indices.sort(make_compare_i(true)).forEach((curr, n, arr) => {
+    indices.sort(make_compare_i(true)).forEach((curr, n, arr) => { // eslint-disable-line no-unused-vars
 
         // Keep the first index regardless
         if (n == 0) new_indices = [curr];
@@ -502,7 +502,7 @@ export function make_range_editor(type) {
         });
 
         // Callback to submit the new range for filtering when it changes
-        function onChange(e) {
+        function onChange(e) { // eslint-disable-line no-unused-vars
 
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
@@ -753,7 +753,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     };
 
     // Reposition the dropdown to stay under the button if the window is scrolled
-    window.addEventListener("scroll", function(e) {
+    window.addEventListener("scroll", function(e) { // eslint-disable-line no-unused-vars
       if (dropdown.style.display == "block") {
         align_dropdown();
       }
@@ -892,12 +892,12 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
                 // Align centered to the window if necessary
                 else {
-                    dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+                    dropdown.style.left = ((window.innerWidth - men_rect.width) / 2) + "px";
                 }
             }
       }
 
-      function align_left(btn_rect, men_rect) {
+      function align_left(btn_rect, men_rect) { // eslint-disable-line no-unused-vars
         dropdown.style.left = btn_rect.left + "px";
       }
 

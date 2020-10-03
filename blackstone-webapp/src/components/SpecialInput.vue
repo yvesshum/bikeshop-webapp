@@ -37,18 +37,6 @@ use v-model. Whenever one of these is changed, it updates the other.
     <div v-if="ready">
         <!-- Returns an integer -->
         <div v-if="input === 'Integer'">
-            <!-- <VueNumberInput 
-              center
-              :value="value" 
-              @input="$emit('input', $event)"
-              :min="0"
-              :step="1"
-              align="center"
-              style="width: 20rem"
-              controls
-              :inputtable="false"
-
-            /> -->
             <VueNumericInput
                 :value="value"
                 @input="$emit('input', $event)"
@@ -127,18 +115,6 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
-            <!-- <VueNumberInput 
-              center
-              :value="value" 
-              @input="$emit('input', $event)"
-              :min="0"
-              :step="0.5"
-              placeholder="Hours"
-              align="center"
-              style="width: 100%; margin: 0 auto"
-              controls
-              :inputtable="false"
-            /> -->
             <VueNumericInput
                 :value="value"
                 @input="$emit('input', $event)"
@@ -178,10 +154,8 @@ use v-model. Whenever one of these is changed, it updates the other.
     </div>
 </template>
 <script>
-import VueNumberInput from '@chenfengyuan/vue-number-input';
 import VueNumericInput from 'vue-numeric-input'
 import { VueTelInput } from 'vue-tel-input'
-import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
 import { Compact } from 'vue-color'
@@ -318,7 +292,6 @@ export default {
 
     components: {
         VueTelInput,
-        VueNumberInput,
         VueNumericInput,
         Datetime,
         Datepicker,
