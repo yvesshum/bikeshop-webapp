@@ -59,6 +59,13 @@
       @load_complete="a => apron_view = a"
     />
 
+    <ApronEarnedDisplay
+      :loadApronInfo="false"
+      :apronColors="apron_colors"
+      :skillData="achieved_skills"
+      :achievedColor="achieved_color"
+    />
+
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
         Please confirm the following.
@@ -170,6 +177,7 @@ import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
 import ApronTableView from '@/components/ApronTableView';
 import ApronTreeView from '@/components/ApronTreeView';
+import ApronEarnedDisplay from '@/components/ApronEarnedDisplay';
 import {Status} from '@/scripts/Status.js';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
@@ -183,6 +191,7 @@ export default {
     ApronProgressBar,
     ApronTableView,
     ApronTreeView,
+    ApronEarnedDisplay,
   },
 
   props: {
