@@ -117,7 +117,7 @@ export default {
     },
 
     // Function to filter the rows based on the ID search
-    id_filter: function(headerValue, rowValue, rowData, filterParams) {
+    id_filter: function(headerValue, rowValue, rowData, filterParams) { // eslint-disable-line no-unused-vars
       return rowValue.indexOf(headerValue) >= 0;
     },
 

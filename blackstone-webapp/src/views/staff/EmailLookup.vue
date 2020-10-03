@@ -65,7 +65,6 @@
 import SpecialInput from "../../components/SpecialInput";
 import { initSpecialInputVal } from "../../scripts/SpecialInit";
 import { db } from "@/firebase.js";
-import VueClipboard from "vue-clipboard2";
 
 export default {
 	name: "EmailLookup",
@@ -93,7 +92,7 @@ export default {
                 copyText += item.secondary_parent_email
                 copyText += ' '
             })
-			this.$copyText(copyText).then((e) => {
+			this.$copyText(copyText).then(() => {
                 window.alert("Copied!")
 			});
         },
@@ -105,7 +104,7 @@ export default {
                 copyText += item.primary_parent_email
                 copyText += ' '
             })
-			this.$copyText(copyText).then((e) => {
+			this.$copyText(copyText).then(() => {
                 window.alert("Copied!")
 			});
         },
@@ -118,7 +117,7 @@ export default {
                 copyText += item.secondary_parent_email
                 copyText += ' '
             })
-			this.$copyText(copyText).then((e) => {
+			this.$copyText(copyText).then(() => {
                 window.alert("Copied!")
 			});
         },
@@ -158,7 +157,7 @@ export default {
 						.doc(id)
 						.get();
 					if (!profile.exists) {
-						console.error(`Youth profile with ID does not exist: ${id}`);
+						console.error(`Youth profile with ID does not exist: ${id}`); // eslint-disable-line no-console
 						return;
 					}
 					return { ...profile.data(), id: profile.id };
