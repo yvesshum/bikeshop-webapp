@@ -132,17 +132,17 @@ Emits:
                 <tbody>
                     <tr>
                         <td><b>Special Character:</b></td>
-                        <td v-for="char_obj in special_chars" style="padding: 0px 15px;"><b><code>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular" style="padding: 0px 15px;"><b><code>
                             <span v-if="char_obj.show_caps">{{char_obj.special.toUpperCase()}}</span>{{char_obj.special}}
                         </code></b></td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td v-for="char_obj in special_chars">&nbsp;⇕&nbsp;</td>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular">&nbsp;⇕&nbsp;</td>
                     </tr>
                     <tr>
                         <td><b>Search Equivalent:</b></td>
-                        <td v-for="char_obj in special_chars"><b><code>{{char_obj.regular}}</code></b></td>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular"><b><code>{{char_obj.regular}}</code></b></td>
                     </tr>
                 </tbody>
             </table>
@@ -191,7 +191,6 @@ Emits:
 
 
 <script>
-    import {firebase} from '../firebase'
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
     import {Period} from '@/scripts/Period.js';
