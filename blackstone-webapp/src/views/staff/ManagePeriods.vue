@@ -962,7 +962,7 @@ export default {
       return p;
     },
 
-    class_formatter: function(cell, formatterParams, onRendered) {
+    class_formatter: function(cell, formatterParams, onRendered) { // eslint-disable-line no-unused-vars
       let data = cell.getRow().getData();
       if (this.class_changed(data, Period.makePeriod(this.display_period))) {
         return `<b>${cell.getValue()}</b>`;
