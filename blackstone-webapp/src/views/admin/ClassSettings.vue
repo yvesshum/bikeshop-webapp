@@ -19,18 +19,14 @@
 </template>
 
 <script>
-import CategoryEditor from '../../components/CategoryEditor.vue'
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
-import fieldEditor from '../../components/FieldEditor.vue';
 import ClassEditor from '../../components/ClassEditor.vue';
 
 export default {
   name: 'HourLoggingCategoriesSettings',
   components: {
     SettingsBottomNote,
-    fieldEditor,
-    CategoryEditor,
     ClassEditor
 
   },

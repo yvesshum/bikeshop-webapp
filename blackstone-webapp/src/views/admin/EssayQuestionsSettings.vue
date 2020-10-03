@@ -5,7 +5,7 @@
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
                     <b-button variant="success" @click="showAddModal" style="margin: 1%;">Add Question</b-button>
-                    <b-button variant="info" @click="showEditModal"style="margin: 1%;" :disabled="!selected.length">Edit Question</b-button>
+                    <b-button variant="info" @click="showEditModal" style="margin: 1%;" :disabled="!selected.length">Edit Question</b-button>
                     <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Delete Question</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
               </b-button-toolbar>
@@ -21,7 +21,7 @@
             :items="items"
             @row-selected="rowSelected"
             sort-by="Class"
-            :sort-by.sync="sortBy"
+            :sort-by.sync="sortBy" 
             :sort-desc.sync="sortDesc"
             id="transfer_table"
             :busy="isBusy"
@@ -93,11 +93,7 @@
 <script>
     import SpecialInput from '@/components/SpecialInput';
     import {db} from '../../firebase';
-    import {rb} from '../../firebase';
-    import moment from 'moment'
-    import { forKeyVal } from '@/scripts/ParseDB.js';
     let questionsRef = db.collection("GlobalVariables").doc("EssayQuestions");
-    let classesRef = db.collection("GlobalPeriods").doc("metadata");
     
     export default {
         name: 'EssayQuestionsSettings',
@@ -131,8 +127,6 @@
                 isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                rejectingClass: "",
-                rejectingQuestion: "",
             };
 
         },
@@ -245,7 +239,7 @@
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
                 
                 this.showLoadingModal("Doing some work in the background...");
 
@@ -296,7 +290,7 @@
             async saveEdits() {
                 this.closeEditModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
                 
                 this.showLoadingModal("Doing some work in the background...");
                 

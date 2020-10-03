@@ -73,7 +73,7 @@
                 Essay Answers
             </template>
             <div v-if="checkSet(currentAnswers)">
-              <div v-for="qa in currentAnswers">
+              <div v-for="qa in currentAnswers" :key="qa['question']">
                   <pre class = "pre-essay"><b>Question: </b> {{qa["question"]}}</pre><br>
                   <pre class = "pre-essay"><b>Answer: </b> {{qa["answer"]}}</pre>
                   <hr>
@@ -133,10 +133,7 @@
 
 </template>
 <script>
-    import { VueTelInput } from 'vue-tel-input'
-    import RadioGroupOther from '../../components/RadioGroupOther';
     import SpecialInput from '@/components/SpecialInput';
-    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
@@ -152,8 +149,6 @@
     export default {
         name: 'ApproveNewYouth',
         components: {
-          RadioGroupOther,
-          VueTelInput,
           SpecialInput,
           PageHeader,
         },
@@ -178,7 +173,6 @@
                 loadingModalVisible: false,
                 loadingModalHeader: "",
                 deleteAmount: 0,
-                editModalVisible: false,
                 essayModalVisible: false,
                 editSelected: {},
                 currentSeason: null,
@@ -283,8 +277,8 @@
                 let fields = [];
                 fields.push({key: "Timestamp", sortable: true});
                 fields.push({key: "New or Returning", sortable: true});
-                forKeyVal(headers, function(name, val, n) {
-                    if(name != "DOB"){
+                forKeyVal(headers, function(name, val, n) { // eslint-disable-line no-unused-vars
+                    if(name != "DOB"){ 
                         fields.push({key: name, sortable: true});
                     } else {
                         fields.push({key: "Birthdate", sortable: true});
@@ -485,7 +479,7 @@
                     let currentYear = this.currentSeason.split(" ")[1];
                     // console.log("Current year: " + currentYear);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
-                    var current = s.data();
+                    var current = s.data(); // eslint-disable-line no-redeclare
                     if(current[this.currentSeason] == undefined){
                         current[this.currentSeason] = [];
                         // console.log("New Season");
@@ -595,7 +589,7 @@
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
 
                 this.showLoadingModal("Doing some work in the background...");
 
@@ -632,11 +626,11 @@
                 var editSelectedLocal = [];
 
                 let fields = await this.getEditFields();
-                let options = await this.getEditOptions();
+                // let options = await this.getEditOptions();
 
                 var req_keys = [];
                 var req_vals = [];
-                forKeyVal(fields["required"], function(name, val, n) {
+                forKeyVal(fields["required"], function(name, val, n) { // eslint-disable-line no-unused-vars
                     req_keys.push(name);
                     req_vals.push(val);
                 });
@@ -652,7 +646,7 @@
                 // console.log(currentClass)
                 var opt_keys = [];
                 var opt_vals = [];
-                forKeyVal(fields["optional"], function(name, val, n) {
+                forKeyVal(fields["optional"], function(name, val, n) { // eslint-disable-line no-unused-vars
                     opt_keys.push(name);
                     opt_vals.push(val);
                 });
@@ -711,7 +705,7 @@
             },
 
             async saveEdits() {
-                let note = this.editFields;
+                // let note = this.editFields;
                 this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
@@ -740,7 +734,7 @@
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     this.closeLoadingModal();
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     this.editSelected = {};
                     return null;
                 }

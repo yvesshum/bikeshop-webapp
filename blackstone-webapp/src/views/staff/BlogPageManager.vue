@@ -149,9 +149,7 @@
 <script>
 import { db, Timestamp } from "../../firebase";
 
-import { isStaff } from "@/scripts/getPrivilege.js";
 import PageHeader from "@/components/PageHeader.vue";
-import { chunk } from "lodash";
 import { deleteCollection } from "@/scripts/dbUtils.js";
 export default {
     name: "BlogPageManager",

@@ -51,19 +51,14 @@ import { rb } from "../../firebase";
 import { db } from "../../firebase";
 import moment from "moment";
 import ProfileFields from "@/components/ProfileFields.vue"
-import ApronBar from "@/components/ApronBar.vue"
-import CollectionTable from "@/components/CollectionTable.vue"
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
 import PageHeader from "@/components/PageHeader.vue"
-
-let checkedInRef = rb.ref("Checked In");
 
 export default {
   name: "CheckedIn",
   components: {
     ProfileFields,
-    ApronBar,
     PageHeader,
   },
   data() {
@@ -117,7 +112,7 @@ export default {
           cur_period: data["CurrentPeriod"],
           reg_period: data["CurrentRegistrationPeriod"],
           seasons:    data["Seasons"],
-          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
+          class_list: mapKeyVal(data["Classes"], (name, desc) => name), // eslint-disable-line no-unused-vars
         };
       },
 

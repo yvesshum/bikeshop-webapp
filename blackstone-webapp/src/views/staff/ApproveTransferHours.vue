@@ -385,7 +385,7 @@
                 let docID = this.selected[0]["Document ID"];
                 let status = await db.collection("GlobalTransferHours").doc(docID).update({"Notes": note});
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     return null;
                 }
 

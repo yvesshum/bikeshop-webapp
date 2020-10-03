@@ -185,9 +185,9 @@
             rowSelected(items){
                 this.selected = items;
             },
-            reject: function(evt) {
-                evt.preventDefault();
-            },
+            // reject: function(evt) {
+            //     evt.preventDefault();
+            // },
 
             async getHeaders() {
                 let headers = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
@@ -518,7 +518,7 @@
                 let docID = this.selected[0]["Document ID"];
                 let status = await db.collection("GlobalPendingHours").doc(docID).update({"Notes": note});
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     return null;
                 }
 
@@ -533,7 +533,7 @@
             },
 
             async saveHours() {
-                let note = this.editHours;
+                // let note = this.editHours;
                 this.closeHoursModal();
                 this.showLoadingModal("Saving hours..");
                 let docID = this.selected[0]["Document ID"];
@@ -558,7 +558,7 @@
 
                 let status = await db.collection("GlobalPendingHours").doc(docID).update(JSON.parse(newHours));
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     this.editSelectedHours = {};
                     return null;
                 }
