@@ -68,7 +68,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns a string "true" or "false" -->
         <div v-else-if="input === 'Boolean'">
             <b-form-group >
-                <b-form-radio-group  :value="value" @input="$emit('input', $event)">
+                <b-form-radio-group :checked="value" @input="$emit('input', $event)">
                     <b-form-radio :value="true" :style="args.style">Yes</b-form-radio>
                     <b-form-radio :value="false" :style="args.style">No</b-form-radio>
                 </b-form-radio-group>
@@ -95,7 +95,7 @@ use v-model. Whenever one of these is changed, it updates the other.
         <!-- Returns M/F or some string -->
         <div v-else-if="input === 'Gender'">
             <b-form-group >
-                <b-form-radio-group  :value="value" @input="$emit('input', $event)" >
+                <b-form-radio-group :checked="value" @input="$emit('input', $event)" >
                     <b-form-radio value="M" :style="args.style">M</b-form-radio>
                     <b-form-radio value="F" :style="args.style">F</b-form-radio>
                     <b-form-radio value="Other" :style="args.style">Other</b-form-radio>
@@ -164,6 +164,7 @@ use v-model. Whenever one of these is changed, it updates the other.
                 :placeholder="args.placeholder"
                 rows="3"
                 max-rows="6"
+                maxlength="3000"
             ></b-form-textarea>
         </div>
 
@@ -173,7 +174,7 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- String Input -->
         <div v-else>
-            <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder"></b-form-input>
+            <b-form-input :value="value" @input="$emit('input', $event)" type="text" :style="args.style" :placeholder="args.placeholder" maxlength="400"></b-form-input>
         </div>
     </div>
 </template>
