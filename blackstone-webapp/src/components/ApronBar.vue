@@ -100,7 +100,7 @@
             <td class="change_modal_header" style="width:50%">Skill Name</td>
             <td class="change_modal_header" style="width:25%">Skill Category</td>
           </tr>
-          <tr v-for="(skill, index) in skills_to_add" class="change_modal_cell_add">
+          <tr v-for="(skill, index) in skills_to_add" v-bind:key="index + skill" class="change_modal_cell_add">
             <td v-if="index == 0 || skills_to_add[index-1].color != skill.color" :rowspan="add_row_spans[index]" style="border-right: 1px solid black;">
               <ApronImg :color="apron_name_to_color(skill.color, 'color')" :size="48" style="margin-top: 10px;" />
               {{skill.color}}
@@ -126,7 +126,7 @@
             <td class="change_modal_header" style="width:50%">Skill Name</td>
             <td class="change_modal_header" style="width:25%">Skill Category</td>
           </tr>
-          <tr v-for="(skill, index) in skills_to_remove" class="change_modal_cell_remove">
+          <tr v-for="(skill, index) in skills_to_remove" v-bind:key="index + skill" class="change_modal_cell_remove">
             <td v-if="index == 0 || skills_to_remove[index-1].color != skill.color" :rowspan="remove_row_spans[index]" style="border-right: 1px solid black;">
               <ApronImg :color="apron_name_to_color(skill.color, 'color')" :size="48" style="margin-top: 10px;" />
               {{skill.color}}
@@ -152,14 +152,9 @@
 <script>
 // @ is an alias to /src
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
 import ApronTableView from '@/components/ApronTableView';
-import MatchTable from '@/components/MatchTable';
-import {Status} from '@/scripts/Status.js';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
 let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
@@ -171,7 +166,6 @@ export default {
     ApronImg,
     ApronProgressBar,
     ApronTableView,
-    MatchTable,
   },
 
   props: {
@@ -218,7 +212,7 @@ export default {
 
       test_headers: [
         {title:"Name", field:"name"},
-        {title:"Apron", field:"apron", width: 100, formatter:(cell, formatterParams) => {
+        {title:"Apron", field:"apron", width: 100, formatter:(cell, formatterParams) => { // eslint-disable-line no-unused-vars
           let apron = this.apron_colors[cell.getValue()];
           return (apron == null) ? "" : apron.name;
         }},
@@ -351,7 +345,7 @@ export default {
 
       if (this.changed_skills == null) return [];
 
-      this.add_row_spans = [];
+      this.add_row_spans = []; // eslint-disable-line
 
       var spans = this.changed_skills.add.reduce((acc, curr, i) => {
         let color = curr.getData().color;
@@ -365,7 +359,7 @@ export default {
         return acc;
       }, {color: null, spans: []}).spans;
 
-      spans.forEach(({index, num}) => this.add_row_spans[index] = num);
+      spans.forEach(({index, num}) => this.add_row_spans[index] = num); // eslint-disable-line
 
       return this.changed_skills.add.map(row => row.getData());
     },
@@ -375,7 +369,7 @@ export default {
 
       if (this.changed_skills == null) return [];
 
-      this.rem_row_spans = [];
+      this.rem_row_spans = []; // eslint-disable-line
 
       var spans = this.changed_skills.rem.reduce((acc, curr, i) => {
         let color = curr.getData().color;
@@ -389,7 +383,7 @@ export default {
         return acc;
       }, {color: null, spans: []}).spans;
 
-      spans.forEach(({index, num}) => this.remove_row_spans[index] = num);
+      spans.forEach(({index, num}) => this.remove_row_spans[index] = num); // eslint-disable-line
 
       return this.changed_skills.rem.map(row => row.getData());
     },

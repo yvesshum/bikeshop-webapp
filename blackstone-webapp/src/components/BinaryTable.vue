@@ -90,7 +90,7 @@ A Table with an editable active and inactive list, which can switch between disp
 
         watch: {
 
-            tableData: function(new_data) {
+            tableData: function(new_data) { // eslint-disable-line no-unused-vars
                 this.active_data   = this.get_child_safe(this.tableData, "active",   []);
                 this.inactive_data = this.get_child_safe(this.tableData, "inactive", []);
                 this.set_edit_table();

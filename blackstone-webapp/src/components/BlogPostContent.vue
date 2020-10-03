@@ -19,9 +19,7 @@
 </template>
 
 <script>
-import { db } from "../../firebase";
 import { VueEditor } from "vue2-editor";
-import PageHeader from "@/components/PageHeader.vue";
 import moment from "moment";
 export default {
   name: "BlogPost",
@@ -47,7 +45,6 @@ export default {
   },
 
   components: {
-    PageHeader,
     VueEditor,
   },
 

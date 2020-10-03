@@ -3,7 +3,7 @@
 
     <div class="tree-container">
 
-      <div v-for="box in tree_boxes" :class="get_box_class(box)" :style="get_box_style(box)">
+      <div v-for="box in tree_boxes" :class="get_box_class(box)" v-bind:key="box" :style="get_box_style(box)">
         <div v-if="box.type == 'apron'" class="tree-apron-content">
           <ApronImg :color="get_color_val(box.apron)" :size="48" />
           <br />
@@ -18,7 +18,7 @@
         </div>
         <div v-else-if="box.type == 'skills'" class="tree-skills-content">
           <ul>
-            <li v-for="skill in box.skills">{{skill}}</li>
+            <li v-for="skill in box.skills" v-bind:key="skill">{{skill}}</li>
           </ul>
         </div>
       </div>
@@ -92,9 +92,6 @@
 <script>
 // @ is an alias to /src
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");

@@ -9,7 +9,7 @@
           />
           {{selected.name}}
         </template>
-        <b-dropdown-item v-for="(apron, n) in colors" class="text-left" @click="val => mouse_click(n, val)" style="width: 240px;">
+        <b-dropdown-item v-for="(apron, n) in colors" v-bind:key="apron + n" class="text-left" @click="val => mouse_click(n, val)" style="width: 240px;">
           <ApronImg v-if="!(hideGray && apron.name == 'Gray')"
             class="apron_img_style"
             :color="apron.color" :size="size" :active="true" :name="apron_name(n)"
@@ -24,9 +24,6 @@
 
 <script>
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 
 
@@ -80,7 +77,7 @@ export default {
       this.$emit("hover", this.hover);
     },
 
-    mouse_click: function(n, active) {
+    mouse_click: function(n, active) { // eslint-disable-line no-unused-vars
       let curr = this.hover[n];
       this.$set(this.hover, n, (curr == undefined || curr == "hover") ? "click" : "hover");
       this.$emit("input", this.colors[n]);

@@ -20,7 +20,6 @@
             selectedVaraint = "success"
             :items="items"
             @row-selected="rowSelected"
-            sort-by="Class"
             :sort-by.sync="sortBy" 
             :sort-desc.sync="sortDesc"
             id="transfer_table"
@@ -102,7 +101,7 @@
         },
         data() {
             return {
-                sortBy: 'Check In',
+                sortBy: 'Class',
                 sortDesc: false,
                 headers: [],
                 items: [],
