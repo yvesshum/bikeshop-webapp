@@ -77,7 +77,7 @@
                 :text="batch_season_display"
                 style="margin: auto;" right
               >
-                <b-dropdown-item-button v-for="s in season_list" @click="batch_season = s">
+                <b-dropdown-item-button v-for="s in season_list" @click="batch_season = s" :key="s">
                   {{s}}
                 </b-dropdown-item-button>
                 <b-dropdown-divider></b-dropdown-divider>
@@ -93,7 +93,7 @@
                 :text="batch_year_display"
                 style="margin: auto;" right
               >
-                <b-dropdown-item-button v-for="y in year_list" @click="batch_year = y">
+                <b-dropdown-item-button v-for="y in year_list" @click="batch_year = y" :key="y">
                   {{y}}
                 </b-dropdown-item-button>
                 <b-dropdown-divider></b-dropdown-divider>
@@ -115,7 +115,7 @@
                     <i>Set the class during (season) for all selected youth.</i>
                 </b-dropdown-text>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-item-button v-for="c in class_list" @click="change_periods_selected(c)">
+                <b-dropdown-item-button v-for="c in class_list" @click="change_periods_selected(c)" :key="c">
                   {{c}}
                 </b-dropdown-item-button>
                 <b-dropdown-divider></b-dropdown-divider>
@@ -136,7 +136,7 @@
             </tr>
             </thead>
             <tbody>
-              <tr v-for="youth in selected_youths" style="padding-top: 0px;">
+              <tr v-for="youth in selected_youths" style="padding-top: 0px;" :key="youth.id">
                 <td style="padding-top: 3px; padding-bottom: 3px;">
                   {{youth["First Name"]}} {{youth["Last Name"]}}
                 </td>
@@ -180,7 +180,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="change in change_array" style="padding-top: 0px;">
+                <tr v-for="change in change_array" style="padding-top: 0px;" :key="change">
                   <td v-if="change.youth != undefined" :rowspan="youth_num_changes(change.youth)">
                     {{change.youth["Full Name"]}} ({{change.youth["ID"]}})
                   </td>
@@ -214,7 +214,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="change in error_array" style="padding-top: 0px;">
+                <tr v-for="change in error_array" style="padding-top: 0px;" :key="change">
                   <td>{{change.name}} ({{change.id}})</td>
                   <td>{{change.period}}</td>
                   <td>{{change.class}}</td>
@@ -228,7 +228,7 @@
               <br />
               <p>Error message(s):</p>
               <div style="background: #2e2e38">
-                  <p v-for="i in transaction_errors">
+                  <p v-for="i in transaction_errors" :key="i">
                     <code>{{i.err}}</code>
                   </p>
               </div>
@@ -260,9 +260,6 @@
 
 // Firebase
 import {db} from '../../firebase';
-import {firebase} from '../../firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 
 // Components
 import TopBar from '@/components/TopBar';
@@ -271,14 +268,11 @@ import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import YouthIDSelector from '@/components/YouthIDSelector';
 import ButtonArrayHeader from '@/components/ButtonArrayHeader';
 import ModalDRS from '@/components/ModalDRS';
-import ProfileFields from "@/components/ProfileFields.vue"
-import ApronBar from "@/components/ApronBar.vue"
 import ProfilePopup from "@/components/ProfilePopup";
 import ToggleButton from "@/components/ToggleButton";
 
 // Scripts
 import PageHeader from "../../components/PageHeader.vue"
-import {Status} from '@/scripts/Status.js';
 import {filter} from "@/scripts/Search.js";
 import {forKeyVal} from '@/scripts/ParseDB.js';
 import {AwaitTransactions} from '@/scripts/ParseDB.js';
@@ -294,8 +288,6 @@ export default {
     YouthIDSelector,
     ButtonArrayHeader,
     ModalDRS,
-    ProfileFields,
-    ApronBar,
     ProfilePopup,
     ToggleButton,
     PageHeader
@@ -404,7 +396,7 @@ export default {
 
     class_list: function() {
       var ret = [];
-      forKeyVal(this.classes, (name, val) => {
+      forKeyVal(this.classes, (name, val) => { // eslint-disable-line no-unused-vars
         ret.push(name);
       });
       return ret;
@@ -690,7 +682,7 @@ export default {
 
     // Event handler for tabulator replaceData event
     // Reselects all youth which are currently being edited
-    reselect_rows: function(data) {
+    reselect_rows: function(data) { // eslint-disable-line no-unused-vars
 
       // Get the table
       let table = this.$refs.current_table.tabulator;
@@ -704,7 +696,7 @@ export default {
     // Event handler for tabulator rowClick event
     // Have to use this instead of selected because it only fires on manual selection,
     // not on programmatic selection
-    row_click: function({event, row, selected}) {
+    row_click: function({event, row, selected}) { // eslint-disable-line no-unused-vars
 
       // If regular click (not CTRL-click or shift-click), deselect everyone
       if (!(event.ctrlKey || event.shiftKey)) {
@@ -850,8 +842,8 @@ export default {
       });
 
       // Get lists of youth_ids and periods which need to be updated
-      let youth_id_list = Object.keys(this.changes);
-      let year_list = Object.keys(period_obj);
+      // let youth_id_list = Object.keys(this.changes);
+      // let year_list = Object.keys(period_obj);
 
 
       // --- Update the GlobalPeriods list -----
@@ -913,7 +905,7 @@ export default {
         if (errs.length > 0) {
 
           // Add the intended changes to each error object
-          errs.forEach((err, n) => {
+          errs.forEach((err, n) => { // eslint-disable-line no-unused-vars
             err.changes = period_obj[err.name];
           });
 
