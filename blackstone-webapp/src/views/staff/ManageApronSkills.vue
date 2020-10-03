@@ -161,7 +161,7 @@
             v-bind:text="selected_category"
             class="m-md-2"
           >
-            <div v-for="category in getUniqueCategories()">
+            <div v-for="category in getUniqueCategories()" :key="category">
               <b-dropdown-item @click="update_selected_category(category)">{{
                 category
               }}</b-dropdown-item>
@@ -203,7 +203,7 @@
             v-bind:text="selected_category"
             class="m-md-2"
           >
-            <div v-for="category in getUniqueCategories()">
+            <div v-for="category in getUniqueCategories()" :key="category">
               <b-dropdown-item @click="update_selected_category(category)">{{
                 category
               }}</b-dropdown-item>
@@ -289,9 +289,6 @@
           </div>
         </div>
       </b-modal>
-      <!-- <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skill', 'Color']" @rowSelected="updateSelected"/>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
-        <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
     </div>
 
     <Footer />
@@ -299,12 +296,9 @@
 </template>
 
 <script>
-import EditTable from "../../components/EditTable";
 import { db } from "../../firebase";
-import { firebase } from "../../firebase";
 import PageHeader from "../../components/PageHeader.vue";
 import ApronColorSelector from "../../components/ApronColorSelector.vue";
-import ApronBar from "../../components/ApronBar.vue";
 import DraggableTable from "../../components/DraggableTable.vue";
 import { initSpecialInputVal } from "../../scripts/SpecialInit";
 import SpecialInput from "@/components/SpecialInput";
@@ -315,10 +309,8 @@ let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
 export default {
   name: "StaffManageSkills",
   components: {
-    EditTable,
     PageHeader,
     ApronColorSelector,
-    ApronBar,
     DraggableTable,
     SpecialInput
   },
@@ -570,7 +562,7 @@ export default {
           }
         }
         if (changed) {
-          let status = await db
+          await db
             .collection("GlobalYouthProfile")
             .doc(doc.id)
             .update(data);
@@ -762,12 +754,12 @@ export default {
       }
     },
     async rename_category() {
-      for (var i = 0; i < this.categories.length; i++) {
+      for (let i = 0; i < this.categories.length; i++) {
         if (this.categories[i] == this.selected_category) {
           this.categories[i] = this.renamed_category;
         }
       }
-      for (var i = 0; i < this.groups.length; i++) {
+      for (let i = 0; i < this.groups.length; i++) {
         if (this.groups[i]["category"] == this.selected_category) {
           this.groups[i]["category"] = this.renamed_category;
         }
