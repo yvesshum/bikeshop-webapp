@@ -210,7 +210,7 @@ export default {
       this.$bvModal.hide("checkout-modal");
       this.loading = true;
       this.$bvModal.show("checkout-status-modal");
-      this.checkOut().then(_ => {
+      this.checkOut().then(() => {
         this.loading = false;
       });
     },

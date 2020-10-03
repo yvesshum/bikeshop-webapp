@@ -38,7 +38,7 @@
                           <div class = "specialDiv">
                               <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
                           </div>
-                          <div v-for="field in requiredFields">
+                          <div v-for="field in requiredFields" :key="field">
                             <div v-if="field.name == 'Class'">
                               <div class = "specialDiv">
                                 <p class="field_header">Registration {{field.name}}<span style="color: red"> *</span></p>
@@ -48,7 +48,7 @@
                               </div>
                             </div>
                             <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
-                                <div v-for="question in essayQuestions[field.value]">
+                                <div v-for="question in essayQuestions[field.value]" :key="question">
                                   <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <p style="color: grey">{{placeholders[field.name]}}</p>
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     <div v-if="returningYouth == 'New Youth'">
-                      <div v-for="field in requiredFields">
+                      <div v-for="field in requiredFields" :key="field">
                           <div class="each_field">
                               <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
                                 <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
@@ -71,7 +71,7 @@
                                 </div>
                               </div>
                               <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
-                                  <div v-for="question in essayQuestions[field.value]">
+                                  <div v-for="question in essayQuestions[field.value]" :key="question">
                                     <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <p style="color: grey">{{placeholders[field.name]}}</p>
@@ -96,7 +96,7 @@
                       <div v-if="returningYouth == 'Returning Youth'">
                         <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
                           <hr>
-                          <div v-for="field in requiredFields">
+                          <div v-for="field in requiredFields" :key="field">
                             <div v-if="field.name != 'Class'">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
@@ -107,7 +107,7 @@
                             </div>
                           </div>
                       </div>
-                      <div v-for="field in optionalFields">
+                      <div v-for="field in optionalFields" :key="field">
                           <div class="each_field">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
@@ -143,7 +143,7 @@
             </template>
             <div class="d-block text-center">
                 <h3>The following fields have errors!</h3>
-                <h4 v-for="errors in errorFields">{{errors}}</h4>
+                <h4 v-for="errors in errorFields" :key="errors">{{errors}}</h4>
             </div>
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -173,17 +173,13 @@
 </template>
 
 <script>
-    import { VueTelInput } from 'vue-tel-input'
     import SpecialInput from '@/components/SpecialInput';
     import { initSpecialInputVal } from '../../scripts/SpecialInit';
-    import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
-    import {firebase} from '../../firebase';
     import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
     import PageHeader from "@/components/PageHeader.vue"
-    import moment from 'moment'
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
@@ -194,8 +190,6 @@
     export default {
         name: 'RegisterYouth',
         components: {
-            RadioGroupOther,
-            VueTelInput,
             SpecialInput,
             PageHeader,
         },
@@ -332,7 +326,6 @@
                         })
                     }
                     
-                    var today = new Date();
                     var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
@@ -559,7 +552,7 @@
         async mounted() {
             this.loadingModalVisible = true;
             let fields = await this.getFields();
-            let options = await this.getOptions();
+            // let options = await this.getOptions();
             this.essayQuestions = await this.getEssays();
             // console.log("Essay Questions: " + this.essayQuestions);
             for (var className in this.essayQuestions) {
@@ -581,7 +574,7 @@
             }
             var req_keys = [];
             var req_vals = [];
-            forKeyVal(fields["required"], function(name, val, n) {
+            forKeyVal(fields["required"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 req_keys.push(name);
                 req_vals.push(val);
             });
@@ -595,7 +588,7 @@
             }
             var opt_keys = [];
             var opt_vals = [];
-            forKeyVal(fields["optional"], function(name, val, n) {
+            forKeyVal(fields["optional"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 opt_keys.push(name);
                 opt_vals.push(val);
             });
@@ -608,10 +601,10 @@
                 });
             }
             var hidden_keys = [];
-            forKeyVal(fields["hidden"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
+            forKeyVal(fields["hidden"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 hidden_keys.push(name);
             });
+
             for (let i = 0; i <hidden_keys.length; i ++) {
                 this.hiddenFields.push({
                     name: hidden_keys[i],

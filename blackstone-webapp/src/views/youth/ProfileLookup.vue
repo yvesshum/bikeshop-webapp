@@ -32,12 +32,6 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
         style="max-width: 95%; margin:auto"
       />
 
-      <!-- <br />
-
-      <ApronBar
-        :profile="currentProfile"
-      /> -->
-
       <br /><br />
 
       <ProfileItemLogs
@@ -61,14 +55,10 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 <script>
 // @ is an alias to /src
 import {db} from '../../firebase';
-import {firebase} from '../../firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 
 import TopBar from '@/components/TopBar';
 import YouthIDSelector from "@/components/YouthIDSelector.vue"
 import ProfileFields from "@/components/ProfileFields.vue"
-import ApronBar from "@/components/ApronBar.vue"
 import ProfileItemLogs from "@/components/ProfileItemLogs.vue";
 import PeriodsClassesDisplay from "@/components/PeriodsClassesDisplay";
 
@@ -84,7 +74,6 @@ export default {
     TopBar,
     YouthIDSelector,
     ProfileFields,
-    ApronBar,
     ProfileItemLogs,
     PeriodsClassesDisplay,
     PageHeader
@@ -157,6 +146,7 @@ export default {
         cur_period: data["CurrentPeriod"],
         reg_period: data["CurrentRegistrationPeriod"],
         seasons:    data["Seasons"],
+        // eslint-disable-next-line no-unused-vars
         class_list: mapKeyVal(data["Classes"], (name, desc) => name),
       };
     },
@@ -181,6 +171,7 @@ export default {
     create_active_periods: function(youth, period_data) {
 
       // Collect all the seasons from the nested year -> season data structure
+      // eslint-disable-next-line no-unused-vars
       var obj = Object.entries(period_data).reduce( (acc, [_, seasons]) => {
         return {...acc, ...seasons}
       }, {} );

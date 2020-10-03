@@ -289,8 +289,6 @@ import moment from "moment";
 import { db } from "@/firebase.js";
 import { Datetime } from "vue-datetime";
 import "vue-datetime/dist/vue-datetime.css";
-import { Timestamp } from "@/firebase.js";
-import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
 import PageHeader from "@/components/PageHeader.vue";
 import { filter } from "@/scripts/Search.js";
@@ -322,8 +320,8 @@ export default {
   name: "Stats",
   components: {
     Datetime,
-    QueryTable,
-    Tabulator,
+    // QueryTable,
+    // Tabulator,
     PageHeader
   },
   data() {
@@ -736,8 +734,6 @@ export default {
         selectable: 1,
         selectableRangeMode: "click"
       });
-
-      table.set;
     },
     async export_to_csv() {
       this.table.download("csv", "data.csv");
@@ -767,6 +763,7 @@ export default {
     this.displayTable();
   },
   watch: {
+    // eslint-disable-next-line no-unused-vars
     fields_selected: function(val, oldVal) {
       let nV = Object.values(Object.assign({}, val));
       nV.splice(nV.indexOf("ID"), 1);
