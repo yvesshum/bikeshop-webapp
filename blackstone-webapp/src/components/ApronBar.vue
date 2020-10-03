@@ -1,7 +1,7 @@
 <template>
   <div class="apron_bar">
 
-    <div class="title_container">
+    <!-- <div class="title_container">
 
       <h3>Apron Skills</h3>
 
@@ -35,9 +35,20 @@
       </div>
 
       <div style="clear: both;"></div>
-    </div>
+    </div> -->
 
-    <ApronTableView
+    <!-- <ApronTableView
+      :loadApronInfo="false"
+      :apronSkills="apron_skills"
+      :apronColors="apron_colors"
+      :achievedSkills="achieved_skills"
+      :achievedColor="achieved_color"
+      :showColor="show_color"
+      @changed="c => changed_skills = c"
+      @load_complete="a => apron_view = a"
+    /> -->
+
+    <ApronTreeView
       :loadApronInfo="false"
       :apronSkills="apron_skills"
       :apronColors="apron_colors"
@@ -158,7 +169,7 @@ import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 import ApronProgressBar from '@/components/ApronProgressBar';
 import ApronTableView from '@/components/ApronTableView';
-import MatchTable from '@/components/MatchTable';
+import ApronTreeView from '@/components/ApronTreeView';
 import {Status} from '@/scripts/Status.js';
 
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
@@ -171,7 +182,7 @@ export default {
     ApronImg,
     ApronProgressBar,
     ApronTableView,
-    MatchTable,
+    ApronTreeView,
   },
 
   props: {
