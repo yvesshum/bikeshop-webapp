@@ -17,7 +17,6 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
       <ProfileFields
         :profile="currentProfile"
-        :headerDoc="header_doc"
         :disableWarnings="true"
         showOptionalFields
       />
@@ -27,7 +26,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
       <h3>Active Periods & Classes</h3>
       <PeriodsClassesDisplay
         :active_periods="current_active_periods"
-        :seasons="period_metadata['seasons']"
+        :seasons="seasons"
         v-bind="period_metadata"
         disable_selection
         style="max-width: 95%; margin:auto"
@@ -95,7 +94,6 @@ export default {
     return {
       currentProfile: null,
       profile_snapshot: null,
-      header_doc: null,
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
@@ -110,8 +108,13 @@ export default {
 
   // Grab profile header information and period information from database
   mounted: async function() {
-    this.header_doc = await db.collection("GlobalFieldsCollection").doc("Youth Profile").get();
     await this.load_period_data();
+  },
+
+  computed: {
+    seasons: function() {
+      return this.period_metadata ? this.period_metadata.seasons : [];
+    }
   },
 
   methods: {

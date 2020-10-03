@@ -31,21 +31,25 @@ export function forKeyVal(arr, op) {
 		return;
 	}
 
-	// Throw an error if the arr argument is not an Array
-	if (!Array.isArray(arr)) {
-		throw TypeError(`Expected array, got ${typeof arr} with value "${arr}".`);
+	// Map the function op onto each key/value pair
+	// If passed an array, apply the function to all objects in the array
+	if (Array.isArray(arr)) {
+		arr.forEach((obj, n) => {
+			Object.keys(obj).forEach(key => {
+				if (op.length == 2) {
+					op(key, obj[key]);
+				} else {
+					op(key, obj[key], n);
+				}
+			});
+		});
 	}
 
-	// Map the function op onto each key/value pair
-	arr.forEach((obj, n) => {
-		Object.keys(obj).forEach(key => { 
-			if (op.length == 2) {
-				op(key, obj[key]);
-			}else {
-				op(key, obj[key], n);
-			}
-		});
-	});
+	// If passed a single object, just apply the function to that object
+	else {
+		Object.keys(arr).forEach(key => { op(key, arr[key]); })
+	}
+
 };
 
 
@@ -148,6 +152,22 @@ export function mapObj(object, f) {
 	}
   });
 }
+
+
+export function forEach_ObjObjArr(obj, f) {
+	if (obj == null) return;
+	Object.keys(obj).forEach(level1 => {
+
+		if (obj[level1] == null) return;
+		Object.keys(obj[level1]).forEach(level2 => {
+
+			if (obj[level1][level2] == null) return;
+			for (let index in obj[level1][level2]) {
+				f(level1, level2, index, obj[level1][level2][index]);
+			}
+		});
+	});
+};
 
 
 // Error checking to get a Date object from the database

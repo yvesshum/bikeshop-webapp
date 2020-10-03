@@ -21,7 +21,28 @@ export default {
     Table,
   },
 
-  props: ['fullData', 'checkedData', 'headingData', 'matchBy', 'editable'],
+  props: {
+    fullData: {
+      type: Array
+    },
+
+    checkedData: {
+      type: Array
+    },
+
+    headingData: {},
+
+    matchBy: {
+      type: [String, Array],
+    },
+
+    editable: {
+      type: Boolean,
+      default: false,
+    },
+
+    args: {},
+  },
 
   data: function() {
     return {
@@ -30,10 +51,11 @@ export default {
       table: null,
 
       achieved_column: {
+        title:"Achieved?",
         field:"achieved",
         formatter:"tickCross",
         formatterParams: {crossElement: false},
-        width: 10,
+        width: 115,
         align: "center",
         headerSort: false,
         editable: this.editable != undefined,
@@ -45,31 +67,26 @@ export default {
 
           this.row_status.set(row_id, new_status);
 
-          var changes = {
-            "add": this.row_status.filter(Status.ADD),
-            "rem": this.row_status.filter(Status.REM),
-            "use": this.row_status.filter(Status.O),
-            "not": this.row_status.filter(Status.X),
-          };
+          var add = this.table.getRows().filter(row =>
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
+          );
 
-          this.$emit("changes", changes);
+          var rem = this.table.getRows().filter(row =>
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
+          );
+
+          this.$emit("changes", {add, rem});
         },
       },
 
-      table_args: {
-        groupBy: 'group',
-        resizeableRows: false,
-        resizeableColumns: false,
-        index: 'name',
+      default_table_args: {
+        index: this.matchBy,
 
         // Format the header to show number of skills achieved in each category
         groupHeader: function(value, count, data, group) {
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
           return `${value} Skills <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
-
-        // Allow multiple selection with ctrl and shift keys
-        selectable: true,
 
         // When row selection changes, propagate those changes upward
         rowSelectionChanged: (data, rows) => {
@@ -93,47 +110,113 @@ export default {
   },
 
   mounted: function() {
-    this.fullData.forEach(row => {
-      let row_id = this.get_row_id(row);
-      let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+    this.fullData.forEach(row_data => {
+      let row_id = this.get_row_id(row_data);
+      let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
       this.row_status.add_vue(this, row_id, status);
     });
   },
 
   watch: {
-    fullData: function(new_rows) {
-      new_rows.forEach(row => {
-        let row_id = this.get_row_id(row);
-        let status = this.checkedData.includes(row_id) ? Status.USE : Status.NOT;
+
+    // Any time the full set of data updates, add new rows to the row_status object as necessary
+    fullData: function(new_row_data) {
+
+      // Loop through each row data object in the full set
+      this.fullData.forEach(row_data => {
+        let row_id = this.get_row_id(row_data);
+
+        // If data not yet in table, check its status in checkedData and add it
         if (!this.row_status.has_key(row_id)) {
+          let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
           this.row_status.add_vue(this, row_id, status);
         }
       });
     },
 
-    checkedData: function(new_rows) {
-      this.row_status.forEach(row => {
-        this.row_status.set(row, new_rows.includes(row) ? Status.USE : Status.NOT);
+
+    // Any time the checked data updates, set the row_status object to match it
+    checkedData: function(new_row_data) {
+
+      // For each row_data object in the full set, update it to match the new checkedData
+      this.fullData.forEach(row_data => {
+        let row_id = this.get_row_id(row_data);
+        let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
+        this.row_status.set(row_id, status);
       });
+    },
+
+    table: function(new_table) {
+      this.$emit("table", new_table);
     },
   },
 
   computed: {
     table_data: function() {
-      return this.fullData.map(c => {
-        return {achieved: this.checkedData.includes(c[this.matchBy]), ...c};
-      })
+      return this.fullData.map(c => { return {achieved: this.in_checked_data(c), ...c}; });
     },
 
     heading_data: function() {
-      return [ this.achieved_column, ...this.headingData ];
+      return [ ...this.headingData, this.achieved_column ];
+    },
+
+    table_args: function() {
+      return {...this.default_table_args, ...this.args(this.is_achieved_cell)};
     },
   },
 
   methods: {
 
+    is_achieved_cell: function(cell) {
+      return cell.achieved;
+    },
+
+    // Get a unique identifier for each row, as specified by the matchBy prop
     get_row_id: function(row) {
-      return row[this.matchBy];
+
+      // Matching by multiple fields - format as strings separated by |, e.g. "|A|B|C|"
+      if (Array.isArray(this.matchBy)) {
+        return this.matchBy.reduce((acc, curr) => {return acc + row[curr] + "|"}, "|");
+      }
+
+      // Matching by single field - grab it from the row
+      else {
+        return row[this.matchBy];
+      }
+    },
+
+    in_checked_data: function(row) {
+      var achieved = false;
+
+        // matchBy     -> ["name", "category", "color"]
+        // checkedData -> [{name, category, color}, {name, category, color}]
+        // row         -> {name: ???, category: ???, color: ???}
+
+        // If matching by an array, check each element
+        if (Array.isArray(this.matchBy)) {
+
+          var matchByFields = this.matchBy.map(field => row[field]);
+
+          // Loop through until a match is found
+          for (var i = 0; i < this.checkedData.length; i++) {
+            var thing = true;
+
+            for (var j = 0; j < this.matchBy.length; j++) {
+              thing = thing && (matchByFields[j] == this.checkedData[i][j]);
+            }
+
+            if (thing) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+        // If matching by a string, can just check for that field's value
+        else if (typeof this.matchBy === "string") {
+          return this.checkedData.includes(row[this.matchBy]);
+        }
     },
 
     select_value: function(field, value) {
@@ -188,21 +271,35 @@ export default {
     },
 
     accept_changes: function() {
+
+      // row_status object has a native function to handle accepting changes
       this.row_status.update();
+
+      // Get rid of the bold/highlighting that marks changed rows
       this.table.getRows().forEach(r => r.reformat());
+
+      // Emit that there are now no changes, since all previous changes are now the default
       this.$emit("changes", null);
     },
 
     discard_changes: function() {
+
+      // Reset the row_status object
       this.row_status.reset();
+
+      // Go through each row in the table and reset its "achieved" field to the original value
       this.table.getRows().forEach(row => {
-        let row_data = row.getData();
-        let row_name = this.get_row_id(row_data);
+
+        // Check whether the current row should be achieved or not
+        let row_name = this.get_row_id(row.getData());
         let achieved = this.row_status.is_status(row_name, Status.O);
 
-        this.table.updateData([{...row_data, achieved}]);
+        // Update the row and ensure the change displays
+        row.update({achieved});
         row.reformat();
-      })
+      });
+
+      // Emit that there are no changes
       this.$emit("changes", null);
     },
   },
