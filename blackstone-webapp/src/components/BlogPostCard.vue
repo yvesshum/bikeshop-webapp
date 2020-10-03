@@ -158,7 +158,7 @@ export default {
         },
     },
     methods: {
-        handlePostDeleteClick(post_id) {
+        handlePostDeleteClick(post_id) { // eslint-disable-line no-unused-vars
             this.modal.conf.visible = true;
         },
         async handlePostDelete() {
@@ -181,14 +181,14 @@ export default {
             this.modal.msg.visible = true;
         },
         viewBlogPost(post_id) {
-            console.log("Opening blog post: ", post_id);
+            // console.log("Opening blog post: ", post_id);
             this.showPostModal = true;
         },
         closePostModal() {
             this.showPostModal = false;
         },
         onEditClicked() {
-            console.log("clicked");
+            // console.log("clicked");
             this.showEditModal = true;
         },
         async handleBlogEdit(blogObj) {
@@ -206,7 +206,7 @@ export default {
                 window.alert(`An error has occured. Error: ${error}`);
                 return;
             }
-            console.log("old post obj", this.PostObj);
+            // console.log("old post obj", this.PostObj);
             this.PostObj = {
                 ...this.PostObj,
                 ...blogObj,
