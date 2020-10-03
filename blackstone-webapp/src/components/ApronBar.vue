@@ -228,24 +228,6 @@ export default {
   data: function() {
     return {
 
-      // TODO: Draw these from database
-      test_full_data: [
-        {name: 'Time management', group: 'Life' ,      p: '25', apron: 1},
-        {name: 'Budgeting',       group: 'Life',       p: '50', apron: 0},
-        {name: 'Gears',           group: 'Mechanical', p: '75', apron: 2},
-        {name: 'Pedals',          group: 'Mechanical', p: '75', apron: 3},
-        {name: 'Breaks',          group: 'Mechanical', p: '75', apron: 2},
-        {name: 'Talking',         group: 'Talking' ,   p: '75', apron: 4},
-      ],
-
-      test_headers: [
-        {title:"Name", field:"name"},
-        {title:"Apron", field:"apron", width: 100, formatter:(cell, formatterParams) => {
-          let apron = this.apron_colors[cell.getValue()];
-          return (apron == null) ? "" : apron.name;
-        }},
-      ],
-
       change_level_modal: false,
       change_level_effect: 0,
 
