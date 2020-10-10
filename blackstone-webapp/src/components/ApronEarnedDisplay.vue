@@ -3,6 +3,7 @@
 		<Table
 			:headingdata="headers"
 			:table_data="achieved_info"
+			@Table="handle_table"
 		/>
 	</div>
 </template>
@@ -60,6 +61,10 @@ export default {
 		};
 	},
 
+	created: async function() {
+		this.$emit("load_complete", this);
+	},
+
 	methods: {
 		format_achieved_cell: function(cell) {
 			var val = cell.getValue();
@@ -85,6 +90,14 @@ export default {
 				}
 			}
 			return -1;
+		},
+
+		handle_table: function(table) {
+			this.table = table;
+		},
+
+		redraw: function() {
+			this.table.redraw();
 		},
 	},
 

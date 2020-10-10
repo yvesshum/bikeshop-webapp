@@ -46,7 +46,7 @@
       :achievedColor="achieved_color"
       :showColor="show_color"
       @changed="c => changed_skills = c"
-      @load_complete="a => apron_view = a"
+      @load_complete="a => displays.table = a"
     /> -->
 
     <ApronTreeView
@@ -58,7 +58,7 @@
       :achievedColor="achieved_color"
       :showColor="show_color"
       @changed="c => changed_skills = c"
-      @load_complete="a => apron_view = a"
+      @load_complete="a => displays.tree = a"
     />
 
     <ApronEarnedDisplay
@@ -66,6 +66,7 @@
       :apronColors="apron_colors"
       :skillData="achieved_skills"
       :achievedColor="achieved_color"
+      @load_complete="a => displays.earned = a"
     />
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
@@ -248,7 +249,11 @@ export default {
       add_row_spans: [],
       remove_row_spans: [],
 
-      apron_view: null,
+      displays: {
+        table: null,
+        tree: null,
+        earned: null,
+      },
     }
   },
 
@@ -579,7 +584,7 @@ export default {
           // Data updated successfully
           // If update succeeds, update all skills locally
           () => {
-            this.apron_view.accept_changes();
+            this.displays.table.accept_changes();
           },
 
           // Error updating database
@@ -592,7 +597,7 @@ export default {
 
       // Reset all the changed but unsaved skills to their original values
       else {
-        this.apron_view.discard_changes();
+        this.displays.table.discard_changes();
       }
 
       // After saving or discarding changes, close the modal
@@ -600,7 +605,8 @@ export default {
     },
 
     redraw: function() {
-      this.apron_view.redraw();
+      if (this.displays.table != null)  this.displays.table.redraw();
+      if (this.displays.earned != null) this.displays.earned.redraw();
     },
   }
 }
