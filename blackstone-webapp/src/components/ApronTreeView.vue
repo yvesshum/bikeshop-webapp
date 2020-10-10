@@ -5,7 +5,7 @@
 
       <!-- Header -->
       <b-card-header>
-        <h3>Apron Skills</h3>
+        <slot name="header"></slot>
       </b-card-header>
 
       <b-card-body style="display: flex; align-content:center;">
