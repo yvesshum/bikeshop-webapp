@@ -117,16 +117,16 @@ export default {
     },
 
     // Function to filter the rows based on the ID search
-    id_filter: function(headerValue, rowValue, rowData, filterParams) {
+    id_filter: function(headerValue, rowValue, rowData, filterParams) { // eslint-disable-line no-unused-vars
       return rowValue.indexOf(headerValue) >= 0;
     },
 
     load_start: function() {
-      console.log("Load has started");
+      // console.log("Load has started");
     },
 
     load_complete: function() {
-      console.log("Load is complete");
+      // console.log("Load is complete");
       this.allReady = true;
     },
   },

@@ -5,7 +5,7 @@
 
       <!-- Display each item in an array -->
       <div v-if="type === 'Array'">
-        <div v-for="item in get_original_value()" class="field_list_element">
+        <div v-for="item in get_original_value()" class="field_list_element" :key="item">
           {{ item }}
         </div>
       </div>
@@ -31,7 +31,6 @@
 <script>
 import SpecialInput from '@/components/SpecialInput';
 
-const moment = require("moment");
 
 export default {
   name: 'input_display_toggle',
@@ -111,11 +110,11 @@ export default {
 
       // Display non-null values according to their type
       switch (this.type) {
+        /* eslint-disable no-case-declarations */
 
         // Display a boolean as "Yes" or "No"
         case "Boolean":
           return val ? "Yes" : "No";
-          break;
 
         // Display a phone number in (___) ___-____ format, complete with underscores
         case "Phone":
@@ -148,6 +147,8 @@ export default {
         default:
           return val;
       }
+        /* eslint-enable no-case-declarations */
+
     },
 
     is_blank: function() {

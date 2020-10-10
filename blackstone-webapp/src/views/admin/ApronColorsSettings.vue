@@ -23,16 +23,12 @@
 <script>
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
-import fieldEditor from '../../components/FieldEditor.vue'
-import { Compact } from 'vue-color'
 import ColorEditor from '../../components/ColorEditor.vue'
 
 export default {
   name: 'ApronColorsSettings',
   components: {
     SettingsBottomNote,
-    fieldEditor,
-    'compact-picker': Compact,
     ColorEditor
 
 
@@ -45,9 +41,6 @@ export default {
       },
       dataLoaded: false,
     }
-  },
-  watch: {
-    colors: c => console.log(c)
   },
   methods: {
     parseFields(items, dest, protectedFields) {

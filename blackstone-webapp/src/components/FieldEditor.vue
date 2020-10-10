@@ -149,13 +149,13 @@ export default {
     computed: {
         isValidNewFieldName: function() {
             let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.add.field_name) > -1}) && this.modal.add.field_name.length > 0
-            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // No symbols!
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // eslint-disable-line no-useless-escape
             return check1 && check2
         },
 
         isValidEditFieldName: function() {
             let check1 = !this.field_data.some(f => {return Object.keys(f.data).indexOf(this.modal.edit.field_name) > -1}) && this.modal.edit.field_name.length > 0
-            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // No symbols!
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // eslint-disable-line no-useless-escape
             return check1 && check2
         }
     },
@@ -205,9 +205,9 @@ export default {
     },
     methods: {
         handle_field_type_change(type) {	
-            console.log('handle field type change called', type);	
+            // console.log('handle field type change called', type);	
             this.modal.add.initial_value = initSpecialInputVal(type);	
-            console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
+            // console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
             this.$refs.addInput.updateInputType(type);	
         },
 
@@ -306,7 +306,7 @@ export default {
 
                     let updateStatus = await db.collection("GlobalFieldsCollection").doc(this.sourceDocument).update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + err);
+                        window.alert("Error on updating GlobalFieldsCollection on firebase. " + updateStatus);
                         return null;
                     }
 
@@ -318,19 +318,18 @@ export default {
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            console.warn(this.collectionsToEdit[j], id, data)
+                            // console.warn(this.collectionsToEdit[j], id, data)
                             await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
                         })
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             data[newFieldName] = data[this.modal.edit.original_field_name]
                             delete data[this.modal.edit.original_field_name];
-                            console.warn(path, data)
+                            // console.warn(path, data)
 
                             await db.doc(path).set(data);
                         })
@@ -386,7 +385,6 @@ export default {
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             delete data[this.modal.delete.field_name]
@@ -449,7 +447,6 @@ export default {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                 for (let q of query.docs) {
                     // console.log('query', q)
-                    let id = q.id;
                     let path = q.ref.path
                     let data = q.data();
                     data[this.modal.add.field_name] = this.modal.add.initial_value;

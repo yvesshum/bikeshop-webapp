@@ -49,7 +49,6 @@
 <script>
 // @ is an alias to /src
 import {db} from '../firebase';
-import {firebase} from '../firebase';
 import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
@@ -240,9 +239,9 @@ export default {
               }
 
             // If none of the types above, add it pretty much as-is
-            case "Phone":
+            case "Phone": // eslint-disable-line no-fallthrough
             default:
-              console.log(field_name);
+              // console.log(field_name);
               table_headers.push({
                 title: field_name, field: field_name, headerFilter: true,
               });
@@ -287,7 +286,7 @@ export default {
       for (let i in this.hour_categories) {
         let category = this.hour_categories[i];
         obj[category] = data[category];
-      };
+      }
       return obj;
     },
 
@@ -433,14 +432,14 @@ export default {
       return result;
 
 
-      function find_in(arr, val, type) {
+      function find_in(arr, val, type) { // eslint-disable-line no-unused-vars
 
         // If input is a number within the proper index, use it as the search term
         if (typeof val == "number") {
           if (val >= 0 && val < arr.length) {
             return val;
           }
-          console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
+          // console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
           return null;
         }
 
@@ -449,12 +448,12 @@ export default {
         let fil = arr.filter(item => item.startsWith(val));
         switch (fil.length) {
           case 0:
-            console.warn(`Unknown ${type} "${val}".`);
+            // console.warn(`Unknown ${type} "${val}".`);
             break;
           case 1:
             return arr.indexOf(fil[0]);
           default:
-            console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
+            // console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
             break;
         }
         return null;
@@ -466,6 +465,7 @@ export default {
         if (value == undefined) return undefined;
 
         // Determine value based on option type
+        /* eslint-disable no-case-declarations */
         switch (option) {
           case "Year":
           case "Date":
@@ -491,6 +491,7 @@ export default {
 
             // Take advantage of fall-thru to convert as much of split_time as exists to seconds
             // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+            /* eslint-disable no-fallthrough */
             switch (split_time.length) {
               case 3:
                 filter_val += split_time[2];
@@ -499,9 +500,13 @@ export default {
               case 1:
                 filter_val += split_time[0] * 60 * 60;
             }
+            /* eslint-enable no-fallthrough */
+
 
             return result;
         }
+        /* eslint-enable no-case-declarations */
+
       }
 
       function parse_option_val(option, date, value) {
@@ -522,13 +527,14 @@ export default {
           case "Time":
 
             // Initialize result to 0 seconds
-            let result = 0;
+            let result = 0; // eslint-disable-lint no-case-declarations
 
             // Split user input into hours, mins, and seconds
-            let split_time = parse_time_str(value);
+            let split_time = parse_time_str(value); // eslint-disable-lint no-case-declarations
 
             // Take advantage of fall-thru to convert as much of split_time as exists to seconds
             // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+            /* eslint-disable no-fallthrough */
             switch (split_time.length) {
               case 3:
                 result += date.getSeconds();
@@ -537,6 +543,8 @@ export default {
               case 1:
                 result += date.getHours() * 60 * 60;
             }
+            /* eslint-enable no-fallthrough */
+
 
             return result;
         }
@@ -609,13 +617,13 @@ export default {
 
     // =-= Sorters =-=-=
 
-    date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+    date_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) { // eslint-disable-line no-unused-vars
       let a_date = (Array.isArray(a)) ? get_as_date(a[0]) : get_as_date(a);
       let b_date = (Array.isArray(b)) ? get_as_date(b[0]) : get_as_date(b);
       return a_date.getTime() - b_date.getTime();
     },
 
-    time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+    time_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) { // eslint-disable-line no-unused-vars
 
       // Get both as dates
       let a_date = get_as_date(a);
@@ -629,11 +637,11 @@ export default {
       return h_diff ? h_diff : (m_diff ? m_diff : s_diff);
     },
 
-    hour_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+    hour_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) { // eslint-disable-line no-unused-vars
       return a - b;
     },
 
-    work_hours_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+    work_hours_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) { // eslint-disable-line no-unused-vars
       return this.get_hours_sum(a) - this.get_hours_sum(b);
     },
 

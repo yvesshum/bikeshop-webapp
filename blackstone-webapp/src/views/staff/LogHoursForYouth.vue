@@ -95,7 +95,6 @@ import YouthIDSelector from '../../components/YouthIDSelector'
 import YouthListCard from '../../components/YouthListCard'
 import {db} from '@/firebase.js'
 import VueNumberInput from '@chenfengyuan/vue-number-input';
-import moment from 'moment'
 import { Timestamp } from '@/firebase.js'
 import PageHeader from "@/components/PageHeader.vue"
 
@@ -213,7 +212,7 @@ export default {
                 await db.collection("GlobalYouthProfile").doc(youth.ID).update({
                     "Pending Hours": newPendingHours
                 })
-                console.log('logged.')
+                // console.log('logged.')
             }
 
             //Reset locally

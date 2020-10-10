@@ -89,7 +89,6 @@ import {db} from '../../firebase';
 import {rb} from '../../firebase';
 import YouthIDSelector from '../../components/YouthIDSelector';
 import {Timestamp} from '@/firebase.js';
-import moment from 'moment';
 import SpecialInput from '../../components/SpecialInput'
 import PageHeader from "@/components/PageHeader.vue"
 import { initSpecialInputVal } from '../../scripts/SpecialInit';	
@@ -203,7 +202,7 @@ export default {
                     });
                 });
             });
-            console.log(this.fields);
+            // console.log(this.fields);
             this.ready.fields = true;
         },
         async setPlaceholders(placeholders) {
@@ -325,7 +324,7 @@ export default {
                 .doc(youthID).get();
 
             if (youthQuery instanceof Error) {
-                this.handleError(error);
+                this.handleError(youthQuery);
                 return false;
             }
             if (youthQuery.exists) {
@@ -367,7 +366,7 @@ export default {
 
         },
         isNonValidField(type, value) {
-            console.warn(type, value);
+            // console.warn(type, value);
 
             if (value == null) {
                 return true;
@@ -410,7 +409,7 @@ export default {
         },
         async constructSubmitPaylod() {
             let payload = {};
-            console.log('f', this.fields);
+            // console.log('f', this.fields);
             this.fields.required.forEach(field => {
                 payload[field.name] = field.value;
             })
@@ -438,11 +437,11 @@ export default {
         async updateYouthProfile(payload) {
             //Subtract hours
             //profile: this.form.YouthProfile
-            console.warn("ITC", payload["Item Total Cost"])
-            console.warn("HS", parseFloat(this.form.YouthProfile["Hours Spent"]))
-            console.warn("PH", parseFloat(this.form.YouthProfile["Pending Hours"]))
-            console.warn("NEW HS", (parseFloat(this.form.YouthProfile["Hours Spent"]) * 100 + parseFloat(payload["Item Total Cost"]) * 100) / 100)
-            console.warn("NEW PH",  (parseFloat(this.form.YouthProfile["Pending Hours"]) * 100 - parseFloat(payload["Item Total Cost"]) * 100) / 100)
+            // console.warn("ITC", payload["Item Total Cost"])
+            // console.warn("HS", parseFloat(this.form.YouthProfile["Hours Spent"]))
+            // console.warn("PH", parseFloat(this.form.YouthProfile["Pending Hours"]))
+            // console.warn("NEW HS", (parseFloat(this.form.YouthProfile["Hours Spent"]) * 100 + parseFloat(payload["Item Total Cost"]) * 100) / 100)
+            // console.warn("NEW PH",  (parseFloat(this.form.YouthProfile["Pending Hours"]) * 100 - parseFloat(payload["Item Total Cost"]) * 100) / 100)
 
             this.form.YouthProfile["Hours Spent"] = eMath.add(parseFloat(this.form.YouthProfile["Hours Spent"]), parseFloat(payload["Item Total Cost"]))
             this.form.YouthProfile["Pending Hours"] = eMath.sub(parseFloat(this.form.YouthProfile["Pending Hours"]), parseFloat(payload["Item Total Cost"]))
@@ -457,7 +456,7 @@ export default {
         resetPage() {
             this.form.YouthProfile = {};
 
-            console.log('c', Object.entries(this.$refs.YouthIDSelector[0]));
+            // console.log('c', Object.entries(this.$refs.YouthIDSelector[0]));
             this.$refs.YouthIDSelector[0].reset();
             for (let fieldType in this.fields) {
                 this.fields[fieldType].forEach(element => {

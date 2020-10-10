@@ -9,7 +9,7 @@
     <br />
 
     <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
-      <HoursDisplay v-for="item in hour_fields" v-bind="item" />
+      <HoursDisplay v-for="item in hour_fields" v-bind="item" :key="item" />
     </div>
 
     <br />
@@ -17,9 +17,9 @@
 
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-      <tbody v-for="section in table_sections_show">
+      <tbody v-for="section in table_sections_show" :key="section">
 
-        <tr v-for="field in section.Data" v-show="show_container(field)">
+        <tr v-for="field in section.Data" v-show="show_container(field)" :key="field">
           <td style="width: 35%">
             {{field}}{{field_types[field] === "Boolean" ? "?" : ""}}
             <b-badge v-show="needs_warning(field) && disableWarnings != true" pill variant="warning" class="warning_icon" v-b-tooltip.hover.html="warning_msg(field)">!</b-badge>
@@ -44,13 +44,13 @@
 
         <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-          <tbody v-for="section in table_sections_show">
+          <tbody v-for="section in table_sections_show" :key="section">
 
             <tr v-if="show_section(section.Name)">
               <td class="section_name" colspan="3"> {{section.Name}}: </td>
             </tr>
 
-            <tr v-if="show_section(section.Name) && !is_protected(field)" v-for="field in section.Data">
+            <tr v-if="show_section(section.Name) && !is_protected(field)" v-for="field in section.Data" :key="field">
               <td style="margin: auto; padding: 3px;">
                 <ToggleButton
                   onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
@@ -105,7 +105,7 @@
           <th>New Value</th>
         </tr>
 
-        <tr v-for="(change, field) in changes_list">
+        <tr v-for="(change, field) in changes_list" :key="field">
           <td class="change_modal_cell_title">
             The {{field_type(field)}}field
             <span class="change_modal_field">{{field}}</span>
@@ -147,7 +147,7 @@
         <b-button block squared variant="warning"><h3>Warning: Non-Standard Fields</h3></b-button>
         <br />
         <div v-if="unremoved_temp_fields.length > 0">
-          This profile contains the following non-standard fields:</p>
+          <p>This profile contains the following non-standard fields:</p>
           <table style="margin: auto; text-align: center; min-width: 80%">
             <tr class="change_modal_header">
               <th style="border-right: 1px solid #000">
@@ -155,7 +155,7 @@
               </th>
               <th>Field Value</th>
             </tr>
-            <tr v-for="field in unremoved_temp_fields">
+            <tr v-for="field in unremoved_temp_fields" :key="field">
               <td class="change_modal_cell_temp" style="border-right: 1px solid #000">
                 {{field}}
               </td>
@@ -194,9 +194,6 @@
 <script>
 // @ is an alias to /src
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 
 import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -205,7 +202,6 @@ import ToggleButton from '@/components/ToggleButton';
 import HoursDisplay from '@/components/HoursDisplay';
 import SpecialInputReset from '@/components/SpecialInputReset';
 import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
-import PeriodsClassesDisplay from '@/components/PeriodsClassesDisplay';
 import DiscardResetSave from '@/components/DiscardResetSave';
 
 let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
@@ -264,7 +260,6 @@ export default {
     HoursDisplay,
     SpecialInputReset,
     ProfileFieldDisplay,
-    PeriodsClassesDisplay,
     DiscardResetSave,
   },
 
@@ -344,7 +339,7 @@ export default {
         let Data = [];
 
         // Save all non-hidden fields in this section to the result
-        forKeyVal(data[section], (name, val) => {
+        forKeyVal(data[section], (name, val) => { // eslint-disable-line no-unused-vars
           if (!this.is_ignored(name)) {
             Data.push(name);
           }
@@ -352,7 +347,7 @@ export default {
 
         // Add fields to array of sections
         temp.push({Name, Data});
-      };
+      }
     },
 
     table_sections_show: function() {
@@ -452,7 +447,7 @@ export default {
   mounted: function() {
     if (this.profile != undefined) {
       this.load_profile(this.profile);
-    };
+    }
 
     // Add a listener to the header document to update expected fields whenever they change
     HeaderRef.onSnapshot(doc => {
@@ -474,7 +469,7 @@ export default {
   methods: {
 
     init_row_status(data, field, stat) {
-      forKeyVal(data[field], (name, val) => {
+      forKeyVal(data[field], (name, val) => { // eslint-disable-line no-unused-vars
         if (this.is_protected(name)) {
           this.row_status.add_vue(this, name, Status.IMM);
         }
@@ -555,13 +550,13 @@ export default {
             this.$set(this.local_values, key, data[key]);
             this.$set(this.fields_used, key, true);
           }
-        };
+        }
       }
 
       function field_used(field) {
         // TODO: This might have to be more sophisticated for different data types
         return field !== null && field !== undefined && field !== "";
-      };
+      }
     },
 
     // Set the status of a given field in the Status object and make appropriate changes
@@ -669,8 +664,8 @@ export default {
           if (this.is_changed(poss[n])) {
             return true;
           }
-        };
-      };
+        }
+      }
 
       // If we made it this far, there must not be any changes
       return false;
@@ -714,7 +709,7 @@ export default {
               new_val: input_field.get_changed_string(),
               old_val: input_field.get_original_string(),
           };
-        };
+        }
       });
     },
 
@@ -772,7 +767,7 @@ export default {
         else {
           this.local_values[key] = this.input_fields[key].get_changed_value();
         }
-      };
+      }
 
       // Discard empty fields and update the row_status object to reflect the new values
       this.discard_empty_fields();
@@ -788,7 +783,7 @@ export default {
         if (this.input_fields[key].is_blank()) {
           this.set_row_status(key, Status.X);
           this.fields_used[key] = false;
-        };
+        }
       });
     },
 

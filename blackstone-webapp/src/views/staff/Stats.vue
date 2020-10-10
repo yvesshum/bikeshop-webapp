@@ -289,8 +289,6 @@ import moment from "moment";
 import { db } from "@/firebase.js";
 import { Datetime } from "vue-datetime";
 import "vue-datetime/dist/vue-datetime.css";
-import { Timestamp } from "@/firebase.js";
-import QueryTable from "../../components/QueryTable";
 import Tabulator from "tabulator-tables";
 import PageHeader from "@/components/PageHeader.vue";
 import { filter } from "@/scripts/Search.js";
@@ -322,8 +320,8 @@ export default {
   name: "Stats",
   components: {
     Datetime,
-    QueryTable,
-    Tabulator,
+    // QueryTable,
+    // Tabulator,
     PageHeader
   },
   data() {
@@ -434,7 +432,7 @@ export default {
           .where("Check In", "<", query_end_datetime)
           .get();
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         window.alert(err);
       }
       if (queryResult.empty) {
@@ -477,7 +475,7 @@ export default {
           .where("Period", "==", searchPeriod)
           .get();
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         window.alert(err);
       }
       if (query.size > 0) {
@@ -561,7 +559,7 @@ export default {
           .where("Period", "==", searchPeriod)
           .get();
       } catch (err) {
-        console.log(err);
+        // console.log(err);
         window.alert(err);
       }
       if (query.size > 0) {
@@ -571,7 +569,7 @@ export default {
       }
       query.forEach(doc => {
         let data = doc.data();
-        console.log(data);
+        // console.log(data);
         data["Order Date"] = data["Order Date"].toDate().toLocaleString();
 
         //Grabbing Youth ID from query metaadata
@@ -633,7 +631,7 @@ export default {
       let globalperiods = {};
       query[1].docs.map(x => (globalperiods[x.id] = x.data()));
       delete globalperiods["metadata"];
-      console.warn(globalperiods);
+      // console.warn(globalperiods);
       let squashed = profiles.docs.map(x =>
         Object.assign(x.data(), { ID: x.id })
       );
@@ -677,7 +675,7 @@ export default {
             )}</p><br/>`;
           }
           x["Essay"] = ret;
-          console.warn("Essay", ret);
+          // console.warn("Essay", ret);
         }
         if (x["Old Essay Answers"]) {
           let ret = "";
@@ -710,7 +708,7 @@ export default {
     },
     async displayTable() {
       var tableData = await this.getProfileData();
-      console.log(tableData);
+      // console.log(tableData);
       //This looks really complicated, but it's just because Javascript is kind of annoying
       //It takes each profile, gets its headers (field names), merges that list (.flat()), and then deduplicates them (... Set)
       this.checkbox_fields = [
@@ -719,7 +717,7 @@ export default {
       this.checkbox_fields.splice(this.checkbox_fields.indexOf("ID"), 1);
       this.checkbox_fields.splice(this.checkbox_fields.indexOf("Name"), 1);
       this.checkbox_fields.unshift("ID", "Name");
-      console.log("Table data", tableData);
+      // console.log("Table data", tableData);
       this.table = new Tabulator("#table", {
         data: tableData,
         layout: "fitData",
@@ -736,8 +734,6 @@ export default {
         selectable: 1,
         selectableRangeMode: "click"
       });
-
-      table.set;
     },
     async export_to_csv() {
       this.table.download("csv", "data.csv");
@@ -767,6 +763,7 @@ export default {
     this.displayTable();
   },
   watch: {
+    // eslint-disable-next-line no-unused-vars
     fields_selected: function(val, oldVal) {
       let nV = Object.values(Object.assign({}, val));
       nV.splice(nV.indexOf("ID"), 1);

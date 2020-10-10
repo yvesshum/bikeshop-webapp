@@ -1,29 +1,46 @@
 <template>
     <div v-if="ready">
         <b-card class="post_card">
-            <span class="delete_button" @click="handlePostDeleteClick(PostObj.id)" v-if="isStaff">Delete</span>
+            <span
+                class="delete_button"
+                @click="handlePostDeleteClick(PostObj.id)"
+                v-if="isStaff"
+                >Delete</span
+            >
             <div class="container" @click="viewBlogPost(PostObj.id)">
-                <b-row style="margin: 1.25rem 0; width: 100%;">
+                <b-row style="margin: 1.25rem 0; width: 100%">
                     <b-col class="blog_post_image" cols="3"></b-col>
-                    <b-col style="margin-left: 1rem; text-align: left;" cols="9">
+                    <b-col style="margin-left: 1rem; text-align: left" cols="9">
                         <b-card-title style="padding-right: 1.5rem">
-                            {{
-                            PostObj.title
-                            }}
+                            {{ PostObj.title }}
                         </b-card-title>
-                        <b-card-sub-title style="margin-bottom: 8px;">
+                        <b-card-sub-title style="margin-bottom: 8px">
                             <i>By {{ PostObj.posterName }}</i>
                         </b-card-sub-title>
-                        <b-card-sub-title>Posted on {{ posted }}</b-card-sub-title>
+                        <b-card-sub-title
+                            >Posted on {{ posted }}</b-card-sub-title
+                        >
                     </b-col>
                 </b-row>
             </div>
         </b-card>
 
         <!-- Post modal -->
-        <b-modal title="Title" v-model="showPostModal" size="xl" hide-footer hide-header no-fade>
+        <b-modal
+            title="Title"
+            v-model="showPostModal"
+            size="xl"
+            hide-footer
+            hide-header
+            no-fade
+        >
             <BlogPostContent :post="PostObj" :closeHandler="closePostModal" />
-            <b-button id="editButton" variant="info" @click="onEditClicked" v-show="isStaff">
+            <b-button
+                id="editButton"
+                variant="info"
+                @click="onEditClicked"
+                v-show="isStaff"
+            >
                 <font-awesome-icon icon="pen" class="icon alt" />
             </b-button>
         </b-modal>
@@ -42,22 +59,42 @@
 
         <!-- Msg -->
         <b-modal v-model="modal.msg.visible" hide-footer lazy>
-            <template slot="modal-title">{{modal.msg.title}}</template>
+            <template slot="modal-title">{{ modal.msg.title }}</template>
             <div class="d-block text-center">
-                <h3>{{modal.msg.text}}</h3>
+                <h3>{{ modal.msg.text }}</h3>
             </div>
-            <b-button class="mt-3" block @click="closeMsgModal" variant="primary">ok!</b-button>
+            <b-button
+                class="mt-3"
+                block
+                @click="closeMsgModal"
+                variant="primary"
+                >ok!</b-button
+            >
         </b-modal>
 
         <!-- Confirmation -->
         <b-modal v-model="modal.conf.visible" hide-footer lazy>
             <template slot="modal-title">Are you sure?</template>
             <div class="d-block text-center">
-                <h3>Are you sure you want to delete post with the title: {{Post.title}}?</h3>
+                <h3>
+                    Are you sure you want to delete post with the title:
+                    {{ Post.title }}?
+                </h3>
             </div>
-            <b-button class="mt-3" block @click="closeConfModal" variant="success">Cancel</b-button>
-            <b-button class="mt-3" block @click="handlePostDelete" variant="danger">Yes, Delete</b-button>
-
+            <b-button
+                class="mt-3"
+                block
+                @click="closeConfModal"
+                variant="success"
+                >Cancel</b-button
+            >
+            <b-button
+                class="mt-3"
+                block
+                @click="handlePostDelete"
+                variant="danger"
+                >Yes, Delete</b-button
+            >
         </b-modal>
 
         <!-- Loading -->
@@ -121,36 +158,41 @@ export default {
         },
     },
     methods: {
-        handlePostDeleteClick(post_id) {
+        handlePostDeleteClick(post_id) { // eslint-disable-line no-unused-vars
             this.modal.conf.visible = true;
         },
         async handlePostDelete() {
             this.modal.conf.visible = false;
             this.modal.loading.visible = true;
             try {
-                await db.collection("GlobalBlogs").doc(this.Post.parentBlogID).collection("Posts").doc(this.Post.id).delete()
+                await db
+                    .collection("GlobalBlogs")
+                    .doc(this.Post.parentBlogID)
+                    .collection("Posts")
+                    .doc(this.Post.id)
+                    .delete();
             } catch (error) {
                 window.alert(error);
                 return null;
             }
             await this.deleteCallback();
             this.modal.loading.visible = false;
-            this.modal.msg.text = "Successfully deleted post"
+            this.modal.msg.text = "Successfully deleted post";
             this.modal.msg.visible = true;
         },
-        viewBlogPost(post_id) {
-            console.log("Opening blog post: ", post_id);
+        viewBlogPost(post_id) { // eslint-disable-line no-unused-vars
+            // console.log("Opening blog post: ", post_id);
             this.showPostModal = true;
         },
         closePostModal() {
             this.showPostModal = false;
         },
         onEditClicked() {
-            console.log("clicked");
+            // console.log("clicked");
             this.showEditModal = true;
         },
         async handleBlogEdit(blogObj) {
-            this.showPostModal = false
+            this.showPostModal = false;
             this.showEditModal = false;
             this.modal.loading.visible = true;
             try {
@@ -164,7 +206,7 @@ export default {
                 window.alert(`An error has occured. Error: ${error}`);
                 return;
             }
-            console.log("old post obj", this.PostObj);
+            // console.log("old post obj", this.PostObj);
             this.PostObj = {
                 ...this.PostObj,
                 ...blogObj,
@@ -179,7 +221,7 @@ export default {
         },
         closeConfModal() {
             this.modal.conf.visible = false;
-        }
+        },
     },
     async mounted() {
         this.isStaff = await isStaff();

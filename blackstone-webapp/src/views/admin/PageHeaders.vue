@@ -15,7 +15,7 @@
                     <!-- <h2 v-b-tooltip.hover title="These texts are instructions for youth registration">Registration Headers</h2>
                     <hr class="subheading"> -->
                     
-                    <div v-for="page in parentPages">
+                    <div v-for="page in parentPages" :key="page">
                         <div class="headerDiv">
                             <h3 v-b-tooltip.hover title="These texts are instructions for parents">{{page}}</h3>
                             <SpecialInput v-model="parentHeaders[page]" :ref="page" inputType="Essay" :args="arguments">
@@ -35,7 +35,7 @@
                     <!-- <h2 v-b-tooltip.hover title="These texts are instructions for youths">Youth Headers</h2>
                     <hr class="subheading"> -->
                     
-                    <div v-for="page in youthPages">
+                    <div v-for="page in youthPages" :key="page">
                         <div class="headerDiv">
                             <h3 v-b-tooltip.hover title="These texts are instructions for youths">{{page}}</h3>
                             <SpecialInput v-model="youthHeaders[page]" :ref="page" inputType="Essay" :args="arguments">
@@ -54,7 +54,7 @@
                 <b-collapse id="accordion-staff" accordion="my-accordion" role="tabpanel">
                     <!-- <h2 v-b-tooltip.hover title="These texts are instructions for staff">Staff Headers</h2>
                     <hr class="subheading"> -->
-                    <div v-for="page in staffPages">
+                    <div v-for="page in staffPages" :key="page">
                         <div class="headerDiv">
                             <h3 v-b-tooltip.hover title="These texts are instructions for staff">{{page}}</h3>
                             <SpecialInput v-model="staffHeaders[page]" :ref="page" inputType="Essay" :args="arguments">
@@ -100,8 +100,6 @@
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
 import SpecialInput from '@/components/SpecialInput';
-import { initSpecialInputVal } from '../../scripts/SpecialInit';
-import { forKeyVal } from '@/scripts/ParseDB.js';
 
 export default {
     name: 'PageHeaders',
@@ -171,15 +169,15 @@ export default {
             submitPageHeaders["Parent Headers"] = {};
             submitPageHeaders["Youth Headers"] = {};
             submitPageHeaders["Staff Headers"] = {};
-            for(var page in newPageHeaders["Parent Headers"]){
+            for(let page in newPageHeaders["Parent Headers"]){
               submitPageHeaders["Parent Headers"][page] = 
                 newPageHeaders["Parent Headers"][page].split('\n').join('\\n');
             }
-            for(var page in newPageHeaders["Youth Headers"]){
+            for(let page in newPageHeaders["Youth Headers"]){
               submitPageHeaders["Youth Headers"][page] = 
                 newPageHeaders["Youth Headers"][page].split('\n').join('\\n');
             }
-            for(var page in newPageHeaders["Staff Headers"]){
+            for(let page in newPageHeaders["Staff Headers"]){
               submitPageHeaders["Staff Headers"][page] = 
                 newPageHeaders["Staff Headers"][page].split('\n').join('\\n');
             }

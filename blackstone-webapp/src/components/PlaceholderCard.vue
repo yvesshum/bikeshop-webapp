@@ -134,13 +134,13 @@ export default {
         
     },
     watch: {
-        placeholder: function(newVal, oldVal) {
+        placeholder: function(newVal, oldVal) { // eslint-disable-line no-unused-vars
             this.processProps()
+        }, 
+        field: function(newVal, oldVal) { // eslint-disable-line no-unused-vars
+            this.processProps() 
         },
-        field: function(newVal, oldVal) {
-            this.processProps()
-        },
-        existingFieldNames: function(newVal, oldVal) {
+        existingFieldNames: function(newVal, oldVal) { // eslint-disable-line no-unused-vars
             this.processProps()
         },
     },

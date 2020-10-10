@@ -147,7 +147,7 @@ export default {
     },
 
     async fetchMoreBlogs() {
-      console.log("fetch", this.lastSeenDocSnapshot);
+      // console.log("fetch", this.lastSeenDocSnapshot);
       let posts = await this.getBlogPosts(this.lastSeenDocSnapshot);
       this.blogPosts = this.blogPosts.concat(posts);
     },
@@ -182,7 +182,7 @@ export default {
       this.modal.msg.visible = true;
     },
 
-    async postDeleteCallback(postObj) {
+    async postDeleteCallback() {
       this.blogPosts = await this.getBlogPosts(null);
     }
   },
@@ -204,6 +204,7 @@ export default {
 
       this.isStaff = await isStaff();
     } catch (err) {
+      console.warn(err) // eslint-disable-line no-console
     } finally {
       this.ready = true;
     }

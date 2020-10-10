@@ -43,7 +43,7 @@
             <div class="centerModal">
               <h4>Select skill category: </h4>
               <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
-                  <div v-for="category in getUniqueCategories()">
+                  <div v-for="category in getUniqueCategories()" :key="category">
                       <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
                   </div>
               </b-dropdown>
@@ -70,7 +70,7 @@
             <div class="centerModal">
               <h4>Select category to rename: </h4>
               <b-dropdown id="dropdown-1" v-bind:text="selected_category" class="m-md-2">
-                  <div v-for="category in getUniqueCategories()">
+                  <div v-for="category in getUniqueCategories()" :key="category">
                       <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
                   </div>
               </b-dropdown>
@@ -89,7 +89,7 @@
             <div class="centerModal">
               <h4>Select category to delete: </h4>
               <b-dropdown id="dropdown-2" v-bind:text="selected_category" class="m-md-2">
-                  <div v-for="category in getUniqueCategories()">
+                  <div v-for="category in getUniqueCategories()" :key="category">
                       <b-dropdown-item @click="update_selected_category(category)">{{category}}</b-dropdown-item>
                   </div>
               </b-dropdown>
@@ -134,8 +134,8 @@
                 </div>
             </div>
         </b-modal>
-        <!-- <EditTable v-bind:table_data="table_data" :headingdata="['Category', 'Skill', 'Color']" @rowSelected="updateSelected"/>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button></br>
+        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
+        <br/>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
         </div>
         
@@ -144,12 +144,9 @@
 </template>
 
 <script>
-    import EditTable from '../../components/EditTable';
     import {db} from '../../firebase';
-    import {firebase} from '../../firebase';
     import PageHeader from "../../components/PageHeader.vue"
     import ApronColorSelector from "../../components/ApronColorSelector.vue"
-    import ApronBar from "../../components/ApronBar.vue"
     import DraggableTable from "../../components/DraggableTable.vue"
     import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import SpecialInput from '@/components/SpecialInput';
@@ -160,10 +157,8 @@
     export default {
         name: 'StaffManageSkills',
         components: {
-            EditTable,
             PageHeader,
             ApronColorSelector,
-            ApronBar,
             DraggableTable,
             SpecialInput
         },
@@ -321,15 +316,11 @@
                             let old_skill = change_key[2];
                             if(changes[change_string] == false){
                                 if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
-                                    console.log("Has skill and category")
                                     let skill_array = data["Apron Skills"][old_color]["Skills"][old_category];
                                     let orig_length = skill_array.length;
-                                    console.log(orig_length)
                                     data["Apron Skills"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
                                     let new_length = data["Apron Skills"][old_color]["Skills"][old_category].length;
-                                    console.log(new_length)
                                     if(new_length < orig_length){
-                                        console.log("deleting!")
                                         changed = true;
                                     }
                                 }
@@ -340,10 +331,7 @@
                             let new_skill = changes[change_string][2];
                             if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
                                 for(var i = 0; i < data["Apron Skills"][old_color]["Skills"][old_category].length; i++){
-                                    // console.log(data["Apron Skills"][old_category][old_color][i])
-                                    // console.log(old_skill)
                                     if(data["Apron Skills"][old_color]["Skills"][old_category][i] == old_skill){
-                                        console.log("Making a change!")
                                         data["Apron Skills"][old_color]["Skills"][old_category].splice(i, 1);
                                         if(data["Apron Skills"][new_color] != undefined){
                                             if(data["Apron Skills"][new_color]["Skills"][new_category] != undefined){
@@ -352,7 +340,6 @@
                                                 data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill]
                                             }
                                         } else {
-                                            console.log("Moving to a brand new color")
                                             data["Apron Skills"][new_color] = {};
                                             data["Apron Skills"][new_color]["Achieved"] = false;
                                             data["Apron Skills"][new_color]["Skills"] = {}
@@ -366,7 +353,7 @@
                         }
                     }
                     if(changed){
-                        let status = await db.collection("GlobalYouthProfile").doc(doc.id).update(data);
+                        await db.collection("GlobalYouthProfile").doc(doc.id).update(data);
                     }
                 });
                 if(check){
@@ -540,12 +527,12 @@
                 }
             },
             async rename_category(){
-              for(var i = 0; i < this.categories.length; i++){
+              for(let i = 0; i < this.categories.length; i++){
                   if(this.categories[i] == this.selected_category){
                       this.categories[i] = this.renamed_category;
                   }
               }
-              for(var i = 0; i < this.groups.length; i++){
+              for(let i = 0; i < this.groups.length; i++){
                   if(this.groups[i]["category"] == this.selected_category){
                       this.groups[i]["category"] = this.renamed_category;
                   }
@@ -559,7 +546,6 @@
                       let new_groups = this.groups.filter(group => group.category != this.selected_category);
                       this.groups = new_groups;
                       this.change_existing(this.selected_category, null, "del_category")
-                      console.log(this.changes)
                       return
                   }
               }
@@ -580,12 +566,9 @@
             getGroupsByColorCategory( color, category){
               for(var i = 0; i < this.groups.length; i++){
                 if(this.groups[i].color == color.name && this.groups[i].category == category){
-                  // console.log("Returning group with skills");
-                  // console.log(this.groups[i].skills);
                   return [ this.groups[i] ] ;
                 }
               }
-              // console.log("Returning placeholder")
               var placeholder = this.placeholder;
               placeholder["category"] = category;
               placeholder["color"] = color.name;
@@ -598,7 +581,6 @@
                 this.categories.push(category);
                 for(var j = 0; j < this.colors.length; j++){
                   let color = this.colors[j].name;
-                  console.log("Mount color " + color)
                   var skills = []
                   if(categoryData[category][color] != undefined){
                     for(var i = 0; i < categoryData[category][color].length; i++){

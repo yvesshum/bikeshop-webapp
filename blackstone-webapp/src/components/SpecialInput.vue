@@ -37,18 +37,6 @@ use v-model. Whenever one of these is changed, it updates the other.
     <div v-if="ready">
         <!-- Returns an integer -->
         <div v-if="input === 'Integer'">
-            <!-- <VueNumberInput 
-              center
-              :value="value" 
-              @input="$emit('input', $event)"
-              :min="0"
-              :step="1"
-              align="center"
-              style="width: 20rem"
-              controls
-              :inputtable="false"
-
-            /> -->
             <VueNumericInput
                 :value="value"
                 @input="$emit('input', $event)"
@@ -127,18 +115,6 @@ use v-model. Whenever one of these is changed, it updates the other.
 
         <!-- Returns a positive integer -->
         <div v-else-if="input === 'Hours'">
-            <!-- <VueNumberInput 
-              center
-              :value="value" 
-              @input="$emit('input', $event)"
-              :min="0"
-              :step="0.5"
-              placeholder="Hours"
-              align="center"
-              style="width: 100%; margin: 0 auto"
-              controls
-              :inputtable="false"
-            /> -->
             <VueNumericInput
                 :value="value"
                 @input="$emit('input', $event)"
@@ -179,10 +155,8 @@ use v-model. Whenever one of these is changed, it updates the other.
     </div>
 </template>
 <script>
-import VueNumberInput from '@chenfengyuan/vue-number-input';
 import VueNumericInput from 'vue-numeric-input'
 import { VueTelInput } from 'vue-tel-input'
-import { Timestamp } from '@/firebase.js'
 import {db} from '@/firebase.js'
 import moment from 'moment'
 import { Compact } from 'vue-color'
@@ -271,21 +245,21 @@ export default {
             this.classOptions = [];
             // { value: "12", text: '12' },
             let classes = query.data().Classes
-            console.log(classes);
+            // console.log(classes);
             classes.forEach(c => {
                 this.classOptions.push({
                     value: Object.keys(c)[0],
                     text: Object.keys(c)[0] + ": " + Object.values(c)[0]
                 })
             })
-            console.log("Class options", this.classOptions)
+            // console.log("Class options", this.classOptions)
         },
 
         async getPeriodOptions() {
             let seasons = await db.collection("GlobalPeriods").doc("metadata").get();
             this.periodOptions = [];
             seasons = seasons.data().Seasons;
-            console.log('sget', seasons);
+            // console.log('sget', seasons);
             let years = [];
             years.push(moment().subtract(1, 'years').format("YY"));
             years.push(moment().format("YY"));
@@ -319,7 +293,6 @@ export default {
 
     components: {
         VueTelInput,
-        VueNumberInput,
         VueNumericInput,
         Datetime,
         Datepicker,

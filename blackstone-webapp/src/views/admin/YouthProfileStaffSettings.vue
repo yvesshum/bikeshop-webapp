@@ -93,7 +93,7 @@ export default {
                 this.parseFields(fields["optional"], this.fields.optional, protectedFields);
                 this.parseFields(fields["hidden"], this.fields.hidden, protectedFields);
             }
-            console.log('f', this.fields);
+            // console.log('f', this.fields);
         },
     },
     async mounted() {

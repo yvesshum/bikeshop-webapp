@@ -108,7 +108,7 @@ export default {
     name: 'InitializerCard',
     props: {
         field: String,
-        initializer: String | Number,
+        initializer: String | Number, // eslint-disable-line vue/require-prop-type-constructor
         existingFieldNames: Array ,
         rbRef: String
     },
@@ -150,7 +150,7 @@ export default {
                 try {
                     this.$refs.addInput.updateInputType(type);
                 } catch (err) {
-                    console.warn(err)
+                    // console.warn(err)
                 }
                 this.editInitialText = newVal
                 this.input_field_type = type

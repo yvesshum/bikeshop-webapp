@@ -137,13 +137,13 @@ export default {
     computed: {
         isValidNewFieldName: function() {
             let check1 = !this.field_data.some(f => {return f.name == this.modal.add.field_name}) && this.modal.add.field_name.length > 0
-            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // No symbols!
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.add.field_name) // eslint-disable-line no-useless-escape
             return check1 && check2
         },
 
         isValidEditFieldName: function() {
             let check1 = !this.field_data.some(f => {return f.name == this.modal.edit.field_name}) && this.modal.edit.field_name.length > 0
-            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // No symbols!
+            let check2 = !/[~`!#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?]/g.test(this.modal.edit.field_name) // eslint-disable-line no-useless-escape
             return check1 && check2
         }
     },
@@ -194,9 +194,9 @@ export default {
     },
     methods: {
         handle_field_type_change(type) {	
-            console.log('handle field type change called', type);	
+            // console.log('handle field type change called', type);	
             this.modal.add.initial_value = initSpecialInputVal(type);	
-            console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
+            // console.log('set modal initial value to:', this.modal.add.initial_value, typeof(this.modal.add.initial_value));		
             this.$refs.addInput.updateInputType(type);	
         },
 
@@ -233,7 +233,7 @@ export default {
 
             let updateVal = {};
             updateVal[this.sourceFieldName] = fields;
-            console.warn('uv', updateVal)
+            // console.warn('uv', updateVal)
 
             let updateStatus = await db.collection("GlobalVariables")
                                 .doc(this.sourceDocument).update(updateVal);
@@ -279,8 +279,6 @@ export default {
         async save_edit() {
             this.edit_closeModal();
             this.showLoadingModal("Saving..");
-            let newFieldName = this.modal.edit.field_name;
-            let fieldType = this.modal.edit.field_type;
             for (let i = 0; i < this.field_data.length; i++) {
                 if (this.field_data[i].name === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection
@@ -297,7 +295,7 @@ export default {
 
                     let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalVariables on firebase. " + err);
+                        window.alert("Error on updating GlobalVariables on firebase. " + updateStatus);
                         return null;
                     }
 

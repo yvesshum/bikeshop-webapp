@@ -35,11 +35,11 @@ export function filter(search_term, option, full_object, search_params) {
 
 export function make_filter(search_term, search_params) {
     return (option) => make_search(search_term, {...search_params, just_filter: true})(option);
-};
+}
 
 export function search(search_term, option, search_params) {
     return make_search(search_term, search_params)(option);
-};
+}
 
 export function make_search(search_term, search_params) {
 
@@ -51,7 +51,7 @@ export function make_search(search_term, search_params) {
 
     // Special case: If the search term is blank, match everything
     if (num_terms === 0) {
-        return (opt) => true;
+        return (opt) => true;  // eslint-disable-line no-unused-vars
     }
 
     return (opt) => {
@@ -90,7 +90,7 @@ export function make_search(search_term, search_params) {
         // If the number of terms exceeds the number of fields, no match
         if (num_terms > fields.length) {
             return null;
-        };
+        }
 
         // In each object, add the field "matches" to store the indices at which a term can be found
         // Produce a boolean matrix for whether a given term matches a given field
@@ -149,7 +149,7 @@ export function make_search(search_term, search_params) {
         // If either of these conditions is not met, filter this option out.
         if ((unmatched_terms.length !== 0) || (num_fields_matched < num_terms)) {
             return search_params.just_filter ? false : null;
-        };
+        }
 
         // All options past this point do match the search.
 
@@ -211,7 +211,7 @@ export function make_search(search_term, search_params) {
         // Return the matches array/object
         return matches;
     }
-};
+}
 
 
 
@@ -272,7 +272,7 @@ export function split_special_chars(str) {
 
     // Return the return array
     return ret;
-};
+}
 
 
 // Format special characters in a string based on options:
@@ -308,7 +308,7 @@ export function parse_text(str, options) {
             break;
         default:
             break;
-    };
+    }
 
     if (!opts.special) {
         SPECIAL_CHARS.forEach(obj => {
@@ -331,14 +331,14 @@ export function parse_text(str, options) {
 
     function normalize(str) {
         return str.normalize("NFD");
-    };
-};
+    }
+}
 
 
 // Convert two arrays (rows, cols) into a matrix of booleans, where each cell represents whether the given row value and column value match according to some specified matching function (match).
 function match_matrix(rows, cols, match) {
     return rows.map(row => cols.map(col => match(row, col)));
-};
+}
 
 // Given some number of arrays, each storing arrays of the form [start_index, length], returns a new array where all duplicate start indices are replaced with a single entry containing the greatest length that index had been paired with.
 // That is, merges arrays and removes duplicates, and in case of conflicting lengths, chooses the longest.
@@ -358,7 +358,7 @@ function unique_i(...arrs) {
 
     // Map each key/value pair in the object (index/length) to an array
     return Object.keys(inds).map(k => [Number(k), inds[k]]).sort();
-};
+}
 
 // Given an array of indices, remove any index which overlaps an earlier index
 function remove_overlap_i(indices) {
@@ -366,7 +366,7 @@ function remove_overlap_i(indices) {
     var new_indices = [];
 
     // Sort indices by the numerical values of their start positions, then filter out overlaps
-    indices.sort(make_compare_i(true)).forEach((curr, n, arr) => {
+    indices.sort(make_compare_i(true)).forEach((curr, n, arr) => { // eslint-disable-line no-unused-vars
 
         // Keep the first index regardless
         if (n == 0) new_indices = [curr];
@@ -375,11 +375,11 @@ function remove_overlap_i(indices) {
         let prev = new_indices[new_indices.length-1];
         if (curr[0] - prev[0] >= prev[1]) {
             new_indices.push(curr);
-        };
+        }
     });
 
     return new_indices;
-};
+}
 
 // Compare two indices for sorting the array
 // If start positions are different, sort earlier indices first
@@ -403,7 +403,7 @@ function make_compare_i(longer_first) {
 // Flatten an array of arrays into a single array with all elements
 function concat_all(arr) {
     return arr.reduce( (acc, curr) => acc.concat(curr) );
-};
+}
 
 // Find all indices of a substring in a search string broken down into an array of substrings
 // Takes an array (arr) of strings which represents a list of segments of some full search string.
@@ -502,7 +502,7 @@ export function make_range_editor(type) {
         });
 
         // Callback to submit the new range for filtering when it changes
-        function onChange(e) {
+        function onChange(e) { // eslint-disable-line no-unused-vars
 
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
@@ -510,7 +510,7 @@ export function make_range_editor(type) {
             let new_range = {min, max};
 
             // Submit the new range
-            console.log("Updating range: ", new_range);
+            // console.log("Updating range: ", new_range);
             success(new_range);
         }
 
@@ -522,7 +522,7 @@ export function make_range_editor(type) {
             let max = edit2.value !== "" ? edit2.value : null;
             let new_range = {min, max};
 
-            console.log("Updating range from enter: ", new_range);
+            // console.log("Updating range from enter: ", new_range);
 
             switch (e.keyCode) {
 
@@ -753,7 +753,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     };
 
     // Reposition the dropdown to stay under the button if the window is scrolled
-    window.addEventListener("scroll", function(e) {
+    window.addEventListener("scroll", function(e) { // eslint-disable-line no-unused-vars
       if (dropdown.style.display == "block") {
         align_dropdown();
       }
@@ -892,12 +892,12 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
                 // Align centered to the window if necessary
                 else {
-                    dropdown.style.left = ((window.innerWidth - menu_rect.width) / 2) + "px";
+                    dropdown.style.left = ((window.innerWidth - men_rect.width) / 2) + "px";
                 }
             }
       }
 
-      function align_left(btn_rect, men_rect) {
+      function align_left(btn_rect, men_rect) { // eslint-disable-line no-unused-vars
         dropdown.style.left = btn_rect.left + "px";
       }
 
@@ -912,7 +912,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
         var diff = Math.abs(men_rect.width - btn_rect.width);
         dropdown.style.left = (btn_rect.left - (diff / 2)) + "px";
       }
-    };
+    }
 
     function show_dropdown() {
       dropdown.style.display = "block";

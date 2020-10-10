@@ -5,7 +5,7 @@
         <div class="toolbarwrapper">
               <b-button-toolbar style="justify-content: center;">
                     <b-button variant="success" @click="showAddModal" style="margin: 1%;">Add Question</b-button>
-                    <b-button variant="info" @click="showEditModal"style="margin: 1%;" :disabled="!selected.length">Edit Question</b-button>
+                    <b-button variant="info" @click="showEditModal" style="margin: 1%;" :disabled="!selected.length">Edit Question</b-button>
                     <b-button variant="danger" @click="reject" style="margin: 1%;" :disabled="!selected.length">Delete Question</b-button>
                     <b-button variant="info" @click="getNewData" style="margin: 1%;">Refresh Table</b-button>
               </b-button-toolbar>
@@ -20,8 +20,7 @@
             selectedVaraint = "success"
             :items="items"
             @row-selected="rowSelected"
-            sort-by="Class"
-            :sort-by.sync="sortBy"
+            :sort-by.sync="sortBy" 
             :sort-desc.sync="sortDesc"
             id="transfer_table"
             :busy="isBusy"
@@ -93,11 +92,7 @@
 <script>
     import SpecialInput from '@/components/SpecialInput';
     import {db} from '../../firebase';
-    import {rb} from '../../firebase';
-    import moment from 'moment'
-    import { forKeyVal } from '@/scripts/ParseDB.js';
     let questionsRef = db.collection("GlobalVariables").doc("EssayQuestions");
-    let classesRef = db.collection("GlobalPeriods").doc("metadata");
     
     export default {
         name: 'EssayQuestionsSettings',
@@ -106,7 +101,7 @@
         },
         data() {
             return {
-                sortBy: 'Check In',
+                sortBy: 'Class',
                 sortDesc: false,
                 headers: [],
                 items: [],
@@ -131,8 +126,6 @@
                 isBusy: true,
                 loadingModalVisible: false,
                 loadingModalHeader: "",
-                rejectingClass: "",
-                rejectingQuestion: "",
             };
 
         },
@@ -158,7 +151,7 @@
                 for(class_opt in data){
                     for(var i = 0; i < data[class_opt].length; i++){
                         single_question = {};
-                        single_question["Question"] = data[class_opt][i].split('\\n').join('\n');;
+                        single_question["Question"] = data[class_opt][i].split('\\n').join('\n');
                         single_question["Class"] = class_opt;
                         ret.push(single_question);
                     }
@@ -187,8 +180,8 @@
                 this.showLoadingModal("Doing some work in the background...");
                 let qs = await questionsRef.get();
                 let data = qs.data();
-                console.log("New class: " + this.newClass);
-                console.log("Data: " + data);
+                // console.log("New class: " + this.newClass);
+                // console.log("Data: " + data);
                 if(this.newClass == undefined || this.newClass=="" || this.newQuestion == undefined || this.newQuestion == ""){
                     window.alert("You must select a class and enter a question");
                 } else {
@@ -206,7 +199,7 @@
                     single_question["Question"] = this.newQuestion;
                     single_question["Class"] = this.newClass;
                     this.items.push(single_question);
-                    console.log("About to close loading?")
+                    // console.log("About to close loading?")
                     this.newQuestion = "";
                     this.newClass = "";
                 }
@@ -245,7 +238,7 @@
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
                 
                 this.showLoadingModal("Doing some work in the background...");
 
@@ -296,7 +289,7 @@
             async saveEdits() {
                 this.closeEditModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
                 
                 this.showLoadingModal("Doing some work in the background...");
                 
@@ -304,8 +297,8 @@
                 let data = qs.data();
                 let editOldQuestionSubmit = this.editOldQuestion.split('\n').join('\\n');
                 for(var i = 0; i < data[this.editOldClass].length; i++){
-                    console.log("Old question: " + editOldQuestionSubmit);
-                    console.log("Old all: " + data[this.editOldClass][i]);
+                    // console.log("Old question: " + editOldQuestionSubmit);
+                    // console.log("Old all: " + data[this.editOldClass][i]);
                     if(data[this.editOldClass][i] === editOldQuestionSubmit){
                         data[this.editOldClass].splice(i, 1);
                     }
