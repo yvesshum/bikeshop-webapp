@@ -24,7 +24,7 @@
       <p>Search the bar above to view a youth's profile information.</p>
     </div>
 
-    <RefTracker :reference="profile_ref" @snapshot="handle_profile_snapshot" />
+    <RefTracker :reference="profile_ref" @snapshot="handle_profile_snapshot" @load_complete="handle_ref_tracker" />
 
     </div>
     <Footer/>
@@ -66,6 +66,8 @@ export default {
       currentProfile: null,
       profile_ref: null,
       header_doc: null,
+
+      ref_tracker: null,
 
       periods_db: db.collection("GlobalPeriods"),
       periods_doc: null,
@@ -136,6 +138,9 @@ export default {
 
       load_youth: async function(youth) {
 
+        // Clear the reference tracker, so that switching between youth doesn't trigger it
+        if (this.ref_tracker != undefined) this.ref_tracker.reset();
+
         // No id returned - clear the page
         if (youth == null) {
           this.profile_ref = null;
@@ -151,6 +156,10 @@ export default {
 
       handle_profile_snapshot: function({snapshot, update}) {
         this.currentProfile = snapshot;
+      },
+
+      handle_ref_tracker: function(ref_tracker) {
+        this.ref_tracker = ref_tracker;
       },
 
       create_active_periods: function(youth, period_data) {

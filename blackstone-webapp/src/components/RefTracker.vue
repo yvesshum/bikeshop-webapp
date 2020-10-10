@@ -45,6 +45,9 @@ export default {
 
   mounted: async function() {
     this.initialize_ref();
+    this.$emit("load_complete", {
+      reset: this.reset
+    });
   },
 
   watch: {
@@ -57,11 +60,8 @@ export default {
 
     initialize_ref: function() {
 
-      // Clear the previous listener, if applicable
-      if (this.observer != null) {
-        this.observer();
-        this.observer = null;
-      }
+      // Clear any pre-existing data
+      this.reset();
 
       // Attach a new listener to the reference
       if (this.reference != undefined) {
@@ -104,6 +104,20 @@ export default {
       this.$bvToast.hide('warning-msg');
     },
 
+    // Clear this ref tracker
+    reset: function() {
+
+      // Detatch and clear the previous listener, if applicable
+      if (this.observer != null) {
+        this.observer();
+        this.observer = null;
+      }
+
+      // Clear any local data
+      this.local_snapshot = null;
+      this.updated_snapshot = null;
+      this.loaded = false;
+    },
   }
 }
 </script>
