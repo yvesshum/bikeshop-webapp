@@ -45,6 +45,7 @@
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
       :showColor="show_color"
+      @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.table = a"
     /> -->
@@ -57,6 +58,7 @@
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
       :showColor="show_color"
+      @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.tree = a"
     />
@@ -607,6 +609,10 @@ export default {
     redraw: function() {
       if (this.displays.table != null)  this.displays.table.redraw();
       if (this.displays.earned != null) this.displays.earned.redraw();
+    },
+
+    switch_color: function(new_color) {
+      this.show_color = new_color;
     },
   }
 }

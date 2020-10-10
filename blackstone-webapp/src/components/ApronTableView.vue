@@ -99,6 +99,8 @@ export default {
 
       loaded_apron_skills: [],
       loaded_apron_colors: [],
+
+      swapping_color: false,
     }
   },
 
@@ -251,6 +253,8 @@ export default {
           // Looks like this runs before whatever callback actually toggles the group open/closed on click, so if we hide an open group, it will be switched back to open, which is what we want
           groupClick: (e, group) => {
             this.table.getGroups().forEach(g => g.hide());
+            this.swapping_color = true;
+            this.$emit("switch_color", group.getKey());
           },
 
           // Start all groups closed
@@ -294,6 +298,10 @@ export default {
 
   watch: {
     showColor: function() {
+      if (this.swapping_color) {
+        this.swapping_color = false;
+        return;
+      }
       if (this.table == null) return "";
       this.table.getGroups().forEach(group => {
         if (group.getKey() == this.showColor) {

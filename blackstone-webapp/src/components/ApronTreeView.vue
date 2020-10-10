@@ -311,6 +311,18 @@ export default {
 
   watch: {
 
+    selected_tab: function(new_tab) {
+      this.$emit("switch_color", this.tree_tabs[new_tab].apron.apron);
+    },
+
+    showColor: function(new_color) {
+      for (var i = 0; i < this.tree_tabs.length; i++) {
+        if (this.tree_tabs[i].apron.apron == new_color) {
+          this.selected_tab = i;
+          return;
+        }
+      }
+    },
   },
 
   methods: {
