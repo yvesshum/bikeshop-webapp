@@ -588,24 +588,23 @@ export default {
           new_skills[skill.color].Skills[skill.category].push(skill.name);
         });
 
-        // Make new changes object for apron skills list
-        let changes = {"Apron Skills": new_skills};
-
         // Save changes to firebase
-        db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).then(
+        this.$emit("save_changes", {
 
-          // Data updated successfully
+          // Changes should affect the apron skills list
+          changes: {"Apron Skills": new_skills},
+
           // If update succeeds, update all skills locally
-          () => {
+          success: () => {
             this.displays.table.accept_changes();
           },
 
           // Error updating database
-          (err) => {
+          error: () => {
             window.alert("Error updating database: ", err);
             return null;
           }
-        );
+        });
       }
 
       // Reset all the changed but unsaved skills to their original values

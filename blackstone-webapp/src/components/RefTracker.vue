@@ -46,7 +46,8 @@ export default {
   mounted: async function() {
     this.initialize_ref();
     this.$emit("load_complete", {
-      reset: this.reset
+      reset: this.reset,
+      save_changes: this.save_changes,
     });
   },
 
@@ -72,8 +73,15 @@ export default {
     // Handle an incoming snapshot by saving it if it's the first one and alerting the user if it's not
     handle_snapshot: function(snapshot) {
 
+      // Pending writes means the user is making the update
+      if (snapshot.metadata.hasPendingWrites) {
+        this.local_snapshot = snapshot;
+        this.loaded = true;
+        this.$emit("snapshot", {snapshot, update: true});
+      }
+
       // If nothing's been loaded yet, just save the snapshot
-      if (!this.loaded) {
+      else if (!this.loaded) {
         this.local_snapshot = snapshot;
         this.loaded = true;
         this.$emit("snapshot", {snapshot, update: false});
@@ -117,6 +125,10 @@ export default {
       this.local_snapshot = null;
       this.updated_snapshot = null;
       this.loaded = false;
+    },
+
+    save_changes: function(changes) {
+      this.reference.update(changes.changes).then(changes.success, changes.error);
     },
   }
 }

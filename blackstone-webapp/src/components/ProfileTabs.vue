@@ -13,6 +13,7 @@
           :headerDoc="headerDoc"
           :edit="allow_edits" :disableWarnings="!allow_edits"
           showOptionalFields
+          @save_changes="save_changes"
         />
       </b-tab>
 
@@ -36,6 +37,7 @@
           :allowEdits="allow_edits"
           style="max-width: 95%; margin:auto"
           @load_complete="s => apron_bar_content = s"
+          @save_changes="save_changes"
         />
       </b-tab>
 
@@ -204,6 +206,10 @@ export default {
 
     load_header_doc: function(new_header) {},
     load_profile: function(doc) {},
+
+    save_changes: function(changes) {
+      this.$emit("save_changes", changes);
+    },
   }
 }
 </script>

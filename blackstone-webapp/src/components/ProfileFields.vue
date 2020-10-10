@@ -727,33 +727,40 @@ export default {
       });
 
 
-      // Saves edits to firebase
-      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
-        window.alert("Error: " + err);
-        return null;
+      // Emit the changes to be saved by the reference tracker
+      this.$emit("save_changes", {
+        changes,
+
+        // If successful updating database, change the field data on the page
+        success: () => {
+          for (var key in changes) {
+
+            // If any non-standard field is being removed, delete it from the page
+            if (this.row_status.is_status(key, Status.REM_T)) {
+              this.temp_fields = this.temp_fields.filter(k => k != key);
+              delete this.local_values[key];
+            }
+
+            // For all other fields, simply update their local values
+            else {
+              this.local_values[key] = this.input_fields[key].get_changed_value();
+            }
+          };
+
+          // Discard empty fields and update the row_status object to reflect the new values
+          this.discard_empty_fields();
+          this.row_status.update();
+
+          // Switch out of edit mode
+          this.set_edit_mode(false);
+        },
+
+        // In case of error...
+        error: (err) => {
+          window.alert("Error: " + err);
+          return null;
+        }
       });
-
-      // If no error updating database, change the field data on the page
-      for (var key in changes) {
-
-        // If any non-standard field is being removed, delete it from the page
-        if (this.row_status.is_status(key, Status.REM_T)) {
-          this.temp_fields = this.temp_fields.filter(k => k != key);
-          delete this.local_values[key];
-        }
-
-        // For all other fields, simply update their local values
-        else {
-          this.local_values[key] = this.input_fields[key].get_changed_value();
-        }
-      };
-
-      // Discard empty fields and update the row_status object to reflect the new values
-      this.discard_empty_fields();
-      this.row_status.update();
-
-      // Switch out of edit mode
-      this.set_edit_mode(false);
     },
 
 
