@@ -1,17 +1,20 @@
 <template>
   <div class="apron_bar">
 
-    <!-- <div class="title_container">
+    <div class="title_container">
 
-      <h3>Apron Skills</h3>
+      <!-- <h3>Apron Skills</h3> -->
 
       <div class="apron_color_title">
         <h4>Current Apron: {{apron_color}}</h4>
-        <h4 v-if="!is_final_color">Next Apron: {{next_apron_color}}</h4>
+        <!-- <h4 v-if="!is_final_color">Next Apron: {{next_apron_color}}</h4> -->
       </div>
 
       <div class="progress_bar_container">
-        <b-button
+        <b-form-checkbox switch class="mr-n2" v-model="use_table">
+          <span>Display as table</span>
+        </b-form-checkbox>
+        <!-- <b-button
           style="display: inline-block; float: left"
           :disabled="apron_level <= 0"
           variant="primary"
@@ -31,13 +34,13 @@
           @click="increment_apron"
           v-b-tooltip.hover.html="'Increment Apron Color'"
           v-if="allow_edits"
-        >+</b-button>
+        >+</b-button> -->
       </div>
 
       <div style="clear: both;"></div>
-    </div> -->
+    </div>
 
-    <!-- <ApronTableView
+    <ApronTableView v-show="use_table"
       :loadApronSkills="false"
       :loadApronColors="false"
       :apronSkills="apron_skills"
@@ -48,9 +51,9 @@
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.table = a"
-    /> -->
+    />
 
-    <ApronTreeView
+    <ApronTreeView v-show="!use_table"
       :loadApronSkills="false"
       :loadApronColors="false"
       :apronSkills="apron_skills"
@@ -256,6 +259,8 @@ export default {
         tree: null,
         earned: null,
       },
+
+      use_table: false,
     }
   },
 
@@ -418,6 +423,12 @@ export default {
   watch: {
     profile: function() {
       this.initialize_data();
+    },
+
+    use_table: function() {
+      this.$nextTick(() => {
+        this.redraw();
+      });
     },
   },
 
