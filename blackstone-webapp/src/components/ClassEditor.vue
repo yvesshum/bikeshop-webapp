@@ -134,7 +134,6 @@
 import draggable from 'vuedraggable'
 import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
-import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
 
 export default {
@@ -142,7 +141,6 @@ export default {
     components: {
         FieldCard,
         draggable,
-        SpecialInput
     },
     props: {
         sourceFieldName: String, //required, optional, hidden
@@ -303,7 +301,7 @@ export default {
 
                     let updateStatus = await db.collection("GlobalPeriods").doc("metadata").update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalPeriods on firebase. " + err);
+                        window.alert("Error on updating GlobalPeriods on firebase. " + updateStatus);
                         return null;
                     }
 

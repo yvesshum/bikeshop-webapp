@@ -108,7 +108,7 @@ export default {
     name: 'InitializerCard',
     props: {
         field: String,
-        initializer: String | Number,
+        initializer: String | Number, // eslint-disable-line vue/require-prop-type-constructor
         existingFieldNames: Array ,
         rbRef: String
     },

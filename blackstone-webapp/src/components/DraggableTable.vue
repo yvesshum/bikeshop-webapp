@@ -105,10 +105,7 @@
 <script>
 import draggable from "vuedraggable";
 import { db } from "@/firebase";
-import { firebase } from "@/firebase";
 import ApronImg from "@/components/ApronImg";
-let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
-let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
 export default {
   name: "vue-draggable-table",
   components: {
@@ -252,9 +249,9 @@ export default {
         "del_skill"
       );
     },
-    onMove({ relatedContext, draggedContext }) {
-      const relatedElement = relatedContext.element;
-      const draggedElement = draggedContext.element;
+    onMove({ relatedContext, draggedContext }) { // eslint-disable-line no-unused-vars
+      // const relatedElement = relatedContext.element;
+      // const draggedElement = draggedContext.element;
       return true;
     },
     onEnd(evt) {

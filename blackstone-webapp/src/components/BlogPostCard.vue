@@ -180,7 +180,7 @@ export default {
             this.modal.msg.text = "Successfully deleted post";
             this.modal.msg.visible = true;
         },
-        viewBlogPost(post_id) {
+        viewBlogPost(post_id) { // eslint-disable-line no-unused-vars
             // console.log("Opening blog post: ", post_id);
             this.showPostModal = true;
         },

@@ -21,7 +21,7 @@
                 </tr>
             </table>
             <br />
-            </table>
+            <!-- </table> -->
             <table style="width: 95%; margin: auto; text-align:left;">
                 <tr>
                     <td style="width:45%; text-align:center;">
@@ -43,7 +43,7 @@
                             </b-dropdown-text>
                             <b-dropdown-divider></b-dropdown-divider>
                             <b-dropdown-group id="add-class" header="Set Class" style="width: 240px;">
-                                <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)">{{c}}</b-dropdown-item-button>
+                                <b-dropdown-item-button v-for="c in class_list" @click="set_class(display, c)" :key="c">{{c}}</b-dropdown-item-button>
                             </b-dropdown-group>
                             <b-dropdown-divider></b-dropdown-divider>
                             <b-dropdown-group id="rem-class" header="Remove Class" style="width: 240px;">
@@ -60,7 +60,7 @@
             <thead>
             <tr>
                 <th scope="col" class="main_header">Year</th>
-                <th scope="col" class="main_header" v-for="s in seasons" :class="get_header_classes(s)">{{s}}</th>
+                <th scope="col" class="main_header" v-for="s in seasons" :key="s" :class="get_header_classes(s)">{{s}}</th>
             </tr>
             </thead>
             <tbody @mouseleave="dehover_cell">
@@ -69,9 +69,10 @@
                     This youth does not appear to have been registered for any classes.
                 </td>
             </tr>
-            <tr v-for="year in years">
+            <tr v-for="year in years" :key="year">
                 <th scope="row" :class="get_header_classes(year)" @mouseover="dehover_cell()">20{{year}}</th>
                 <td v-for="s in seasons"
+                    :key="s"
                     @mouseover="hover_cell(s, year)"
                     @click="select_cell(s, year)"
                     style="text-align: left; position:relative;"

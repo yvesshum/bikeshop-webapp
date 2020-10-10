@@ -50,7 +50,6 @@ Emits:
 
 <script>
     // TODO: Test GROUP.FAILED with Firebase failed retrievals
-    import {db} from '../../firebase';
 
     const Tabulator = require('tabulator-tables');
 
@@ -133,7 +132,7 @@ Emits:
                                 },
 
                                 // Catch an error
-                                error => {
+                                error => { // eslint-disable-line no-unused-vars
                                     this.loaded_groups[key] = GROUP.FAILED;
                                     // TODO: Manually close the group
                                 }
@@ -147,7 +146,7 @@ Emits:
                     },
 
                     // Format the header bar for each group
-                    groupHeader: (value, count, data, group) => {
+                    groupHeader: (value, count, data, group) => { // eslint-disable-line no-unused-vars
                         return `<div style='display:inline;'>
                             Items from <i>${value}</i>
                         </div>
@@ -166,16 +165,12 @@ Emits:
                             switch (val) {
                                 case GROUP.UNLOADED:
                                     return "Click to load.";
-                                    break;
                                 case GROUP.LOADING:
                                     return "Loading...";
-                                    break;
                                 case GROUP.LOADED:
                                     return `${count?count:"No"} item${count==1?"":"s"}.`;
-                                    break;
                                 case GROUP.FAILED:
                                     return "Load failed. Click to retry.";
-                                    break;
                             }
                         }
                     },
@@ -226,7 +221,7 @@ Emits:
                 this.table.redraw();
             },
 
-            visible: function(val) {
+            visible: function(val) { // eslint-disable-line no-unused-vars
                 this.table.redraw();
             },
         },

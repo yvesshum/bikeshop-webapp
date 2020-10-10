@@ -11,8 +11,6 @@
 // import SpecialInput from '@/components/SpecialInput';
 import {get_as_date} from '@/scripts/ParseDB.js';
 
-const moment = require("moment");
-
 export default {
   name: 'profile_field_display',
   props: ['type', 'value'],
@@ -32,11 +30,11 @@ export default {
 
       // Display non-null values according to their type
       switch (this.type) {
+        /* eslint-disable no-case-declarations */
 
         // Display a boolean as "Yes" or "No"
         case "Boolean":
           return val ? "Yes" : "No";
-          break;
 
         // Display a phone number in (___) ___-____ format, complete with underscores
         // case "Phone":
@@ -78,6 +76,9 @@ export default {
         default:
           return val;
       }
+      /* eslint-enable no-case-declarations */
+
+
     },
   },
 }

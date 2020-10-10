@@ -54,7 +54,6 @@
 
 <script>
 import { VueEditor } from "vue2-editor";
-import { db } from "@/firebase.js";
 
 export default {
     name: "NewBlogPost",

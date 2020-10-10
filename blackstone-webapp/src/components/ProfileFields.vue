@@ -9,7 +9,7 @@
     <br />
 
     <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
-      <HoursDisplay v-for="item in hour_fields" v-bind="item" />
+      <HoursDisplay v-for="item in hour_fields" v-bind="item" :key="item" />
     </div>
 
     <br />

@@ -265,7 +265,7 @@ export default {
 
                     let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalCategoriesCollection on firebase. " + err);
+                        window.alert("Error on updating GlobalCategoriesCollection on firebase. " + updateStatus);
                         return null;
                     }
 
@@ -283,7 +283,6 @@ export default {
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
@@ -294,7 +293,6 @@ export default {
                     }
 
                     //Local Update
-                    let newVal = {};
                     this.category_data[i].data = newCategoryName;
 
                     //Updating the copied version. Since ordering may have changed, we'll need to search through this.
@@ -342,7 +340,6 @@ export default {
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             delete data[this.modal.delete.category_name]
@@ -398,7 +395,6 @@ export default {
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                 query.forEach(async doc => {
-                    let id = doc.id;
                     let path = doc.ref.path
                     let data = doc.data();
                     data[this.modal.add.category_name] = 0;

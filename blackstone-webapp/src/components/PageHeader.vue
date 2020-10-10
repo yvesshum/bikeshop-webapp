@@ -9,8 +9,7 @@
 
 
 <script>
-    import {firebase} from '@/firebase'
-    import {db} from '@/firebase';
+    import { db } from "@/firebase.js"
     export default {
         name: 'PageHeader',
         props: {
@@ -20,7 +19,7 @@
             },
             pageName: {
               type: String,
-              default: true
+              default: ""
             }
         },
         data() {

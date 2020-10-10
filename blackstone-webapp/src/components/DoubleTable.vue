@@ -68,13 +68,11 @@
 </template>
 
 <script>
-    import Table from "@/components/Table.vue"
     const Tabulator = require('tabulator-tables');
 
     export default {
         name: 'DoubleTable',
         props: ['headers', 'data', 'pending_data', 'options', 'placeholders', 'table_height'],
-        components: {Table},
 
         data: function () {
             return {
@@ -247,12 +245,12 @@
             },
 
             // Runs after row movement finishes
-            row_change_complete: function(fromTable) {
+            row_change_complete: function(fromTable) { // eslint-disable-line no-unused-vars
                 this.emit_changes();
             },
 
             // Runs if row movement fails for some reason
-            row_change_fail: function(fromRow, toRow, fromTable){
+            row_change_fail: function(fromRow, toRow, fromTable){ // eslint-disable-line no-unused-vars
                 // console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
             },
 
