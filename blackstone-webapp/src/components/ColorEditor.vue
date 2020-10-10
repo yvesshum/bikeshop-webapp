@@ -325,11 +325,11 @@ export default {
                     await Promise.all(
                         youthApronsSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
-                            if(youthProfile['Apron Skills Alt'] != undefined &&
-                              youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name] != undefined){
-                                let color_data = youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name];
-                                youthProfile['Apron Skills Alt'][this.modal.edit.field_name] = color_data;
-                                delete youthProfile['Apron Skills Alt'][this.modal.edit.original_field_name];
+                            if(youthProfile['Apron Skills'] != undefined &&
+                              youthProfile['Apron Skills'][this.modal.edit.original_field_name] != undefined){
+                                let color_data = youthProfile['Apron Skills'][this.modal.edit.original_field_name];
+                                youthProfile['Apron Skills'][this.modal.edit.field_name] = color_data;
+                                delete youthProfile['Apron Skills'][this.modal.edit.original_field_name];
                                 await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
                             }
                         })
@@ -402,9 +402,9 @@ export default {
                     await Promise.all(
                         youthApronsSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
-                            if(youthProfile['Apron Skills Alt'] != undefined &&
-                              youthProfile['Apron Skills Alt'][this.modal.delete.field_name] != undefined){
-                                delete youthProfile['Apron Skills Alt'][this.modal.delete.field_name];
+                            if(youthProfile['Apron Skills'] != undefined &&
+                              youthProfile['Apron Skills'][this.modal.delete.field_name] != undefined){
+                                delete youthProfile['Apron Skills'][this.modal.delete.field_name];
                                 await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
                             }
                         })
