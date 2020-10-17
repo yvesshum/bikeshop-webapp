@@ -172,7 +172,7 @@ export default {
       note: "",
       // fromInput: "",
       // toInput: "",
-      submitMsg: "Submit order for staff review!"
+      submitMsg: "Submit transfer request for staff review!"
     };
   },
 
