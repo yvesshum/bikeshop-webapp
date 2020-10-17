@@ -8,7 +8,7 @@
                 >Delete</span
             >
             <div class="container" @click="viewBlogPost(PostObj.id)">
-                <b-row style="margin: 1.25rem 0; width: 100%">
+                <b-row style="margin: 1.25rem 0; width: 100%;">
                     <b-col class="blog_post_image" cols="3"></b-col>
                     <b-col style="margin-left: 1rem; text-align: left" cols="9">
                         <b-card-title style="padding-right: 1.5rem">
@@ -239,6 +239,7 @@ export default {
 .container {
     margin: 0;
     cursor: pointer;
+    overflow-x: hidden;
 }
 .container:hover {
     background-color: #f7f7f7;
