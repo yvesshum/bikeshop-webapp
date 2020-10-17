@@ -240,6 +240,7 @@ export default {
     margin: 0;
     cursor: pointer;
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 .container:hover {
     background-color: #f7f7f7;
