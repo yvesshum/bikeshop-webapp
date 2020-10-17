@@ -79,7 +79,7 @@
           </b-col>
         </b-row>
         <br />
-        <b-row style="width: 100%">
+        <b-row style="width: 80%; margin: 0 auto">
           <b-col>
             <b-form-select
               v-model="Earned_Period_Data.selected_year"
@@ -189,7 +189,7 @@
           </b-col>
         </b-row>
         <br />
-        <b-row style="width: 100%">
+        <b-row style="width: 80%; margin: 0 auto">
           <b-col>
             <b-form-select
               v-model="Spent_Period_Data.selected_year"
