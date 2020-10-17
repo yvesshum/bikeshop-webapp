@@ -28,7 +28,7 @@
                       <ApronImg :color="get_color_val(section.apron.apron)" :size="48" />
                     </div>
                     <div style="flex: 1;">
-                      <span style="font-size: 24px">{{section.apron.apron}} Apron</span>
+                      <span style="font-size: 22px">{{section.apron.apron}} Apron</span>
                       <b-progress :max="section.apron.num_total">
                         <b-progress-bar :value="section.apron.num_achieved" animated :variant="(section.apron.num_achieved == section.apron.num_total) || (section.apron.earned != false) ? 'success' : 'primary'">
                           <span v-if="section.apron.earned != false || section.apron.apron == showColor">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>

@@ -214,4 +214,8 @@ export default {
 }
 </script>
 
-<style></style>
+<style scoped>
+  ::v-deep .nav-link {
+    height: 100%;
+  }
+</style>
