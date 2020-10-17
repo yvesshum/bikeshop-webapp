@@ -1,27 +1,57 @@
 <template>
 	<div class="hours-stats-bar">
 		<br />
-		<div>
-			<HoursDisplay :value="earned"  title="Hours Earned" :cardArgs="{'border-variant': 'success'}" />
-			<span class="operator">-</span>
-			<HoursDisplay :value="spent"   title="Hours Spent" :cardArgs="{'border-variant': 'danger'}" />
-			<span class="operator">+</span>
-			<HoursDisplay :value="pending" title="Pending Hours" :cardArgs="{'border-variant': 'warning'}" />
-			<span class="operator">=</span>
-			<HoursDisplay :value="balance" title="Spendable Balance"/>
+		<div style="width: 75%; margin: auto;">
+			<div style="float:left;">
+				<HoursDisplay :value="earned"  title="Hours Earned" :cardArgs="{'border-variant': 'success'}" />
+				<span class="operator">-</span>
+				<HoursDisplay :value="spent"   title="Hours Spent" :cardArgs="{'border-variant': 'danger'}" />
+				<span class="operator">=</span>
+				<HoursDisplay :value="balance" title="Spendable Balance" :cardArgs="{'border-variant': 'success'}" />
+			</div>
+			<div style="float:right">
+				<HoursDisplay :value="pending" title="Pending Hours" :cardArgs="{'border-variant': 'warning'}" />
+			</div>
+			<div style="clear:both;"></div>
 		</div>
+
 		<br />
+
 		<div style="width: 90%; margin: auto;">
-		    <b-progress class="mt-2" :max="balance" height="3rem">
-		      <b-progress-bar :value="earned" variant="success" animated>Earned</b-progress-bar>
-		      <b-progress-bar :value="pending" variant="warning" animated>Pending</b-progress-bar>
-		      <b-progress-bar :value="spent" variant="dark"></b-progress-bar>
-		    </b-progress>
-		    <b-progress class="mt-2" :max="balance" height="1rem">
-		      <b-progress-bar :value="earned" variant="dark"></b-progress-bar>
-		      <b-progress-bar :value="pending" variant="warning" animated>Pending</b-progress-bar>
-		      <b-progress-bar :value="spent" variant="dark"></b-progress-bar>
-		    </b-progress>
+			<b-progress class="mt-2" :max="earned" height="4rem">
+				<b-progress-bar v-if="pending < 0"
+					:value="Math.abs(pending)"
+					variant="warning" animated
+					v-b-tooltip.hover.html="pending_neg_msg"
+					style="cursor: help;"
+				>
+					Pending<br /><i>-{{Math.abs(pending)}}</i>
+				</b-progress-bar>
+				<b-progress-bar
+					:value="spent"
+					variant="danger" animated
+					v-b-tooltip.hover.html="spent_msg"
+					style="cursor: help;"
+				>
+					Spent<br /><i>{{spent}}</i>
+				</b-progress-bar>
+				<b-progress-bar
+					:value="balance"
+					variant="success" animated
+					v-b-tooltip.hover.html="spendable_msg"
+					style="cursor: help;"
+				>
+					Spendable<br /><i>{{balance}}</i>
+				</b-progress-bar>
+				<b-progress-bar v-if="pending > 0"
+					:value="Math.abs(pending)"
+					variant="warning" animated
+					v-b-tooltip.hover.html="pending_pos_msg"
+					style="cursor: help;"
+				>
+					Pending<br /><i>+{{Math.abs(pending)}}</i>
+				</b-progress-bar>
+			</b-progress>
 		  </div>
 	</div>
 </template>
@@ -62,6 +92,22 @@ export default {
 		balance: function() {
 			if (this.profile == null) return null;
 			return this.earned - this.spent;
+		},
+
+		pending_neg_msg: function() {
+			return "You've spent these hours, but an instructor still needs to confirm them."
+		},
+
+		spent_msg: function() {
+			return "You've already spent these hours."
+		},
+
+		spendable_msg: function() {
+			return "You've earned these hours, and can spend them."
+		},
+
+		pending_pos_msg: function() {
+			return "You've earned these hours, but an instructor still needs to confirm them."
 		},
 	},
 }
