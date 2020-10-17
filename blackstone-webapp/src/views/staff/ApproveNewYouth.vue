@@ -154,8 +154,8 @@
         },
         data() {
             return {
-                sortBy: 'Check In',
-                sortDesc: false,
+                sortBy: 'Timestamp',
+                sortDesc: true,
                 fields: [],
                 items: [],
                 selected: [],

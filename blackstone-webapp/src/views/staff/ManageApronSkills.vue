@@ -2,19 +2,24 @@
     <div class = "StaffManageSkills">
         <div class="content">
         <top-bar/>
-        <h3 style="margin: 20px">Manage Apron skills here!</h3>
+        <h1 style="margin: 20px">Manage Apron skills here!</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
-        <div>
+        <!-- <div>
             <b-button variant="success" @click="showAddCategoryModal" style="margin: 1%;">Add Category</b-button>
             <b-button variant="success" @click="showRenameCategoryModal" style="margin: 1%;">Rename Category</b-button>
             <b-button variant="danger" @click="showDeleteCategoryModal" style="margin: 1%;">Delete Category</b-button>
-        </div>
+        </div> -->
         <div class="toolbarwrapper">
+            <b-dropdown text="Edit Categories" right variant="secondary" class="m-2">
+              <b-dropdown-item variant="success" @click="showAddCategoryModal" style="margin: 1%;">Add Category</b-dropdown-item>
+              <b-dropdown-item variant="secondary" @click="showRenameCategoryModal" style="margin: 1%;">Rename Category</b-dropdown-item>
+              <b-dropdown-item variant="danger" @click="showDeleteCategoryModal" style="margin: 1%;">Delete Category</b-dropdown-item>
+            </b-dropdown>
             <b-button variant="success" @click="showAddSkillModal" style="margin: 1%;">Add New Skill</b-button>
-            <b-button variant="success" @click="showConfirmationModal('submit',
+            <b-button variant="warning" @click="showConfirmationModal('submit',
               'Confirm submission',
               'Are you sure you want to submit the new apron skills table? Youth with changed or deleted skills will lose their skill information.'
-              )" style="margin: 1%;">Submit Changes</b-button>
+              )" style="margin: 1%;">Save Changes</b-button>
             <b-button variant="info" @click="showConfirmationModal('refresh',
               'Confirm Refresh',
               'Are you sure you want to refresh the apron skills table? Any unsubmitted local changes will be lost.'
@@ -57,7 +62,7 @@
               <h4>Enter your new skill name: </h4>
               <SpecialInput v-model="new_skill" ref="new_skill" inputType="String" :arguments="{...args.specialInput}"></SpecialInput>
               <h4 class="error_message">{{errorMsg}}</h4>
-              <h4>{{successMsg}}</h4>
+              <h4 class="success_message">{{successMsg}}</h4>
               <b-button class="mt-3" block @click="checkError(new_skill, false, false);" variant = "success">Add Skill</b-button>
               <b-button class="mt-3" block @click="closeAddSkillModal();" variant="secondary">Done</b-button>
             </div>
@@ -134,7 +139,8 @@
                 </div>
             </div>
         </b-modal>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
+        {{changed_text}}
+        <!-- <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
         <br/>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
         </div>
@@ -199,7 +205,28 @@
                 },
                 // Dictionary from [category, color, skill] to [new color, new category, new skill] or null
                 changes : {},
+                changed_text : ""
             };
+        },
+        watch: {
+          changes: {
+             handler(val){
+               console.log("That give you any ideas?")
+               var unchanged = true;
+               for(const k in Object.keys(val)){
+                  if(val[k] != null){
+                     unchanged = false;
+                     break;
+                  }
+               }
+               if(unchanged){
+                 this.changed_text = "A"
+               } else {
+                 this.changed_text = "You have unsaved changes"
+               }
+             },
+             deep: true
+          }
         },
         methods: {
             // async getCategories() {
@@ -233,6 +260,8 @@
                 this.errorMsg = "Error: Maximum category length is 300 characters";
               } else if(!isCat && input.length > 1000){
                 this.errorMsg = "Error: Maximum skill length is 1000 characters";
+              } else if(input.length == 0){
+                this.errorMsg = "Error: Skill and category names cannot be empty";
               } else {
                 if(this.modalType == "rename_category"){
                   this.rename_category();
@@ -640,5 +669,8 @@
     }
     .error_message{
       color: red;
+    }
+    .success_message{
+      color: green;
     }
 </style>

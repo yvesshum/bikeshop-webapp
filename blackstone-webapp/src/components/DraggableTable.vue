@@ -7,7 +7,7 @@
           v-for="color in colors"
           v-if="color.name != 'Gray'"
           class="col-sm table-color"
-          :key="color"
+          :key="JSON.stringify(color)"
         >
           {{ color.name }}
           <ApronImg
@@ -20,7 +20,7 @@
           />
         </div>
       </div>
-      <div v-for="category in categories" :key="category">
+      <div v-for="category in categories" :key="JSON.stringify(category)">
         <div class="row" :style="getTableWidth()">
           <div class="col table-categories">
             <b>{{ category }}</b>
@@ -29,11 +29,11 @@
             v-for="color in colors"
             v-if="color.name != 'Gray'"
             class="table-col col-sm"
-            :key="color"
+            :key="JSON.stringify(color)"
           >
             <div
               v-for="group in getGroupsByColorCategory(color, category)"
-              :key="group"
+              :key="JSON.stringify(group)"
               class="dragArea"
             >
               <draggable
@@ -193,9 +193,16 @@ export default {
     },
     reskill($event, category, color, index) {
       var group = this.getGroupsByColorCategory(color, category);
-      let new_skill = $event.target.innerText.substring(0, 100);
+      let new_skill = $event.target.innerText.substring(0, 300);
+      if($event.target.innerText == ""){
+        new_skill = "None";
+      }
       this.change_existing(group[0].skills[index].skill, new_skill, "skill")
-      $event.target.innerText = $event.target.innerText.substring(0,100);
+      if($event.target.innerText == ""){
+          $event.target.innerText = "None";
+      } else {
+          $event.target.innerText = $event.target.innerText.substring(0,300);
+      }
       group[0].skills[index].skill = new_skill;
     },
     getGroupsByColorCategory(color, category) {
@@ -354,7 +361,7 @@ export default {
   border-radius: 5px;
   background-color: white;
   position: fixed;
-  right: 5%;
+  left: 1%;
   bottom: 0;
   text-align: center;
 }
