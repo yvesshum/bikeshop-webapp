@@ -43,7 +43,6 @@ Vue.use(VueTabulator);
 Vue.use(VueClipboard);
 
 let app = "";
-
 firebase.auth().onAuthStateChanged(() => {
   if (!app) {
     app = new Vue({
