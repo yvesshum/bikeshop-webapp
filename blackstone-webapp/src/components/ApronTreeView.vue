@@ -82,9 +82,28 @@
               </b-card>
 
             </b-tab>
+
+            <template v-slot:tabs-start>
+              <b>Show Apron Skills</b>
+            </template>
+
+            <template v-slot:tabs-end>
+              <br />
+              <b>Change Apron Level</b>
+              <slot name="increment_buttons"></slot>
+            </template>
           </b-tabs>
         </b-card>
       </b-card-body>
+
+      <b-card-footer>
+        <div style="float:left; margin: 5px;">
+          <i>Click on a skill to add or remove it from the youth's profile.</i>
+        </div>
+        <div style="float:right">
+          <slot name="save_buttons"></slot>
+        </div>
+      </b-card-footer>
     </b-card>
 
 

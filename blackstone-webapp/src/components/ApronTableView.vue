@@ -17,6 +17,8 @@
       @status_editor="handle_status_editor"
     />
 
+    <slot name="save_buttons"></slot>
+
   </div>
 </template>
 

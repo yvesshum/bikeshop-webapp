@@ -1,44 +1,12 @@
 <template>
   <div class="apron_bar">
 
-    <div class="title_container">
-
-      <!-- <h3>Apron Skills</h3> -->
-
-      <div class="apron_color_title">
-        <h4>Current Apron: {{apron_color}}</h4>
-        <!-- <h4 v-if="!is_final_color">Next Apron: {{next_apron_color}}</h4> -->
-      </div>
-
-      <div class="progress_bar_container">
-        <b-form-checkbox switch class="mr-n2" v-model="use_table">
-          <span>Display as table</span>
-        </b-form-checkbox>
-        <!-- <b-button
-          style="display: inline-block; float: left"
-          :disabled="apron_level <= 0"
-          variant="primary"
-          @click="decrement_apron"
-          v-b-tooltip.hover.html="'Decrement Apron Color'"
-          v-if="allow_edits"
-        >-</b-button>
-        <ApronProgressBar
-          style="display: inline-block;"
-          :colors="apron_colors" :size="32" :level="apron_level"
-          selectType="none"
-        />
-        <b-button
-          style="display: inline-block; float: right"
-          :disabled="apron_level >= apron_colors.length-1"
-          variant="primary"
-          @click="increment_apron"
-          v-b-tooltip.hover.html="'Increment Apron Color'"
-          v-if="allow_edits"
-        >+</b-button> -->
-      </div>
-
-      <div style="clear: both;"></div>
+    <div class="progress_bar_container">
+      <b-form-checkbox switch class="mr-n2" v-model="use_table">
+        <span>Display as table</span>
+      </b-form-checkbox>
     </div>
+    <div style="clear: both;"></div>
 
     <ApronTableView v-show="use_table"
       :loadApronSkills="false"
@@ -53,7 +21,17 @@
       @changed="c => changed_skills = c"
       @load_complete="a => displays.table = a"
       @status_editor="handle_status_editor"
-    />
+    >
+      <template slot="save_buttons">
+        <div v-if="has_changes">
+          <b-button variant="success" @click="show_skills_modal(true)" style="margin: 0px 5px;">Save Changes</b-button>
+          <b-button variant="danger" @click="show_skills_modal(false)" style="margin: 0px 5px;">Discard Changes</b-button>
+        </div>
+        <div v-else>
+          Use the <i>Achieved?</i> column to add & remove skills
+        </div>
+      </template>
+    </ApronTableView>
 
     <ApronTreeView v-show="!use_table"
       :loadApronSkills="false"
@@ -69,15 +47,71 @@
       @changed="c => changed_skills = c"
       @load_complete="a => displays.tree = a"
       :statusObj="status_editor"
-    />
+    >
+      <template slot="header">
+        <div class="apron_color_title">
+          <h2>Apron Skills</h2>
+        </div>
+        <div class="progress_bar_container">
+          <ApronProgressBar
+            style="display: inline-block;"
+            :colors="apron_colors" :size="32" :level="apron_level"
+            selectType="none"
+          />
+        </div>
+        <div style="clear: both;"></div>
+      </template>
 
-    <ApronEarnedDisplay
+      <template slot="increment_buttons">
+        <b-button v-if="apron_level < apron_colors.length-1"
+          @click="increment_apron"
+          variant="secondary"
+          style="margin: 5px;"
+        >
+          Increment Color
+        </b-button>
+
+        <b-button v-if="apron_level > 0"
+          @click="decrement_apron"
+          variant="secondary"
+          style="margin: 5px;"
+        >
+          Decrement Color
+        </b-button>
+      </template>
+
+      <template slot="save_buttons">
+        <div>
+          <b-button
+            :variant="has_changes ? 'danger' : 'outline-danger'"
+            :disabled="!has_changes"
+            @click="show_skills_modal(false)"
+            style="margin: 0px 5px;"
+          >
+            Discard Changes
+          </b-button>
+          <b-button
+            :variant="has_changes ? 'success' : 'outline-success'"
+            :disabled="!has_changes"
+            @click="show_skills_modal(true)"
+            style="margin: 0px 5px;"
+          >
+            Save Changes
+          </b-button>
+        </div>
+      </template>
+    </ApronTreeView>
+
+    <br />
+
+    <ApronEarnedDisplay v-show="use_table"
       :loadApronInfo="false"
       :apronColors="apron_colors"
       :skillData="achieved_skills"
       :achievedColor="achieved_color"
       @load_complete="a => displays.earned = a"
     />
+
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
@@ -99,20 +133,6 @@
         </td>
       </tr></table>
     </b-modal>
-
-    <!-- <div v-if="selected_skills.length > 0">
-      <b-button variant="success" @click="set_selected_skills(true);">Add Selected Skills</b-button>
-      <b-button variant="danger" @click="set_selected_skills(false);">Remove Selected Skills</b-button>
-    </div> -->
-    <div v-if="allow_edits">
-      <div v-if="has_changes">
-        <b-button variant="success" @click="show_skills_modal(true)">Save Changes</b-button>
-        <b-button variant="danger" @click="show_skills_modal(false)">Discard Changes</b-button>
-      </div>
-      <div v-else>
-        <b-button disabled>Use the <i>Achieved?</i> column above to add & remove skills</b-button>
-      </div>
-    </div>
 
     <b-modal v-model="change_skills_modal">
       <template slot="modal-title">
