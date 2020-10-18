@@ -115,6 +115,20 @@ export default {
       let status = this.in_checked_data(row_data) ? Status.USE : Status.NOT;
       this.row_status.add_vue(this, row_id, status);
     });
+
+    // Emit an object that allows limited interaction with the row status from the outside
+    this.$emit("status_editor", {
+      is_status: (key, vals) => {
+        return this.row_status.is_status(key, vals);
+      },
+      get_status: (key) => {
+        return this.row_status[key];
+      },
+      set_status: (key, new_status) => {
+        return this.row_status.set(key, new_status);
+      },
+      get_id: this.get_row_id,
+    });
   },
 
   watch: {
@@ -153,7 +167,10 @@ export default {
 
   computed: {
     table_data: function() {
-      return this.fullData.map(c => { return {achieved: this.in_checked_data(c), ...c}; });
+      return this.fullData.map(c => {
+        let id = this.get_row_id(c);
+        return {achieved: this.row_status.is_status(id, Status.O), ...c};
+      });
     },
 
     heading_data: function() {

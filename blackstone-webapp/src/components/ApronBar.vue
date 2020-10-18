@@ -51,6 +51,7 @@
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.table = a"
+      @status_editor="handle_status_editor"
     />
 
     <ApronTreeView v-show="!use_table"
@@ -64,6 +65,7 @@
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.tree = a"
+      :statusObj="status_editor"
     />
 
     <ApronEarnedDisplay
@@ -261,6 +263,8 @@ export default {
       },
 
       use_table: false,
+
+      status_editor: new Status(),
     }
   },
 
@@ -623,6 +627,10 @@ export default {
 
     switch_color: function(new_color) {
       this.show_color = new_color;
+    },
+
+    handle_status_editor: function(editor) {
+      this.status_editor = editor;
     },
   }
 }

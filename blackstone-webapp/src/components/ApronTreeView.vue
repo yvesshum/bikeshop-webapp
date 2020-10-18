@@ -30,8 +30,14 @@
                     <div style="flex: 1;">
                       <span style="font-size: 22px">{{section.apron.apron}} Apron</span>
                       <b-progress :max="section.apron.num_total">
-                        <b-progress-bar :value="section.apron.num_achieved" animated :variant="(section.apron.num_achieved == section.apron.num_total) || (section.apron.earned != false) ? 'success' : 'primary'">
+                        <b-progress-bar :value="section.apron.num_achieved - section.apron.num_rem" animated :variant="(section.apron.earned != false) ? 'success' : 'primary'">
                           <span v-if="section.apron.earned != false || section.apron.apron == showColor">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>
+                        </b-progress-bar>
+                        <b-progress-bar :value="section.apron.num_add" animated variant="warning">
+                          <span v-if="section.apron.num_add > 0">+{{section.apron.num_add}}</span>
+                        </b-progress-bar>
+                        <b-progress-bar :value="section.apron.num_rem" animated variant="danger">
+                          <span v-if="section.apron.num_rem > 0">-{{section.apron.num_rem}}</span>
                         </b-progress-bar>
                       </b-progress>
                       <span>{{get_earned_msg(section.apron)}}</span>
@@ -50,15 +56,26 @@
                         <span style="font-size: 24px">{{box.category}}</span>
                         <br />
                         <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-                        <b-progress :value="box.num_achieved" :max="box.num_total" animated
-                          :variant="box.num_achieved == box.num_total ? 'success' : 'primary'"
-                        ></b-progress>
+                        <b-progress :max="box.num_total">
+                          <b-progress-bar :value="box.num_achieved - box.num_rem" animated :variant="box.num_achieved - box.num_rem + box.num_add == box.num_total ? 'success' : 'primary'">
+                          </b-progress-bar>
+                          <b-progress-bar :value="box.num_add" animated variant="warning">
+                          </b-progress-bar>
+                          <b-progress-bar :value="box.num_rem" animated variant="danger">
+                          </b-progress-bar>
+                        </b-progress>
                       </div>
                     </b-card-body>
                   </b-card>
 
                   <b-list-group v-else-if="box.type == 'skills'" class="tree-skills-content">
-                    <b-list-group-item v-for="skill in box.skills" :variant="skill.achieved ? 'success' : 'light'"><span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}</b-list-group-item>
+                    <b-list-group-item v-for="skill in box.skills"
+                      :variant="list_item_variant(box, skill)"
+                      @click="toggle_skill(box, skill)"
+                      style="cursor: pointer;"
+                    >
+                      <span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}
+                    </b-list-group-item>
                   </b-list-group>
 
                 </div>
@@ -146,6 +163,8 @@ import firebase_app from 'firebase/app';
 import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 
+import {Status} from '@/scripts/Status.js';
+
 let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
 let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
 
@@ -190,6 +209,10 @@ export default {
     showColor: {
       type: String,
       default: null,
+    },
+
+    statusObj: {
+      type: Object,
     },
   },
 
@@ -262,8 +285,11 @@ export default {
         // Initialize an array to hold category & skill list boxes
         var content = [];
 
+        // Variables to track the running totals of skills possible, achieved, added, and removed
         var total = 0;
         var achieved = 0;
+        var num_add = 0;
+        var num_rem = 0;
 
         Object.keys(this.apron_skills[apron]).forEach((category, n) => {
 
@@ -273,6 +299,22 @@ export default {
           total    += tot_list.length;
           achieved += ach_list.length;
 
+          // Calculate the number of skills in this category that the user wants to add
+          var num_add_temp = tot_list.filter(skill => {
+            let id = this.statusObj.get_id({ name: skill, category, color: apron });
+            return this.statusObj.is_status(id, Status.ADD);
+          }).length;
+
+          // Calculate the number of skills in this category that the user wants to remove
+          var num_rem_temp = tot_list.filter(skill => {
+            let id = this.statusObj.get_id({ name: skill, category, color: apron });
+            return this.statusObj.is_status(id, Status.REM);
+          }).length;
+
+          // Add these to the running total
+          num_add += num_add_temp;
+          num_rem += num_rem_temp;
+
           // Create the category tile
           content.push({
             type: "category",
@@ -281,6 +323,8 @@ export default {
             bottom: n == span - 1,
             num_achieved: ach_list.length,
             num_total:    tot_list.length,
+            num_add: num_add_temp,
+            num_rem: num_rem_temp,
           });
 
           // Create the skills list tile
@@ -299,6 +343,7 @@ export default {
           apron, span, earned,
           num_total:    total,
           num_achieved: achieved,
+          num_add, num_rem,
         };
 
         // Push the apron tab onto the result
@@ -461,6 +506,39 @@ export default {
         return []
       }
       return this.achievedSkills[apron].Skills[category];
+    },
+
+    list_item_variant: function(box, skill) {
+      let id = this.statusObj.get_id({
+        name: skill.skill,
+        category: box.category,
+        color: box.apron,
+      });
+
+      // Use a different color for each possible value
+      switch (this.statusObj.get_status(id)) {
+
+        case Status.USE:
+          return "success";
+
+        case Status.REM:
+          return "danger";
+
+        case Status.ADD:
+          return 'warning';
+
+        default:
+          return "light";
+      }
+    },
+
+    toggle_skill: function(box, skill) {
+      let id = this.statusObj.get_id({
+        name: skill.skill,
+        category: box.category,
+        color: box.apron,
+      });
+      this.statusObj.set_status(id, Status.TOGGLE);
     },
 
     accept_changes: function() {

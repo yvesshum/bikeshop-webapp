@@ -139,7 +139,7 @@ var status_fields = [
   // Special temporary/non-standard values
   "USE_T", "ADD_T", "REM_T",
   // Special update values
-  "UPDATE", "RESET",
+  "UPDATE", "RESET", "TOGGLE",
   // Special groupings of values
   "X", "O", "U", "N", "T", "C"
 ];
@@ -208,6 +208,17 @@ const STATUS_MAPS = {
     [Status.NOT]: Status.ADD,
     [Status.REM]: Status.USE,
     [Status.REM_T]: Status.USE_T,
+  },
+
+  // Toggle status
+  [Status.TOGGLE]: {
+    [Status.ADD]: Status.NOT,
+    [Status.ADD_T]: undefined,
+    [Status.USE]: Status.REM,
+    [Status.USE_T]: Status.REM_T,
+    [Status.REM]: Status.USE,
+    [Status.REM_T]: Status.USE_T,
+    [Status.NOT]: Status.ADD,
   },
 
   mapped_value: function(key, type) {

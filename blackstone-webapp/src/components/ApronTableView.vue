@@ -13,6 +13,7 @@
       @selected="s => selected_skills = s"
       @changes="handle_changes"
       @table="handle_table"
+      @status_editor="handle_status_editor"
     />
 
   </div>
@@ -374,6 +375,10 @@ export default {
 
     handle_table: function(table) {
       this.table = table;
+    },
+
+    handle_status_editor: function(editor) {
+      this.$emit("status_editor", editor);
     },
 
     accept_changes: function() {
