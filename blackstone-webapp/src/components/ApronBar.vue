@@ -114,21 +114,25 @@
         @load_complete="a => displays.earned = a"
       />
 
-      <b-button v-if="apron_level < apron_colors.length-1"
-        @click="increment_apron"
-        variant="secondary"
-        style="margin: 5px;"
-      >
-        Increment Color
-      </b-button>
+      <div v-show="allow_edits">
 
-      <b-button v-if="apron_level > 0"
-        @click="decrement_apron"
-        variant="secondary"
-        style="margin: 5px;"
-      >
-        Decrement Color
-      </b-button>
+        <b-button v-if="apron_level < apron_colors.length-1"
+          @click="increment_apron"
+          variant="secondary"
+          style="margin: 5px;"
+        >
+          Increment Color
+        </b-button>
+
+        <b-button v-if="apron_level > 0"
+          @click="decrement_apron"
+          variant="secondary"
+          style="margin: 5px;"
+        >
+          Decrement Color
+        </b-button>
+
+      </div>
 
     </div>
 

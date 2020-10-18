@@ -87,11 +87,11 @@
 
             </b-tab>
 
-            <template v-slot:tabs-start>
+            <template v-slot:tabs-start v-if="allow_edits">
               <b>Show Apron Skills</b>
             </template>
 
-            <template v-slot:tabs-end>
+            <template v-slot:tabs-end v-if="allow_edits">
               <br />
               <b>Change Apron Level</b>
               <slot name="increment_buttons"></slot>
@@ -100,7 +100,7 @@
         </b-card>
       </b-card-body>
 
-      <b-card-footer>
+      <b-card-footer v-show="allow_edits">
         <div style="float:left; margin: 5px;">
           <i>Click on a skill to add or remove it from the youth's profile.</i>
         </div>

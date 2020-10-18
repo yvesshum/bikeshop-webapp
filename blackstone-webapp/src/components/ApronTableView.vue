@@ -17,7 +17,7 @@
       @status_editor="handle_status_editor"
     />
 
-    <slot name="save_buttons"></slot>
+    <slot name="save_buttons" v-if="allow_edits"></slot>
 
   </div>
 </template>
