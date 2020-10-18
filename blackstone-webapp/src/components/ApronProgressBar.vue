@@ -2,7 +2,9 @@
   <div class="apron_progress_bar">
     <ApronImg 
       v-for="(apron, n) in colors" style="display:inline-block;"
-      :color="apron.color" :size="size" :active="apron_active(n)" :name="apron_name(n)"
+      :color="apron.color" :size="size" :name="apron_name(n)"
+      :status="apron_status(n)"
+      :showName="showName" :showStatus="showStatus"
       @mousehover="t => mouse_hover(n, t)" :class="{hovered: hover[n]}"
       @click="val => mouse_click(n, val)"
     />
@@ -54,6 +56,9 @@ export default {
       type: [String, Array],
       default: null,
     },
+
+    showName:   { type: Boolean, default: true, },
+    showStatus: { type: Boolean, default: true, },
   },
 
   data: function() {
@@ -63,15 +68,21 @@ export default {
   },
 
   methods: {
-    apron_active: function(n) {
+    apron_status: function(n) {
       if (this.level != null) {
         if (typeof this.level == "string") {
-          return this.level == "all";
+          return this.level == "all" ? "achieved" : "locked";
         } else {
-          return n <= this.level;
+          if (n < this.level) {
+            return "achieved";
+          }
+          else if (n == this.level) {
+            return "working";
+          }
+          return "locked";
         }
       }
-      return false;
+      return undefined;
     },
 
     apron_name: function(n) {
@@ -85,7 +96,7 @@ export default {
       this.$emit("hover", this.hover);
     },
 
-    mouse_click: function(n, active) {
+    mouse_click: function(n, status) {
       let curr = this.hover[n];
 
       switch (this.selectType) {

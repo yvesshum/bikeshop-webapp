@@ -12,6 +12,7 @@
 <script>
 import ApronImage from "@/assets/apron_image.png";
 import ApronEmpty from "@/assets/apron_empty_lock.png";
+import ApronCheck from "@/assets/apron_checked.png";
 
 export default {
 	name: 'apron_img',
@@ -20,7 +21,13 @@ export default {
 		color:    { type: String,  default: "none",   },
 		name:     { type: String,  default: "",   },
 		size:     { type: Number,  default: 64,   },
-		active:   { type: Boolean, default: true, },
+		status:   {
+			type: String,
+			validator: (str) => {
+				return ["achieved", "working", "locked"].includes(str);
+			},
+			default: "working",
+		},
 		showName: { type: Boolean, default: true, },
 		showStatus: { type: Boolean, default: true, },
 	},
@@ -30,10 +37,12 @@ export default {
 			// Image objects to hold the achieved an unachieved apron displays
 			apron_image: new Image(),
 			apron_empty: new Image(),
+			apron_check: new Image(),
 
 			// Boolean values to indicate whether the images have loaded yet
 			apron_image_loaded: false,
 			apron_empty_loaded: false,
+			apron_check_loaded: false,
 		}
 	},
 
@@ -41,10 +50,12 @@ export default {
 		// Load both images from assets
 		this.apron_image.src = ApronImage;
 		this.apron_empty.src = ApronEmpty;
+		this.apron_check.src = ApronCheck;
 
 		// When each image loads, update its respective boolean tracker
 		this.apron_image.onload = () => { this.apron_image_loaded = true; };
 		this.apron_empty.onload = () => { this.apron_empty_loaded = true; };
+		this.apron_check.onload = () => { this.apron_check_loaded = true; };
 
 		// Manually set the size of the canvas (see note in Watcher function for size)
 		let canvas = this.$refs.canvas;
@@ -58,8 +69,8 @@ export default {
 			this.draw_image();
 		},
 
-		// When the active status changes, re-render the image
-		active: function() {
+		// When the status changes, re-render the image
+		status: function() {
 			this.draw_image();
 		},
 
@@ -85,23 +96,31 @@ export default {
 	computed: {
 		// Tell whether both image assets are loaded or not
 		loaded: function() {
-			return this.apron_image_loaded && this.apron_empty_loaded;
+			return this.apron_image_loaded && this.apron_empty_loaded && this.apron_check_loaded;
 		},
 
 		// Return the apron image currently being used (the active one or the inactive one)
 		current_image: function() {
-			return (this.active ? this.apron_image : this.apron_empty);
+			switch (this.status) {
+				case "achieved":
+					return this.apron_check;
+
+				case "locked":
+					return this.apron_empty;
+
+				case "working":
+				default:
+					return this.apron_image;
+			}
 		},
 
 		popup_msg: function() {
-			if (this.showName && this.name.length > 0 && this.showStatus) {
-				let achieved_msg = "";
-					if (this.active) {
-						achieved_msg += "(Complete)";
-					} else {
-						achieved_msg += "(Locked)";
-					}
-				return `${this.name} Apron<br />${achieved_msg}`;
+			if (this.showName && this.name.length > 0) {
+				let msg = `${this.name} Apron`;
+				if (this.showStatus) {
+					msg += `<br />(${this.status.charAt(0).toUpperCase()}${this.status.slice(1)})`;
+				}
+				return msg;
 			}
 			return '';
 		},
@@ -252,7 +271,7 @@ export default {
 		},
 
 		mouseclick: function() {
-			this.$emit('click', this.active);
+			this.$emit('click', this.status);
 		},
 	},
 }

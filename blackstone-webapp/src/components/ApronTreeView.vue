@@ -28,7 +28,7 @@
                       <ApronImg
                         :color="get_color_val(section.apron.apron)"
                         :size="48"
-                        :active="section.apron.earned != false || section.apron.apron == currentColor"
+                        :status="get_apron_img_status(section)"
                       />
                     </div>
                     <div style="flex: 1;">
@@ -479,6 +479,20 @@ export default {
 
     get_color_val: function(color) {
       return this.get_apron_property(color, 'color', null);
+    },
+
+    get_apron_img_status: function(section) {
+      if (section.apron.earned != false) {
+        return "achieved";
+      }
+
+      else if (section.apron.apron == this.currentColor) {
+        return "working";
+      }
+
+      else {
+        return "locked";
+      }
     },
 
     get_apron_tab_class: function(section, index) {
