@@ -48,6 +48,7 @@
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
       :showColor="show_color"
+      :allowEdits="allow_edits"
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.table = a"
@@ -62,6 +63,7 @@
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
       :showColor="show_color"
+      :allowEdits="allow_edits"
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.tree = a"
@@ -420,7 +422,7 @@ export default {
 
 
     allow_edits: function() {
-      return this.allowEdits != undefined;
+      return !(this.allowEdits == false || this.allowEdits == undefined);
     },
   },
 

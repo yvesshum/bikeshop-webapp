@@ -72,7 +72,7 @@
                     <b-list-group-item v-for="skill in box.skills"
                       :variant="list_item_variant(box, skill)"
                       @click="toggle_skill(box, skill)"
-                      style="cursor: pointer;"
+                      :style="{cursor: allow_edits ? 'pointer' : undefined}"
                     >
                       <span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}
                     </b-list-group-item>
@@ -176,6 +176,11 @@ export default {
   },
 
   props: {
+    allowEdits: {
+      type: Boolean,
+      default: false,
+    },
+
     loadApronSkills: {
       type: Boolean,
       default: true,
@@ -351,6 +356,10 @@ export default {
       });
 
       return result;
+    },
+
+    allow_edits: function() {
+      return !(this.allowEdits == false || this.allowEdits == undefined);
     },
   },
 

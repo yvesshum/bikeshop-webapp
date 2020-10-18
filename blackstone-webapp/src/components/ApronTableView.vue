@@ -8,7 +8,7 @@
       :fullData="apron_skills_table"
       :headingData="headers"
       :args="table_args"
-      editable
+      :editable="allow_edits"
       :matchBy="['name', 'category', 'color']"
       @selected="s => selected_skills = s"
       @changes="handle_changes"
@@ -205,7 +205,7 @@ export default {
     },
 
     allow_edits: function() {
-      return this.allowEdits != undefined;
+      return !(this.allowEdits == false || this.allowEdits == undefined);
     },
 
 

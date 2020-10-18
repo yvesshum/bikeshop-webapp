@@ -50,35 +50,6 @@ export default {
 
       table: null,
 
-      achieved_column: {
-        title:"Achieved?",
-        field:"achieved",
-        formatter:"tickCross",
-        formatterParams: {crossElement: false},
-        width: 115,
-        align: "center",
-        headerSort: false,
-        editable: this.editable != undefined,
-        editor: 'tickCross',
-        cellEdited: cell => {
-          var data = cell.getData();
-          var new_status = data.achieved ? Status.O : Status.X;
-          var row_id = this.get_row_id(data);
-
-          this.row_status.set(row_id, new_status);
-
-          var add = this.table.getRows().filter(row =>
-            this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
-          );
-
-          var rem = this.table.getRows().filter(row =>
-            this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
-          );
-
-          this.$emit("changes", {add, rem});
-        },
-      },
-
       default_table_args: {
         index: this.matchBy,
 
@@ -125,7 +96,7 @@ export default {
         return this.row_status[key];
       },
       set_status: (key, new_status) => {
-        return this.row_status.set(key, new_status);
+        if (this.allow_edits) return this.row_status.set(key, new_status);
       },
       get_id: this.get_row_id,
     });
@@ -179,6 +150,52 @@ export default {
 
     table_args: function() {
       return {...this.default_table_args, ...this.args(this.cell_is_status)};
+    },
+
+    // This is computed so allow_edits works
+    achieved_column: function() {
+      return {
+
+        // Tracking the "achieved" field, added by this component
+        // TODO: Make this more robust, in case it already exists in the incoming data?
+        title: "Achieved?",
+        field: "achieved",
+
+        // Format it as a check or a blank
+        formatter: "tickCross",
+        formatterParams: {crossElement: false},
+        width: 115,
+        align: "center",
+
+        // Don't bother with sorting by achieved colun
+        // TODO: Allow filtering instead?
+        headerSort: false,
+
+        // Editing - Update the Status object when the column is (un)checked
+        editable: this.allow_edits,
+        editor: this.allow_edits ? 'tickCross' : undefined,
+        cellEdited: cell => {
+          var data = cell.getData();
+          var new_status = data.achieved ? Status.O : Status.X;
+          var row_id = this.get_row_id(data);
+
+          this.row_status.set(row_id, new_status);
+
+          var add = this.table.getRows().filter(row =>
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
+          );
+
+          var rem = this.table.getRows().filter(row =>
+            this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
+          );
+
+          this.$emit("changes", {add, rem});
+        },
+      };
+    },
+
+    allow_edits: function() {
+      return !(this.editable == false || this.editable == undefined);
     },
   },
 
