@@ -371,7 +371,9 @@ export default {
   watch: {
 
     selected_tab: function(new_tab) {
-      this.$emit("switch_color", this.tree_tabs[new_tab].apron.apron);
+      if (this.tree_tabs != undefined && this.tree_tabs[new_tab] != undefined) {
+        this.$emit("switch_color", this.tree_tabs[new_tab].apron.apron);
+      }
     },
 
     showColor: function(new_color) {
