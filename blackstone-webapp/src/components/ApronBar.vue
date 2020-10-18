@@ -139,23 +139,31 @@
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
       <template slot="modal-title">
-        Please confirm the following.
+        <span style="color:black;">Please confirm the following.</span>
       </template>
 
-      <h4>The apron color for <em>{{ youth_name }}</em>&nbsp;<small>(ID: {{ youth_id }})</small> will be {{change_level_effect > 0 ? 'increased' : 'decreased'}} by {{Math.abs(change_level_effect)}}:</h4>
+      <div v-if="change_level_effect > 0">
+        {{youth_name}} <small>(ID: {{ youth_id }})</small> will be awarded their <b>{{get_apron_property(apron_level+1, 'name')}} Apron</b>{{apron_level+1 == apron_colors.length-1 ? "." : ","}}
+        <span v-if="apron_level+1 != apron_colors.length-1">and will begin working toward their <b>{{get_apron_property(apron_level+1 + change_level_effect, 'name')}} Apron</b>.</span>
+      </div>
+
+      <div v-else>
+        {{youth_name}} <small>(ID: {{ youth_id }})</small> will have their <b>{{achieved_color}} Apron</b> taken away, making the <b>{{get_apron_property(apron_level-1, 'name')}} Apron</b> their highest apron once again.
+      </div>
+
       <br />
 
-      <table class="clm_table"><tr>
-        <td>
-          <ApronImg :color="get_apron_property(apron_level, 'color')" :size="48" />
-          <b>{{get_apron_property(apron_level, 'name')}}</b>
-        </td>
-        <td class="clm_arrow">&#8658;</td>
-        <td>
-          <ApronImg :color="get_apron_property(apron_level + change_level_effect, 'color')" :size="48" />
-          <b>{{get_apron_property(apron_level + change_level_effect, 'name')}}</b>
-        </td>
-      </tr></table>
+      <table class="clm_table">
+        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1" /></tr>
+        <tr class="clm_arrow">&dArr;</tr>
+        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1 + change_level_effect" /></tr>
+      </table>
+
+      <br />
+
+      <div v-if="change_level_effect < 0">
+        This will not change the skills they have earned.
+      </div>
     </b-modal>
 
     <b-modal v-model="change_skills_modal">
@@ -555,20 +563,41 @@ export default {
     },
 
     accept_level_modal: function() {
-      var new_color = this.get_apron_property(this.apron_level + this.change_level_effect, 'name');
 
+      // Initialize changes object
       var changes = {
-        "Apron Color": new_color,
+        "Apron Skills": this.achieved_skills,
+        "Apron Color": this.get_apron_property(this.apron_level + this.change_level_effect, 'name'),
       };
 
-      console.log("Saving changes to database:", changes);
+      // If decrementing, set Achieved back to false
+      if (this.change_level_effect == -1) {
+        changes["Apron Skills"][this.apron_color].Achieved = false;
+      }
 
-      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
-        window.alert("Error: " + err);
-        return null;
-      });
+      // If incrementing, save the current time
+      else {
+        var next_color = this.get_apron_property(this.apron_level + 1, 'name');
+        changes["Apron Skills"][next_color].Achieved = firebase.firestore.Timestamp.fromDate(new Date());
 
-      this.apron_color = new_color;
+        // // The following would assign the timestamp on the server side
+        // // The problem is, it triggers two onSnapshot events, once for the initial set and once when the value is assigned by the server.  This doesn't play well with the RefTracker, so assigning on the client side seems better to me.
+        // changes["Apron Skills"][next_color].Achieved = firebase.firestore.FieldValue.serverTimestamp();
+      }
+
+      // Save changes to firebase
+        this.$emit("save_changes", {
+          changes,
+
+          // Nothing to do on success - updated document handles it all
+          success: () => {},
+
+          // Error updating database
+          error: () => {
+            window.alert("Error: " + err);
+            return null;
+          }
+        });
     },
 
     show_skills_modal: function(val) {
