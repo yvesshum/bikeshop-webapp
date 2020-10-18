@@ -10,6 +10,7 @@
       :args="table_args"
       :editable="allow_edits"
       :matchBy="['name', 'category', 'color']"
+      :showHeaderFilter="true"
       @selected="s => selected_skills = s"
       @changes="handle_changes"
       @table="handle_table"
@@ -139,6 +140,10 @@ export default {
       }
     },
 
+    skill_categories: function() {
+      return this.apron_skills == undefined ? [] : Object.keys(this.apron_skills);
+    },
+
     colors_to_indices: function() {
       var result = {};
       for (let i in this.apronColors) {
@@ -223,10 +228,24 @@ export default {
         return a.localeCompare(b);
       }
 
+      var category_options = {};
+      this.skill_categories.forEach(category => {
+        category_options[category] = category;
+      });
+
       // The headers
       return [
-        {title:"Name", field:"name", sorter: sorter},
-        {title:"Category", field:"category", width: 200, sorter: sorter},
+        {
+          title:"Name", field:"name",
+          sorter: sorter,
+          headerFilter: "input"
+        },
+        {
+          title:"Category", field:"category",
+          width: 200, sorter: sorter,
+          editor: "select", headerFilter: true,
+          headerFilterParams: category_options
+        },
       ];
     },
 

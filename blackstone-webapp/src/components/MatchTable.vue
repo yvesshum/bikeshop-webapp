@@ -42,6 +42,11 @@ export default {
     },
 
     args: {},
+
+    showHeaderFilter: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data: function() {
@@ -167,9 +172,10 @@ export default {
         width: 115,
         align: "center",
 
-        // Don't bother with sorting by achieved colun
-        // TODO: Allow filtering instead?
+        // Don't bother with sorting by achieved column, but do allow optional filtering
         headerSort: false,
+        headerFilter: this.showHeaderFilter ? "tickCross" : undefined,
+        headerFilterParams: {"tristate":true},
 
         // Editing - Update the Status object when the column is (un)checked
         editable: this.allow_edits,
