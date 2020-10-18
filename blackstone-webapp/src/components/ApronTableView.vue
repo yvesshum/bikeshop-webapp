@@ -318,10 +318,10 @@ export default {
 
   watch: {
     showColor: function() {
-      if (this.swapping_color) {
-        this.swapping_color = false;
-        return;
-      }
+      // if (this.swapping_color) {
+      //   this.swapping_color = false;
+      //   return;
+      // }
       if (this.table == null) return "";
       this.table.getGroups().forEach(group => {
         if (group.getKey() == this.showColor) {
