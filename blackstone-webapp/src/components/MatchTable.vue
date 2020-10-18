@@ -101,7 +101,11 @@ export default {
         return this.row_status[key];
       },
       set_status: (key, new_status) => {
-        if (this.allow_edits) return this.row_status.set(key, new_status);
+        if (this.allow_edits) {
+          var temp = this.row_status.set(key, new_status);
+          this.emit_changes();
+          return temp;
+        }
       },
       get_id: this.get_row_id,
     });
@@ -186,16 +190,7 @@ export default {
           var row_id = this.get_row_id(data);
 
           this.row_status.set(row_id, new_status);
-
-          var add = this.table.getRows().filter(row =>
-            this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
-          );
-
-          var rem = this.table.getRows().filter(row =>
-            this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
-          );
-
-          this.$emit("changes", {add, rem});
+          this.emit_changes();
         },
       };
     },
@@ -206,6 +201,18 @@ export default {
   },
 
   methods: {
+
+    emit_changes: function() {
+      var add = this.table.getRows().filter(row =>
+        this.row_status.is_status(this.get_row_id(row.getData()), Status.ADD)
+      );
+
+      var rem = this.table.getRows().filter(row =>
+        this.row_status.is_status(this.get_row_id(row.getData()), Status.REM)
+      );
+
+      this.$emit("changes", {add, rem});
+    },
 
     cell_is_status: function(cell_data, status) {
       return this.row_status.is_status(this.get_row_id(cell_data), status);
