@@ -25,7 +25,11 @@
 
                   <b-card-body class="tree-card-body-centered" style="width: 100%;">
                     <div style="flex: 0 0 25%;">
-                      <ApronImg :color="get_color_val(section.apron.apron)" :size="48" />
+                      <ApronImg
+                        :color="get_color_val(section.apron.apron)"
+                        :size="48"
+                        :active="section.apron.earned != false || section.apron.apron == currentColor"
+                      />
                     </div>
                     <div style="flex: 1;">
                       <span style="font-size: 22px">{{section.apron.apron}} Apron</span>
