@@ -90,7 +90,7 @@ export default {
 		},
 
 		balance: function() {
-			if (this.profile == null) return null;
+			if (this.profile == null) return 0;
 			return this.earned - this.spent;
 		},
 
