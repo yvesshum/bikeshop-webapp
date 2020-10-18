@@ -27,7 +27,7 @@
           :seasons="seasons"
           v-bind="period_metadata"
           disable_selection
-          style="max-width: 95%; margin:auto"
+          style="max-width: 95%; margin: auto; padding-top: 20px;"
         />
       </b-tab>
 
