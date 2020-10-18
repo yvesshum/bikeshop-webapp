@@ -104,13 +104,33 @@
 
     <br />
 
-    <ApronEarnedDisplay v-show="use_table"
-      :loadApronInfo="false"
-      :apronColors="apron_colors"
-      :skillData="achieved_skills"
-      :achievedColor="achieved_color"
-      @load_complete="a => displays.earned = a"
-    />
+    <div v-show="use_table">
+
+      <ApronEarnedDisplay
+        :loadApronInfo="false"
+        :apronColors="apron_colors"
+        :skillData="achieved_skills"
+        :achievedColor="achieved_color"
+        @load_complete="a => displays.earned = a"
+      />
+
+      <b-button v-if="apron_level < apron_colors.length-1"
+        @click="increment_apron"
+        variant="secondary"
+        style="margin: 5px;"
+      >
+        Increment Color
+      </b-button>
+
+      <b-button v-if="apron_level > 0"
+        @click="decrement_apron"
+        variant="secondary"
+        style="margin: 5px;"
+      >
+        Decrement Color
+      </b-button>
+
+    </div>
 
 
     <b-modal v-model="change_level_modal" @ok="accept_level_modal">
