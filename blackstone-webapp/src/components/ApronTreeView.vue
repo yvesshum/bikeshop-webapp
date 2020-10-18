@@ -31,7 +31,7 @@
                       <span style="font-size: 22px">{{section.apron.apron}} Apron</span>
                       <b-progress :max="section.apron.num_total">
                         <b-progress-bar :value="section.apron.num_achieved - section.apron.num_rem" animated :variant="(section.apron.earned != false) ? 'success' : 'primary'">
-                          <span v-if="section.apron.earned != false || section.apron.apron == showColor">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>
+                          <span v-if="section.apron.num_achieved > 0">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>
                         </b-progress-bar>
                         <b-progress-bar :value="section.apron.num_add" animated variant="warning">
                           <span v-if="section.apron.num_add > 0">+{{section.apron.num_add}}</span>
@@ -207,6 +207,11 @@ export default {
     },
 
     achievedColor: {
+      type: String,
+      default: "",
+    },
+
+    currentColor: {
       type: String,
       default: "",
     },
@@ -495,8 +500,8 @@ export default {
 
     get_earned_msg: function(apron) {
       if (apron.earned == false) {
-        if (apron.apron == this.showColor) {
-          return "Current Level";
+        if (apron.apron == this.currentColor) {
+          return "Currently Earning";
         }
         return "";
       }

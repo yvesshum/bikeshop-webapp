@@ -62,6 +62,7 @@
       :apronColors="apron_colors"
       :achievedSkills="achieved_skills"
       :achievedColor="achieved_color"
+      :currentColor="next_apron_color"
       :showColor="show_color"
       :allowEdits="allow_edits"
       @switch_color="switch_color"
