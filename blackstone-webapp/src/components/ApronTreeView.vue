@@ -15,6 +15,7 @@
             vertical pills
             nav-wrapper-class="w-25"
             active-nav-item-class="font-weight-bold"
+            @changed="changed_tabs"
           >
             <b-tab v-for="(section, n) in tree_tabs"
               :title-link-class="get_apron_tab_class(section, n)"
@@ -329,19 +330,12 @@ export default {
 
   watch: {
 
-    selected_tab: function(new_tab) {
-      if (this.tree_tabs != undefined && this.tree_tabs[new_tab] != undefined) {
-        this.$emit("switch_color", this.tree_tabs[new_tab].apron.apron);
-      }
+    selected_tab: function() {
+      this.match_color_to_tab();
     },
 
-    showColor: function(new_color) {
-      for (var i = 0; i < this.tree_tabs.length; i++) {
-        if (this.tree_tabs[i].apron.apron == new_color) {
-          this.selected_tab = i;
-          return;
-        }
-      }
+    showColor: function() {
+      this.match_tab_to_color();
     },
   },
 
@@ -385,6 +379,48 @@ export default {
         });
       });
     },
+
+
+    // If the display tabs change, reset the display to be open to the apron the youth is currently working toward
+    // Mostly useful when they're first loaded - as far as I can tell, before they're loaded, the b-tabs component won't let the variable it's modeling (selected_tab) go above 0, which has the effect of always setting the active tab back to the first apron.
+    // This way, once they load, they ask the parent to ignore whatever they just did and go back to the original show color
+    // This could also be achieved by emitting "switch_color" with the youth's next apron, with the caveat that the black apron should loop back on itself, but I think it's nicer to just let the parent handle that -- ideally, then, the next_apron code can be contained in one place
+    changed_tabs: function(currentTabs, previousTabs) {
+      this.$emit("reset_show_color", null);
+      this.match_tab_to_color();
+    },
+
+
+    // Update this.selected_tab to match the current showColor
+    match_tab_to_color: function() {
+
+      // Loop through the tabs object until the tab with the desired color is found
+      for (var i = 0; i < this.tree_tabs.length; i++) {
+        if (this.tree_tabs[i].apron.apron == this.showColor) {
+
+          // Save that index to selected_tab and end the function call
+          this.selected_tab = i;
+          return;
+        }
+      }
+    },
+
+    // Update this.showColor to match the passed tab
+    match_color_to_tab: function() {
+
+      // Check that the parts of the tabs object we need exist
+      if (this.tree_tabs != undefined && this.tree_tabs[this.selected_tab] != undefined) {
+
+        // Grab the color value from the tabs object
+        var new_color = this.tree_tabs[this.selected_tab].apron.apron;
+
+        // No point in emitting the switch if showColor already matches the tab
+        if (new_color != this.showColor) {
+          this.$emit("switch_color", new_color);
+        }
+      }
+    },
+
 
     apron_active: function(n) {
       return (this.apron_level !== null && n <= this.apron_level);

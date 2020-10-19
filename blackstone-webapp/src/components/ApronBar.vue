@@ -46,6 +46,7 @@
       @switch_color="switch_color"
       @changed="c => changed_skills = c"
       @load_complete="a => displays.tree = a"
+      @reset_show_color="reset_show_color"
       :statusObj="status_editor"
     >
       <template slot="header">
@@ -495,7 +496,7 @@ export default {
 
     initialize_data: function() {
       this.checked_data = this.get_profile_field("Apron Skills", []);
-      this.show_color = this.is_final_color ? this.apron_color : this.next_apron_color;
+      this.reset_show_color();
     },
 
     ensure_data_loaded: async function() {
@@ -703,6 +704,10 @@ export default {
 
     switch_color: function(new_color) {
       this.show_color = new_color;
+    },
+
+    reset_show_color: function() {
+      this.switch_color(this.is_final_color ? this.apron_color : this.next_apron_color);
     },
 
     handle_status_editor: function(editor) {
