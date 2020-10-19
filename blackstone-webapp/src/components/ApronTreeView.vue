@@ -33,8 +33,8 @@
                     </div>
                     <div style="flex: 1;">
                       <span style="font-size: 22px">{{section.apron.apron}} Apron</span>
-                      <b-progress :max="section.apron.num_total">
-                        <b-progress-bar :value="section.apron.num_achieved - section.apron.num_rem" animated :variant="(section.apron.earned != false) ? 'success' : 'primary'">
+                      <b-progress v-if="!section_locked(section)" :max="section.apron.num_total">
+                        <b-progress-bar :value="section.apron.num_achieved - section.apron.num_rem" animated :variant="get_apron_progress_variant(section)">
                           <span v-if="section.apron.num_achieved > 0">{{section.apron.num_achieved}} / {{section.apron.num_total}}</span>
                         </b-progress-bar>
                         <b-progress-bar :value="section.apron.num_add" animated variant="warning">
@@ -58,16 +58,17 @@
                     <b-card-body class="tree-card-body-centered">
                       <div style="width: 100%;">
                         <span style="font-size: 24px">{{box.category}}</span>
-                        <br />
-                        <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
-                        <b-progress :max="box.num_total">
-                          <b-progress-bar :value="box.num_achieved - box.num_rem" animated :variant="box.num_achieved - box.num_rem + box.num_add == box.num_total ? 'success' : 'primary'">
-                          </b-progress-bar>
-                          <b-progress-bar :value="box.num_add" animated variant="warning">
-                          </b-progress-bar>
-                          <b-progress-bar :value="box.num_rem" animated variant="danger">
-                          </b-progress-bar>
-                        </b-progress>
+                        <div v-if="!section_locked(section)">
+                          <span>{{box.num_achieved}} / {{box.num_total}} Achieved</span>
+                          <b-progress :max="box.num_total">
+                            <b-progress-bar :value="box.num_achieved - box.num_rem" animated :variant="box.num_achieved - box.num_rem + box.num_add == box.num_total ? 'success' : 'primary'">
+                            </b-progress-bar>
+                            <b-progress-bar :value="box.num_add" animated variant="warning">
+                            </b-progress-bar>
+                            <b-progress-bar :value="box.num_rem" animated variant="danger">
+                            </b-progress-bar>
+                          </b-progress>
+                        </div>
                       </div>
                     </b-card-body>
                   </b-card>
@@ -389,6 +390,10 @@ export default {
       return (this.apron_level !== null && n <= this.apron_level);
     },
 
+    section_locked: function(section) {
+      return section.apron.earned == false && section.apron.apron != this.currentColor;
+    },
+
     // get_apron_property: function(level, prop) {
     //   if (this.apron_colors == null || this.apron_colors[level] == null) return "";
     //   return this.apron_colors[level][prop];
@@ -434,9 +439,23 @@ export default {
       return [
         'text-dark',
         this.selected_tab == index
-          ? section.apron.earned != false ? 'bg-success' : 'bg-primary'
+          ? `bg-${this.get_apron_progress_variant(section)}`
           : 'bg-light',
       ];
+    },
+
+    get_apron_progress_variant: function(section) {
+      if (section.apron.earned != false) {
+        return "success";
+      }
+
+      else if (section.apron.apron == this.currentColor) {
+        return "primary";
+      }
+
+      else {
+        return "secondary";
+      }
     },
 
     get_box_class: function(box) {
