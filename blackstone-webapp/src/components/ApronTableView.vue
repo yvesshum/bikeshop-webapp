@@ -105,6 +105,8 @@ export default {
       loaded_apron_colors: [],
 
       swapping_color: false,
+
+      is_filtered: false,
     }
   },
 
@@ -268,15 +270,38 @@ export default {
           // Allow multiple selection with ctrl and shift keys
           selectable: true,
 
+          // If the data is being filtered, open all the columns; otherwise, just show one
+          // Using nextTick: We don't specify anywhere here what the groups are, instead letting the table make them based on what colors are represented in the skills.  This is good because we don't have to worry about a Gray section (which wouldn't have any skills), and when we filter data it'll automatically remove any groups that don't have any skills passing the filter. The flip side is that those groups don't exist anymore, so if we switch the filtering status and try to operate on a group that had been removed, it won't work.  Using nextTick gives it a time to recreate all the groups before we try to operate on them, so we can be sure they all exist
+          dataFiltered: (filters, rows) => {
+
+            // In case the table hasn't been emitted yet
+            if (this.table == null) return;
+
+            // Have to do this to get the header filters - the filters argument only looks for programmatic filters
+            var all_filters = this.table.getFilters(true);
+
+            // If any filters have been applied, open all the groups
+            if (all_filters.length > 0) {
+              this.$nextTick(this.open_all_groups);
+              this.is_filtered = true;
+            }
+            else if (this.is_filtered) {
+              this.$nextTick(this.open_show_group_only);
+              this.is_filtered = false;
+            }
+          },
+
           // Allow groups to open/close by clicking anywhere in header (not just the arrow)
           groupToggleElement:"header",
 
           // Ensure that only one group is open at any time by closing all other groups
           // Looks like this runs before whatever callback actually toggles the group open/closed on click, so if we hide an open group, it will be switched back to open, which is what we want
           groupClick: (e, group) => {
-            this.table.getGroups().forEach(g => g.hide());
-            this.swapping_color = true;
-            this.$emit("switch_color", group.getKey());
+            if (!this.is_filtered) {
+              this.table.getGroups().forEach(g => g.hide());
+              this.swapping_color = true;
+              this.$emit("switch_color", group.getKey());
+            }
           },
 
           // Start all groups closed
@@ -290,6 +315,14 @@ export default {
             if (this.achievedSkills == null) {
               return "";
             }
+
+            // Get the filter value for the Achieved column, if it exists
+            var all_filters = this.table.getFilters(true);
+            var achieved_filter = all_filters.filter(filter => filter.field == "achieved")[0];
+
+            // If so, mark w a boolean and get its value
+            var filter_by_achieved = achieved_filter != undefined;
+            var filter_val = filter_by_achieved ? achieved_filter.value : undefined;
 
             // Get the number of achieved skills and number of pending changes for this group
             var num_achieved = data.reduce((acc, c) => acc += (is_status(c, Status.U) ? 1 : 0), 0);
@@ -307,9 +340,13 @@ export default {
               datestamp = ` &mdash; Earned ${date.toDateString()}`;
             }
 
-            // Generate pending and achieved messages
+            // Generate pending message
             var pending  = num_pending > 0 ? `${num_pending} Pending Change${num_pending == 1 ? '' : 's'},` : '';
-            var achieved = `${num_achieved}/${count} Achieved`;
+
+            // Generate achieved message, based on whether there's a filter in the achieved column
+            var achieved = filter_by_achieved
+              ? (filter_val ? `${num_achieved} Achieved` : `${count} Remaining`)
+              : `${num_achieved}/${count} Achieved`;
 
             return `${label}${datestamp}<span style='float:right;'>${pending} ${achieved}</span>`;
           },
@@ -325,13 +362,7 @@ export default {
       //   return;
       // }
       if (this.table == null) return "";
-      this.table.getGroups().forEach(group => {
-        if (group.getKey() == this.showColor) {
-          group.show();
-        } else {
-          group.hide();
-        }
-      });
+      this.open_show_group_only();
     },
   },
 
@@ -387,6 +418,20 @@ export default {
 
     color_to_index: function(color) {
       return this.colors_to_indices[color];
+    },
+
+    open_all_groups: function() {
+      this.table.getGroups().forEach(group => group.show());
+    },
+
+    open_show_group_only: function() {
+      this.table.getGroups().forEach(group => {
+        if (group.getKey() == this.showColor) {
+          group.show();
+        } else {
+          group.hide();
+        }
+      });
     },
 
     handle_changes: function(changes) {
