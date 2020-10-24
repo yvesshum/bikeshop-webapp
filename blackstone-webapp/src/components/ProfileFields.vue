@@ -25,6 +25,8 @@
       </tbody>
     </table>
 
+    <br />
+
     <b-button v-show="allow_edits" variant="primary" @click="set_edit_mode(true)">
       Edit Profile Information
     </b-button>
@@ -218,6 +220,8 @@ const IgnoredFields = [
 
   // Period and Class information handled in ManagePeriods
   "Class", "ActivePeriods",
+
+  "Old Essay Answers",
 ];
 
 
