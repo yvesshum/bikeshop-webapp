@@ -69,7 +69,7 @@
           variant="secondary"
           style="margin: 5px;"
         >
-          Increment Color
+          Award Next Apron
         </b-button>
 
         <b-button v-if="apron_level > 0"
@@ -77,7 +77,7 @@
           variant="secondary"
           style="margin: 5px;"
         >
-          Decrement Color
+          Remove Current Apron
         </b-button>
       </template>
 
@@ -122,7 +122,7 @@
           variant="secondary"
           style="margin: 5px;"
         >
-          Increment Color
+          Award Next Apron
         </b-button>
 
         <b-button v-if="apron_level > 0"
@@ -130,7 +130,7 @@
           variant="secondary"
           style="margin: 5px;"
         >
-          Decrement Color
+          Remove Current Apron
         </b-button>
 
       </div>
