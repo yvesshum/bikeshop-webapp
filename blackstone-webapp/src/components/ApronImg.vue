@@ -168,13 +168,13 @@ export default {
 			else {
 				ctx.drawImage(this.current_image, 0, 0, this.size, this.size);
 			}
-			
+
 
 			// Recolor the new image
 			this.recolor_apron(this.color);
 		},
-		
-		
+
+
 		parse_hex_to_rgb : function(hue){
 			if(hue.length == 7){
 				if(hue[0] == '#'){
@@ -203,7 +203,7 @@ export default {
 			var ctx = apron.getContext("2d");
 			var imgData = ctx.getImageData(0, 0, apron.width, apron.height);
 			var data = imgData.data;
-			
+
 			// Get the target color in rgb format
 			let target_rgb = this.parse_hex_to_rgb(target_hex)
 			if (target_rgb != "None") {
@@ -244,7 +244,7 @@ export default {
 			var max = Math.max(r, g, b),
 				min = Math.min(r, g, b);
 			var h, s, l = (max + min) / 2;
-		
+
 			if (max == min) {
 				h = s = 0; // achromatic
 			} else {
@@ -263,7 +263,7 @@ export default {
 				}
 				h /= 6;
 			}
-		
+
 			return ({ h, s, l });
 		},
 		
@@ -271,7 +271,7 @@ export default {
 		// Source: http://jsfiddle.net/m1erickson/2d7ZN/
 		hslToRgb: function(h, s, l) {
 			var r, g, b;
-		
+
 			if (s == 0) {
 				r = g = b = l; // achromatic
 			} else {
@@ -283,14 +283,14 @@ export default {
 					if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
 					return p;
 				}
-		
+
 				var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
 				var p = 2 * l - q;
 				r = hue2rgb(p, q, h + 1 / 3);
 				g = hue2rgb(p, q, h);
 				b = hue2rgb(p, q, h - 1 / 3);
 			}
-		
+
 			return ({
 				r: Math.round(r * 255),
 				g: Math.round(g * 255),
