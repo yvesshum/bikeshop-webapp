@@ -57,7 +57,9 @@ export default {
 
   mounted: async function() {
     this.load_from_snapshot(this.snapshot);
-    this.$emit("load_complete", this);
+    this.$emit("load_complete", {
+      redraw: this.redraw,
+    });
   },
 
   computed: {
@@ -88,7 +90,7 @@ export default {
   methods: {
 
     redraw: function() {
-      this.table.redraw();
+      if (this.table != null) this.table.redraw();
     },
 
     handle_table: function(table) {
