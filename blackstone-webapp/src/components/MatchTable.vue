@@ -9,8 +9,6 @@
 
 <script>
 // @ is an alias to /src
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 import Table from '@/components/Table';
 import {Status} from '@/scripts/Status';
 
@@ -59,7 +57,7 @@ export default {
         index: this.matchBy,
 
         // Format the header to show number of skills achieved in each category
-        groupHeader: function(value, count, data, group) {
+        groupHeader: function(value, count, data, group) { // eslint-disable-line no-unused-vars
           let achieved = data.reduce((acc, curr) => acc += (curr.achieved ? 1 : 0), 0);
           return `${value} <span style='float:right;'>${achieved}/${count} Achieved</span>`;
         },
@@ -114,7 +112,7 @@ export default {
   watch: {
 
     // Any time the full set of data updates, add new rows to the row_status object as necessary
-    fullData: function(new_row_data) {
+    fullData: function(new_row_data) { // eslint-disable-line no-unused-vars
 
       // Loop through each row data object in the full set
       this.fullData.forEach(row_data => {
@@ -130,7 +128,7 @@ export default {
 
 
     // Any time the checked data updates, set the row_status object to match it
-    checkedData: function(new_row_data) {
+    checkedData: function(new_row_data) { // eslint-disable-line no-unused-vars
 
       // For each row_data object in the full set, update it to match the new checkedData
       this.fullData.forEach(row_data => {

@@ -134,7 +134,6 @@
 import draggable from 'vuedraggable'
 import FieldCard from '../components/FieldCard.vue'
 import {db} from '@/firebase.js'
-import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
 
 export default {
@@ -142,7 +141,6 @@ export default {
     components: {
         FieldCard,
         draggable,
-        SpecialInput
     },
     props: {
         sourceFieldName: String, //required, optional, hidden
@@ -238,10 +236,10 @@ export default {
             this.field_data.forEach(field => {
                 fields.push(field.data);
             });
-            console.log(fields);
+            // console.log(fields);
             let updateVal = {};
             updateVal[this.sourceFieldName] = fields;
-            console.log(updateVal);
+            // console.log(updateVal);
             let updateStatus = await db.collection("GlobalPeriods").doc("metadata").update(updateVal);
 
             if (updateStatus) {
@@ -288,7 +286,7 @@ export default {
             this.showLoadingModal("Saving..");
             let newFieldName = this.modal.edit.field_name;
             let newFieldType = this.modal.edit.field_type;
-            console.log(this.modal.edit.original_field_name);
+            // console.log(this.modal.edit.original_field_name);
             for (let i = 0; i < this.field_data.length; i++) {
                 if (Object.keys(this.field_data[i].data)[0] === this.modal.edit.original_field_name) {
                     //Update GlobalFieldsCollection
@@ -303,7 +301,7 @@ export default {
 
                     let updateStatus = await db.collection("GlobalPeriods").doc("metadata").update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalPeriods on firebase. " + err);
+                        window.alert("Error on updating GlobalPeriods on firebase. " + updateStatus);
                         return null;
                     }
 

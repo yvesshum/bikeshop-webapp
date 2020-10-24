@@ -131,7 +131,7 @@ export default {
 
         isValidEditingCategoryName: function() {
             let res = !this.category_data.some(field => field.data === this.modal.edit.category_name) && this.modal.edit.category_name.length > 0
-            console.log(res)
+            // console.log(res)
             return res
         }
     },
@@ -256,16 +256,16 @@ export default {
                         return element.data
                     })
 
-                    console.log('u', updatedCategoryNames)
+                    // console.log('u', updatedCategoryNames)
                     updatedCategoryNames[i] = newCategoryName;
                     let updateObject = {};
                     updateObject[this.sourceFieldName] = updatedCategoryNames;
-                    console.log(updateObject);
+                    // console.log(updateObject);
                     
 
                     let updateStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).update(updateObject);
                     if (updateStatus) {
-                        window.alert("Error on updating GlobalCategoriesCollection on firebase. " + err);
+                        window.alert("Error on updating GlobalCategoriesCollection on firebase. " + updateStatus);
                         return null;
                     }
 
@@ -283,18 +283,16 @@ export default {
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             data[newCategoryName] = data[this.modal.edit.original_category_name]
                             delete data[this.modal.edit.original_category_name];
-                            console.log(data);
+                            // console.log(data);
                             await db.doc(path).set(data);
                         })
                     }
 
                     //Local Update
-                    let newVal = {};
                     this.category_data[i].data = newCategoryName;
 
                     //Updating the copied version. Since ordering may have changed, we'll need to search through this.
@@ -321,7 +319,7 @@ export default {
                     updatedCategories.splice(i, 1);
                     let updateValue = {};
                     updateValue[this.sourceFieldName] = updatedCategories;
-                    console.log(updateValue);
+                    // console.log(updateValue);
 
                     let deleteStatus = await db.collection("GlobalVariables").doc(this.sourceDocument).set(updateValue);
                     if (deleteStatus) {
@@ -342,7 +340,6 @@ export default {
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                         query.forEach(async doc => {
-                            let id = doc.id;
                             let path = doc.ref.path
                             let data = doc.data();
                             delete data[this.modal.delete.category_name]
@@ -398,7 +395,6 @@ export default {
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
                 query.forEach(async doc => {
-                    let id = doc.id;
                     let path = doc.ref.path
                     let data = doc.data();
                     data[this.modal.add.category_name] = 0;

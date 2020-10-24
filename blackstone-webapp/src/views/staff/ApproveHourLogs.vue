@@ -185,9 +185,9 @@
             rowSelected(items){
                 this.selected = items;
             },
-            reject: function(evt) {
-                evt.preventDefault();
-            },
+            // reject: function(evt) {
+            //     evt.preventDefault();
+            // },
 
             async getHeaders() {
                 let headers = await db.collection("GlobalFieldsCollection").doc("Log Table Headers").get();
@@ -220,7 +220,7 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    console.log(data["Check In"].toDate());
+                    // console.log(data["Check In"].toDate());
                     // moment(data["Date"].toDate()).format("YYYY-MM-DD hh:mm a");
                     data["Check In"] = moment(data["Check In"].toDate()).format("YYYY-MM-DD hh:mm a");
                     data["Check Out"] = moment(data["Check Out"].toDate()).format("YYYY-MM-DD hh:mm a");
@@ -255,7 +255,7 @@
 
                 this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
                 for (let i = 0; i < selectedLength; i++) {
-                    console.log('A', this.selected[i], this.selected[i]["Document ID"])
+                    // console.log('A', this.selected[i], this.selected[i]["Document ID"])
                     let currentRow = this.selected[i];
                     documentIDs.push(currentRow["Document ID"]);
 
@@ -283,7 +283,7 @@
                     this.removeLocally(documentIDs[i]);
                 }
                 this.shouldRefreshTable = true;
-                console.log('a', this.items.length);
+                // console.log('a', this.items.length);
                 
                 this.closeLoadingModal();
                 this.$root.$emit('bv::refresh::table', 'transfer_table');                 
@@ -324,7 +324,7 @@
                 let newPendingHours = Math.round((parseFloat(forYouthProfile["Pending Hours"]) - amount)*100)/100;
                 let newHoursEarned = Math.round((parseFloat(forYouthProfile["Hours Earned"]) + amount)*100)/100;
                 
-                console.log(newPendingHours, newHoursEarned);
+                // console.log(newPendingHours, newHoursEarned);
                 let acceptStatus = await db.collection("GlobalYouthProfile").doc(row["Youth ID"]).update({
                     "Pending Hours": newPendingHours,
                     "Hours Earned": newHoursEarned
@@ -339,15 +339,15 @@
                 let status3 = db.collection("GlobalPendingHours").doc(row["Document ID"]).delete();
                 if (status3 == null) {
                     window.alert("Err, unable to delete log from GlobalPendingHours. Log document ID: " + row["Document ID"])
-                    return false;;
+                    return false;
                 }
-                console.log('w', worklog);
-                console.log('r', row);
+                // console.log('w', worklog);
+                // console.log('r', row);
                 let worklog = row; //soft copy
                 let docID = worklog["Document ID"]; //to restore ID for local deletion
                 delete worklog["Document ID"];
-                console.log('w', worklog);
-                console.log('r', row);
+                // console.log('w', worklog);
+                // console.log('r', row);
                 worklog["Check In"] = Timestamp.fromDate(moment(worklog["Check In"], "YYYY-MM-DD hh:mm a").toDate());
                 worklog["Check Out"] = Timestamp.fromDate(moment(worklog["Check Out"], "YYYY-MM-DD hh:mm a").toDate());
 
@@ -404,10 +404,10 @@
                         if(!isNaN(addAmount)){
                             amount += addAmount;
                         }
-                        console.log("Current delete amount: " + amount);
+                        // console.log("Current delete amount: " + amount);
                     }
                 }
-                console.log("Delete Amount: " + amount)
+                // console.log("Delete Amount: " + amount)
                 this.deleteAmount = amount
                 this.showRejectModal("Are you sure?", "This cannot be undone! You are about to delete "
                     + curRow["First Name"] + " " + curRow["Last Name"] + "'s log for " + this.deleteAmount);
@@ -420,7 +420,7 @@
                 let curRow = this.selected[0];
 
                 let forYouthProfile = await db.collection("GlobalYouthProfile").doc(curRow["Youth ID"]).get();
-                console.log(forYouthProfile.data());
+                // console.log(forYouthProfile.data());
                 if (forYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + curRow["Youth ID"]);
                     return null;
@@ -469,7 +469,7 @@
 
             editNote() {
                 this.editMsg = this.selected[0]["Notes"];
-                console.log(this.editMsg, this.selected);
+                // console.log(this.editMsg, this.selected);
                 this.showEditModal();
 
             },
@@ -486,11 +486,11 @@
                             "Category" : key,
                             "Hours" : curRow[key]
                         });
-                        console.log("Pushing");
+                        // console.log("Pushing");
                     }
                 }
                 this.editSelectedHours = editSelectedHours;
-                console.log(this.editSelectedHours, this.selected);
+                // console.log(this.editSelectedHours, this.selected);
                 this.showHoursModal();
             },
 
@@ -518,7 +518,7 @@
                 let docID = this.selected[0]["Document ID"];
                 let status = await db.collection("GlobalPendingHours").doc(docID).update({"Notes": note});
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     return null;
                 }
 
@@ -533,11 +533,11 @@
             },
 
             async saveHours() {
-                let note = this.editHours;
+                // let note = this.editHours;
                 this.closeHoursModal();
                 this.showLoadingModal("Saving hours..");
                 let docID = this.selected[0]["Document ID"];
-                console.log(this.editSelectedHours);
+                // console.log(this.editSelectedHours);
 
                 let newTotalHours = 0;
 
@@ -554,11 +554,11 @@
                     }
                 }
                 newHours += '}';
-                console.log("New hours: " + newHours);
+                // console.log("New hours: " + newHours);
 
                 let status = await db.collection("GlobalPendingHours").doc(docID).update(JSON.parse(newHours));
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     this.editSelectedHours = {};
                     return null;
                 }
@@ -592,9 +592,9 @@
 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
-                        console.log(this.editSelectedHours);
+                        // console.log(this.editSelectedHours);
                         for(var index in this.editSelectedHours){
-                            console.log(this.editSelectedHours[index]);
+                            // console.log(this.editSelectedHours[index]);
                             this.items[i][this.editSelectedHours[index].Category] = this.editSelectedHours[index].Hours;
                         }
                         break;
@@ -635,9 +635,9 @@
 margin-bottom: 1rem;
 position: sticky;
 }
+
 .title {
 margin-bottom: 1rem;
 padding: 0 1rem;
 }
-
 </style>

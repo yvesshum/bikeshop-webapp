@@ -37,20 +37,17 @@
 import { rb } from "../../firebase";
 import { db } from "../../firebase";
 import moment from "moment";
+
 import ProfilePopup from "@/components/ProfilePopup.vue";
-import ApronBar from "@/components/ApronBar.vue"
-import CollectionTable from "@/components/CollectionTable.vue"
+
 import {Period} from "@/scripts/Period.js";
 import {mapKeyVal} from "@/scripts/ParseDB.js";
 import PageHeader from "@/components/PageHeader.vue"
-
-let checkedInRef = rb.ref("Checked In");
 
 export default {
   name: "CheckedIn",
   components: {
     ProfilePopup,
-    ApronBar,
     PageHeader,
   },
   data() {

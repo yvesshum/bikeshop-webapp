@@ -18,8 +18,6 @@
 <script>
 import SpecialInput from '@/components/SpecialInput';
 
-const moment = require("moment");
-
 export default {
   name: 'special_input_reset',
   props: ['name', 'type', 'defaultValue'],
@@ -114,12 +112,12 @@ export default {
       if (val == null) return "";
 
       // Display non-null values according to their type
+      /* eslint-disable no-case-declarations */
       switch (this.type) {
 
         // Display a boolean as "Yes" or "No"
         case "Boolean":
           return val ? "Yes" : "No";
-          break;
 
         // Display a phone number in (___) ___-____ format, complete with underscores
         case "Phone":
@@ -155,6 +153,8 @@ export default {
         default:
           return val;
       }
+      /* eslint-enable no-case-declarations */
+
     },
 
     is_blank: function() {

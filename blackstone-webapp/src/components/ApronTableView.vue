@@ -25,7 +25,6 @@
 <script>
 // @ is an alias to /src
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
 import MatchTable from '@/components/MatchTable';
 import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -223,7 +222,7 @@ export default {
     headers: function() {
 
       // Custom sorter that ensures apron color groups stay in proper order regardless of sort
-      var sorter = (a, b, aRow, bRow, column, dir, sorterParams) => {
+      var sorter = (a, b, aRow, bRow, column, dir, sorterParams) => { // eslint-disable-line no-unused-vars
         var aColor = aRow.getData().color;
         var bColor = bRow.getData().color;
         if (aColor !== bColor) {
@@ -296,7 +295,7 @@ export default {
 
           // Ensure that only one group is open at any time by closing all other groups
           // Looks like this runs before whatever callback actually toggles the group open/closed on click, so if we hide an open group, it will be switched back to open, which is what we want
-          groupClick: (e, group) => {
+          groupClick: (e, group) => { // eslint-disable-line no-unused-vars
             if (!this.is_filtered) {
               this.table.getGroups().forEach(g => g.hide());
               this.swapping_color = true;
@@ -308,7 +307,7 @@ export default {
           groupStartOpen: false,
 
           // Display the number of achieved skills for this apron in the header
-          groupHeader: (value, count, data, group) => {
+          groupHeader: (value, count, data, group) => { // eslint-disable-line no-unused-vars
 
             // If the achievedSkills prop has not yet been passed, we don't have anything to display
             // Removing this doesn't break anything, it just throws a bunch of console errors on window resize, so this is a bit cleaner from the front-end

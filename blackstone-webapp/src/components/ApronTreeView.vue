@@ -118,9 +118,6 @@
 <script>
 // @ is an alias to /src
 import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 import ApronImg from '@/components/ApronImg';
 
 import {Status} from '@/scripts/Status.js';
@@ -510,7 +507,7 @@ export default {
           return `tree-skills-container ${top} ${bottom}`;
         default:
           return "";
-      };
+      }
     },
 
     get_box_style: function(box) {

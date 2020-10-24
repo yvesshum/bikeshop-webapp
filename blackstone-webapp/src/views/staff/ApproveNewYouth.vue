@@ -73,7 +73,7 @@
                 Essay Answers
             </template>
             <div v-if="checkSet(currentAnswers)">
-              <div v-for="qa in currentAnswers">
+              <div v-for="qa in currentAnswers" :key="qa['question']">
                   <pre class = "pre-essay"><b>Question: </b> {{qa["question"]}}</pre><br>
                   <pre class = "pre-essay"><b>Answer: </b> {{qa["answer"]}}</pre>
                   <hr>
@@ -133,10 +133,7 @@
 
 </template>
 <script>
-    import { VueTelInput } from 'vue-tel-input'
-    import RadioGroupOther from '../../components/RadioGroupOther';
     import SpecialInput from '@/components/SpecialInput';
-    import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
     import moment from 'moment'
@@ -152,8 +149,6 @@
     export default {
         name: 'ApproveNewYouth',
         components: {
-          RadioGroupOther,
-          VueTelInput,
           SpecialInput,
           PageHeader,
         },
@@ -178,7 +173,6 @@
                 loadingModalVisible: false,
                 loadingModalHeader: "",
                 deleteAmount: 0,
-                editModalVisible: false,
                 essayModalVisible: false,
                 editSelected: {},
                 currentSeason: null,
@@ -197,9 +191,9 @@
               let s = await db.collection("GlobalPeriods").doc(currentYear).get();
               var current = s.data();
               for(var i = 0; i < current[this.currentSeason].length; i++){
-                  console.log(current[this.currentSeason][i])
-                  console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
-                  console.log("Row returning id: " + row["ReturningID"]);
+                  // console.log(current[this.currentSeason][i])
+                  // console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                  // console.log("Row returning id: " + row["ReturningID"]);
                   if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
                       current[this.currentSeason].splice(i, 1);
                   }
@@ -224,7 +218,7 @@
                 let questions = this.essayQuestions[currentClass];
                 var currentAnswersLocal = [];
                 if(this.checkSet(questions)){
-                    console.log("Questions: " + questions)
+                    // console.log("Questions: " + questions)
                     for (let i = 0; i < questions.length; i++){
                         if(this.checkSet(curRow["Essay"][questions[i]])){
                             currentAnswersLocal.push({
@@ -283,8 +277,8 @@
                 let fields = [];
                 fields.push({key: "Timestamp", sortable: true});
                 fields.push({key: "New or Returning", sortable: true});
-                forKeyVal(headers, function(name, val, n) {
-                    if(name != "DOB"){
+                forKeyVal(headers, function(name, val, n) { // eslint-disable-line no-unused-vars
+                    if(name != "DOB"){ 
                         fields.push({key: name, sortable: true});
                     } else {
                         fields.push({key: "Birthdate", sortable: true});
@@ -308,10 +302,10 @@
                         let curYouth = curYouthReg.data();
                         if(curYouth != null){
                           for(var key in curYouth){
-                            console.log("Key")
-                            console.log(key)
-                            console.log("Data")
-                            console.log(data)
+                            // console.log("Key")
+                            // console.log(key)
+                            // console.log("Data")
+                            // console.log(data)
                             if(data[key] == undefined || data[key] == null){
                               data[key] = curYouth[key];
                             }
@@ -337,8 +331,8 @@
                     if(status){
                       failure = true;
                     }
-                    console.log(formatTimeStampToDate(data["Timestamp"]));
-                    console.log(formatTimeStampToDate(data["DOB"]));
+                    // console.log(formatTimeStampToDate(data["Timestamp"]));
+                    // console.log(formatTimeStampToDate(data["DOB"]));
                     data["Timestamp"] = formatTimeStampToDate(data["Timestamp"])
                     data["Birthdate"] = formatTimeStampToDate(data["DOB"]);
                     if(!failure){
@@ -387,14 +381,15 @@
                     delete input["Timestamp"];
                     delete input["New or Returning"];
                     delete input["ReturningID"];
+                    delete input["Unmerged"];
                     if(this.checkSet(input["ActivePeriods"])){
                       input["ActivePeriods"][this.currentSeason] = input["Class"];
                     }
                     if (this.checkSet(input["Old Essay Answers"])) {
-                      console.log("Old Essay Answers: " + input["Old Essay Answers"]);
+                      // console.log("Old Essay Answers: " + input["Old Essay Answers"]);
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
                     } else{
-                      console.log("Old Essay Answers not set");
+                      // console.log("Old Essay Answers not set");
                       input["Old Essay Answers"] = {};
                       input["Old Essay Answers"][row["Class"]] = input["Essay"];
                     }
@@ -402,21 +397,21 @@
                       input["Apron Skills"] = {};
                     }
                     delete input["ReturningID"];
-                    console.log(input)
+                    // console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
-                    console.log("Current year " + currentYear);
-                    console.log("Current season " + this.currentSeason);
+                    // console.log("Current year " + currentYear);
+                    // console.log("Current season " + this.currentSeason);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
                     var current = s.data();
                     if(current[this.currentSeason] == undefined){
                         current[this.currentSeason] = [];
-                        console.log("New Season");
+                        // console.log("New Season");
                     }
                     for(var i = 0; i < current[this.currentSeason].length; i++){
-                        console.log(current[this.currentSeason][i])
-                        console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
-                        console.log("Row returning id: " + row["ReturningID"]);
+                        // console.log(current[this.currentSeason][i])
+                        // console.log("Entry id: " + current[this.currentSeason][i]["ID"]);
+                        // console.log("Row returning id: " + row["ReturningID"]);
                         if(current[this.currentSeason][i]["ID"] == row["ReturningID"]){
                             this.closeLoadingModal();
                             this.overwriteID = row["ReturningID"];
@@ -447,12 +442,12 @@
                     }
                 } else {
                     await rb.ref('Youth ID Number').once("value", snapshot => {
-                        console.log("Snapshot value: ")
-                        console.log(snapshot.val())
+                        // console.log("Snapshot value: ")
+                        // console.log(snapshot.val())
                         newIDs.push(snapshot.val()["value"]);
                     })
 
-                    console.log(newIDs[0])
+                    // console.log(newIDs[0])
                     let submitRef = db.collection("GlobalYouthProfile").doc(newIDs[0].toString());
 
                     let input = {};
@@ -461,6 +456,9 @@
                     delete input["Birthdate"];
                     delete input["Timestamp"];
                     delete input["New or Returning"];
+                    delete input["Unmerged"];
+
+                    input["Start Date"] = new Date();
 
                     input["ActivePeriods"] = {};
                     input["ActivePeriods"][this.currentSeason] = input["Class"];
@@ -476,15 +474,15 @@
                     
                     delete input["ReturningID"];
 
-                    console.log(input)
+                    // console.log(input)
 
                     let currentYear = this.currentSeason.split(" ")[1];
-                    console.log("Current year: " + currentYear);
+                    // console.log("Current year: " + currentYear);
                     let s = await db.collection("GlobalPeriods").doc(currentYear).get();
-                    var current = s.data();
+                    var current = s.data(); // eslint-disable-line no-redeclare
                     if(current[this.currentSeason] == undefined){
                         current[this.currentSeason] = [];
-                        console.log("New Season");
+                        // console.log("New Season");
                     }
                     current[this.currentSeason].push({
                       "Class" : row["Class"],
@@ -492,8 +490,8 @@
                       "ID" : newIDs[0].toString(),
                       "Last Name" : row["Last Name"]
                     });
-                    console.log("Current season: " + this.currentSeason);
-                    console.log("Current: " + current[this.currentSeason]);
+                    // console.log("Current season: " + this.currentSeason);
+                    // console.log("Current: " + current[this.currentSeason]);
                     let periodStatus = await db.collection("GlobalPeriods").doc(currentYear).update(current);
                     if (periodStatus) {
                         this.closeLoadingModal();
@@ -520,7 +518,7 @@
                     }
 
                     let logStatus = await submitRef.set(input);
-                    console.log("Has set input")
+                    // console.log("Has set input")
 
                     if (logStatus) {
                         this.closeLoadingModal();
@@ -529,7 +527,7 @@
                     }
                 }
 
-                console.log("About to delete registration")
+                // console.log("About to delete registration")
                 let status = await db.collection("GlobalPendingRegistrations").doc(row["Document ID"]).delete();
 
                 if (status) {
@@ -591,7 +589,7 @@
             async confirmedDelete() {
                 this.closeRejectModal();
                 this.showLoadingModal("Deleting...");
-                let curRow = this.selected[0];
+                // let curRow = this.selected[0];
 
                 this.showLoadingModal("Doing some work in the background...");
 
@@ -628,11 +626,11 @@
                 var editSelectedLocal = [];
 
                 let fields = await this.getEditFields();
-                let options = await this.getEditOptions();
+                // let options = await this.getEditOptions();
 
                 var req_keys = [];
                 var req_vals = [];
-                forKeyVal(fields["required"], function(name, val, n) {
+                forKeyVal(fields["required"], function(name, val, n) { // eslint-disable-line no-unused-vars
                     req_keys.push(name);
                     req_vals.push(val);
                 });
@@ -645,10 +643,10 @@
                         Type: req_vals[i]
                     });
                 }
-                console.log(currentClass)
+                // console.log(currentClass)
                 var opt_keys = [];
                 var opt_vals = [];
-                forKeyVal(fields["optional"], function(name, val, n) {
+                forKeyVal(fields["optional"], function(name, val, n) { // eslint-disable-line no-unused-vars
                     opt_keys.push(name);
                     opt_vals.push(val);
                 });
@@ -661,7 +659,7 @@
                     });
                 }
                 var questions = this.essayQuestions[currentClass];
-                console.log(questions);
+                // console.log(questions);
                 if(this.checkSet(questions)){
                     for (let i = 0; i < questions.length; i ++){
                         if(this.checkSet(curRow["Essay"][questions[i]])){
@@ -682,7 +680,7 @@
                     }
                 }
                 this.editSelected = editSelectedLocal;
-                console.log(this.editSelected, this.selected);
+                // console.log(this.editSelected, this.selected);
                 this.showEditModal();
             },
             
@@ -707,7 +705,7 @@
             },
 
             async saveEdits() {
-                let note = this.editFields;
+                // let note = this.editFields;
                 this.closeEditModal();
                 this.showLoadingModal("Saving changes..");
                 let docID = this.selected[0]["Document ID"];
@@ -715,26 +713,28 @@
 
                 var newValues = {}
                 newValues["Essay"] = this.selected[0]["Essay"];
-                console.log("Old Essays")
-                console.log(newValues["Essay"])
+                // console.log("Old Essays")
+                // console.log(newValues["Essay"])
                 for(let i = 0; i < this.editSelected.length; i++){
                       let category = this.editSelected[i]["Category"];
                       var value = this.editSelected[i]["Value"];
-                      if(this.editSelected[i]["NewValue"] != undefined){
+                      if(this.checkSet(this.editSelected[i]["NewValue"])){
                           value = this.editSelected[i]["NewValue"];
                       }
                       if(this.editSelected[i]["Type"] == "Essay"){
                           newValues["Essay"][category.split("\n").join("\\n")]
                             = value.split("\n").join("\\n");
-                      } else{
-                          newValues[category] = value;
+                      } else {
+                          if(this.checkSet(value)){
+                              newValues[category] = value;
+                          }
                       }
                 }
-                console.log("New values: " + JSON.stringify(newValues));
+                // console.log("New values: " + JSON.stringify(newValues));
                 let status = await db.collection("GlobalPendingRegistrations").doc(docID).update(newValues);
                 if (status) {
                     this.closeLoadingModal();
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     this.editSelected = {};
                     return null;
                 }
@@ -742,9 +742,9 @@
 
                 for (let i = 0; i < this.items.length; i++) {
                     if (this.items[i]["Document ID"] === docID) {
-                        console.log(this.editSelected);
+                        // console.log(this.editSelected);
                         for(var index in this.editSelected){
-                            console.log(this.editSelected[index]);
+                            // console.log(this.editSelected[index]);
                             if(this.editSelected[index].NewValue != undefined){
                                 if(this.editSelected[index].Type != "Essay"){
                                     if(this.editSelected[index].Category == "DOB"){

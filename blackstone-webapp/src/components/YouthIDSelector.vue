@@ -142,17 +142,17 @@ Emits:
                 <tbody>
                     <tr>
                         <td><b>Special Character:</b></td>
-                        <td v-for="char_obj in special_chars" style="padding: 0px 15px;"><b><code>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular" style="padding: 0px 15px;"><b><code>
                             <span v-if="char_obj.show_caps">{{char_obj.special.toUpperCase()}}</span>{{char_obj.special}}
                         </code></b></td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td v-for="char_obj in special_chars">&nbsp;⇕&nbsp;</td>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular">&nbsp;⇕&nbsp;</td>
                     </tr>
                     <tr>
                         <td><b>Search Equivalent:</b></td>
-                        <td v-for="char_obj in special_chars"><b><code>{{char_obj.regular}}</code></b></td>
+                        <td v-for="char_obj in special_chars" :key="char_obj.regular"><b><code>{{char_obj.regular}}</code></b></td>
                     </tr>
                 </tbody>
             </table>
@@ -215,7 +215,6 @@ Emits:
 
 
 <script>
-    import {firebase} from '../firebase'
     import {db} from '../firebase'
     import Multiselect from 'vue-multiselect'
     import {Period} from '@/scripts/Period.js';
@@ -530,14 +529,14 @@ Emits:
 
                         // If the given period does not exist, send a warning in the console and skip to the next period
                         if (new_profiles == undefined) {
-                            console.warn("Cannot load youths from period \"" + Period.concat(season, year) + "\".");
+                            // console.warn("Cannot load youths from period \"" + Period.concat(season, year) + "\".");
                             return;
                         }
 
                         // If there are any duplicates within the period, send a warning
                         let duplicates = Youth.duplicates(new_profiles);
                         if (duplicates.length > 0) {
-                            console.warn("Duplicate profiles found in \"" + Period.concat(season, year) + "\": ", duplicates);
+                            // console.warn("Duplicate profiles found in \"" + Period.concat(season, year) + "\": ", duplicates);
                         }
 
                         // Add non-duplicate youth to the full array
@@ -626,7 +625,7 @@ Emits:
 
                     // If we've made it to this point, all of the fields in the profile are identical
                     // TODO: Error handling for this case
-                    console.warn("Identical profiles found: ", a, b);
+                    // console.warn("Identical profiles found: ", a, b);
                     return 0;
                 };
 

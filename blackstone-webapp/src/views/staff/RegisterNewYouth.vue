@@ -3,6 +3,7 @@
         <div class="content">
         <top-bar omitEmail/>
         
+        <div v-if="!confirmation">
         <h4 style="margin: 20px">Are you registering a new Youth or a returning Youth?</h4>
         
         <div class = "topDiv">
@@ -37,7 +38,7 @@
                           <div class = "specialDiv">
                               <SpecialInput v-model="returningYouthID" ref="returningYouthID" inputType="String"></SpecialInput>
                           </div>
-                          <div v-for="field in requiredFields">
+                          <div v-for="field in requiredFields" :key="field">
                             <div v-if="field.name == 'Class'">
                               <div class = "specialDiv">
                                 <p class="field_header">Registration {{field.name}}<span style="color: red"> *</span></p>
@@ -47,7 +48,7 @@
                               </div>
                             </div>
                             <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null">
-                                <div v-for="question in essayQuestions[field.value]">
+                                <div v-for="question in essayQuestions[field.value]" :key="question">
                                   <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <p style="color: grey">{{placeholders[field.name]}}</p>
@@ -59,7 +60,7 @@
                         </div>
                     </div>
                     <div v-if="returningYouth == 'New Youth'">
-                      <div v-for="field in requiredFields">
+                      <div v-for="field in requiredFields" :key="field">
                           <div class="each_field">
                               <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
                                 <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
@@ -70,7 +71,7 @@
                                 </div>
                               </div>
                               <div v-if="field.name == 'Class' && field.value != '' && field.value != undefined && field.value != null && returningYouth != 'Returning Youth'">
-                                  <div v-for="question in essayQuestions[field.value]">
+                                  <div v-for="question in essayQuestions[field.value]" :key="question">
                                     <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
                                       <p style="color: grey">{{placeholders[field.name]}}</p>
@@ -95,7 +96,7 @@
                       <div v-if="returningYouth == 'Returning Youth'">
                         <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
                           <hr>
-                          <div v-for="field in requiredFields">
+                          <div v-for="field in requiredFields" :key="field">
                             <div v-if="field.name != 'Class'">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
@@ -106,7 +107,7 @@
                             </div>
                           </div>
                       </div>
-                      <div v-for="field in optionalFields">
+                      <div v-for="field in optionalFields" :key="field">
                           <div class="each_field">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
@@ -125,7 +126,7 @@
         </div>
 
 
-        <b-modal v-model = "modalVisible" hide-footer lazy>
+        <!-- <b-modal v-model = "modalVisible" hide-footer lazy>
             <template slot="modal-title">
                 New Youth registered!
             </template>
@@ -134,7 +135,7 @@
                 <h3 v-if="returningYouth == 'Returning Youth'">Successfully submitted a returning youth registration for Youth ID {{currentName}} to be in the {{currentClass}} class</h3>
             </div>
             <b-button class="mt-3" block @click="closeModal" variant = "primary">Thanks!</b-button>
-        </b-modal>
+        </b-modal> -->
 
         <b-modal v-model = "errorModalIsVisible" hide-footer lazy>
             <template slot="modal-title">
@@ -142,7 +143,7 @@
             </template>
             <div class="d-block text-center">
                 <h3>The following fields have errors!</h3>
-                <h4 v-for="errors in errorFields">{{errors}}</h4>
+                <h4 v-for="errors in errorFields" :key="errors">{{errors}}</h4>
             </div>
             <b-button class="mt-3" block @click="closeErrorModal" variant = "primary">Thanks!</b-button>
         </b-modal>
@@ -160,23 +161,25 @@
             </div>
         </b-modal>
         </div>
+        <div v-else>
+          <h4 v-if="returningYouth == 'New Youth'" style="margin: 25px">Successfully submitted a new youth registration for {{currentName}} to be in the {{currentClass}} class</h4>
+          <h4 v-else style="margin: 25px">Successfully submitted a returning youth registration for Youth ID {{currentName}} to be in the {{currentClass}} class</h4>
+          <b-button class="bg-info" onclick="location.href='/register-new-youth'" size="lg">Submit another registration</b-button>
+        </div>
+        </div>
         <Footer/>
     </div>
 
 </template>
 
 <script>
-    import { VueTelInput } from 'vue-tel-input'
     import SpecialInput from '@/components/SpecialInput';
     import { initSpecialInputVal } from '../../scripts/SpecialInit';
-    import RadioGroupOther from '../../components/RadioGroupOther';
     import {db} from '../../firebase';
     import {rb} from '../../firebase';
-    import {firebase} from '../../firebase';
     import { forKeyVal } from '@/scripts/ParseDB.js';
     import {Timestamp} from '@/firebase.js';
     import PageHeader from "@/components/PageHeader.vue"
-    import moment from 'moment'
 
     let fieldsRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
     let optionsRef = db.collection("GlobalVariables").doc("Profile Options");
@@ -187,8 +190,6 @@
     export default {
         name: 'RegisterYouth',
         components: {
-            RadioGroupOther,
-            VueTelInput,
             SpecialInput,
             PageHeader,
         },
@@ -198,7 +199,8 @@
                 requiredFields: [],
                 optionalFields: [],
                 hiddenFields: [],
-                modalVisible: false,
+                // modalVisible: false,
+                confirmation: false,
                 loadingModalVisible: false,
                 errorModalVisible: false,
                 errorFields: [], //list of messages to be shown as errors
@@ -283,10 +285,10 @@
                     return null;
                 } else {
                     this.loadingModalVisible = true;
-                    console.log("Required fields")
-                    console.log(this.requiredFields)
-                    console.log("Optional fields")
-                    console.log(this.optionalFields)
+                    // console.log("Required fields")
+                    // console.log(this.requiredFields)
+                    // console.log("Optional fields")
+                    // console.log(this.optionalFields)
                     // let quarter = await this.getQuarter()
                     // input["ActivePeriods"] = [quarter["currentActiveQuarter"]];
                     
@@ -294,7 +296,7 @@
                     
                     if(this.returningYouth == "Returning Youth"){
                         let existingData = await existingRef.get(); // await db.collection("GlobalYouthProfile").doc(this.returningYouthID).get();
-                        console.log("Checking if exists");
+                        // console.log("Checking if exists");
                         let exists = existingData.data()[this.returningYouthID];
                         if (exists == null || exists == false) {
                             this.errorFields = ["Returning Youth ID"];
@@ -309,22 +311,21 @@
                         input["New or Returning"] = "New Youth";
                         //hidden field initializers
                         await rb.ref('Youth Profile Initializers').once("value", snapshot => { 
-                            console.log("Hidden listener")
-                            console.log(snapshot.val())
+                            // console.log("Hidden listener")
+                            // console.log(snapshot.val())
                             let hiddenProtectedInitializers = snapshot.val()["Protected"];
                             let hiddenUnprotectedInitializers = snapshot.val()["Unprotected"];
                             for (let key in hiddenProtectedInitializers) {
-                                console.log("Protected hidden")
+                                // console.log("Protected hidden")
                                 input[key] = hiddenProtectedInitializers[key]
                             }
                             for (let key in hiddenUnprotectedInitializers) { 
-                                console.log("Unprotected hidden")
+                                // console.log("Unprotected hidden")
                                 input[key] = hiddenUnprotectedInitializers[key]
                             }
                         })
                     }
                     
-                    var today = new Date();
                     var date = Timestamp.fromDate(new Date());
                     input["Timestamp"] = date
                 
@@ -336,11 +337,11 @@
                             }
                         } else if(this.returningYouth == "Returning Youth") {
                             if(data[i]["type"] == "Date"){
-                                console.log(initSpecialInputVal(data[i]["type"]));
+                                // console.log(initSpecialInputVal(data[i]["type"]));
                                 let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
                                 let given_date = this.getDMY(new Date(data[i]["value"].seconds * 1000));
-                                console.log(default_date);
-                                console.log(given_date);
+                                // console.log(default_date);
+                                // console.log(given_date);
                                 if (default_date != given_date){
                                     input[data[i]["name"]] = data[i]["value"];
                                 }
@@ -361,11 +362,11 @@
                             }
                         } else if(this.returningYouth == "Returning Youth") {
                             if(data[i]["type"] == "Date"){
-                              console.log(initSpecialInputVal(data[i]["type"]));
+                              // console.log(initSpecialInputVal(data[i]["type"]));
                               let default_date = this.getDMY(new Date(initSpecialInputVal(data[i]["type"]).seconds * 1000));
                               let given_date = this.getDMY(new Date(data[i]["value"].seconds  * 1000));
-                              console.log(default_date);
-                              console.log(given_date);
+                              // console.log(default_date);
+                              // console.log(given_date);
                               if (default_date != given_date){
                                   input[data[i]["name"]] = data[i]["value"];
                               }
@@ -385,7 +386,7 @@
                         this.currentName = this.returningYouthID;
                     }
                     let currentClass = input["Class"];
-                    console.log("Current class " + currentClass);
+                    // console.log("Current class " + currentClass);
                     input["Essay"] = {}
                     for(var question in this.answers[currentClass]){
                         let answer = this.answers[currentClass][question]
@@ -393,7 +394,7 @@
                         input["Essay"][questionSubmit.split("\n").join("\\n")]
                           = answer.split("\n").join("\\n");
                     }
-                    console.log("About to submit")
+                    // console.log("About to submit")
                     // let submitRef = db.collection("GlobalPendingRegistrations").doc();
 
                     //detach RTD listener
@@ -408,7 +409,7 @@
                             window.alert("Error adding new registration");
                         }
                     }
-                    console.log("Submitted!")
+                    // console.log("Submitted!")
                         // console.log("Document written with ID: ", submitRef.id);
                     // this.newID = submitRef.id;
                     
@@ -446,7 +447,7 @@
                         
                         // var textareas = this.$el.querySelector(".each_field")
                         // for(let i = 0; i < textareas.length; i ++){
-                        //     console.log(textareas[i].value)
+                        //     // console.log(textareas[i].value)
                         //     textareas[i].value = "";
                         // }
 
@@ -454,7 +455,8 @@
                         // console.error("Error adding document: ", error);
                     // });
                     this.loadingModalVisible = false;
-                    this.showModal();
+                    this.confirmation = true;
+                    // this.showModal();
                 }
             },
             //returns an array of fields that are not valid
@@ -483,12 +485,12 @@
             parse(item) {
                 return JSON.parse(JSON.stringify(item));
             },
-            showModal() {
-                this.modalVisible = true;
-            },
-            closeModal() {
-                this.modalVisible = false;
-            },
+            // showModal() {
+            //     this.modalVisible = true;
+            // },
+            // closeModal() {
+            //     this.modalVisible = false;
+            // },
             showErrorModal() {
                 this.errorModalVisible = true;
             },
@@ -520,14 +522,14 @@
                 if (current_period) {
                     current_active_youth.concat([youth_id]);
                     activePeriods.push(data["CurrentPeriod"]);
-                };
+                }
 
                 // Copy existing array of future active youth and adds youth_id if applicable
                 let future_active_youth = data["FutureActiveYouths"];
                 if (next_period) {
                     future_active_youth.concat([youth_id]);
                     activePeriods.push(data["FuturePeriod"]);
-                };
+                }
 
                 // Update the database with the (potentially) changed arrays
                 // db.collection("GlobalVariables").doc("ActivePeriods").update({
@@ -550,9 +552,9 @@
         async mounted() {
             this.loadingModalVisible = true;
             let fields = await this.getFields();
-            let options = await this.getOptions();
+            // let options = await this.getOptions();
             this.essayQuestions = await this.getEssays();
-            console.log("Essay Questions: " + this.essayQuestions);
+            // console.log("Essay Questions: " + this.essayQuestions);
             for (var className in this.essayQuestions) {
                 this.answers[className] = {};
                 for(var i = 0; i < this.essayQuestions[className].length; i++){
@@ -562,7 +564,7 @@
                 }
             }
             await rb.ref("Youth Profile Placeholders").once('value').then(snapshot => { 
-                console.log("Reading placeholders")
+                // console.log("Reading placeholders")
                 this.placeholders = snapshot.val();
             })
 
@@ -572,7 +574,7 @@
             }
             var req_keys = [];
             var req_vals = [];
-            forKeyVal(fields["required"], function(name, val, n) {
+            forKeyVal(fields["required"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 req_keys.push(name);
                 req_vals.push(val);
             });
@@ -586,7 +588,7 @@
             }
             var opt_keys = [];
             var opt_vals = [];
-            forKeyVal(fields["optional"], function(name, val, n) {
+            forKeyVal(fields["optional"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 opt_keys.push(name);
                 opt_vals.push(val);
             });
@@ -599,10 +601,10 @@
                 });
             }
             var hidden_keys = [];
-            forKeyVal(fields["hidden"], function(name, val, n) {
-                // console.log(`${n}: ${name},  ${val}`);
+            forKeyVal(fields["hidden"], function(name, val, n) { // eslint-disable-line no-unused-vars
                 hidden_keys.push(name);
             });
+
             for (let i = 0; i <hidden_keys.length; i ++) {
                 this.hiddenFields.push({
                     name: hidden_keys[i],

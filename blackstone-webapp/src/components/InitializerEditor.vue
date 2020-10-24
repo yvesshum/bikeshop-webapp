@@ -80,7 +80,7 @@ export default {
     },
     computed: {
         isValidFieldName: function() {
-            console.warn('isValidFieldName called', this.existingFieldNames, this.newFieldName)
+            // console.warn('isValidFieldName called', this.existingFieldNames, this.newFieldName)
             return this.existingFieldNames.filter(f => {return Object.keys(f)[0] === this.newFieldName}).length > 0 && !this.data.some(f => {return Object.values(f).indexOf(this.newFieldName) > -1})
         },
 
@@ -184,7 +184,7 @@ export default {
     async mounted() {
         this.detachSnapshot = db.collection("GlobalFieldsCollection").doc(this.doc).onSnapshot(doc => {
             this.existingFieldNames = this.formatNames(doc.data());
-            console.warn(this.existingFieldNames)
+            // console.warn(this.existingFieldNames)
 
             this.dataLoaded = true;
         });

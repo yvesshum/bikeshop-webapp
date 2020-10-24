@@ -69,7 +69,6 @@
 </template>
 
 <script>
-import moment from 'moment'
 import SpecialInput from '../../components/SpecialInput.vue'
 import { initSpecialInputVal } from '../../scripts/SpecialInit';	
 

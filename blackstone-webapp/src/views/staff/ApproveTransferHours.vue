@@ -184,7 +184,7 @@
                 let row = this.selected[0];
                 //change remotely
                 let fromYouthProfile = await db.collection("GlobalYouthProfile").doc(row["From ID"]).get();
-                console.log(fromYouthProfile.data());
+                // console.log(fromYouthProfile.data());
                 if (fromYouthProfile.data() == null) {
                     window.alert("Error, unable to retrieve Youth Profile data on id " + row["From ID"]);
                     return null;
@@ -221,7 +221,7 @@
                 }
 
                 //Create a log collection in Global Youth Profile for these transfers
-                console.log(row);
+                // console.log(row);
                 let logFromStatus = await db.collection("GlobalYouthProfile").doc(row["From ID"]).collection("Transfer Log").doc().set({
                     "Date": Timestamp.fromDate(moment(row["Date"], "YYYY-MM-DD hh:mm a").toDate()),
                     "To ID": row["To ID"],
@@ -364,7 +364,7 @@
 
             editNote() {
                 this.editMsg = this.selected[0]["Notes"];
-                console.log(this.editMsg, this.selected);
+                // console.log(this.editMsg, this.selected);
                 this.showEditModal();
 
             },
@@ -385,7 +385,7 @@
                 let docID = this.selected[0]["Document ID"];
                 let status = await db.collection("GlobalTransferHours").doc(docID).update({"Notes": note});
                 if (status) {
-                    window.alert("Err: " +  err);
+                    window.alert("Err: " +  status);
                     return null;
                 }
 
@@ -424,7 +424,7 @@
     }
 </script>
 
-<style>
+<style scoped>
 .title {
   margin-bottom: 1rem;
 }

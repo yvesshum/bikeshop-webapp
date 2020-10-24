@@ -68,13 +68,11 @@
 </template>
 
 <script>
-    import Table from "@/components/Table.vue"
     const Tabulator = require('tabulator-tables');
 
     export default {
         name: 'DoubleTable',
         props: ['headers', 'data', 'pending_data', 'options', 'placeholders', 'table_height'],
-        components: {Table},
 
         data: function () {
             return {
@@ -113,11 +111,11 @@
             } else {
                 if (this._placeholders.left == null) {
                     this._placeholders.left = "";
-                };
+                }
                 if (this._placeholders.right == null) {
                     this._placeholders.right = "";
-                };
-            };
+                }
+            }
 
             // Initialize what options will be passed to both tables
             this.args = {...this.default_args, ...this.options};
@@ -213,7 +211,7 @@
 
                         // Default - Unrecognized specifier
                         default:
-                            console.log("Invalid specifier \"" + key + "\" in pending_data object.");
+                            // console.log("Invalid specifier \"" + key + "\" in pending_data object.");
                             break;
                     }
                 }.bind(this));
@@ -247,13 +245,13 @@
             },
 
             // Runs after row movement finishes
-            row_change_complete: function(fromTable) {
+            row_change_complete: function(fromTable) { // eslint-disable-line no-unused-vars
                 this.emit_changes();
             },
 
             // Runs if row movement fails for some reason
-            row_change_fail: function(fromRow, toRow, fromTable){
-                console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
+            row_change_fail: function(fromRow, toRow, fromTable){ // eslint-disable-line no-unused-vars
+                // console.log("Failed to move row", fromRow, " to row ", toRow, " from table ", fromTable);
             },
 
             // Manually move a row to one table, removing from the other if applicable
@@ -271,16 +269,16 @@
                     from_table = this.left_table;
                 }
                 else {
-                    console.log("Unrecognized side \"" + to_side + "\". Please use \"left\" or \"right\".");
+                    // console.log("Unrecognized side \"" + to_side + "\". Please use \"left\" or \"right\".");
                     return;
-                };
+                }
 
                 this.remove_row(row, from_table, false);
                 to_table.addRow(row);
 
                 if (allow_emit) {
                     this.emit_updates();
-                };
+                }
             },
 
             // Remove a row from the given table
@@ -291,7 +289,7 @@
 
                 if (allow_emit) {
                     this.emit_updates();
-                };
+                }
             },
         }
     }

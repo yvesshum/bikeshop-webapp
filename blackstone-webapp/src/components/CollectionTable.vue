@@ -50,7 +50,6 @@ Emits:
 
 <script>
     // TODO: Test GROUP.FAILED with Firebase failed retrievals
-    import {db} from '../../firebase';
 
     const Tabulator = require('tabulator-tables');
 
@@ -101,8 +100,7 @@ Emits:
                 };
             },
 
-            visible: function(val) {
-                // console.log("Table: ", this.table);
+            visible: function(val) { // eslint-disable-line no-unused-vars
                 if (this.table != null) this.table.redraw();
             },
         },
@@ -160,21 +158,21 @@ Emits:
                                 },
 
                                 // If query fails, set group status to FAILED and close it
-                                error => {
+                                error => { // eslint-disable-line no-unused-vars
                                     this.loaded_groups[key] = GROUP.FAILED;
                                     group.hide();
                                 }
                             );
-                        };
+                        }
 
                         // Helper function to determine whether a database retrieval is necessary
                         function should_load(val) {
                             return val == GROUP.UNLOADED || val == GROUP.FAILED;
-                        };
+                        }
                     },
 
                     // Format the header bar for each group
-                    groupHeader: (value, count, data, group) => {
+                    groupHeader: (value, count, data, group) => { // eslint-disable-line no-unused-vars
                         return `<div style='display:inline;'>
                             Items from <i>${value}</i>
                         </div>
@@ -193,18 +191,14 @@ Emits:
                             switch (val) {
                                 case GROUP.UNLOADED:
                                     return "Click to load.";
-                                    break;
                                 case GROUP.LOADING:
                                     return "Loading...";
-                                    break;
                                 case GROUP.LOADED:
                                     return `${count?count:"No"} item${count==1?"":"s"}.`;
-                                    break;
                                 case GROUP.FAILED:
                                     return "Load failed. Click to retry.";
-                                    break;
-                            };
-                        };
+                            }
+                        }
                     },
                 };
 

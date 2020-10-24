@@ -53,7 +53,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .heading {
   padding-top: 1rem;
   color: black;

@@ -38,7 +38,7 @@ export class Status {
 
     if (!Array.isArray(vals)) {
       return [vals];
-    };
+    }
 
     return vals;
   }

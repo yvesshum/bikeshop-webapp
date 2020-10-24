@@ -24,13 +24,11 @@
 import CategoryEditor from '../../components/CategoryEditor.vue'
 import SettingsBottomNote from '../../components/SettingsBottomNote.vue'
 import {db} from '../../firebase.js'
-import fieldEditor from '../../components/FieldEditor.vue'
 
 export default {
   name: 'HourLoggingCategoriesSettings',
   components: {
     SettingsBottomNote,
-    fieldEditor,
     CategoryEditor
 
   },
@@ -48,7 +46,7 @@ export default {
     },
 
     parseFields(items, dest) {
-      console.log(items);
+      // console.log(items);
       for (let i = 0; i < items.length; i ++) {
         dest.push({
           "data": items[i],

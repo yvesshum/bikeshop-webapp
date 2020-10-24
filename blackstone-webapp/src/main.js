@@ -18,6 +18,7 @@ import {
   faPlus,
   faCheckCircle,
   faExclamationTriangle,
+  faPen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import VueClipboard from "vue-clipboard2";
@@ -29,7 +30,8 @@ library.add(
   faEdit,
   faPlus,
   faCheckCircle,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faPen
 );
 
 Vue.component("font-awesome-icon", FontAwesomeIcon);
@@ -41,7 +43,6 @@ Vue.use(VueTabulator);
 Vue.use(VueClipboard);
 
 let app = "";
-
 firebase.auth().onAuthStateChanged(() => {
   if (!app) {
     app = new Vue({

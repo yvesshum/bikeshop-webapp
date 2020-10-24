@@ -7,6 +7,7 @@
                 v-b-tooltip.hover :title="get_name(b)"
                 :variant="in_bounds(b) ? 'primary' : 'secondary'"
                 :disabled="!in_bounds(b)"
+                :key="b"
             >
                 <span v-if="get_arrow(b) == 's'">&larr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Larr;</span>
@@ -30,6 +31,7 @@
                 v-b-tooltip.hover :title="get_name(b)"
                 :variant="in_bounds(b) ? 'primary' : 'secondary'"
                 :disabled="!in_bounds(b)"
+                :key="b"
             >
                 <span v-if="get_arrow(b) == 's'">&rarr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Rarr;</span>

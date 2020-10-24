@@ -1,7 +1,7 @@
 <template>
   <div class="apron_progress_bar">
     <ApronImg 
-      v-for="(apron, n) in colors" style="display:inline-block;"
+      v-for="(apron, n) in colors" v-bind:key="apron + n" style="display:inline-block;"
       :color="apron.color" :size="size"
       :showName="showName" :showStatus="showStatus"
       v-bind="apron_params(n)"
@@ -47,7 +47,7 @@ export default {
     selectType: {
       type: String,
       default: "none",
-      validator: val => {
+      validator: val => {  // eslint-disable-line no-unused-vars
         return ["none", "select_single", "toggle_single", "toggle_multiple"]
       }
     },
@@ -144,7 +144,7 @@ export default {
       this.$emit("hover", this.hover);
     },
 
-    mouse_click: function(n, status) {
+    mouse_click: function(n, status) {  // eslint-disable-line no-unused-vars
       let curr = this.hover[n];
 
       switch (this.selectType) {

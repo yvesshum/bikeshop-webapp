@@ -1,62 +1,66 @@
 <template>
   <div class="profile_lookup_staff">
     <div class="content">
-    <TopBar/>
+      <TopBar/>
 
-    <h1 class="title">Profile Lookup and Editing</h1>
-    <PageHeader pageCategory="Staff Headers" pageName="Profile Lookup and Editing"></PageHeader>
+      <h1 class="title">Profile Lookup and Editing</h1>
+      <PageHeader
+        pageCategory="Staff Headers"
+        pageName="Profile Lookup and Editing"
+      ></PageHeader>
 
-    <YouthIDSelector @selected="load_youth" usePeriodSwitch :args="{openDirection: 'bottom'}" />
+      <YouthIDSelector
+        @selected="load_youth"
+        :args="{openDirection: 'bottom'}"
+        usePeriodSwitch
+      />
 
-    <br />
-    <hr />
+      <br />
+      <hr />
 
-    <ProfileTabs v-show="currentProfile != null"
-      :profile="currentProfile"
-      :profileSnapshot="profile_ref"
-      :headerDoc="header_doc"
-      :activePeriods="current_active_periods"
-      :seasons="seasons"
-      :periods="periods"
-      :period_metadata="period_metadata"
-      @save_changes="save_changes"
-      edit
-    />
+      <ProfileTabs v-show="currentProfile != null"
+        :profile="currentProfile"
+        :profileSnapshot="profile_ref"
+        :headerDoc="header_doc"
+        :activePeriods="current_active_periods"
+        :seasons="seasons"
+        :periods="periods"
+        :period_metadata="period_metadata"
+        @save_changes="save_changes"
+        edit
+      />
 
-    <div v-show="currentProfile == null">
-      <br>
-      <p>Search the bar above to view a youth's profile information.</p>
+      <div v-show="currentProfile == null">
+        <br />
+        <p>Search the bar above to view a youth's profile information.</p>
+      </div>
+
+      <RefTracker :reference="profile_ref" @snapshot="handle_profile_snapshot" @load_complete="handle_ref_tracker" />
+
     </div>
-
-    <RefTracker :reference="profile_ref" @snapshot="handle_profile_snapshot" @load_complete="handle_ref_tracker" />
-
-    </div>
-    <Footer/>
+    <Footer />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import {db} from '../../firebase';
-import {firebase} from '../../firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
+import { db } from '../../firebase';
 
-import TopBar from '@/components/TopBar';
-import YouthIDSelector from "@/components/YouthIDSelector.vue"
+import TopBar from "@/components/TopBar";
+import YouthIDSelector from "@/components/YouthIDSelector.vue";
 import ProfileTabs from "@/components/ProfileTabs.vue";
 import RefTracker from "@/components/RefTracker.vue";
 
-import PageHeader from "@/components/PageHeader.vue"
-import {Period} from "@/scripts/Period.js";
-import {mapKeyVal} from "@/scripts/ParseDB.js";
-import {mapObj} from "@/scripts/ParseDB.js";
-import {Youth} from "@/scripts/Youth.js";
+import PageHeader from "@/components/PageHeader.vue";
+import { Period } from "@/scripts/Period.js";
+import { mapKeyVal } from "@/scripts/ParseDB.js";
+import { mapObj } from "@/scripts/ParseDB.js";
+import { Youth } from "@/scripts/Youth.js";
 
 let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
 
 export default {
-  name: 'profile_lookup_youth',
+  name: "profile_lookup_youth",
   components: {
     TopBar,
     YouthIDSelector,
@@ -98,17 +102,16 @@ export default {
   computed: {
     seasons: function() {
       return this.period_metadata ? this.period_metadata.seasons : [];
-    }
+    },
   },
 
-    methods: {
+  methods: {
 
       load_profile_data: async function() {
 
         // Load the Periods collection and go through each document in it
         var snapshot = await this.periods_db.get();
-        snapshot.docs.forEach(doc => {
-
+        snapshot.docs.forEach((doc) => {
           // Handle based on document ID
           switch (doc.id) {
 
@@ -130,13 +133,16 @@ export default {
         var data = this.periods_doc.data();
 
         await Period.setSeasons(data["Seasons"]);
-        this.periods = Period.enumerateStr(data["CurrentPeriod"], data["FirstPeriod"]);
+        this.periods = Period.enumerateStr(
+          data["CurrentPeriod"],
+          data["FirstPeriod"]
+        );
 
         this.period_metadata = {
           cur_period: data["CurrentPeriod"],
           reg_period: data["CurrentRegistrationPeriod"],
           seasons:    data["Seasons"],
-          class_list: mapKeyVal(data["Classes"], (name, desc) => name),
+          class_list: mapKeyVal(data["Classes"], (name, desc) => name), // eslint-disable-line no-unused-vars
         };
       },
 
@@ -153,8 +159,13 @@ export default {
 
         // Id returned - load profile for that youth
         else {
-          this.profile_ref = db.collection("GlobalYouthProfile").doc(youth.ID);
-          this.current_active_periods = this.create_active_periods(youth, this.period_data);
+          this.profile_ref = db
+            .collection("GlobalYouthProfile")
+            .doc(youth.ID);
+          this.current_active_periods = this.create_active_periods(
+            youth,
+            this.period_data
+          );
         }
       },
 
@@ -169,14 +180,13 @@ export default {
       create_active_periods: function(youth, period_data) {
 
         // Collect all the seasons from the nested year -> season data structure
-        var obj = Object.entries(period_data).reduce( (acc, [_, seasons]) => {
-          return {...acc, ...seasons}
-        }, {} );
+        var obj = Object.entries(period_data).reduce((acc, [_, seasons]) => { // eslint-disable-line no-unused-vars
+          return { ...acc, ...seasons };
+        }, {});
 
         // Convert each period list into the youth's class during that period
         // If youth not active, remove the period from the object
         mapObj(obj, (period, val) => {
-
           // Find all instances matching the youth in this period
           let matches = Youth.findMatches(val, youth);
 
@@ -187,13 +197,15 @@ export default {
 
           // If youth found once, set the value to their class
           else if (matches.length == 1) {
-            return {key: period, value: matches[0]["Class"]};
+            return { key: period, value: matches[0]["Class"] };
           }
 
           // If found more than once, flag it and use the first instance in the list
           else {
-            console.warn("Multiple instances of youth " + youth + " in period " + period);
-            return {key: period, value: matches[0]["Class"]};
+            // console.warn(
+            //   "Multiple instances of youth " + youth + " in period " + period
+            // );
+            return { key: period, value: matches[0]["Class"] };
           }
         });
 
@@ -209,7 +221,7 @@ export default {
 </script>
 
 <style>
-  .title {
-    margin-bottom: 1rem;
-  }
+.title {
+  margin-bottom: 1rem;
+}
 </style>
