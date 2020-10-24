@@ -83,8 +83,8 @@ export default {
             Phone: data["Primary Parent or Guardian Phone"]
           },
           "Secondary Contact": {
-            Name: data["Secondary Parent or Guardian Name"],
-            Phone: data["Secondary Parent or Guardian Phone"]
+            Name: data["Secondary Parent or Guardian Name"] || "Not Given",
+            Phone: data["Secondary Parent or Guardian Phone"] || "Not Given"
           },
 
           // Any allergies or medical issues
