@@ -2,7 +2,6 @@
     <div>
         <div class="content">
         <top-bar/>
-        <h1 class="title">Log hours for one or more youth</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Log Hours for Multiple Youths"></PageHeader>
         <div class="loghours-page">
             <p v-if="profilesToAdd.length === 0">No youths selected</p>
