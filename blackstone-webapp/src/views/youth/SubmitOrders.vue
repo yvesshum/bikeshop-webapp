@@ -214,6 +214,7 @@ export default {
             let initializers = await rb.ref("Submit Orders Initializers").once('value').then(snapshot => { 
                 return snapshot.val()
             })
+            console.log('init',initializers)
             return initializers;
         },
 
@@ -416,11 +417,14 @@ export default {
             this.fields.optional.forEach(field => {
                 payload[field.name] = field.value;
             })
+            let protectedInitializers = this.initializers.protectedInitializers || {};
+            let unprotectedInitializers = this.initializers.unprotectedInitializers || {};
             this.fields.hidden.forEach(field => {
-                if (this.initializers.protectedInitializers[field.name] != null) {
-                    payload[field.name] = this.initializers.protectedInitializers[field.name]
-                } else if (this.initializers.unprotectedInitializers[field.name] != null) {
-                    payload[field.name] = this.initializers.unprotectedInitializers[field.name]
+                console.log(this.initializers.unprotectedInitializers)
+                if (protectedInitializers[field.name] != null) {
+                    payload[field.name] = protectedInitializers[field.name]
+                } else if (unprotectedInitializers[field.name] != null) {
+                    payload[field.name] = unprotectedInitializers[field.name]
                 } else {
                     payload[field.name] = field.value;
                 }
