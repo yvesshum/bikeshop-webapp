@@ -95,7 +95,7 @@
 
             <template v-slot:tabs-end v-if="allow_edits">
               <br />
-              <b>Change Apron Level</b>
+              <b>Change Apron Color</b>
               <slot name="increment_buttons"></slot>
             </template>
           </b-tabs>
