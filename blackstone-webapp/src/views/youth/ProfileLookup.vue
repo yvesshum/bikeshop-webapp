@@ -19,7 +19,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
       :seasons="seasons"
       :periods="periods"
       :period_metadata="period_metadata"
-      edit
+      :edit="false"
     />
 
     <div v-show="currentProfile == null">
