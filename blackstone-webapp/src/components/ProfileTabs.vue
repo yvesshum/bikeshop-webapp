@@ -1,6 +1,22 @@
 <template>
   <div class="profile_tabs">
 
+    <div v-show="profile!=null" style="display: flex; align-content:center; width: 70%; margin: auto;">
+      <div style="flex: 2 1 0;">
+        <div style="font-size:3em;">{{youth_name}}</div>
+        <div class="id_parens">(ID: {{youth_id}})</div>
+      </div>
+
+      <div style="flex: 1 1 0;">
+        <br />
+        <!-- {{get_profile_field("")}} Class <br /> -->
+        {{get_profile_field("Apron Color")}} Apron <br />
+        {{get_profile_field("Hours Earned")}} Hours Earned
+      </div>
+    </div>
+
+    <br />
+
     <b-tabs ref="body_fields"
       content-class="mt-3" justified
       active-nav-item-class="font-weight-bold"
@@ -12,7 +28,7 @@
           :profile="profile"
           :headerDoc="headerDoc"
           :edit="allow_edits" :disableWarnings="!allow_edits"
-          showOptionalFields
+          showOptionalFields :hideTitle="true"
           @save_changes="save_changes"
         />
       </b-tab>
@@ -138,6 +154,18 @@ export default {
         return !!this.edit;
       }
     },
+
+    youth_name: function() {
+      if (this.profile == null) return "";
+      let first_name = this.profile.data()["First Name"];
+      let last_name =  this.profile.data()["Last Name"];
+      return `${first_name} ${last_name}`;
+    },
+
+    youth_id: function() {
+      if (this.profile == null) return "";
+      return this.profile.id;
+    },
   },
 
   mounted: function() {
@@ -206,6 +234,10 @@ export default {
 
     load_header_doc: function(new_header) {},
     load_profile: function(doc) {},
+
+    get_profile_field: function(field, default_value) {
+      return (this.profile == null) ? default_value : this.profile.data()[field];
+    },
 
     save_changes: function(changes) {
       this.$emit("save_changes", changes);

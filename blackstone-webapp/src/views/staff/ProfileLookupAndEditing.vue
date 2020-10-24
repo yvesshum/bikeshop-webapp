@@ -5,8 +5,11 @@
 
     <h1 class="title">Profile Lookup and Editing</h1>
     <PageHeader pageCategory="Staff Headers" pageName="Profile Lookup and Editing"></PageHeader>
+
     <YouthIDSelector @selected="load_youth" usePeriodSwitch :args="{openDirection: 'bottom'}" />
+
     <br />
+    <hr />
 
     <ProfileTabs v-show="currentProfile != null"
       :profile="currentProfile"

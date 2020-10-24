@@ -8,9 +8,11 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
     <top-bar/>
     <h1 class="title">Profile Lookup</h1>
     <PageHeader pageCategory="Youth Headers" pageName="Profile Lookup"></PageHeader>
-    <br />
+
     <YouthIDSelector @selected="load_youth" :args="{openDirection: 'bottom'}" />
+
     <br />
+    <hr />
 
     <ProfileTabs v-show="currentProfile != null"
       :profile="currentProfile"
