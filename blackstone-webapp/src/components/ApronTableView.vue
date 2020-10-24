@@ -336,8 +336,7 @@ export default {
             // If applicable, display the date this apron level was earned
             var datestamp = '';
             if (apron_level != undefined && apron_level.Achieved !== false && apron_level.Achieved !== undefined) {
-              let date = new Date(apron_level.Achieved.seconds * 1000);
-              datestamp = ` &mdash; Earned ${date.toDateString()}`;
+              datestamp = ` &mdash; Earned ${apron_level.Achieved.toDate().toDateString()}`;
             }
 
             // Generate pending message
