@@ -214,7 +214,6 @@ export default {
             let initializers = await rb.ref("Submit Orders Initializers").once('value').then(snapshot => { 
                 return snapshot.val()
             })
-            console.log('init',initializers)
             return initializers;
         },
 
@@ -420,7 +419,6 @@ export default {
             let protectedInitializers = this.initializers.protectedInitializers || {};
             let unprotectedInitializers = this.initializers.unprotectedInitializers || {};
             this.fields.hidden.forEach(field => {
-                console.log(this.initializers.unprotectedInitializers)
                 if (protectedInitializers[field.name] != null) {
                     payload[field.name] = protectedInitializers[field.name]
                 } else if (unprotectedInitializers[field.name] != null) {
