@@ -588,16 +588,12 @@ export default {
       this.statusObj.set_status(id, Status.TOGGLE);
     },
 
-    accept_changes: function() {
-      console.log("Changes should be accepted!");
-    },
+    accept_changes:  function() {},
 
-    discard_changes: function() {
-      console.log("Changes should be discarded!");
-    },
+    discard_changes: function() {},
 
     // One of the functions required by the parent - doesn't actually have to do anything in this case
-    redraw: function() {}
+    redraw: function() {},
   }
 }
 </script>
