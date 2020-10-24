@@ -19,6 +19,7 @@
       :seasons="seasons"
       :periods="periods"
       :period_metadata="period_metadata"
+      @save_changes="save_changes"
       edit
     />
 
@@ -198,7 +199,11 @@ export default {
 
         // Return the final object
         return obj;
-      }
+      },
+
+      save_changes: function(changes) {
+        this.ref_tracker.save_changes(changes);
+      },
     }
 }
 </script>
