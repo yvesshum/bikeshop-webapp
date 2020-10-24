@@ -16,6 +16,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
 
     <ProfileTabs v-show="currentProfile != null"
       :profile="currentProfile"
+      :profileSnapshot="profile_ref"
       :headerDoc="header_doc"
       :activePeriods="current_active_periods"
       :seasons="seasons"
