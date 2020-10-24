@@ -29,7 +29,7 @@
                       <ApronImg
                         :color="get_color_val(section.apron.apron)"
                         :size="48"
-                        :status="get_apron_img_status(section)"
+                        v-bind="get_apron_img_status(section)"
                       />
                     </div>
                     <div style="flex: 1;">
@@ -459,15 +459,19 @@ export default {
 
     get_apron_img_status: function(section) {
       if (section.apron.earned != false) {
-        return "achieved";
+        return {status: "achieved"};
       }
 
       else if (section.apron.apron == this.currentColor) {
-        return "working";
+        return {
+          status: "progress",
+          progress: section.apron.num_achieved,
+          total: section.apron.num_total,
+        };
       }
 
       else {
-        return "locked";
+        return {status: "locked"};
       }
     },
 

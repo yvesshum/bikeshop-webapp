@@ -13,6 +13,7 @@
 import ApronImage from "@/assets/apron_image.png";
 import ApronEmpty from "@/assets/apron_empty_lock.png";
 import ApronCheck from "@/assets/apron_checked.png";
+import ApronBlank from "@/assets/apron_outline.png";
 
 export default {
 	name: 'apron_img',
@@ -24,12 +25,14 @@ export default {
 		status:   {
 			type: String,
 			validator: (str) => {
-				return ["achieved", "working", "locked"].includes(str);
+				return ["achieved", "working", "locked", "progress"].includes(str);
 			},
 			default: "working",
 		},
 		showName: { type: Boolean, default: true, },
 		showStatus: { type: Boolean, default: true, },
+		progress: {type: Number, default: 100},
+		total:    {type: Number, default: 100},
 	},
 
 	data: function() {
@@ -38,11 +41,13 @@ export default {
 			apron_image: new Image(),
 			apron_empty: new Image(),
 			apron_check: new Image(),
+			apron_blank: new Image(),
 
 			// Boolean values to indicate whether the images have loaded yet
 			apron_image_loaded: false,
 			apron_empty_loaded: false,
 			apron_check_loaded: false,
+			apron_blank_loaded: false,
 		}
 	},
 
@@ -51,11 +56,13 @@ export default {
 		this.apron_image.src = ApronImage;
 		this.apron_empty.src = ApronEmpty;
 		this.apron_check.src = ApronCheck;
+		this.apron_blank.src = ApronBlank;
 
 		// When each image loads, update its respective boolean tracker
 		this.apron_image.onload = () => { this.apron_image_loaded = true; };
 		this.apron_empty.onload = () => { this.apron_empty_loaded = true; };
 		this.apron_check.onload = () => { this.apron_check_loaded = true; };
+		this.apron_blank.onload = () => { this.apron_blank_loaded = true; };
 
 		// Manually set the size of the canvas (see note in Watcher function for size)
 		let canvas = this.$refs.canvas;
@@ -91,12 +98,20 @@ export default {
 			// Re-draw the current image to the canvas
 			this.draw_image();
 		},
+
+		progress: function() {
+			this.draw_image();
+		},
+
+		total: function() {
+			this.draw_image();
+		},
 	},
 
 	computed: {
 		// Tell whether both image assets are loaded or not
 		loaded: function() {
-			return this.apron_image_loaded && this.apron_empty_loaded && this.apron_check_loaded;
+			return this.apron_image_loaded && this.apron_empty_loaded && this.apron_check_loaded && this.apron_blank_loaded;
 		},
 
 		// Return the apron image currently being used (the active one or the inactive one)
@@ -136,7 +151,24 @@ export default {
 
 			// Clear the previous image and draw the new one
 			ctx.clearRect(0, 0, this.size, this.size);
-			ctx.drawImage(this.current_image, 0, 0, this.size, this.size);
+
+			if (this.status == "progress") {
+				let img_size = 64;
+				let percent = this.progress / this.total;
+				ctx.drawImage(this.current_image,
+					0, img_size  * (1 - percent), img_size,  img_size  * percent,
+					0, this.size * (1 - percent), this.size, this.size * percent
+				);
+				ctx.drawImage(this.apron_blank,
+					0, 0, img_size,  img_size  * (1 - percent),
+					0, 0, this.size, this.size * (1 - percent)
+				);
+			}
+
+			else {
+				ctx.drawImage(this.current_image, 0, 0, this.size, this.size);
+			}
+			
 
 			// Recolor the new image
 			this.recolor_apron(this.color);

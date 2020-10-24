@@ -155,9 +155,9 @@
       <br />
 
       <table class="clm_table">
-        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1" /></tr>
+        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1" :currentProgress="5" :currentTotal="10" /></tr>
         <tr class="clm_arrow">&dArr;</tr>
-        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1 + change_level_effect" /></tr>
+        <tr><ApronProgressBar :colors="apron_colors" :size="48" :showStatus="false" :level="apron_level+1 + change_level_effect" :currentProgress="0" /></tr>
       </table>
 
       <br />
