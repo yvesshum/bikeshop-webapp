@@ -230,6 +230,11 @@
       </template>
     </b-modal>
 
+
+    <b-modal v-model="success_modal_visible" hide-header>
+        <h3>Success!</h3>
+    </b-modal>
+
   </div>
 </template>
 
@@ -297,6 +302,8 @@ export default {
 
       change_skills_modal: false,
       change_skills_effect: 0,
+
+      success_modal_visible: false,
 
       selected_skills: [],
 
@@ -591,7 +598,9 @@ export default {
           changes,
 
           // Nothing to do on success - updated document handles it all
-          success: () => {},
+          success: () => {
+            this.success_modal_visible = true;
+          },
 
           // Error updating database
           error: () => {
@@ -678,6 +687,7 @@ export default {
           // If update succeeds, update all skills locally
           success: () => {
             this.displays.table.accept_changes();
+            this.success_modal_visible = true;
           },
 
           // Error updating database
