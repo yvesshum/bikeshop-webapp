@@ -80,7 +80,7 @@
                       @click="toggle_skill(box, skill)"
                       :style="{cursor: allow_edits ? 'pointer' : undefined}"
                     >
-                      <span style="margin-right:1em;">{{skill.achieved ? "&#9745;" : "&#9744;"}}</span>{{skill.skill}}
+                      <span style="margin-right:1em;">{{get_check_box(box, skill)}}</span>{{skill.skill}}
                     </b-list-group-item>
                   </b-list-group>
 
@@ -540,6 +540,18 @@ export default {
         month:   'short',
         day:     'numeric'
       });
+    },
+
+    get_check_box(box, skill) {
+      let id = this.statusObj.get_id({
+        name: skill.skill,
+        category: box.category,
+        color: box.apron,
+      });
+
+      // if (this.statusObj.is_status(id, Status.REM)) return "\u2612";
+
+      return this.statusObj.is_status(id, Status.O) ? "\u2611" : "\u2610";
     },
 
     get_achieved_skills_list: function(apron, category) {
