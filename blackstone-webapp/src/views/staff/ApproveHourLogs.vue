@@ -229,10 +229,6 @@
                 return ret;
             },
 
-            parse(item) {
-                return JSON.parse(JSON.stringify(item));
-            },
-
             showModal(header, msg) {
                 this.modalHeader = header;
                 this.modalMsg = msg;
@@ -250,13 +246,13 @@
                 
                 //loop through selected 
                 let documentIDs = [];
-            
-                let selectedLength = this.selected.length;
-
                 this.shouldRefreshTable = false; // shouldn't refresh that often in bulk or else lag
+                let selected = this.selected.map(x => x); // shallow copy
+                let selectedLength = selected.length;
+
                 for (let i = 0; i < selectedLength; i++) {
                     // console.log('A', this.selected[i], this.selected[i]["Document ID"])
-                    let currentRow = this.selected[i];
+                    let currentRow = selected[i];
                     documentIDs.push(currentRow["Document ID"]);
 
                     let approveStatus = await this.approvehours(currentRow);
@@ -277,7 +273,6 @@
                         break;
                     }
                 }
-                //TODO: Table not updating properly after deleting
                 
                 for (let i = 0; i < documentIDs.length; i++) {
                     this.removeLocally(documentIDs[i]);
