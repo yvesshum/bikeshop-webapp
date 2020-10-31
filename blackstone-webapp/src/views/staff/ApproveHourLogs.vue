@@ -184,7 +184,6 @@
         methods: {
             rowSelected(items){
                 this.selected = items;
-                console.warn('selected', this.selected)
             },
             // reject: function(evt) {
             //     evt.preventDefault();
