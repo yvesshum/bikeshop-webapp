@@ -139,7 +139,9 @@
                 </div>
             </div>
         </b-modal>
-        {{changed_text}}
+        <div v-if="unsaved" class="unsaved_bar">
+          You have unsaved changes
+        </div>
         <!-- <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
         <br/>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
@@ -205,27 +207,56 @@
                 },
                 // Dictionary from [category, color, skill] to [new color, new category, new skill] or null
                 changes : {},
-                changed_text : ""
+                saved_groups : [],
+                unsaved : false
             };
         },
         watch: {
-          changes: {
-             handler(val){
-               console.log("That give you any ideas?")
-               var unchanged = true;
-               for(const k in Object.keys(val)){
-                  if(val[k] != null){
-                     unchanged = false;
-                     break;
-                  }
-               }
-               if(unchanged){
-                 this.changed_text = "A"
-               } else {
-                 this.changed_text = "You have unsaved changes"
-               }
-             },
-             deep: true
+          groups: {
+            handler: function (v){
+                var changed = false;
+                if(v.length != this.saved_groups.length){
+                    console.log("Different lengths!")
+                    changed = true;
+                } else {
+                    for(var i = 0; i < v.length; i++){
+                      if(v[i]["category"] != this.saved_groups[i]["category"]){
+                          console.log("Different categories!")
+                          changed = true;
+                      }
+                      if(v[i]["color"] != this.saved_groups[i]["color"]){
+                          console.log("Different colors!")
+                          changed = true;
+                      }
+                      if(v[i]["skills"].length != this.saved_groups[i]["skills"].length){
+                          console.log("Different skill lengths!")
+                          changed = true;
+                      } else {
+                          for(var j = 0; j < v[i]["skills"].length; j++){
+                            if(v[i]["skills"][j]["skill"] != this.saved_groups[i]["skills"][j]["skill"]){
+                                console.log("Different skills!")
+                                console.log(v[i]["skills"][j]["skill"])
+                                console.log(this.saved_groups[i]["skills"][j]["skill"])
+                                changed = true;
+                                break
+                            }
+                          }
+                      }
+                      if(changed){
+                          break;
+                      }
+                    }
+                }
+                if(changed){
+                  this.unsaved = true;
+                } else {
+                  this.unsaved = false;
+                }
+                console.log("That give you any ideas?")
+                console.log(v)
+                console.log(this.saved_groups)
+            },
+            deep: true
           }
         },
         methods: {
@@ -626,6 +657,16 @@
                   });
                 }
               }
+              this.saved_groups = [];
+              for(var i = 0; i < this.groups.length; i++){
+                  var new_obj = Object.assign({}, this.groups[i]);
+                  var new_skills = []
+                  for(var j = 0; j < new_obj["skills"].length; j++){
+                    new_skills.push(JSON.parse(JSON.stringify(new_obj["skills"][j])))
+                  }
+                  new_obj["skills"] = new_skills
+                  this.saved_groups.push(new_obj)
+              }
             }
         },
         async mounted() {
@@ -672,5 +713,21 @@
     }
     .success_message{
       color: green;
+    }
+    .unsaved_bar {
+      /* padding: 2px 15px !important; */
+      /* min-height: 15px;
+      width: -moz-calc(99% - 260px);
+      width: -webkit-calc(99% - 260px);
+      width: -o-calc(99% - 260px);
+      width: calc(99% - 260px); */
+      width: 100%;
+      background-color: #ffc107;
+      color: black;
+      position: fixed;
+      right: 0%;
+      /* top: 108px; */
+      bottom: 0px;
+      text-align: center;
     }
 </style>

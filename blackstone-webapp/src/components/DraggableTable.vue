@@ -193,7 +193,7 @@ export default {
     },
     reskill($event, category, color, index) {
       var group = this.getGroupsByColorCategory(color, category);
-      let new_skill = $event.target.innerText.substring(0, 300);
+      var new_skill = $event.target.innerText.substring(0, 300);
       if($event.target.innerText == ""){
         new_skill = "None";
       }
