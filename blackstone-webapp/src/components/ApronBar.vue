@@ -24,8 +24,8 @@
     >
       <template slot="save_buttons">
         <div v-if="has_changes">
-          <b-button variant="success" @click="show_skills_modal(true)" style="margin: 0px 5px;">Save Changes</b-button>
           <b-button variant="danger" @click="show_skills_modal(false)" style="margin: 0px 5px;">Discard Changes</b-button>
+          <b-button variant="success" @click="show_skills_modal(true)" style="margin: 0px 5px;">Save Changes</b-button>
         </div>
         <div v-else>
           Use the <i>Achieved?</i> column to add & remove skills
