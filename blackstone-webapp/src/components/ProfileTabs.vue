@@ -1,18 +1,17 @@
 <template>
   <div class="profile_tabs">
 
-    <div v-show="profile!=null" style="display: flex; align-content:center; width: 70%; margin: auto;">
-      <div style="flex: 2 1 0;">
-        <div style="font-size:3em;">{{youth_name}}</div>
-        <div class="id_parens">(ID: {{youth_id}})</div>
-      </div>
-
-      <div style="flex: 1 1 0;">
-        <br />
-        <!-- {{get_profile_field("")}} Class <br /> -->
-        {{get_profile_field("Apron Color")}} Apron <br />
-        {{get_profile_field("Hours Earned")}} Hours Earned
-      </div>
+    <div v-show="profile!=null" style="margin: auto;">
+      <div style="font-size:3em;">{{youth_name}}</div>
+      <div class="id_parens" style="margin-top:0.5em; font-size:0.9em;">
+          ID: {{youth_id}}
+          <span style="margin: 0 0.75em;">|</span>
+          {{get_profile_field("Apron Color")}} Apron
+          <span style="margin: 0 0.75em;">|</span>
+          {{get_profile_field("Hours Earned")}} Hours Earned
+          <span style="margin: 0 0.75em;">|</span>
+          {{current_class}}
+        </div>
     </div>
 
     <br />
@@ -165,6 +164,11 @@ export default {
     youth_id: function() {
       if (this.profile == null) return "";
       return this.profile.id;
+    },
+
+    current_class: function() {
+      if (this.activePeriods == null || this.period_metadata == null) return "";
+      return this.activePeriods[this.period_metadata.cur_period]
     },
   },
 
