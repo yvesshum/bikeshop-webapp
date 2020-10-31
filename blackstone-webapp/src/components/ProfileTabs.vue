@@ -33,7 +33,49 @@
       </b-tab>
 
       <b-tab title="Hours">
-        <HoursStatsBar :profile="profile" style="margin:auto;" />
+
+        <b-card no-body style="width: 95%; margin: auto;">
+          <b-card-header>
+            <h3>Current Balance</h3>
+          </b-card-header>
+
+          <b-card-body>
+            <HoursStatsBar :profile="profile" style="margin:auto;" />
+          </b-card-body>
+        </b-card>
+
+        <br />
+
+        <b-card no-body style="width: 95%; margin: auto;">
+          <b-card-header>
+            <h3>Hour Logs</h3>
+          </b-card-header>
+          <b-tabs card justified v-model="current_log_tab">
+            <b-tab title="Work Log">
+              <ProfileWorkLog
+                :snapshot="profileSnapshot"
+                :periods="periods"
+                @load_complete="s => work_log_content = s"
+              />
+            </b-tab>
+
+            <b-tab title="Order Log">
+              <ProfileOrderLog
+                :snapshot="profileSnapshot"
+                :periods="periods"
+                @load_complete="s => order_log_content = s"
+              />
+            </b-tab>
+
+            <b-tab title="Hour Transfer Log">
+              <ProfileTransferLog
+                :snapshot="profileSnapshot"
+                :periods="periods"
+                @load_complete="s => trans_log_content = s"
+              />
+            </b-tab>
+          </b-tabs>
+        </b-card>
       </b-tab>
 
       <b-tab title="Classes">
@@ -53,30 +95,6 @@
           style="max-width: 95%; margin:auto"
           @load_complete="s => apron_bar_content = s"
           @save_changes="save_changes"
-        />
-      </b-tab>
-
-      <b-tab title="Work Log">
-        <ProfileWorkLog
-          :snapshot="profileSnapshot"
-          :periods="periods"
-          @load_complete="s => work_log_content = s"
-        />
-      </b-tab>
-
-      <b-tab title="Order Log">
-        <ProfileOrderLog
-          :snapshot="profileSnapshot"
-          :periods="periods"
-          @load_complete="s => order_log_content = s"
-        />
-      </b-tab>
-
-      <b-tab title="Hour Transfer Log">
-        <ProfileTransferLog
-          :snapshot="profileSnapshot"
-          :periods="periods"
-          @load_complete="s => trans_log_content = s"
         />
       </b-tab>
     </b-tabs>
@@ -137,6 +155,8 @@ export default {
   data: function() {
     return {
       current_tab: 0,
+      current_log_tab: 0,
+
       apron_bar_content: null,
       work_log_content:  null,
       order_log_content: null,
@@ -198,6 +218,11 @@ export default {
     current_tab: function(open_tab) {
       switch (open_tab) {
 
+        // Hour Display
+        case 1:
+          this.$nextTick(this.redraw_log_table);
+          break;
+
         // Apron Bar
         case 3:
           this.$nextTick(() => {
@@ -228,12 +253,32 @@ export default {
       };
     },
 
+    current_log_tab: function(open_tab) {
+      this.$nextTick(this.redraw_log_table);
+    }
+
   },
 
   methods: {
 
     redraw_bar: function() {
       this.apron_skills_content.reload();
+    },
+
+    redraw_log_table: function() {
+      switch (this.current_log_tab) {
+        case 0:
+          if (this.work_log_content != null) this.work_log_content.redraw();
+          break;
+
+        case 1:
+          if (this.order_log_content != null) this.order_log_content.redraw();
+          break;
+
+        case 2:
+          if (this.trans_log_content != null) this.trans_log_content.redraw();
+          break;
+      }
     },
 
     load_header_doc: function(new_header) {},

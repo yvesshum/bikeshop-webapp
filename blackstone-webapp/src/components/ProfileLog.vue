@@ -10,7 +10,6 @@
       :doc_formatter="docFormatter"
       :args="extra_args"
       :visible="visible"
-      style="width:90%;margin:auto;"
       @table="handle_table"
     ></CollectionTable>
   </div>
