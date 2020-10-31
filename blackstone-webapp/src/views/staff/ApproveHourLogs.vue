@@ -454,12 +454,8 @@
 
                 this.$root.$emit('bv::refresh::table', 'transfer_table');
                 this.closeLoadingModal();
-                this.showModal("Successfully deleted hour log request", "successfully deleted request with ID of " 
-                    + this.rejectingDocumentID + "\n You may safely disregard this message");
+                this.showModal(`Successfully deleted ${forYouthProfile["First Name"]}'s hour log request`);
                 this.rejectingDocumentID = "";
-
-
-
             },
 
             editNote() {
