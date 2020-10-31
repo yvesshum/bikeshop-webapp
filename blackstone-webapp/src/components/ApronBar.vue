@@ -223,10 +223,10 @@
       </div>
 
       <template slot="modal-footer" slot-scope="{cancel}">
+        <b-button class="mt-3" block @click="cancel()" variant="primary">Cancel</b-button>
         <b-button class="mt-3" block @click="accept_skills_modal" :variant="change_skills_effect ? 'success' : 'danger'">
           {{change_skills_effect ? "Accept" : "Discard"}}
         </b-button>
-        <b-button class="mt-3" block @click="cancel()" variant="primary">Cancel</b-button>
       </template>
     </b-modal>
 
