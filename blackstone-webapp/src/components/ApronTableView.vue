@@ -267,7 +267,7 @@ export default {
           resizeableColumns: false,
 
           // Allow multiple selection with ctrl and shift keys
-          selectable: true,
+          selectable: false,
 
           // If the data is being filtered, open all the columns; otherwise, just show one
           // Using nextTick: We don't specify anywhere here what the groups are, instead letting the table make them based on what colors are represented in the skills.  This is good because we don't have to worry about a Gray section (which wouldn't have any skills), and when we filter data it'll automatically remove any groups that don't have any skills passing the filter. The flip side is that those groups don't exist anymore, so if we switch the filtering status and try to operate on a group that had been removed, it won't work.  Using nextTick gives it a time to recreate all the groups before we try to operate on them, so we can be sure they all exist

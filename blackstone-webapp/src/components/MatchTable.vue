@@ -76,6 +76,23 @@ export default {
           else {
             row.getElement().classList.remove("changed_row");
           }
+
+          // Change row colors if they're being added/removed
+          switch (this.row_status[row_id]) {
+            case Status.ADD:
+              row.getElement().classList.add("added_row");
+              row.getElement().classList.remove("removed_row");
+              break;
+
+            case Status.REM:
+              row.getElement().classList.add("removed_row");
+              row.getElement().classList.remove("added_row");
+              break;
+
+            default:
+              row.getElement().classList.remove("added_row");
+              row.getElement().classList.remove("removed_row");
+          }
         },
       },
 
@@ -357,10 +374,12 @@ export default {
     font-weight: bold;
   }
 
+  /* Light Color */
   .highlighted_row.tabulator-row-odd, .highlighted_row.tabulator-row {
     background-color: #FEFCBD;
   }
 
+  /* Dark Color */
   .highlighted_row.tabulator-row-even {
     background-color: #FDFA9B;
   }
@@ -368,5 +387,33 @@ export default {
   .highlighted_row.tabulator-selected {
     background-color: #99baad;
   }
+
+
+  /* Light Color */
+  .added_row.tabulator-row-odd, .added_row.tabulator-row {
+    /*background-color: #F0D670;*/
+    /*background-color: #dbbb5c;*/
+    background-color: #fbe49e;
+  }
+
+  /* Dark Color */
+  .added_row.tabulator-row-even {
+    /*background-color: #DDC45E;*/
+    /*background-color: #ffd456;*/
+    /*background-color: #f2d270;*/
+    background-color: #f6db87;
+  }
+
+
+  /* Light Color */
+  .removed_row.tabulator-row-odd, .removed_row.tabulator-row {
+    background-color: #feb0be;
+  }
+
+  /* Dark Color */
+  .removed_row.tabulator-row-even {
+    background-color: #fb9ea3;
+  }
+
 
 </style>
