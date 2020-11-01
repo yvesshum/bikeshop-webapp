@@ -129,24 +129,42 @@ export default {
       this.$emit("table", table);
     },
 
+    // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
+    to_decimal_place: function(n, d) {
+      return Number(Math.round(parseFloat(n + 'e' + d)) + "e-" + d).toFixed(d);
+    },
+
     // =-= Formatters =-=-=
 
     // Formatting for the hours column of the Work Log goes here
     format_work_hours: function(cell) {
       var val = cell.getValue();
       var keys = Object.keys(val);
-      var msg = "<table>";
+      var msg = "<table style='width: 90%; margin: auto;'>";
       var sum = 0;
+      var num_cats = 0;
 
+      // Add a row to the table for each category that has hours logged under it
       keys.forEach(f => {
         if (val[f] > 0) {
-          msg += `<tr><td>${f}:</td><td>${val[f]}</td></tr>`;
+          msg += `<tr><td>${f}</td><td style="text-align: right;">${this.to_decimal_place(val[f], 1)}</td></tr>`;
           sum += val[f];
+          num_cats++;
         }
       });
-      msg += "<tr><td>Total:</td><td>" + sum + "</td></tr>";
-      msg += "</table>";
 
+      // If there weren't any hours logged in any of the categories, return a special message
+      if (num_cats == 0) {
+        return `<div style="text-align: center; width: 100%; font-style: italic">No hours logged.</div>`;
+      }
+
+      // If more than one category had hours under it, make a "Total" row at the bottom to tally them all up
+      if (num_cats > 1) {
+        msg += "<tr style='border-top: thin solid'><td>Total</td><td style='text-align: right;'>" + this.to_decimal_place(sum, 1) + "</td></tr>";
+      }
+
+      // Close the table and return it
+      msg += "</table>";
       return msg;
     },
 
