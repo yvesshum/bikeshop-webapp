@@ -26,6 +26,7 @@
         :seasons="seasons"
         :periods="periods"
         :period_metadata="period_metadata"
+        :hourLoggingCategories="hour_logging_categories"
         @save_changes="save_changes"
         edit
       />
@@ -58,6 +59,7 @@ import { mapObj } from "@/scripts/ParseDB.js";
 import { Youth } from "@/scripts/Youth.js";
 
 let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+let HourLoggingCategoriesRef = db.collection("GlobalVariables").doc("Hour Logging Categories");
 
 export default {
   name: "profile_lookup_youth",
@@ -85,6 +87,8 @@ export default {
       period_data: new Object(),
 
       current_active_periods: new Object(),
+
+      hour_logging_categories: null,
     };
   },
 
@@ -126,6 +130,9 @@ export default {
               break;
           }
         });
+
+        var hour_categories_snapshot = await HourLoggingCategoriesRef.get();
+        this.hour_logging_categories = hour_categories_snapshot.data().Categories;
       },
 
       handle_period_metadata: async function(doc) {

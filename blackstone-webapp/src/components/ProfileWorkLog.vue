@@ -7,7 +7,6 @@
       :visible="visible"
       :collection="collection"
       :headers="headers"
-      :categories="categories"
       :docFormatter="work_doc_formatter"
       @table="handle_table"
     />
@@ -103,8 +102,8 @@ export default {
 
     make_hours_obj: function(data) {
       var obj = {};
-      for (let i in this.hour_categories) {
-        let category = this.hour_categories[i];
+      for (let i in this.categories) {
+        let category = this.categories[i];
         obj[category] = data[category];
       };
       return obj;

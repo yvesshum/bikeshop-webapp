@@ -55,6 +55,7 @@
               <ProfileWorkLog
                 :snapshot="profileSnapshot"
                 :periods="periods"
+                :categories="hourLoggingCategories"
                 @load_complete="s => work_log_content = s"
               />
             </b-tab>
@@ -140,6 +141,9 @@ export default {
     seasons: Array,
     period_metadata: Object,
     activePeriods: Object,
+
+    // Hour logging categories
+    hourLoggingCategories: Array,
   },
 
   components: {
