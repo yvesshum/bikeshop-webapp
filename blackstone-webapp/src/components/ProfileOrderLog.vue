@@ -24,7 +24,7 @@ import {forKeyVal} from "@/scripts/ParseDB";
 var OrderLogHeadersRef = db.collection("GlobalFieldsCollection").doc("Youth Order Form");
 
 // Fields from database for the Order Log that we don't want to show on this page
-var excluded_order_fields = [ "Youth ID", "First Name", "Last Name", "Status" ];
+var excluded_order_fields = [ "Youth ID", "First Name", "Last Name", "Status", "Period" ];
 
 export default {
   name: 'profile_order_log',
