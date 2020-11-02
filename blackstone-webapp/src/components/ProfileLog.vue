@@ -24,6 +24,7 @@ import CollectionTable from "@/components/CollectionTable.vue"
 import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
+import {custom_filter_func} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
 
 const moment = require("moment");
@@ -236,184 +237,6 @@ export default {
 
     // =-= Filters =-=-=
 
-    date_filter: function(filters, option) {
-
-      var datestamp = Array.isArray(option) ? option[0] : option;
-      var date = get_as_date(datestamp);
-
-      // Result will be true if every filter passes
-      var result = filters.every(filter => {
-
-        // Parse desired value(s) from filter and actual value from user input
-        var option_val = parse_option_val(filter.option, date, filter.value);
-        var filter_val = parse_filter_val(filter.option, filter.value);
-        var second_val = parse_filter_val(filter.option, filter.value2);
-
-        // If the search term was invalid for some reason, skip over this filter
-        if (filter_val == null) return true;
-
-        // By this point, option_val holds the appropriate value of the current cell,
-        // and filter_val holds the desired value from the filter, e.g.
-        //    option_val = 2019
-        //    filter_val = 2015
-
-        // Compare the option value and filter value based on the given operation
-        switch (filter.op) {
-          case "is":
-            return option_val == filter_val;
-
-          case "is not":
-            return option_val != filter_val;
-
-          case "before":
-            return filter.inclusive
-              ? (option_val <= filter_val)
-              : (option_val < filter_val);
-
-          case "after":
-            return filter.inclusive
-              ? (option_val >= filter_val)
-              : (option_val > filter_val);
-
-          case "between":
-            return filter.inclusive
-              ? (option_val >= filter_val && option_val <= second_val)
-              : (option_val >  filter_val && option_val <  second_val);
-
-          case "not between":
-            return filter.inclusive
-              ? (option_val <= filter_val || option_val >= second_val)
-              : (option_val <  filter_val || option_val >  second_val);
-        }
-      });
-
-      return result;
-
-
-      function find_in(arr, val, type) { // eslint-disable-line no-unused-vars
-
-        // If input is a number within the proper index, use it as the search term
-        if (typeof val == "number") {
-          if (val >= 0 && val < arr.length) {
-            return val;
-          }
-          // console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
-          return null;
-        }
-
-        // Filter the array down to all entries starting with the given value
-        // Ideally the user will have entered an unambiguous shortening for the desired value
-        let fil = arr.filter(item => item.startsWith(val));
-        switch (fil.length) {
-          case 0:
-            // console.warn(`Unknown ${type} "${val}".`);
-            break;
-          case 1:
-            return arr.indexOf(fil[0]);
-          default:
-            // console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
-            break;
-        }
-        return null;
-      }
-
-      function parse_filter_val(option, value) {
-
-        // Catch empty input
-        if (value == undefined) return undefined;
-
-        // Determine value based on option type
-        /* eslint-disable no-case-declarations */
-        switch (option) {
-          case "Year":
-          case "Date":
-            return parseInt(value);
-
-          case "Month":
-            return find_in(moment.months(), value, "month");
-
-          case "Weekday":
-            return find_in(moment.weekdays(), value, "weekday");
-
-          // Convert to seconds to take advantage of comparison switch block
-          case "Time":
-
-            // If input string contains "PM" (case-insensitive), add 12 hours to the final count
-            // Otherwise, start from 0 seconds
-            let afternoon = filter.value.match(/[Pp](?=[Mm])/);
-            let result = (afternoon == null) ? 0 : (12 * 60 * 60);
-
-            // Split user input into hours, mins, and seconds
-            // Grab all groups of one or two numbers followed by valid separator character
-            let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
-
-            // Take advantage of fall-thru to convert as much of split_time as exists to seconds
-            // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
-            /* eslint-disable no-fallthrough */
-            switch (split_time.length) {
-              case 3:
-                filter_val += split_time[2];
-              case 2:
-                filter_val += split_time[1] * 60;
-              case 1:
-                filter_val += split_time[0] * 60 * 60;
-            }
-            /* eslint-enable no-fallthrough */
-
-
-            return result;
-        }
-        /* eslint-enable no-case-declarations */
-
-      }
-
-      function parse_option_val(option, date, value) {
-        switch (option) {
-          case "Year":
-            return date.getFullYear();
-
-          case "Month":
-            return date.getMonth();
-
-          case "Date":
-            return date.getDate();
-
-          case "Weekday":
-            return date.getDay();
-
-          // Convert to seconds to take advantage of next switch block
-          case "Time":
-
-            // Initialize result to 0 seconds
-            let result = 0; // eslint-disable-lint no-case-declarations
-
-            // Split user input into hours, mins, and seconds
-            let split_time = parse_time_str(value); // eslint-disable-lint no-case-declarations
-
-            // Take advantage of fall-thru to convert as much of split_time as exists to seconds
-            // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
-            /* eslint-disable no-fallthrough */
-            switch (split_time.length) {
-              case 3:
-                result += date.getSeconds();
-              case 2:
-                result += date.getMinutes() * 60;
-              case 1:
-                result += date.getHours() * 60 * 60;
-            }
-            /* eslint-enable no-fallthrough */
-
-
-            return result;
-        }
-      }
-
-      // Grab all groups of one or two numbers followed by valid separator character
-      function parse_time_str(str) {
-        return str.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
-      }
-    },
-
     numeric_range_filter: function(search_range, option) {
 
       let above = search_range.min == null ? true : option >= parseFloat(search_range.min);
@@ -521,18 +344,56 @@ export default {
       let options = ["Year", "Month", "Date", "Weekday"];
       if (include_time) options.push("Time");
 
+      var operations = [
+        { name: "is",
+          filter: (option_val, filter_val) => {
+            return option_val == filter_val;
+          },
+        },
+        { name: "is not",
+          filter: (option_val, filter_val) => {
+            return option_val != filter_val;
+          },
+        },
+        { name: "before", inclusive: true,
+          filter: (option_val, filter_val, inclusive) => {
+            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+          }
+        },
+        { name: "after", inclusive: true,
+          filter: (option_val, filter_val, inclusive) => {
+            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+          },
+        },
+        { name: "between",     inclusive: true, num_inputs: 2,
+          filter: (option_val, filter_vals, inclusive) => {
+            return inclusive
+              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+          },
+        },
+        { name: "not between", inclusive: true, num_inputs: 2,
+          filter: (option_val, filter_vals, inclusive) => {
+            return inclusive
+              ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
+              : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
+          },
+        }
+      ];
+
       return {
         headerFilter: custom_filter_editor,
-        headerFilterFunc: this.date_filter,
+        headerFilterFunc: custom_filter_func,
         headerFilterParams: {
           options,
-          operations: [
-            "is", "is not",
-            {name: "before", inclusive: true},
-            {name: "after",  inclusive: true},
-            {name: "between",     inclusive: true, num_inputs: 2},
-            {name: "not between", inclusive: true, num_inputs: 2}
-          ],
+          operations,
+        },
+        headerFilterFuncParams: {
+          options, operations,
+          get_cell_val: (option) => get_as_date(Array.isArray(option) ? option[0] : option),
+          parse_filter_val: this.parse_filter_val_date,
+          parse_option_val: this.parse_option_val_date,
+
         },
         headerFilterLiveFilter: false,
       };
@@ -546,6 +407,102 @@ export default {
         headerFilterLiveFilter: false,
       };
     },
+
+
+
+    // Filter functions for getting the right value from a date cell
+
+    parse_filter_val_date: function(option, value) {
+
+      // Catch empty input
+      if (value == undefined) return undefined;
+
+      // Determine value based on option type
+      /* eslint-disable no-case-declarations */
+      switch (option) {
+        case "Year":
+        case "Date":
+          return parseInt(value);
+
+        case "Month":
+          return this.find_in(moment.months(), value, "month");
+
+        case "Weekday":
+          return this.find_in(moment.weekdays(), value, "weekday");
+
+        // Convert to seconds to take advantage of comparison switch block
+        case "Time":
+
+          // If input string contains "PM" (case-insensitive), add 12 hours to the final count
+          // Otherwise, start from 0 seconds
+          let afternoon = filter.value.match(/[Pp](?=[Mm])/);
+          let result = (afternoon == null) ? 0 : (12 * 60 * 60);
+
+          // Split user input into hours, mins, and seconds
+          // Grab all groups of one or two numbers followed by valid separator character
+          let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+
+          // Take advantage of fall-thru to convert as much of split_time as exists to seconds
+          // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+          /* eslint-disable no-fallthrough */
+          switch (split_time.length) {
+            case 3:
+              filter_val += split_time[2];
+            case 2:
+              filter_val += split_time[1] * 60;
+            case 1:
+              filter_val += split_time[0] * 60 * 60;
+          }
+          /* eslint-enable no-fallthrough */
+
+
+          return result;
+      }
+      /* eslint-enable no-case-declarations */
+
+    },
+
+    parse_option_val_date: function(option, date, value) {
+      switch (option) {
+        case "Year":
+          return date.getFullYear();
+
+        case "Month":
+          return date.getMonth();
+
+        case "Date":
+          return date.getDate();
+
+        case "Weekday":
+          return date.getDay();
+
+        // Convert to seconds to take advantage of next switch block
+        case "Time":
+
+          // Initialize result to 0 seconds
+          let result = 0; // eslint-disable-lint no-case-declarations
+
+          // Split user input into hours, mins, and seconds
+          let split_time = this.parse_time_str(value); // eslint-disable-lint no-case-declarations
+
+          // Take advantage of fall-thru to convert as much of split_time as exists to seconds
+          // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
+          /* eslint-disable no-fallthrough */
+          switch (split_time.length) {
+            case 3:
+              result += date.getSeconds();
+            case 2:
+              result += date.getMinutes() * 60;
+            case 1:
+              result += date.getHours() * 60 * 60;
+          }
+          /* eslint-enable no-fallthrough */
+
+
+          return result;
+      }
+    },
+
 
 
 
@@ -571,6 +528,39 @@ export default {
 
     get_hours_sum: function(hours) {
       return Object.keys(hours).reduce((a,c) => hours[c] == null ? a : (a + hours[c]), 0);
+    },
+
+
+    // Grab all groups of one or two numbers followed by valid separator character
+    parse_time_str: function(str) {
+      return str.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+    },
+
+    find_in: function(arr, val, type) { // eslint-disable-line no-unused-vars
+
+      // If input is a number within the proper index, use it as the search term
+      if (typeof val == "number") {
+        if (val >= 0 && val < arr.length) {
+          return val;
+        }
+        // console.warn(`Index ${val} out of bounds for ${type} array ${arr}`);
+        return null;
+      }
+
+      // Filter the array down to all entries starting with the given value
+      // Ideally the user will have entered an unambiguous shortening for the desired value
+      let fil = arr.filter(item => item.startsWith(val));
+      switch (fil.length) {
+        case 0:
+          // console.warn(`Unknown ${type} "${val}".`);
+          break;
+        case 1:
+          return arr.indexOf(fil[0]);
+        default:
+          // console.warn(`Ambiguous ${type} "${val}". Did you mean one of the following? ${fil}`);
+          break;
+      }
+      return null;
     },
 
   }

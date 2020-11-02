@@ -730,6 +730,41 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
 
 
+export function custom_filter_func(filters, option, row, params) {
+
+    // Parse the desired value of the cell, if the filter parameters specify a way to format it
+    var cell_val = params.get_cell_val != undefined ? params.get_cell_val(option) : option;
+
+    // Result will be true if every filter passes
+    return filters.every(filter => {
+
+        // Parse desired value(s) from filter and actual value from user input
+        var option_val = params.parse_option_val(filter.option, cell_val, filter.value);
+        var filter_val = params.parse_filter_val(filter.option, filter.value);
+        var second_val = params.parse_filter_val(filter.option, filter.value2);
+
+        // If the search term was invalid for some reason, skip over this filter
+        if (filter_val == null) return true;
+
+        // By this point, option_val holds the appropriate value of the current cell,
+        // and filter_val holds the desired value from the filter, e.g.
+        //    option_val = 2019
+        //    filter_val = 2015
+
+        // If there are two values from the filter, package them into an array
+        var filter_vals = (second_val == undefined) ? filter_val : [filter_val, second_val];
+
+        // Get the operation with the matching name from the filter parameters
+        var operation = params.operations.filter(op => op.name == filter.op)[0];
+
+        // Use the fltering function provided by that operation
+        return operation.filter(option_val, filter_vals, filter.inclusive);
+    });
+}
+
+
+
+
 
 // Make a dropdown button and menu that will align itself with the table on the page
 function make_dropdown_blank(editorParams) {
