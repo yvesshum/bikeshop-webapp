@@ -561,13 +561,11 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     var ops = editorParams.operations;
     var vals = editorParams.options;
 
-    // Basic components - the button to open the dropdown menu, and the menu itself
-    var dropbtn = document.createElement("button");
-    var dropdown = document.createElement("div");
+    // Create the dropdown menu
+    var {dropdown, dropbtn, dropdown_functions} = make_dropdown_blank(editorParams);
 
-    // Set starting inner text
+    // Add some initial text to the dropdown body
     dropdown.innerHTML = "List of Filters:<br/>";
-    dropbtn.innerText = "Show Filters";
 
     // Div to hold all filters
     var filter_div = document.createElement("div");
@@ -576,9 +574,6 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // Array of functions to get the values of each filter
     var filter_list = [];
-
-    // Create the function to align the menu under the button
-    var align_dropdown = create_align_dropdown();
 
 
     // Button to add new filters
@@ -612,7 +607,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       rem_button.onclick = function() {
         check.checked = false;
         filter_div.removeChild(new_filter);
-        align_dropdown();
+        dropdown_functions.align_dropdown();
       };
 
       // Checkbox to enable/disable specific filters
@@ -645,7 +640,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
             inclusive_active = false;
         }
 
-        align_dropdown();
+        dropdown_functions.align_dropdown();
       };
 
       select_op.style = "margin-left: 3px;";
@@ -686,7 +681,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Add the filter to the dropdown
       filter_div.appendChild(new_filter);
 
-      align_dropdown();
+      dropdown_functions.align_dropdown();
     }
     dropdown.appendChild(add_button);
 
@@ -706,7 +701,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       });
 
       // Hide the dropdown menu so the table isn't obscured
-      hide_dropdown();
+      dropdown_functions.hide_dropdown();
 
       // Submit list of filters to Tabulator
       success(filters);
@@ -720,13 +715,34 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     remove_button.onclick = function() {
 
         // Hide the dropdown menu so the table isn't obscured
-        hide_dropdown();
+        dropdown_functions.hide_dropdown();
 
         // Submit an empty list as the list of filters - equivalent to not filtering at all
         success([]);
     };
     dropdown.appendChild(remove_button);
 
+
+    // Return the button to Tabulator to be placed in the header
+    return dropbtn;
+}
+
+
+
+
+
+// Make a dropdown button and menu that will align itself with the table on the page
+function make_dropdown_blank(editorParams) {
+
+    // Basic components - the button to open the dropdown menu, and the menu itself
+    var dropbtn = document.createElement("button");
+    var dropdown = document.createElement("div");
+
+    // Set starting inner text
+    dropbtn.innerText = "Show Filters";
+
+    // Create the function to align the menu under the button
+    var align_dropdown = create_align_function();
 
     // Styling
     dropbtn.style = `
@@ -766,9 +782,10 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       }
     });
 
-    // Add the dropdown to the page, and return the button to Tabulator
+    var dropdown_functions = { align_dropdown, show_dropdown, hide_dropdown };
+
     document.body.appendChild(dropdown);
-    return dropbtn;
+    return { dropdown, dropbtn, dropdown_functions };
 
 
     // Helper Functions
@@ -776,7 +793,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
     // can be calculated
     // TODO: View modes other than the default may not work as expected
-    function create_align_dropdown() {
+    function create_align_function() {
 
       // Position the menu horizontally based on the dropdown-align parameter
       switch (editorParams.dropdown_align) {
