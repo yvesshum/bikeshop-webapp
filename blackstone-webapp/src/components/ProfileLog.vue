@@ -108,7 +108,7 @@ export default {
           case "notes":
             styling = {
               formatter: "textarea",
-              headerFilter: true,
+              headerFilter: "input",
             };
             break;
         }
