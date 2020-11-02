@@ -113,8 +113,14 @@ export default {
             break;
         }
 
-        delete header.__style__;
-        return {...styling, ...header};
+        // Copy over all other fields in header, except for __style__
+        Object.keys(header).forEach(key => {
+          if (key !== "__style__") {
+            styling[key] = header[key];
+          }
+        });
+
+        return styling;
       });
     }
   },
