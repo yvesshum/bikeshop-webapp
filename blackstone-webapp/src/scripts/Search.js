@@ -562,15 +562,15 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     var vals = editorParams.options;
 
     // Create the dropdown menu
-    var {dropdown, dropbtn, dropdown_functions} = make_dropdown_blank(editorParams);
+    var dropdown = make_dropdown_blank(editorParams);
 
     // Add some initial text to the dropdown body
-    dropdown.innerHTML = "List of Filters:<br/>";
+    dropdown.menu.innerHTML = "List of Filters:<br/>";
 
     // Div to hold all filters
     var filter_div = document.createElement("div");
     filter_div.style = "display: block; margin: 6px;";
-    dropdown.appendChild(filter_div);
+    dropdown.append(filter_div);
 
     // Array of functions to get the values of each filter
     var filter_list = [];
@@ -607,7 +607,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       rem_button.onclick = function() {
         check.checked = false;
         filter_div.removeChild(new_filter);
-        dropdown_functions.align_dropdown();
+        dropdown.align();
       };
 
       // Checkbox to enable/disable specific filters
@@ -640,7 +640,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
             inclusive_active = false;
         }
 
-        dropdown_functions.align_dropdown();
+        dropdown.align();
       };
 
       select_op.style = "margin-left: 3px;";
@@ -681,9 +681,9 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Add the filter to the dropdown
       filter_div.appendChild(new_filter);
 
-      dropdown_functions.align_dropdown();
+      dropdown.align();
     }
-    dropdown.appendChild(add_button);
+    dropdown.append(add_button);
 
 
     // Button to apply the filters to the data
@@ -701,12 +701,12 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       });
 
       // Hide the dropdown menu so the table isn't obscured
-      dropdown_functions.hide_dropdown();
+      dropdown.hide();
 
       // Submit list of filters to Tabulator
       success(filters);
     }
-    dropdown.appendChild(apply_button);
+    dropdown.append(apply_button);
 
 
     // Button to stop filtering data
@@ -715,16 +715,16 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     remove_button.onclick = function() {
 
         // Hide the dropdown menu so the table isn't obscured
-        dropdown_functions.hide_dropdown();
+        dropdown.hide();
 
         // Submit an empty list as the list of filters - equivalent to not filtering at all
         success([]);
     };
-    dropdown.appendChild(remove_button);
+    dropdown.append(remove_button);
 
 
     // Return the button to Tabulator to be placed in the header
-    return dropbtn;
+    return dropdown.button;
 }
 
 
@@ -782,10 +782,15 @@ function make_dropdown_blank(editorParams) {
       }
     });
 
-    var dropdown_functions = { align_dropdown, show_dropdown, hide_dropdown };
-
     document.body.appendChild(dropdown);
-    return { dropdown, dropbtn, dropdown_functions };
+    return {
+        menu:   dropdown,
+        button: dropbtn,
+        align:  align_dropdown,
+        show:   show_dropdown,
+        hide:   hide_dropdown,
+        append: (x) => dropdown.appendChild(x),
+    };
 
 
     // Helper Functions
