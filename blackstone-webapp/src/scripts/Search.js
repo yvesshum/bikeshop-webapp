@@ -716,8 +716,15 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
     // Button to stop filtering data
     var remove_button = document.createElement("button");
-    remove_button.innerText = "Remove All Filters";
-    remove_button.onclick = cancel;
+    remove_button.innerText = "Stop Filtering";
+    remove_button.onclick = function() {
+
+        // Hide the dropdown menu so the table isn't obscured
+        hide_dropdown();
+
+        // Submit an empty list as the list of filters - equivalent to not filtering at all
+        success([]);
+    };
     dropdown.appendChild(remove_button);
 
 
