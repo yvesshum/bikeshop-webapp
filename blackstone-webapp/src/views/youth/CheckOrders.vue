@@ -1,13 +1,16 @@
 <template>
     <div>
         <div class="content">
-            <top-bar/>
+            <top-bar />
             <h1 class="title">Check Orders</h1>
-            <PageHeader pageCategory="Youth Headers" pageName="Check Orders"></PageHeader>
+            <PageHeader
+                pageCategory="Youth Headers"
+                pageName="Check Orders"
+            ></PageHeader>
 
             <b-button @click="refresh" variant="info">Refresh!</b-button>
-            <br>
-            <br>
+            <br />
+            <br />
 
             <p v-if="noData">No Data Found</p>
             <div v-else>
@@ -26,63 +29,67 @@
                 </b-table>
             </div>
         </div>
-        <Footer/>
+        <Footer />
     </div>
-
 </template>
 
 <script>
-import {db} from '../../firebase';
-import PageHeader from "@/components/PageHeader.vue"
+import { db } from "../../firebase";
+import PageHeader from "@/components/PageHeader.vue";
 
 export default {
-    name: 'YouthCheckOrders',
+    name: "YouthCheckOrders",
     components: {
-      PageHeader,
+        PageHeader,
     },
 
     data() {
-            return {
-                sortBy: 'Order Date',
-                sortDesc: false,
-                fields: [],
-                items: [],
-                isBusy: true,
-                noData: null,
-            };
+        return {
+            sortBy: "Order Date",
+            sortDesc: false,
+            fields: [],
+            items: [],
+            isBusy: true,
+            noData: null,
+        };
     },
 
     methods: {
         async getHeaders() {
-                let headers = await db.collection("GlobalFieldsCollection").doc("StaffOrderApproval").get();
-                headers = headers.data().fields;
-                let fields = [];
-                for (let i = 0; i < headers.length; i++) {
-                    fields.push({key: headers[i], sortable: true});
-                }
-                this.fields = JSON.parse(JSON.stringify(fields)).map(el=>{
-                  return {
-                    key:Object.keys(el.key)[0],
-                    sortable:true
-                    }}
-                  );
+            let headers = await db
+                .collection("GlobalFieldsCollection")
+                .doc("StaffOrderApproval")
+                .get();
+            headers = headers.data().fields;
+            let fields = [];
+            for (let i = 0; i < headers.length; i++) {
+                fields.push({ key: headers[i], sortable: true });
+            }
+            this.fields = JSON.parse(JSON.stringify(fields)).map((el) => {
+                return {
+                    key: Object.keys(el.key)[0],
+                    sortable: true,
+                };
+            });
         },
 
         async getTData() {
-                let snapshot = await db.collection("GlobalPendingOrders").get();
-                this.noData = snapshot.empty
-                this.items = this.formatCollection(snapshot);
+            let snapshot = await db.collection("GlobalPendingOrders").get();
+            this.noData = snapshot.empty;
+            this.items = this.formatCollection(snapshot);
         },
 
         formatCollection(snapshot) {
-                let ret = [];
-                snapshot.forEach(doc => {
-                    let data = doc.data();
-                    data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Order Date"] = data["Order Date"].toDate();
-                    ret.push(data);
-                });
-                return ret;
+            let ret = [];
+            snapshot.forEach((doc) => {
+                let data = doc.data();
+                data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
+                data["Order Date"] = data["Order Date"]
+                    .toDate()
+                    .toLocaleString();
+                ret.push(data);
+            });
+            return ret;
         },
 
         toggleBusy() {
@@ -90,28 +97,23 @@ export default {
         },
 
         async refresh() {
-            this.toggleBusy()
-            await this.getHeaders()
-            await this.getTData()
-            this.toggleBusy()
-        }
-
+            this.toggleBusy();
+            await this.getHeaders();
+            await this.getTData();
+            this.toggleBusy();
+        },
     },
 
     async mounted() {
         await this.getHeaders();
         await this.getTData();
         this.toggleBusy();
-    }
-
-}
-
-
+    },
+};
 </script>
 
 <style>
 .title {
-margin-bottom: 1rem;
+    margin-bottom: 1rem;
 }
-
 </style>
