@@ -52,7 +52,7 @@
 					Pending<br /><i>+{{Math.abs(pending)}}</i>
 				</b-progress-bar>
 			</b-progress>
-		  </div>
+		</div>
 	</div>
 </template>
 

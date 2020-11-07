@@ -22,9 +22,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '../firebase';
-import {firebase} from '../firebase';
 
 export default {
   name: 'ref-tracker',

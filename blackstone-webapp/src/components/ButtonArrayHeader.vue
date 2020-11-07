@@ -2,12 +2,12 @@
 <template>
     <div class="button-array-header">
         <div style="margin: auto; text-align: center;">
-            <b-button v-for="b in left" class="arr-l"
+            <b-button v-for="b in left" :key="b"
+                class="arr-l"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
                 :variant="in_bounds(b) ? 'primary' : 'secondary'"
                 :disabled="!in_bounds(b)"
-                :key="b"
             >
                 <span v-if="get_arrow(b) == 's'">&larr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Larr;</span>
@@ -17,7 +17,7 @@
 
             <b-dropdown style="display: inline-block;" variant="primary">
                 <template v-slot:button-content><slot></slot></template>
-                <div v-for="item in fullList">
+                <div v-for="item in fullList" :key="item">
                     <b-dropdown-divider v-if="item == undefined"></b-dropdown-divider>
                     <b-dropdown-item-button v-else
                         @click="switch_to(item)"
@@ -26,12 +26,12 @@
                 </div>
             </b-dropdown>
 
-            <b-button v-for="b in rev_right" class="arr-r"
+            <b-button v-for="b in rev_right" :key="b"
+                class="arr-r"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
                 :variant="in_bounds(b) ? 'primary' : 'secondary'"
                 :disabled="!in_bounds(b)"
-                :key="b"
             >
                 <span v-if="get_arrow(b) == 's'">&rarr;</span>
                 <span v-else-if="get_arrow(b) == 'd'">&Rarr;</span>

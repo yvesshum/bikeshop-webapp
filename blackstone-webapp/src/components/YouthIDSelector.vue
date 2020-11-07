@@ -84,15 +84,15 @@ Emits:
             <template slot="option" slot-scope="props">
                 <div class="option__desc">
                     <span class="option__name">
-                        <span v-for="s in filtered.displays[props.option['ID']]['First Name']">
+                        <span v-for="(s,i) in filtered.displays[props.option['ID']]['First Name']" :key="'fn_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
-                        </span>&nbsp;<span v-for="s in filtered.displays[props.option['ID']]['Last Name']">
+                        </span>&nbsp;<span v-for="(s,i) in filtered.displays[props.option['ID']]['Last Name']" :key="'ln_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </span>
                     <br />
                     <small class="option__id">
-                        ID: <span v-for="s in filtered.displays[props.option['ID']]['ID']">
+                        ID: <span v-for="(s,i) in filtered.displays[props.option['ID']]['ID']" :key="'id_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </small>
@@ -102,7 +102,7 @@ Emits:
         </div>
 
         <b-button-group v-if="usePeriodSwitch">
-            <b-button v-for="btn in switch_buttons"
+            <b-button v-for="btn in switch_buttons" :key="btn.name"
                 squared :variant="period_switch_value == btn.value ? 'primary' : 'outline-primary'"
                 @click="switch_to(btn)"
                 v-b-tooltip.hover.html="btn.msg"
@@ -323,6 +323,7 @@ Emits:
             filtered: function() {
 
                 // Start the loading icon
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.is_busy = true;
 
                 // Split search string into individual lowercase terms
@@ -442,6 +443,7 @@ Emits:
                 options = options.sort(this.sort_options(displays));
 
                 // Stop the loading icon
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.is_busy = false;
 
                 // Return the options and displays as one object

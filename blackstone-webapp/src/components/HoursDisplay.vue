@@ -56,7 +56,7 @@ export default {
 			let hours = this.formatted_hours;
 			let decimal = hours.substring(hours.indexOf('.') + 1);
 
-			return (decimal == "") ? get_0s : decimal;
+			return (decimal == "") ? this.get_0s : decimal;
 		},
 
 		// Check whether the decimal component is NaN

@@ -103,11 +103,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 
 import ProfileFields from "@/components/ProfileFields.vue"
 import HoursStatsBar from "@/components/HoursStatsBar.vue"
@@ -201,12 +196,12 @@ export default {
     // Load the headers from the prop if it's set
     if (this.headerDoc != undefined) {
       this.load_header_doc(this.headerDoc);
-    };
+    }
 
     // Load the profile from the prop if it's set
     if (this.profile != undefined) {
       this.load_profile(this.profile);
-    };
+    }
   },
 
   watch: {
@@ -254,10 +249,10 @@ export default {
             if (this.trans_log_content != null) this.trans_log_content.redraw();
           });
           break;
-      };
+      }
     },
 
-    current_log_tab: function(open_tab) {
+    current_log_tab: function(open_tab) { //eslint-disable-line no-unused-vars
       this.$nextTick(this.redraw_log_table);
     }
 

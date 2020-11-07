@@ -17,7 +17,7 @@
             active-nav-item-class="font-weight-bold"
             @changed="changed_tabs"
           >
-            <b-tab v-for="(section, n) in tree_tabs"
+            <b-tab v-for="(section, n) in tree_tabs" :key="'apron-tab-'+n"
               :title-link-class="get_apron_tab_class(section, n)"
             >
 
@@ -53,7 +53,7 @@
               </template>
 
               <b-card style="display: grid; grid-template-columns: 1fr 2fr;" no-body>
-                <div v-for="box in section.content" :class="get_box_class(box)" :style="get_box_style(box)">
+                <div v-for="(box,i) in section.content" :key="'box-'+i" :class="get_box_class(box)" :style="get_box_style(box)">
 
                   <b-card v-if="box.type == 'category'" class="tree-category-content" no-body>
                     <b-card-body class="tree-card-body-centered">
@@ -75,7 +75,7 @@
                   </b-card>
 
                   <b-list-group v-else-if="box.type == 'skills'" class="tree-skills-content">
-                    <b-list-group-item v-for="skill in box.skills"
+                    <b-list-group-item v-for="skill in box.skills" :key="skill.skill"
                       :variant="list_item_variant(box, skill)"
                       @click="toggle_skill(box, skill)"
                       :style="{cursor: allow_edits ? 'pointer' : undefined}"
@@ -155,7 +155,7 @@ export default {
 
     apronColors: {
       type: Array,
-      default: [],
+      default: () => [],
     },
 
     achievedSkills: {
@@ -382,7 +382,8 @@ export default {
     // Mostly useful when they're first loaded - as far as I can tell, before they're loaded, the b-tabs component won't let the variable it's modeling (selected_tab) go above 0, which has the effect of always setting the active tab back to the first apron.
     // This way, once they load, they ask the parent to ignore whatever they just did and go back to the original show color
     // This could also be achieved by emitting "switch_color" with the youth's next apron, with the caveat that the black apron should loop back on itself, but I think it's nicer to just let the parent handle that -- ideally, then, the next_apron code can be contained in one place
-    changed_tabs: function(currentTabs, previousTabs) {
+    // This function is a handler for a b-tabs object, so it defines both possible arguments from that object, even though it doesn't use either of them.
+    changed_tabs: function(currentTabs, previousTabs) { // eslint-disable-line no-unused-vars
       this.$emit("reset_show_color", null);
       this.match_tab_to_color();
     },

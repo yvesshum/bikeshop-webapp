@@ -16,8 +16,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '../firebase';
 
 import CollectionTable from "@/components/CollectionTable.vue"
 
@@ -28,7 +26,6 @@ import {custom_filter_func} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
 
 const moment = require("moment");
-var Tabulator = require("tabulator-tables");
 
 export default {
   name: 'profile_log',
@@ -207,7 +204,7 @@ export default {
           parse_filter_val: (option, value) => value,
 
           // For the cells, grab the number of hours for the category that's specified by the filter
-          parse_option_val: (option, cell, value) => {
+          parse_option_val: (option, cell, value) => { // eslint-disable-line no-unused-vars
             return (option == "Total")
               ? this.hourCategories.reduce((acc, curr) => acc + cell[curr], 0)
               : cell[option];
@@ -572,10 +569,10 @@ export default {
         case "Time":
 
           // Initialize result to 0 seconds
-          let result = 0; // eslint-disable-lint no-case-declarations
+          let result = 0; // eslint-disable-line no-case-declarations
 
           // Split user input into hours, mins, and seconds
-          let split_time = this.parse_time_str(value); // eslint-disable-lint no-case-declarations
+          let split_time = this.parse_time_str(value); // eslint-disable-line no-case-declarations
 
           // Take advantage of fall-thru to convert as much of split_time as exists to seconds
           // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"

@@ -96,24 +96,24 @@
                 },
 
                 // The actual placeholder text
-                _placeholders: null,
+                real_placeholders: null,
             };
         },
 
         mounted: function() {
 
-            this._placeholders = this.placeholders;
-            if (this._placeholders == null) {
-                this._placeholders = {
+            this.real_placeholders = this.placeholders;
+            if (this.real_placeholders == null) {
+                this.real_placeholders = {
                     left: "",
                     right: "",
                 };
             } else {
-                if (this._placeholders.left == null) {
-                    this._placeholders.left = "";
+                if (this.real_placeholders.left == null) {
+                    this.real_placeholders.left = "";
                 }
-                if (this._placeholders.right == null) {
-                    this._placeholders.right = "";
+                if (this.real_placeholders.right == null) {
+                    this.real_placeholders.right = "";
                 }
             }
 
@@ -124,7 +124,7 @@
             this.left_table = new Tabulator(this.$refs.left_table, {
                 ...this.args,
                 movableRowsConnectedTables: this.$refs.right_table,
-                placeholder:                this._placeholders.left,
+                placeholder:                this.real_placeholders.left,
                 data:                       this.get_data_safe("left", []),
             });
 
@@ -132,7 +132,7 @@
             this.right_table = new Tabulator(this.$refs.right_table, {
                 ...this.args,
                 movableRowsConnectedTables: this.$refs.left_table,
-                placeholder:                this._placeholders.right,
+                placeholder:                this.real_placeholders.right,
                 data:                       this.get_data_safe("right", []),
             });
         },
@@ -178,24 +178,24 @@
                         case "move_left":
                             arr
                             .filter((row) => this.right_table.getData().includes(row))
-                            .forEach((row) => move_data(row, "left", false));
+                            .forEach((row) => this.move_data(row, "left", false));
                             break;
                         case "move_right":
                             arr
                             .filter((row) => this.left_table.getData().includes(row))
-                            .forEach((row) => move_data(row, "right", false));
+                            .forEach((row) => this.move_data(row, "right", false));
                             break;
 
                         // Add cases - Move data to given side if it does not exist on the other side (i.e. operate on data if it does not already exist in the table)
                         case "add_left":
                             arr
                             .filter((row) => !this.right_table.getData().includes(row))
-                            .forEach((row) => move_data(row, "left", false));
+                            .forEach((row) => this.move_data(row, "left", false));
                             break;
                         case "add_right":
                             arr
                             .filter((row) => !this.left_table.getData().includes(row))
-                            .forEach((row) => move_data(row, "right", false));
+                            .forEach((row) => this.move_data(row, "right", false));
                             break;
 
                         // Remove cases - Remove data from whole table or given side

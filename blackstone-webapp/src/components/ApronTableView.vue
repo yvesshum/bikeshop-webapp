@@ -63,7 +63,7 @@ export default {
 
     apronColors: {
       type: Array,
-      default: [],
+      default: () => [],
     },
 
     achievedSkills: {
@@ -103,7 +103,7 @@ export default {
       loaded_apron_skills: [],
       loaded_apron_colors: [],
 
-      swapping_color: false,
+      // swapping_color: false,
 
       is_filtered: false,
     }
@@ -271,7 +271,7 @@ export default {
 
           // If the data is being filtered, open all the columns; otherwise, just show one
           // Using nextTick: We don't specify anywhere here what the groups are, instead letting the table make them based on what colors are represented in the skills.  This is good because we don't have to worry about a Gray section (which wouldn't have any skills), and when we filter data it'll automatically remove any groups that don't have any skills passing the filter. The flip side is that those groups don't exist anymore, so if we switch the filtering status and try to operate on a group that had been removed, it won't work.  Using nextTick gives it a time to recreate all the groups before we try to operate on them, so we can be sure they all exist
-          dataFiltered: (filters, rows) => {
+          dataFiltered: (filters, rows) => { // eslint-disable-line no-unused-vars
 
             // In case the table hasn't been emitted yet
             if (this.table == null) return;
@@ -279,14 +279,16 @@ export default {
             // Have to do this to get the header filters - the filters argument only looks for programmatic filters
             var all_filters = this.table.getFilters(true);
 
+            // The following won't actually have side effects, since we don't run this dataFiltered function every time the table_args property is computed, so it's safe to disable the linter warning
+
             // If any filters have been applied, open all the groups
             if (all_filters.length > 0) {
               this.$nextTick(this.open_all_groups);
-              this.is_filtered = true;
+              this.is_filtered = true; // eslint-disable-line vue/no-side-effects-in-computed-properties
             }
             else if (this.is_filtered) {
               this.$nextTick(this.open_show_group_only);
-              this.is_filtered = false;
+              this.is_filtered = false; // eslint-disable-line vue/no-side-effects-in-computed-properties
             }
           },
 
@@ -298,7 +300,7 @@ export default {
           groupClick: (e, group) => { // eslint-disable-line no-unused-vars
             if (!this.is_filtered) {
               this.table.getGroups().forEach(g => g.hide());
-              this.swapping_color = true;
+              // this.swapping_color = true;
               this.$emit("switch_color", group.getKey());
             }
           },

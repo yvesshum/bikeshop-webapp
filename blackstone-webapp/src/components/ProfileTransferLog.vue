@@ -15,9 +15,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '../firebase';
-import {firebase} from '../firebase';
 import ProfileLog from "@/components/ProfileLog.vue"
 import {filter} from "@/scripts/Search.js";
 
@@ -88,8 +85,8 @@ export default {
   },
 
   watch: {
-    snapshot: function(snapshot) {
-      this.load_from_snapshot(this.snapshot);
+    snapshot: function(new_snapshot) {
+      this.load_from_snapshot(new_snapshot);
     },
   },
 

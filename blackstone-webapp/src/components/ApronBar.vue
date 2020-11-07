@@ -603,7 +603,7 @@ export default {
           },
 
           // Error updating database
-          error: () => {
+          error: (err) => {
             window.alert("Error: " + err);
             return null;
           }
@@ -691,7 +691,7 @@ export default {
           },
 
           // Error updating database
-          error: () => {
+          error: (err) => {
             window.alert("Error updating database: ", err);
             return null;
           }

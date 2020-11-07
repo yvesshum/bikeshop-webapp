@@ -79,6 +79,9 @@ export default {
 			});
 		},
 
+		// Sorting function used by Tabulator to sort by apron color
+		// All these arguments are used/provided by Tabulator, even though we don't need them for this specific function
+		// eslint-disable-next-line no-unused-vars
 		color_sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
 			return this.get_color_index(a) - this.get_color_index(b);
 		},

@@ -136,13 +136,13 @@ export class Period {
 		var new_period;
 
 		// If this is the last season of the year, loop around and increment the year
-	     if (index == Period.seasons.length - 1) {
-	        new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
-	     } else {
-	        new_period = new Period(Period.seasons[index+1], this.year);
-	     };
+		if (index == Period.seasons.length - 1) {
+			new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
+		} else {
+			new_period = new Period(Period.seasons[index+1], this.year);
+		}
 
-	     return new_period;
+		return new_period;
 	}
 
 	static genNext(period) {
@@ -168,13 +168,13 @@ export class Period {
 		var new_period;
 
 		// If this is the last season of the year, loop around and increment the year
-	     if (index == 0) {
-	        new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
-	     } else {
-	        new_period = new Period(Period.seasons[index-1], this.year);
-	     };
+		if (index == 0) {
+			new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
+		} else {
+			new_period = new Period(Period.seasons[index-1], this.year);
+		}
 
-	     return new_period;
+		return new_period;
 	}
 
 	static genPrev(period) {
@@ -234,7 +234,7 @@ export class Period {
 		});
 		return result;
 	}
-};
+}
 
 Period.prototype.toString = function() {
 	return `${this.season} ${this.year}`;

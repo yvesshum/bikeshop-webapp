@@ -45,7 +45,7 @@
               <td class="section_name" colspan="3"> {{section.Name}}: </td>
             </tr>
 
-            <tr v-if="show_section(section.Name) && !is_protected(field)" v-for="field in section.Data" :key="field">
+            <tr v-for="field in field_rows_to_show(section)" :key="field">
               <td style="margin: auto; padding: 3px;">
                 <ToggleButton
                   onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
@@ -187,8 +187,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '@/firebase';
 
 import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
@@ -423,7 +421,7 @@ export default {
     // Load the headers from the prop if it's set
     if (this.headerDoc != undefined) {
       this.load_header_doc(this.headerDoc);
-    };
+    }
 
     // Load the profile from the prop if it's set
     if (this.profile != undefined) {
@@ -592,6 +590,22 @@ export default {
         return "This is a non-standard field.";
       }
       return "";
+    },
+
+
+    // v-if="show_section(section.Name) && !is_protected(field)" v-for="field in section.Data"
+    field_rows_to_show: function(section) {
+
+      // If we're not showing this section, don't return any rows
+      if (!this.show_section(section.Name)) {
+        return [];
+      }
+
+      // Return the list of fields that aren't protected (i.e. the ones we want to be able to edit)
+      return section.Data.filter(field => !this.is_protected(field));
+      // return section.Data.filter(field => {
+      //   return this.show_section(section.Name) && !this.is_protected(field);
+      // });
     },
 
     // Checks if changes have been made, then looks for user input accordingly

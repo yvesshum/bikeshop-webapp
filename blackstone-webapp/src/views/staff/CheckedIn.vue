@@ -40,8 +40,6 @@ import moment from "moment";
 
 import ProfilePopup from "@/components/ProfilePopup.vue";
 
-import {Period} from "@/scripts/Period.js";
-import {mapKeyVal} from "@/scripts/ParseDB.js";
 import PageHeader from "@/components/PageHeader.vue"
 
 export default {

@@ -176,7 +176,7 @@ export default {
         }
       },
 
-      handle_profile_snapshot: function({snapshot, update}) {
+      handle_profile_snapshot: function({snapshot, update}) { // eslint-disable-line no-unused-vars
         this.currentProfile = snapshot;
       },
 
