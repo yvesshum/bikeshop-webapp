@@ -200,6 +200,7 @@ export default {
       this.ID = "";
       this.FirstName = "";
       this.LastName = "";
+      this.notes = ""
       this.$forceUpdate();
     },
 
