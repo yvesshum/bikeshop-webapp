@@ -15,7 +15,16 @@
                 <span v-else-if="get_arrow(b) == 'h'">&#8962;</span>
             </b-button>
 
-            <div style="display: inline-block;"><slot></slot></div>
+            <b-dropdown style="display: inline-block;" variant="primary">
+                <template v-slot:button-content><slot></slot></template>
+                <div v-for="item in fullList">
+                    <b-dropdown-divider v-if="item == undefined"></b-dropdown-divider>
+                    <b-dropdown-item-button v-else
+                        @click="switch_to(item)"
+                        :active="current == item"
+                    >{{item}}</b-dropdown-item-button>
+                </div>
+            </b-dropdown>
 
             <b-button v-for="b in rev_right" class="arr-r"
                 @click="switch_to(get_name(b))"
@@ -38,7 +47,7 @@
 
 export default {
     name: 'button-array-header',
-    props: ["left", "right", "min", "max", "compareFunc", "current"],
+    props: ["left", "right", "min", "max", "compareFunc", "current", "fullList"],
 
     methods: {
         switch_to: function(name) {

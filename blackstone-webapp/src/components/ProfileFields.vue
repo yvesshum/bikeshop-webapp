@@ -8,16 +8,9 @@
 
     <br />
 
-    <div ref="stats_div" v-show="profile!=null" style="margin:auto;">
-      <HoursDisplay v-for="item in hour_fields" v-bind="item" :key="item" />
-    </div>
-
-    <br />
-    <br />
-
     <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-      <tbody v-for="section in table_sections_show" :key="section">
+      <tbody v-for="(section, i) in table_sections_show" :key="'main-section-'+i">
 
         <tr v-for="field in section.Data" v-show="show_container(field)" :key="field">
           <td style="width: 35%">
@@ -32,6 +25,8 @@
       </tbody>
     </table>
 
+    <br />
+
     <b-button v-show="allow_edits" variant="primary" @click="set_edit_mode(true)">
       Edit Profile Information
     </b-button>
@@ -44,7 +39,7 @@
 
         <table id="fields_table" ref="fields_table" v-show="profile!=null" class="table table-bordered" style="max-width: 95%">
 
-          <tbody v-for="section in table_sections_show" :key="section">
+          <tbody v-for="(section, i) in table_sections_show" :key="'modal-section-'+i">
 
             <tr v-if="show_section(section.Name)">
               <td class="section_name" colspan="3"> {{section.Name}}: </td>
@@ -56,7 +51,7 @@
                   onVariant="primary" offVariant="outline-secondary" onText="×" offText="+"
                   @Toggle="status => set_row_status(field, status)"
                   v-model="fields_used[field]"
-                  v-show="section.Name != 'Required'"
+                  v-show="show_x_button(section.Name)"
                 ></ToggleButton>
               </td>
 
@@ -199,12 +194,9 @@ import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 
 import ToggleButton from '@/components/ToggleButton';
-import HoursDisplay from '@/components/HoursDisplay';
 import SpecialInputReset from '@/components/SpecialInputReset';
 import ProfileFieldDisplay from '@/components/ProfileFieldDisplay';
 import DiscardResetSave from '@/components/DiscardResetSave';
-
-let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
 
 
 // Fields which should not be editable through the youth profile page/popup
@@ -224,6 +216,8 @@ const IgnoredFields = [
 
   // Period and Class information handled in ManagePeriods
   "Class", "ActivePeriods",
+
+  "Old Essay Answers",
 ];
 
 
@@ -254,10 +248,9 @@ const SpeciallyDisplayedFields = [
 
 export default {
   name: 'profile_fields',
-  props: ["profile", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
+  props: ["profile", "headerDoc", "edit", "showOptionalFields", "ignoreFields", "disableWarnings", "hideTitle"],
   components: {
     ToggleButton,
-    HoursDisplay,
     SpecialInputReset,
     ProfileFieldDisplay,
     DiscardResetSave,
@@ -283,8 +276,6 @@ export default {
       fields_used: {},
 
       show_edit_modal: false,
-
-      header_doc: null,
     }
   },
 
@@ -317,9 +308,9 @@ export default {
     },
 
     table_sections: function() {
-      if (this.header_doc == null) return [];
+      if (this.headerDoc == null) return [];
 
-      let data = this.header_doc.data();
+      let data = this.headerDoc.data();
       let temp = [];
 
       make_section.call(this, "Required", "required");
@@ -373,10 +364,10 @@ export default {
     },
 
     field_types: function() {
-      if (this.header_doc == null) return {};
+      if (this.headerDoc == null) return {};
 
       let temp = new Object();
-      let data = this.header_doc.data();
+      let data = this.headerDoc.data();
 
       Object.keys(data).forEach(section => {
         forKeyVal(data[section], (name, val) => {
@@ -387,23 +378,6 @@ export default {
       });
 
       return temp;
-    },
-
-    hour_fields: function() {
-
-      // If local values hasn't been set yet, give an empty list
-      if (this.local_values == null) return [];
-
-      // Compute the spendable balance: earned - spent
-      let balance = this.local_values["Hours Earned"] - this.local_values["Hours Spent"];
-
-      // Return the list of objects
-      return [
-        {title: "Hours Earned",  value: this.local_values["Hours Earned"]},
-        {title: "Hours Spent",   value: this.local_values["Hours Spent"]},
-        {title: "Pending Hours", value: this.local_values["Pending Hours"]},
-        {title: "Spendable Balance", value: balance},
-      ];
     },
 
     youth_name: function() {
@@ -445,17 +419,23 @@ export default {
   },
 
   mounted: function() {
+
+    // Load the headers from the prop if it's set
+    if (this.headerDoc != undefined) {
+      this.load_header_doc(this.headerDoc);
+    };
+
+    // Load the profile from the prop if it's set
     if (this.profile != undefined) {
       this.load_profile(this.profile);
     }
-
-    // Add a listener to the header document to update expected fields whenever they change
-    HeaderRef.onSnapshot(doc => {
-      this.load_header_doc(doc);
-    });
   },
 
   watch: {
+
+    headerDoc: function(new_header) {
+      this.load_header_doc(new_header);
+    },
 
     profile: function(doc) {
       this.load_profile(doc);
@@ -492,10 +472,13 @@ export default {
       );
     },
 
+    show_x_button: function(section) {
+      return section == "Optional" || section == "Non-Standard";
+    },
+
     load_header_doc: function(new_header) {
       let data = new_header.data();
 
-      this.header_doc = new_header;
       this.row_status = new Status();
 
       this.init_row_status(data, "required", Status.REQ);
@@ -528,17 +511,15 @@ export default {
       if (doc != null) {
 
         // Init vars
-        var data = doc.data();        
+        var data = doc.data();
 
         for (var key in data) {
           if (this.is_ignored(key)) continue;
 
           if (field_used(data[key])) {
             if (this.row_status[key] == null) {
-              if(!this.specially_not_editable_fields.includes(key)){
-                this.temp_fields.push(key);
-                this.row_status.add_vue(this, key, Status.USE_T);
-              }
+              this.temp_fields.push(key);
+              this.row_status.add_vue(this, key, Status.USE_T);
             }
 
             // Empty string means unused field
@@ -686,7 +667,7 @@ export default {
 
         // Mark each field based on how it has been changed (if at all)
         // Order does matter here - blank must supercede ADD and changed
-        if(input_field == undefined){
+        if (input_field == undefined) {
           message = "undefined";
         }
         else if (stat == Status.REM || stat == Status.REM_T) {
@@ -748,33 +729,40 @@ export default {
       });
 
 
-      // Saves edits to firebase
-      db.collection('GlobalYouthProfile').doc(this.youth_id).update(changes).catch(err => {
-        window.alert("Error: " + err);
-        return null;
+      // Emit the changes to be saved by the reference tracker
+      this.$emit("save_changes", {
+        changes,
+
+        // If successful updating database, change the field data on the page
+        success: () => {
+          for (var key in changes) {
+
+            // If any non-standard field is being removed, delete it from the page
+            if (this.row_status.is_status(key, Status.REM_T)) {
+              this.temp_fields = this.temp_fields.filter(k => k != key);
+              delete this.local_values[key];
+            }
+
+            // For all other fields, simply update their local values
+            else {
+              this.local_values[key] = this.input_fields[key].get_changed_value();
+            }
+          }
+
+          // Discard empty fields and update the row_status object to reflect the new values
+          this.discard_empty_fields();
+          this.row_status.update();
+
+          // Switch out of edit mode
+          this.set_edit_mode(false);
+        },
+
+        // In case of error...
+        error: (err) => {
+          window.alert("Error: " + err);
+          return null;
+        }
       });
-
-      // If no error updating database, change the field data on the page
-      for (var key in changes) {
-
-        // If any non-standard field is being removed, delete it from the page
-        if (this.row_status.is_status(key, Status.REM_T)) {
-          this.temp_fields = this.temp_fields.filter(k => k != key);
-          delete this.local_values[key];
-        }
-
-        // For all other fields, simply update their local values
-        else {
-          this.local_values[key] = this.input_fields[key].get_changed_value();
-        }
-      }
-
-      // Discard empty fields and update the row_status object to reflect the new values
-      this.discard_empty_fields();
-      this.row_status.update();
-
-      // Switch out of edit mode
-      this.set_edit_mode(false);
     },
 
 
@@ -802,7 +790,7 @@ export default {
     reset_changes: function() {
       this.row_status.reset();
       this.row_status.unfilter(Status.IMM).forEach(field => {
-        if(this.input_fields[field] != undefined){
+        if (this.input_fields[field] != undefined) {
             this.input_fields[field].reset();
             this.fields_used[field] = this.row_status.is_status(field, Status.O);
         }

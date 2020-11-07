@@ -12,10 +12,11 @@
         <ButtonArrayHeader
           :left="button_header_l" :right="button_header_r" :current="display_period"
           :min="fst_period" :max="reg_period" :compareFunc="compare_periods"
+          :fullList="full_period_list"
           @clicked="switch_to"
           v-show="display_period != null"
         >
-          <h3>{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h3>
+          <h5 style="display:inline;">{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h5>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
@@ -349,9 +350,8 @@ export default {
         {name: 'Previous', val: 'prev'},
       ],
       button_header_r: [
-        {name: 'Current', arr: 'h'},
         {name: 'Next', val: 'next'},
-        {name: 'Registration', arr: 'b', val: 'max'},
+        {name: 'Most Recent', arr: 'b', val: 'max'},
       ],
 
       // Store and display errors from an update
@@ -400,6 +400,13 @@ export default {
         ret.push(name);
       });
       return ret;
+    },
+
+    full_period_list: function() {
+      if (this.cur_period == undefined || this.fst_period == undefined) return [];
+      return [ this.reg_period, this.cur_period, undefined ].concat(
+        Period.enumerateStr(Period.genPrevStr(this.cur_period), this.fst_period)
+      );
     },
 
     batch_season_display: function() {
@@ -627,7 +634,7 @@ export default {
         case "Current":
           this.display_period = this.cur_period;
           break;
-        case "Registration":
+        case "Most Recent":
           this.display_period = this.reg_period;
           break;
         case "First":
@@ -639,6 +646,8 @@ export default {
         case "Next":
           this.display_period = Period.genNextStr(this.display_period);
           break;
+        default:
+          this.display_period = change_code;
       }
     },
 

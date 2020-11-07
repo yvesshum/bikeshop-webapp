@@ -2,7 +2,9 @@
   <div class="apron_progress_bar">
     <ApronImg 
       v-for="(apron, n) in colors" v-bind:key="apron + n" style="display:inline-block;"
-      :color="apron.color" :size="size" :active="apron_active(n)" :name="apron_name(n)"
+      :color="apron.color" :size="size"
+      :showName="showName" :showStatus="showStatus"
+      v-bind="apron_params(n)"
       @mousehover="t => mouse_hover(n, t)" :class="{hovered: hover[n]}"
       @click="val => mouse_click(n, val)"
     />
@@ -54,6 +56,12 @@ export default {
       type: [String, Array],
       default: null,
     },
+
+    showName:   { type: Boolean, default: true, },
+    showStatus: { type: Boolean, default: true, },
+
+    currentProgress: Number,
+    currentTotal: Number,
   },
 
   data: function() {
@@ -63,19 +71,70 @@ export default {
   },
 
   methods: {
-    apron_active: function(n) {
+    apron_status: function(n) {
       if (this.level != null) {
         if (typeof this.level == "string") {
-          return this.level == "all";
+          return this.level == "all" ? "achieved" : "locked";
         } else {
-          return n <= this.level;
+          if (n < this.level) {
+            return "achieved";
+          }
+          else if (n == this.level) {
+            return "working";
+          }
+          return "locked";
         }
       }
-      return false;
+      return undefined;
     },
 
     apron_name: function(n) {
       return this.colors[n].name;
+    },
+
+    apron_progress: function(n) {
+      if (n != this.level || (this.currentProgress == null && this.currentTotal == null)) {
+        return {};
+      }
+      else {
+        return {progress: this.currentProgress, total: this.currentTotal, status: "progress"};
+      }
+    },
+
+    apron_params: function(n) {
+      var params = {};
+
+      // Get the apron name
+      params["name"] = this.colors[n].name;
+
+      if (this.level != null) {
+
+        // In case they're supposed to all be one thing
+        if (typeof this.level == "string") {
+          params["status"] = this.level == "all" ? "achieved" : "locked";
+        }
+
+        else {
+          if (n < this.level) {
+            params["status"] = "achieved";
+          }
+          else if (n == this.level) {
+            if (this.currentProgress == null && this.currentTotal == null) {
+              params["status"] = "working";
+            }
+            else {
+              params["status"]   = "progress";
+              params["progress"] = this.currentProgress;
+              params["total"]    = this.currentTotal;
+            }
+          }
+          else {
+            params["status"] = "locked";
+          }
+        }
+      }
+
+      return params;
     },
 
     mouse_hover: function(n, h) {
@@ -85,7 +144,7 @@ export default {
       this.$emit("hover", this.hover);
     },
 
-    mouse_click: function(n, active) {  // eslint-disable-line no-unused-vars
+    mouse_click: function(n, status) {  // eslint-disable-line no-unused-vars
       let curr = this.hover[n];
 
       switch (this.selectType) {

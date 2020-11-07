@@ -62,7 +62,7 @@ Emits:
             :internal-search="false"
             @search-change="val => search_term = val"
             :show-labels="false"
-            :block-keys="['Tab', 'Enter']"
+            :block-keys="['Tab']"
             :preserveSearch="true"
             :loading="is_busy"
             v-bind="args"
@@ -100,6 +100,16 @@ Emits:
             </template>
         </multiselect>
         </div>
+
+        <b-button-group v-if="usePeriodSwitch">
+            <b-button v-for="btn in switch_buttons"
+                squared :variant="period_switch_value == btn.value ? 'primary' : 'outline-primary'"
+                @click="switch_to(btn)"
+                v-b-tooltip.hover.html="btn.msg"
+            >
+                {{btn.name}}
+            </b-button>
+        </b-button-group>
 
         <b-button v-b-tooltip.hover.html="info_msg" variant="info" @click="show_info_modal" squared>?</b-button>
 
@@ -162,7 +172,7 @@ Emits:
                     <tr>
                         <td>"<b><code>oe</code></b>"</td>
                         <td>&nbsp;⇒&nbsp;</td>
-                        <td>N<span class="search_highlight">oë</span>l, Z<span class="search_highlight">oë</span>, c<span class="search_highlight">œ</span>ur</td>
+                        <td>N<span class="search_highlight">oe</span>l, Z<span class="search_highlight">oë</span>, c<span class="search_highlight">œ</span>ur</td>
                     </tr>
                     <tr>
                         <td>"<b><code>nun</code></b>"</td>
@@ -174,16 +184,30 @@ Emits:
                         <td>&nbsp;⇒&nbsp;</td>
                         <td><span class="search_highlight">Du</span>ncan, <span class="search_highlight">Đư</span>ờng, Sigrí<span class="search_highlight">ðu</span>r</td>
                     </tr>
-                    <tr>
-                        <td>"<b><code>á</code></b>"</td>
-                        <td>&nbsp;⇒&nbsp;</td>
-                        <td style="padding: 0px 15px;">Hern<span class="search_highlight">á</span>ndez, Th<span class="search_highlight">á</span>i, V<span class="search_highlight">á</span>squez</td>
-                    </tr>
                 </tbody>
             </table>
 
             <br />
             <p>Note that searching for an accented character will not bring up unaccented results.</p>
+            <table style="margin: auto; text-align: center">
+                <tbody>
+                    <tr>
+                        <td><b>Search Term</b></td>
+                        <td></td>
+                        <td><b>Match Pattern</b></td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>a</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td style="padding: 0px 15px;"><span class="search_highlight">Á</span>lv<span class="search_highlight">a</span>rez, C<span class="search_highlight">á</span>i, S<span class="search_highlight">a</span>r<span class="search_highlight">a</span>h</td>
+                    </tr>
+                    <tr>
+                        <td>"<b><code>á</code></b>"</td>
+                        <td>&nbsp;⇒&nbsp;</td>
+                        <td style="padding: 0px 15px;"><span class="search_highlight">Á</span>lvarez, C<span class="search_highlight">á</span>i, Sarah</td>
+                    </tr>
+                </tbody>
+            </table>
 
         </b-modal>
     </div>
@@ -209,6 +233,10 @@ Emits:
             periods: {
                 type: [String, Array],
                 default: "current"
+            },
+            usePeriodSwitch: {
+                type: Boolean,
+                default: false,
             },
             sortBy: {
                 type: [String, Array],
@@ -244,7 +272,21 @@ Emits:
                 is_busy: false,
 
                 info_modal_visible: false,
-                info_msg: "This bar accepts character substitutions. Click for more info."
+                info_msg: "This bar accepts character substitutions. Click for more info.",
+
+                switch_buttons: [
+                    {
+                        name:  'Current',
+                        value: 'current',
+                        msg:   'Display the current period only',
+                    },
+                    {
+                        name:  'All',
+                        value: 'all',
+                        msg:   'Display youth from all periods',
+                    }
+                ],
+                period_switch_value: undefined,
             }
         },
 
@@ -252,6 +294,15 @@ Emits:
 
             special_chars: function() {
                 return SPECIAL_CHARS.filter(char_obj => char_obj.display);
+            },
+
+            periods_to_show: function() {
+                if (this.usePeriodSwitch) {
+                    return this.period_switch_value;
+                }
+                else {
+                    return this.periods;
+                }
             },
 
             /* Search algorithm:
@@ -443,13 +494,13 @@ Emits:
                 var periods = [];
 
                 // Parent set prop to "all" - wants all youth
-                if (this.periods == "all") {
+                if (this.periods_to_show == "all") {
                     periods = Period.enumerate(fp, rp);
                 }
 
                 // Replace instances of "current" and "next" with the appropriate names
                 else {
-                    let temp = (Array.isArray(this.periods)) ? this.periods : [this.periods];
+                    let temp = (Array.isArray(this.periods_to_show)) ? this.periods_to_show : [this.periods_to_show];
                     periods = temp.map((item) => {
                         if (item == "current") {
                             return ap;
@@ -589,6 +640,10 @@ Emits:
             show_info_modal: function() {
                 this.info_modal_visible = true;
             },
+
+            switch_to: function(btn) {
+                this.period_switch_value = btn.value;
+            },
         },
 
         watch: {
@@ -606,6 +661,11 @@ Emits:
                     this.value = null;
                 }
             },
+
+            period_switch_value: async function() {
+                this.options = await this.getData();
+                this.$emit("ready", this.options);
+            },
         },
 
         async mounted() {
@@ -614,7 +674,11 @@ Emits:
 
             // Emit the ready message
             this.$emit("ready", this.options);
-        }
+        },
+
+        created() {
+            this.period_switch_value = this.switch_buttons[0].value;
+        },
     }
 </script>
 

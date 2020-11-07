@@ -8,12 +8,16 @@
       :fullData="apron_skills_table"
       :headingData="headers"
       :args="table_args"
-      editable
+      :editable="allow_edits"
       :matchBy="['name', 'category', 'color']"
+      :showHeaderFilter="true"
       @selected="s => selected_skills = s"
       @changes="handle_changes"
       @table="handle_table"
+      @status_editor="handle_status_editor"
     />
+
+    <slot name="save_buttons" v-if="allow_edits"></slot>
 
   </div>
 </template>
@@ -22,6 +26,7 @@
 // @ is an alias to /src
 import {db} from '@/firebase';
 import MatchTable from '@/components/MatchTable';
+import {Status} from '@/scripts/Status.js';
 import {forKeyVal} from '@/scripts/ParseDB.js';
 import {forEach_ObjObjArr} from '@/scripts/ParseDB.js';
 
@@ -97,6 +102,10 @@ export default {
 
       loaded_apron_skills: [],
       loaded_apron_colors: [],
+
+      swapping_color: false,
+
+      is_filtered: false,
     }
   },
 
@@ -132,6 +141,10 @@ export default {
       } else {
         return this.apronColors;
       }
+    },
+
+    skill_categories: function() {
+      return this.apron_skills == undefined ? [] : Object.keys(this.apron_skills);
     },
 
     colors_to_indices: function() {
@@ -200,7 +213,7 @@ export default {
     },
 
     allow_edits: function() {
-      return this.allowEdits != undefined;
+      return !(this.allowEdits == false || this.allowEdits == undefined);
     },
 
 
@@ -218,16 +231,30 @@ export default {
         return a.localeCompare(b);
       }
 
+      var category_options = {};
+      this.skill_categories.forEach(category => {
+        category_options[category] = category;
+      });
+
       // The headers
       return [
-        {title:"Name", field:"name", sorter: sorter},
-        {title:"Category", field:"category", width: 200, sorter: sorter},
+        {
+          title:"Name", field:"name",
+          sorter: sorter,
+          headerFilter: "input"
+        },
+        {
+          title:"Category", field:"category",
+          width: 200, sorter: sorter,
+          editor: "select", headerFilter: true,
+          headerFilterParams: category_options
+        },
       ];
     },
 
 
     table_args: function() {
-      return (is_achieved_func) => {
+      return (is_status) => {
 
         // Create the object
         return {
@@ -240,7 +267,28 @@ export default {
           resizeableColumns: false,
 
           // Allow multiple selection with ctrl and shift keys
-          selectable: true,
+          selectable: false,
+
+          // If the data is being filtered, open all the columns; otherwise, just show one
+          // Using nextTick: We don't specify anywhere here what the groups are, instead letting the table make them based on what colors are represented in the skills.  This is good because we don't have to worry about a Gray section (which wouldn't have any skills), and when we filter data it'll automatically remove any groups that don't have any skills passing the filter. The flip side is that those groups don't exist anymore, so if we switch the filtering status and try to operate on a group that had been removed, it won't work.  Using nextTick gives it a time to recreate all the groups before we try to operate on them, so we can be sure they all exist
+          dataFiltered: (filters, rows) => {
+
+            // In case the table hasn't been emitted yet
+            if (this.table == null) return;
+
+            // Have to do this to get the header filters - the filters argument only looks for programmatic filters
+            var all_filters = this.table.getFilters(true);
+
+            // If any filters have been applied, open all the groups
+            if (all_filters.length > 0) {
+              this.$nextTick(this.open_all_groups);
+              this.is_filtered = true;
+            }
+            else if (this.is_filtered) {
+              this.$nextTick(this.open_show_group_only);
+              this.is_filtered = false;
+            }
+          },
 
           // Allow groups to open/close by clicking anywhere in header (not just the arrow)
           groupToggleElement:"header",
@@ -248,7 +296,11 @@ export default {
           // Ensure that only one group is open at any time by closing all other groups
           // Looks like this runs before whatever callback actually toggles the group open/closed on click, so if we hide an open group, it will be switched back to open, which is what we want
           groupClick: (e, group) => { // eslint-disable-line no-unused-vars
-            this.table.getGroups().forEach(g => g.hide());
+            if (!this.is_filtered) {
+              this.table.getGroups().forEach(g => g.hide());
+              this.swapping_color = true;
+              this.$emit("switch_color", group.getKey());
+            }
           },
 
           // Start all groups closed
@@ -256,23 +308,45 @@ export default {
 
           // Display the number of achieved skills for this apron in the header
           groupHeader: (value, count, data, group) => { // eslint-disable-line no-unused-vars
-            let num_achieved = data.reduce(
-              (acc, curr) => acc += (is_achieved_func(curr) ? 1 : 0)
-              , 0
-            );
+
+            // If the achievedSkills prop has not yet been passed, we don't have anything to display
+            // Removing this doesn't break anything, it just throws a bunch of console errors on window resize, so this is a bit cleaner from the front-end
+            if (this.achievedSkills == null) {
+              return "";
+            }
+
+            // Get the filter value for the Achieved column, if it exists
+            var all_filters = this.table.getFilters(true);
+            var achieved_filter = all_filters.filter(filter => filter.field == "achieved")[0];
+
+            // If so, mark w a boolean and get its value
+            var filter_by_achieved = achieved_filter != undefined;
+            var filter_val = filter_by_achieved ? achieved_filter.value : undefined;
+
+            // Get the number of achieved skills and number of pending changes for this group
+            var num_achieved = data.reduce((acc, c) => acc += (is_status(c, Status.U) ? 1 : 0), 0);
+            var num_pending  = data.reduce((acc, c) => acc += (is_status(c, Status.C) ? 1 : 0), 0);
 
             var apron_level = this.achievedSkills[value];
 
+            // Generate the apron color label
+            var label = `${value} Apron Skills`;
+
             // If applicable, display the date this apron level was earned
-            if (apron_level != undefined && apron_level.Achieved !== false) {
-              let date = new Date(apron_level.Achieved.seconds * 1000);
-              return `${value} Apron Skills <span style='float:right;'>Earned ${date.toDateString()} &mdash; ${num_achieved}/${count} Achieved</span>`;
+            var datestamp = '';
+            if (apron_level != undefined && apron_level.Achieved !== false && apron_level.Achieved !== undefined) {
+              datestamp = ` &mdash; Earned ${apron_level.Achieved.toDate().toDateString()}`;
             }
 
-            // Otherwise, just display the name and the number achieved
-            else {
-              return `${value} Apron Skills <span style='float:right;'>${num_achieved}/${count} Achieved</span>`;
-            }
+            // Generate pending message
+            var pending  = num_pending > 0 ? `${num_pending} Pending Change${num_pending == 1 ? '' : 's'},` : '';
+
+            // Generate achieved message, based on whether there's a filter in the achieved column
+            var achieved = filter_by_achieved
+              ? (filter_val ? `${num_achieved} Achieved` : `${count} Remaining`)
+              : `${num_achieved}/${count} Achieved`;
+
+            return `${label}${datestamp}<span style='float:right;'>${pending} ${achieved}</span>`;
           },
         };
       };
@@ -281,13 +355,12 @@ export default {
 
   watch: {
     showColor: function() {
-      this.table.getGroups().forEach(group => {
-        if (group.getKey() == this.showColor) {
-          group.show();
-        } else {
-          group.hide();
-        }
-      });
+      // if (this.swapping_color) {
+      //   this.swapping_color = false;
+      //   return;
+      // }
+      if (this.table == null) return "";
+      this.open_show_group_only();
     },
   },
 
@@ -345,6 +418,20 @@ export default {
       return this.colors_to_indices[color];
     },
 
+    open_all_groups: function() {
+      this.table.getGroups().forEach(group => group.show());
+    },
+
+    open_show_group_only: function() {
+      this.table.getGroups().forEach(group => {
+        if (group.getKey() == this.showColor) {
+          group.show();
+        } else {
+          group.hide();
+        }
+      });
+    },
+
     handle_changes: function(changes) {
       this.changed_skills = changes;
       this.$emit('changed', changes);
@@ -354,12 +441,20 @@ export default {
       this.table = table;
     },
 
+    handle_status_editor: function(editor) {
+      this.$emit("status_editor", editor);
+    },
+
     accept_changes: function() {
       this.$refs.match_table.accept_changes();
     },
 
     discard_changes: function() {
       this.$refs.match_table.discard_changes();
+    },
+
+    redraw: function() {
+      this.table.redraw();
     },
   }
 }

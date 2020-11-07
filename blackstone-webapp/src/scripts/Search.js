@@ -454,6 +454,7 @@ function arr_indices(arr, sub) {
 
 
 
+// NOTE: Any column using this filter should set the field "HeaderFilterLiveFilter" to false in the header
 export function make_range_editor(type) {
     return (cell, onRendered, success, cancel, editorParams) => {
 
@@ -507,10 +508,12 @@ export function make_range_editor(type) {
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
             let max = edit2.value !== "" ? edit2.value : null;
-            let new_range = {min, max};
+
+            // If neither input has a value, clear the filter
+            // Otherwise, save the range as a new filter
+            let new_range = (min == null && max == null) ? null : {min, max};
 
             // Submit the new range
-            // console.log("Updating range: ", new_range);
             success(new_range);
         }
 
@@ -520,9 +523,10 @@ export function make_range_editor(type) {
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
             let max = edit2.value !== "" ? edit2.value : null;
-            let new_range = {min, max};
 
-            // console.log("Updating range from enter: ", new_range);
+            // If neither input has a value, clear the filter
+            // Otherwise, save the range as a new filter
+            let new_range = (min == null && max == null) ? null : {min, max};
 
             switch (e.keyCode) {
 
@@ -533,7 +537,7 @@ export function make_range_editor(type) {
 
                 // Esc key - Cancel the range
                 case 27:
-                    cancel();
+                    success(null);
                     break;
             }
 
@@ -563,24 +567,19 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
     var ops = editorParams.operations;
     var vals = editorParams.options;
 
-    // Basic components - the button to open the dropdown menu, and the menu itself
-    var dropbtn = document.createElement("button");
-    var dropdown = document.createElement("div");
+    // Create the dropdown menu
+    var dropdown = make_dropdown_blank(editorParams);
 
-    // Set starting inner text
-    dropdown.innerHTML = "List of Filters:<br/>";
-    dropbtn.innerText = "Show Filters";
+    // Add some initial text to the dropdown body
+    dropdown.menu.innerHTML = "List of Filters:<br/>";
 
     // Div to hold all filters
     var filter_div = document.createElement("div");
     filter_div.style = "display: block; margin: 6px;";
-    dropdown.appendChild(filter_div);
+    dropdown.append(filter_div);
 
     // Array of functions to get the values of each filter
     var filter_list = [];
-
-    // Create the function to align the menu under the button
-    var align_dropdown = create_align_dropdown();
 
 
     // Button to add new filters
@@ -614,7 +613,7 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       rem_button.onclick = function() {
         check.checked = false;
         filter_div.removeChild(new_filter);
-        align_dropdown();
+        dropdown.align();
       };
 
       // Checkbox to enable/disable specific filters
@@ -646,6 +645,8 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
             new_filter.removeChild(incl_div);
             inclusive_active = false;
         }
+
+        dropdown.align();
       };
 
       select_op.style = "margin-left: 3px;";
@@ -686,9 +687,9 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       // Add the filter to the dropdown
       filter_div.appendChild(new_filter);
 
-      align_dropdown();
+      dropdown.align();
     }
-    dropdown.appendChild(add_button);
+    dropdown.append(add_button);
 
 
     // Button to apply the filters to the data
@@ -706,20 +707,86 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       });
 
       // Hide the dropdown menu so the table isn't obscured
-      hide_dropdown();
+      dropdown.hide();
 
       // Submit list of filters to Tabulator
       success(filters);
     }
-    dropdown.appendChild(apply_button);
+    dropdown.append(apply_button);
 
 
     // Button to stop filtering data
     var remove_button = document.createElement("button");
-    remove_button.innerText = "Remove All Filters";
-    remove_button.onclick = cancel;
-    dropdown.appendChild(remove_button);
+    remove_button.innerText = "Stop Filtering";
+    remove_button.onclick = function() {
 
+        // Hide the dropdown menu so the table isn't obscured
+        dropdown.hide();
+
+        // Submit null as the list of filters to cancel the filtering
+        // Originally submitted an empty list here, but Tabulator still treats this as a filter,
+        // which means table.getFilters(true) will say it's being filtered, even though we don't
+        // want it to
+        success(null);
+    };
+    dropdown.append(remove_button);
+
+
+    // Return the button to Tabulator to be placed in the header
+    return dropdown.button;
+}
+
+
+
+
+export function custom_filter_func(filters, option, row, params) {
+
+    // Parse the desired value of the cell, if the filter parameters specify a way to format it
+    var cell_val = params.get_cell_val != undefined ? params.get_cell_val(option) : option;
+
+    // Result will be true if every filter passes
+    return filters.every(filter => {
+
+        // Parse desired value(s) from filter and actual value from user input
+        var option_val = params.parse_option_val(filter.option, cell_val, filter.value);
+        var filter_val = params.parse_filter_val(filter.option, filter.value);
+        var second_val = params.parse_filter_val(filter.option, filter.value2);
+
+        // If the search term was invalid for some reason, skip over this filter
+        if (filter_val == null) return true;
+
+        // By this point, option_val holds the appropriate value of the current cell,
+        // and filter_val holds the desired value from the filter, e.g.
+        //    option_val = 2019
+        //    filter_val = 2015
+
+        // If there are two values from the filter, package them into an array
+        var filter_vals = (second_val == undefined) ? filter_val : [filter_val, second_val];
+
+        // Get the operation with the matching name from the filter parameters
+        var operation = params.operations.filter(op => op.name == filter.op)[0];
+
+        // Use the fltering function provided by that operation
+        return operation.filter(option_val, filter_vals, filter.inclusive);
+    });
+}
+
+
+
+
+
+// Make a dropdown button and menu that will align itself with the table on the page
+function make_dropdown_blank(editorParams) {
+
+    // Basic components - the button to open the dropdown menu, and the menu itself
+    var dropbtn = document.createElement("button");
+    var dropdown = document.createElement("div");
+
+    // Set starting inner text
+    dropbtn.innerText = "Show Filters";
+
+    // Create the function to align the menu under the button
+    var align_dropdown = create_align_function();
 
     // Styling
     dropbtn.style = `
@@ -759,16 +826,23 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
       }
     });
 
-    // Add the dropdown to the page, and return the button to Tabulator
     document.body.appendChild(dropdown);
-    return dropbtn;
+    return {
+        menu:   dropdown,
+        button: dropbtn,
+        align:  align_dropdown,
+        show:   show_dropdown,
+        hide:   hide_dropdown,
+        append: (x) => dropdown.appendChild(x),
+    };
 
 
     // Helper Functions
 
     // NOTE - In order for this to work, the menu must already be shown, so its bounding rectangle
     // can be calculated
-    function create_align_dropdown() {
+    // TODO: View modes other than the default may not work as expected
+    function create_align_function() {
 
       // Position the menu horizontally based on the dropdown-align parameter
       switch (editorParams.dropdown_align) {
@@ -883,16 +957,19 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
                 // Align left if possible
                 if (btn_rect.left + men_rect.width < window.innerWidth) {
                     align_left(btn_rect, men_rect);
+                    dropdown.style['white-space'] = 'nowrap';
                 }
 
                 // Aligh right if possible
                 else if (btn_rect.right - men_rect.width > 0) {
                     align_right(btn_rect, men_rect);
+                    dropdown.style['white-space'] = 'nowrap';
                 }
 
                 // Align centered to the window if necessary
                 else {
                     dropdown.style.left = ((window.innerWidth - men_rect.width) / 2) + "px";
+                    dropdown.style['white-space'] = 'normal';
                 }
             }
       }

@@ -78,14 +78,42 @@ Emits:
             }
         },
 
+        mounted: async function() {
+            await this.load(this.collection)
+        },
+
         watch: {
             collection: async function(coll) {
+                this.load(coll);
+            },
+
+            // If the table headers change, replace them in the Tabulator object
+            heading_data: function(new_headers) {
+                if (this.table != null) this.table.setColumns(new_headers);
+            },
+
+            // If the table data changes, replace it in the Tabulator object
+            tableData: function(new_data) {
+                if (this.table != null) {
+                    this.table.replaceData(new_data);
+                    this.table.redraw();
+                };
+            },
+
+            visible: function(val) { // eslint-disable-line no-unused-vars
+                if (this.table != null) this.table.redraw();
+            },
+        },
+
+        methods: {
+
+            load: async function(coll) {
+
+                // Make sure to clear table data any time the collection changes
+                this.tableData = [];
 
                 // No collection passed - clear the table data and stop the function
-                if (coll == null) {
-                    this.tableData = [];
-                    return;
-                }
+                if (coll == null) return;
 
                 this.$emit("load_start", null);
 
@@ -120,8 +148,6 @@ Emits:
                         if (should_load(this.loaded_groups[key])) {
                             this.loaded_groups[key] = GROUP.LOADING;
 
-                            // console.log("Group:", group);
-
                             // Query the database for all docs in this group
                             this.collection.where(this.groupBy, "==", key).get().then(
 
@@ -131,10 +157,10 @@ Emits:
                                     this.loaded_groups[key] = GROUP.LOADED;
                                 },
 
-                                // Catch an error
+                                // If query fails, set group status to FAILED and close it
                                 error => { // eslint-disable-line no-unused-vars
                                     this.loaded_groups[key] = GROUP.FAILED;
-                                    // TODO: Manually close the group
+                                    group.hide();
                                 }
                             );
                         }
@@ -152,12 +178,12 @@ Emits:
                         </div>
                         <div style='display:inline;float:right;'>
                             <span style='color:#d00;'>
-                                (${gen_msg(this.loaded_groups[value])})
+                                (${gen_msg(this.loaded_groups[value], this.table)})
                             </span>
                         </div>`;
 
                         // Generate message based on group's load status
-                        function gen_msg(val) {
+                        function gen_msg(val, table) {
 
                             // Fixes rendering error when groupByOptions is null
                             if (!group_opts) val = GROUP.LOADED;
@@ -168,7 +194,17 @@ Emits:
                                 case GROUP.LOADING:
                                     return "Loading...";
                                 case GROUP.LOADED:
-                                    return `${count?count:"No"} item${count==1?"":"s"}.`;
+
+                                    // Check if any filters, including header filters, are currently being applied to the table
+                                    var filtered = table.getFilters(true).length > 0;
+
+                                    // If table is being filtered, flavor the text as "matches" rather than just "items"
+                                    if (filtered) {
+                                        return `${count?count:"No"} match${count==1?"":"es"}.`;
+                                    }
+                                    else {
+                                        return `${count?count:"No"} item${count==1?"":"s"}.`;
+                                    }
                                 case GROUP.FAILED:
                                     return "Load failed. Click to retry.";
                             }
@@ -208,25 +244,6 @@ Emits:
 
                 this.$emit("load_complete", null);
             },
-
-            // If the table headers change, replace them in the Tabulator object
-            heading_data: function(new_headers) {
-                if (this.table != null) this.table.setColumns(new_headers);
-            },
-
-            // If the table data changes, replace it in the Tabulator object
-            tableData: function(new_data) {
-                if (this.table != null) this.table.replaceData(new_data);
-
-                this.table.redraw();
-            },
-
-            visible: function(val) { // eslint-disable-line no-unused-vars
-                this.table.redraw();
-            },
-        },
-
-        methods: {
 
             // Add a retrieved collection to the table
             addCollection: function(snapshot) {
