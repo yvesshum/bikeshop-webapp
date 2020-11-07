@@ -240,14 +240,31 @@ export default {
       }
     },
 
+    // The numeric value
+    current_level: function() {
+      if (this.apron_colors != undefined) {
+        for (var i = 0; i < this.apron_colors.length; i++) {
+          console.log(this.apron_colors[i], " vs ", this.currentColor);
+          if (this.apron_colors[i].name == this.currentColor) {
+            return i;
+          }
+        }
+      }
+
+      // Default value
+      return -1;
+    },
+
     tree_tabs: function() {
-      if (this.apron_skills == null || this.achievedSkills == null) return [];
+      if (this.apron_skills == null) return [];
 
       let result = [];
 
-      Object.keys(this.apron_skills).forEach(apron => {
+      Object.keys(this.apron_skills).forEach((apron, index) => {
         let span = Object.keys(this.apron_skills[apron]).length;
-        let earned = this.achievedSkills[apron] == undefined ? false : this.achievedSkills[apron].Achieved;
+        let earned = (this.achievedSkills == null || this.achievedSkills[apron] == undefined)
+          ? false
+          : this.achievedSkills[apron].Achieved;
 
         // Initialize an array to hold category & skill list boxes
         var content = [];
@@ -305,9 +322,11 @@ export default {
         });
 
         // Create the apron tile with properties that were computed in the forEach loop
+        // The apron level is the index+1, since there's no tab for the default gray apron
         var apron_object = {
           type: "apron",
-          apron, span, earned,
+          apron, span, earned, index,
+          level:        index+1,
           num_total:    total,
           num_achieved: achieved,
           num_add, num_rem,
@@ -420,12 +439,8 @@ export default {
     },
 
 
-    apron_active: function(n) {
-      return (this.apron_level !== null && n <= this.apron_level);
-    },
-
     section_locked: function(section) {
-      return section.apron.earned == false && section.apron.apron != this.currentColor;
+      return section.apron.earned == false && section.apron.level > this.current_level;
     },
 
     // get_apron_property: function(level, prop) {
@@ -460,16 +475,18 @@ export default {
         return {status: "achieved"};
       }
 
-      else if (section.apron.apron == this.currentColor) {
+      else if (this.section_locked(section)) {
+        return {status: "locked"};
+      }
+
+      // If apron is neither achieved nor locked, then it can be earned
+      // Note that in the edge case where the youth has "skipped" an apron - e.g. if an apron color below their current level was added later - this apron will also be earnable
+      else {
         return {
           status: "progress",
           progress: section.apron.num_achieved,
           total: section.apron.num_total,
         };
-      }
-
-      else {
-        return {status: "locked"};
       }
     },
 
@@ -487,12 +504,12 @@ export default {
         return "success";
       }
 
-      else if (section.apron.apron == this.currentColor) {
-        return "primary";
+      else if (this.section_locked(section)) {
+        return "secondary";
       }
 
       else {
-        return "secondary";
+        return "primary";
       }
     },
 
