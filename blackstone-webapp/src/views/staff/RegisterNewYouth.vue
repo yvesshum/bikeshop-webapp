@@ -31,7 +31,7 @@
                   <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
                     <h5 href="#" v-b-toggle.accordion-returning>Required Fields</h5>
                   </b-card-header>
-                  <b-collapse id="accordion-returning" visible accordion="my-accordion" role="tabpanel">
+                  <b-collapse style="padding-top: 1.5rem" id="accordion-returning" visible accordion="my-accordion" role="tabpanel">
                       <div v-if="returningYouth == 'Returning Youth'">
                       
                           <p class="field_header">Enter Your Youth ID:<span style="color: red"> *</span></p>
@@ -42,7 +42,7 @@
                             <div v-if="field.name == 'Class'">
                               <div class = "specialDiv">
                                 <p class="field_header">Registration {{field.name}}<span style="color: red"> *</span></p>
-                                  <p style="color: grey">{{placeholders[field.name]}}</p>
+                                  <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
                               </div>
@@ -51,7 +51,7 @@
                                 <div v-for="question in essayQuestions[field.value]" :key="question">
                                   <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
-                                      <p style="color: grey">{{placeholders[field.name]}}</p>
+                                      <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
                                     </div>
@@ -65,7 +65,7 @@
                               <div v-if="!(field.name == 'Class' && returningYouth == 'Returning Youth')">
                                 <p class="field_header">{{field.name}}<span style="color: red"> *</span></p>
                                 <div class = "specialDiv">
-                                  <p style="color: grey">{{placeholders[field.name]}}</p>
+                                  <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                   <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                   </SpecialInput>
                                 </div>
@@ -74,7 +74,7 @@
                                   <div v-for="question in essayQuestions[field.value]" :key="question">
                                     <pre class="field_header">{{question}}</pre>
                                     <div class = "specialDiv">
-                                      <p style="color: grey">{{placeholders[field.name]}}</p>
+                                      <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                       <SpecialInput v-model="answers[field.value][question]" :ref="question" inputType="Essay" :args="arguments">
                                       </SpecialInput>
                                     </div>
@@ -92,7 +92,7 @@
                   <b-card-header header-tag="header" class="p-1 bg-info" role="tab">
                     <h5 href="#" v-b-toggle.accordion-optional>Optional Fields</h5>
                   </b-card-header>
-                  <b-collapse id="accordion-optional" accordion="my-accordion" role="tabpanel">
+                  <b-collapse style="padding-top: 1.5rem" id="accordion-optional" accordion="my-accordion" role="tabpanel">
                       <div v-if="returningYouth == 'Returning Youth'">
                         <b>Enter new answers below to overwrite the information from your previous registration. Leave the fields blank if your answers have not changed.</b>
                           <hr>
@@ -100,7 +100,7 @@
                             <div v-if="field.name != 'Class'">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
-                                <p style="color: grey">{{placeholders[field.name]}}</p>
+                                <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                 <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                 </SpecialInput>
                               </div>
@@ -111,7 +111,7 @@
                           <div class="each_field">
                               <p class="field_header">{{field.name}}</p>
                               <div class = "specialDiv">
-                                <p style="color: grey">{{placeholders[field.name]}}</p>
+                                <div class="placeholder_text">{{placeholders[field.name]}}</div>
                                 <SpecialInput v-model="field.value" :ref="field.name" :inputType="field.type" :args="arguments">
                                 </SpecialInput>
                               </div>
@@ -121,7 +121,7 @@
               </b-card>
           </div>
 
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit!</b-button>
+        <b-button variant="success" @click="submit" style="margin-top:2rem">Submit!</b-button>
 
         </div>
 
@@ -662,14 +662,18 @@
         width: 400px;
         max-width: 100%;
     }
+
+    .placeholder_text {
+      color: gray;
+      margin-bottom: 8px;
+    }
     
     .specialDiv{
         width: 55%;
         margin-left: auto;
         margin-right: auto;
         justify-content: center;
-        padding-bottom: 1rem;
-        padding-top: 1rem;
+        margin-bottom: 2rem;
     }
     
     a, a:hover, a:active, a:link {
