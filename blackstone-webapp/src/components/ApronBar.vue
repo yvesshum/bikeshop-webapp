@@ -574,7 +574,7 @@ export default {
 
       // Initialize changes object
       var changes = {
-        "Apron Skills": this.achieved_skills,
+        "Apron Skills": this.achieved_skills != null ? this.achieved_skills : new Object(),
         "Apron Color": this.get_apron_property(this.apron_level + this.change_level_effect, 'name'),
       };
 
@@ -586,6 +586,13 @@ export default {
       // If incrementing, save the current time
       else {
         var next_color = this.get_apron_property(this.apron_level + 1, 'name');
+
+        // Create a field for the color that's about to be added, if it doesn't exist yet
+        if (changes["Apron Skills"][next_color] == null) {
+          changes["Apron Skills"][next_color] = { Skills: {} };
+        }
+
+        // Save the current timestamp as the time that the apron color is achieved
         changes["Apron Skills"][next_color].Achieved = firebase.firestore.Timestamp.fromDate(new Date());
 
         // // The following would assign the timestamp on the server side
