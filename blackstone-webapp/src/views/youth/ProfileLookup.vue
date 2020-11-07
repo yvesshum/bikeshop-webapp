@@ -22,6 +22,7 @@ Profile Lookup is a restricted version of Profile Lookup & Editing, located in s
       :seasons="seasons"
       :periods="periods"
       :period_metadata="period_metadata"
+      :hourLoggingCategories="hour_logging_categories"
       :edit="false"
     />
 
@@ -78,6 +79,8 @@ export default {
       period_data: new Object(),
 
       current_active_periods: new Object(),
+
+      hour_logging_categories: [],
     };
   },
 
@@ -116,6 +119,9 @@ export default {
             break;
         }
       });
+
+      var hour_categories_snapshot = await HourLoggingCategoriesRef.get();
+      this.hour_logging_categories = hour_categories_snapshot.data().Categories;
     },
 
     handle_period_metadata: async function(doc) {

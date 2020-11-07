@@ -32,7 +32,26 @@ var Tabulator = require("tabulator-tables");
 
 export default {
   name: 'profile_log',
-  props: ["snapshot", "periods", "visible", "collection", "headers", "docFormatter"],
+  props: {
+
+    // The collection to display - used by CollectionTable
+    collection: Object,
+
+    // The list of periods - used as the grouping mechanism for CollectionTable
+    periods: { type: Array, default: () => [] },
+
+    // Whether the table is currently visible - used by CollectionTable to trigger a redraw
+    visible: Boolean,
+
+    // The column headers for the table
+    headers: { type: Array, default: () => [] },
+
+    // Function to format the collection documents - used by CollectionTable
+    docFormatter: Function,
+
+    // The list of hour logging categories
+    hourCategories: { type: Array, default: () => [] },
+  },
   components: {
     CollectionTable,
   },
@@ -92,8 +111,7 @@ export default {
           case "work-hours":
             styling = {
               formatter: this.format_work_hours,
-              ...this.get_hour_filter_args(),
-              headerFilterFunc: this.hour_range_filter,
+              ...this.work_hour_filter_args,
               sorter: this.work_hours_sorter
             };
             break;
@@ -123,7 +141,81 @@ export default {
 
         return styling;
       });
-    }
+    },
+
+
+    work_hour_filter_args: function() {
+
+      // The filtering operations to support in the dropdown
+      var operations = [
+        { name: "not zero", num_inputs: 0,
+          filter: (option_val) => {
+            return option_val != 0;
+          },
+        },
+        { name: "at least", inclusive: true,
+          filter: (option_val, filter_val, inclusive) => {
+            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+          },
+        },
+        { name: "at most",  inclusive: true,
+          filter: (option_val, filter_val, inclusive) => {
+            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+          }
+        },
+        { name: "between",  inclusive: true, num_inputs: 2,
+          filter: (option_val, filter_vals, inclusive) => {
+            return inclusive
+              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+          },
+        },
+        { name: "exactly",
+          filter: (option_val, filter_val) => {
+            return option_val == filter_val;
+          },
+        },
+      ];
+
+      return {
+
+        // Use the custom dropdown filter and its associated filtering functionality
+        headerFilter: custom_filter_editor,
+        headerFilterFunc: custom_filter_func,
+
+        // Parameters for setting up the filter dropdown menu
+        headerFilterParams: {
+
+          // Allow user to filter by any of the hour categories, or the total amount
+          options: this.hourCategories.concat(["Total"]),
+
+          // Use the operations defined above
+          operations,
+
+          // Center the dropdown around the button
+          // In this case, since the work hours is one of the later columns, I think this alignment makes it look a bit nicer
+          dropdown_align: "center",
+        },
+
+        // Parameters for doing the actual filtering
+        headerFilterFuncParams: {
+
+          // Use the operations defined above
+          operations,
+
+          // For the filter, no extra logic is needed to decode the value the user is filtering with / searching for
+          parse_filter_val: (option, value) => value,
+
+          // For the cells, grab the number of hours for the category that's specified by the filter
+          parse_option_val: (option, cell, value) => {
+            return (option == "Total")
+              ? this.hourCategories.reduce((acc, curr) => acc + cell[curr], 0)
+              : cell[option];
+          },
+        },
+        headerFilterLiveFilter: false,
+      };
+    },
   },
 
   methods: {

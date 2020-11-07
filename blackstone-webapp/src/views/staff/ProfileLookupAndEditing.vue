@@ -88,7 +88,7 @@ export default {
 
       current_active_periods: new Object(),
 
-      hour_logging_categories: null,
+      hour_logging_categories: [],
     };
   },
 

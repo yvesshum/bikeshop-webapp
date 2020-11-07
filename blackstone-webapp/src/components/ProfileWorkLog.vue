@@ -8,6 +8,7 @@
       :collection="collection"
       :headers="headers"
       :docFormatter="work_doc_formatter"
+      :hourCategories="categories"
       @table="handle_table"
     />
 
