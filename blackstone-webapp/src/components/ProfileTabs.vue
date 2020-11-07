@@ -6,11 +6,12 @@
       <div class="id_parens" style="margin-top:0.5em; font-size:0.9em;">
           ID: {{youth_id}}
           <span style="margin: 0 0.75em;">|</span>
-          {{get_profile_field("Apron Color")}} Apron
-          <span style="margin: 0 0.75em;">|</span>
           {{get_profile_field("Hours Earned")}} Hours Earned
           <span style="margin: 0 0.75em;">|</span>
           {{current_class}}
+          {{(class_is_apron(current_class)) ? "(Class)" : ""}}
+          <span style="margin: 0 0.75em;">|</span>
+          {{get_profile_field("Apron Color")}} Apron
         </div>
     </div>
 
@@ -278,6 +279,12 @@ export default {
           if (this.trans_log_content != null) this.trans_log_content.redraw();
           break;
       }
+    },
+
+    // Return true if the class name is formatted like "___ Apron", and false otherwise
+    // Used to display a disambiguating "(Class)" string if so
+    class_is_apron(class_name) {
+      return /.*(Apron)$/.test(class_name);
     },
 
     load_header_doc: function(new_header) {},
