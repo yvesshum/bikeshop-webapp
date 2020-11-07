@@ -2,19 +2,24 @@
     <div class = "StaffManageSkills">
         <div class="content">
         <top-bar/>
-        <h3 style="margin: 20px">Manage Apron skills here!</h3>
+        <h1 style="margin: 20px">Manage Apron skills here!</h1>
         <PageHeader pageCategory="Staff Headers" pageName="Manage Apron Skills"></PageHeader>
-        <div>
+        <!-- <div>
             <b-button variant="success" @click="showAddCategoryModal" style="margin: 1%;">Add Category</b-button>
             <b-button variant="success" @click="showRenameCategoryModal" style="margin: 1%;">Rename Category</b-button>
             <b-button variant="danger" @click="showDeleteCategoryModal" style="margin: 1%;">Delete Category</b-button>
-        </div>
+        </div> -->
         <div class="toolbarwrapper">
+            <b-dropdown text="Edit Categories" right variant="secondary" class="m-2">
+              <b-dropdown-item variant="success" @click="showAddCategoryModal" style="margin: 1%;">Add Category</b-dropdown-item>
+              <b-dropdown-item variant="secondary" @click="showRenameCategoryModal" style="margin: 1%;">Rename Category</b-dropdown-item>
+              <b-dropdown-item variant="danger" @click="showDeleteCategoryModal" style="margin: 1%;">Delete Category</b-dropdown-item>
+            </b-dropdown>
             <b-button variant="success" @click="showAddSkillModal" style="margin: 1%;">Add New Skill</b-button>
-            <b-button variant="success" @click="showConfirmationModal('submit',
+            <b-button variant="warning" @click="showConfirmationModal('submit',
               'Confirm submission',
               'Are you sure you want to submit the new apron skills table? Youth with changed or deleted skills will lose their skill information.'
-              )" style="margin: 1%;">Submit Changes</b-button>
+              )" style="margin: 1%;">Save Changes</b-button>
             <b-button variant="info" @click="showConfirmationModal('refresh',
               'Confirm Refresh',
               'Are you sure you want to refresh the apron skills table? Any unsubmitted local changes will be lost.'
@@ -57,7 +62,7 @@
               <h4>Enter your new skill name: </h4>
               <SpecialInput v-model="new_skill" ref="new_skill" inputType="String" :arguments="{...args.specialInput}"></SpecialInput>
               <h4 class="error_message">{{errorMsg}}</h4>
-              <h4>{{successMsg}}</h4>
+              <h4 class="success_message">{{successMsg}}</h4>
               <b-button class="mt-3" block @click="checkError(new_skill, false, false);" variant = "success">Add Skill</b-button>
               <b-button class="mt-3" block @click="closeAddSkillModal();" variant="secondary">Done</b-button>
             </div>
@@ -134,7 +139,10 @@
                 </div>
             </div>
         </b-modal>
-        <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
+        <div v-if="unsaved" class="unsaved_bar">
+          You have unsaved changes
+        </div>
+        <!-- <b-button variant="success" @click="submit" style="margin-top:10px">Submit Changes</b-button>
         <br/>
         <b-button variant="info" @click="update" style="margin-top:10px">Refresh Table (Discards changes)</b-button> -->
         </div>
@@ -199,7 +207,57 @@
                 },
                 // Dictionary from [category, color, skill] to [new color, new category, new skill] or null
                 changes : {},
+                saved_groups : [],
+                unsaved : false
             };
+        },
+        watch: {
+          groups: {
+            handler: function (v){
+                var changed = false;
+                if(v.length != this.saved_groups.length){
+                    console.log("Different lengths!")
+                    changed = true;
+                } else {
+                    for(var i = 0; i < v.length; i++){
+                      if(v[i]["category"] != this.saved_groups[i]["category"]){
+                          console.log("Different categories!")
+                          changed = true;
+                      }
+                      if(v[i]["color"] != this.saved_groups[i]["color"]){
+                          console.log("Different colors!")
+                          changed = true;
+                      }
+                      if(v[i]["skills"].length != this.saved_groups[i]["skills"].length){
+                          console.log("Different skill lengths!")
+                          changed = true;
+                      } else {
+                          for(var j = 0; j < v[i]["skills"].length; j++){
+                            if(v[i]["skills"][j]["skill"] != this.saved_groups[i]["skills"][j]["skill"]){
+                                console.log("Different skills!")
+                                console.log(v[i]["skills"][j]["skill"])
+                                console.log(this.saved_groups[i]["skills"][j]["skill"])
+                                changed = true;
+                                break
+                            }
+                          }
+                      }
+                      if(changed){
+                          break;
+                      }
+                    }
+                }
+                if(changed){
+                  this.unsaved = true;
+                } else {
+                  this.unsaved = false;
+                }
+                console.log("That give you any ideas?")
+                console.log(v)
+                console.log(this.saved_groups)
+            },
+            deep: true
+          }
         },
         methods: {
             // async getCategories() {
@@ -233,6 +291,8 @@
                 this.errorMsg = "Error: Maximum category length is 300 characters";
               } else if(!isCat && input.length > 1000){
                 this.errorMsg = "Error: Maximum skill length is 1000 characters";
+              } else if(input.length == 0){
+                this.errorMsg = "Error: Skill and category names cannot be empty";
               } else {
                 if(this.modalType == "rename_category"){
                   this.rename_category();
@@ -597,6 +657,16 @@
                   });
                 }
               }
+              this.saved_groups = [];
+              for(var i = 0; i < this.groups.length; i++){
+                  var new_obj = Object.assign({}, this.groups[i]);
+                  var new_skills = []
+                  for(var j = 0; j < new_obj["skills"].length; j++){
+                    new_skills.push(JSON.parse(JSON.stringify(new_obj["skills"][j])))
+                  }
+                  new_obj["skills"] = new_skills
+                  this.saved_groups.push(new_obj)
+              }
             }
         },
         async mounted() {
@@ -640,5 +710,24 @@
     }
     .error_message{
       color: red;
+    }
+    .success_message{
+      color: green;
+    }
+    .unsaved_bar {
+      /* padding: 2px 15px !important; */
+      /* min-height: 15px;
+      width: -moz-calc(99% - 260px);
+      width: -webkit-calc(99% - 260px);
+      width: -o-calc(99% - 260px);
+      width: calc(99% - 260px); */
+      width: 100%;
+      background-color: #ffc107;
+      color: black;
+      position: fixed;
+      right: 0%;
+      /* top: 108px; */
+      bottom: 0px;
+      text-align: center;
     }
 </style>
