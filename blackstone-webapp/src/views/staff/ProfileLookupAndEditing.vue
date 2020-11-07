@@ -100,7 +100,7 @@ export default {
     //   this.header_doc = doc;
     // });
 
-    await this.load_profile_data();
+    await this.load_period_data();
   },
 
   computed: {
@@ -111,7 +111,7 @@ export default {
 
   methods: {
 
-      load_profile_data: async function() {
+      load_period_data: async function() {
 
         // Load the Periods collection and go through each document in it
         var snapshot = await this.periods_db.get();
