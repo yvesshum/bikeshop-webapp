@@ -508,7 +508,10 @@ export function make_range_editor(type) {
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
             let max = edit2.value !== "" ? edit2.value : null;
-            let new_range = {min, max};
+
+            // If neither input has a value, clear the filter
+            // Otherwise, save the range as a new filter
+            let new_range = (min == null && max == null) ? null : {min, max};
 
             // Submit the new range
             success(new_range);
@@ -520,7 +523,10 @@ export function make_range_editor(type) {
             // Get the new range from the inputs, replacing blank inputs with null
             let min = edit1.value !== "" ? edit1.value : null;
             let max = edit2.value !== "" ? edit2.value : null;
-            let new_range = {min, max};
+
+            // If neither input has a value, clear the filter
+            // Otherwise, save the range as a new filter
+            let new_range = (min == null && max == null) ? null : {min, max};
 
             switch (e.keyCode) {
 
@@ -531,7 +537,7 @@ export function make_range_editor(type) {
 
                 // Esc key - Cancel the range
                 case 27:
-                    cancel();
+                    success(null);
                     break;
             }
 
@@ -717,8 +723,11 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
         // Hide the dropdown menu so the table isn't obscured
         dropdown.hide();
 
-        // Submit an empty list as the list of filters - equivalent to not filtering at all
-        success([]);
+        // Submit null as the list of filters to cancel the filtering
+        // Originally submitted an empty list here, but Tabulator still treats this as a filter,
+        // which means table.getFilters(true) will say it's being filtered, even though we don't
+        // want it to
+        success(null);
     };
     dropdown.append(remove_button);
 
