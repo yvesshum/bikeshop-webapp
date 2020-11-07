@@ -247,38 +247,43 @@ export default {
       }
     },
 
+    // Check if row should be checked off or not
     in_checked_data: function(row) {
-      var achieved = false;
 
-        // matchBy     -> ["name", "category", "color"]
-        // checkedData -> [{name, category, color}, {name, category, color}]
-        // row         -> {name: ???, category: ???, color: ???}
+      // Sample values for the three major objects in question:
+      //
+      //     matchBy     -> ["a", "b", "c"]
+      //     checkedData -> [{a: 1, b: 2, c: 3}, {a: 4, b: 5, c: 6}, ...]
+      //     row         -> {a: ???, b: ???, c: ???}
+      //
+      // We want to see if row matches one of the entries in checkedData,
+      // based on the fields in matchBy
 
-        // If matching by an array, check each element
-        if (Array.isArray(this.matchBy)) {
+      // If matching by an array, check each element
+      if (Array.isArray(this.matchBy)) {
 
-          var matchByFields = this.matchBy.map(field => row[field]);
+        var matchByFields = this.matchBy.map(field => row[field]);
 
-          // Loop through until a match is found
-          for (var i = 0; i < this.checkedData.length; i++) {
-            var thing = true;
+        // Loop through until a match is found
+        for (var i = 0; i < this.checkedData.length; i++) {
+          var thing = true;
 
-            for (var j = 0; j < this.matchBy.length; j++) {
-              thing = thing && (matchByFields[j] == this.checkedData[i][j]);
-            }
-
-            if (thing) {
-              return true;
-            }
+          for (var j = 0; j < this.matchBy.length; j++) {
+            thing = thing && (matchByFields[j] == this.checkedData[i][j]);
           }
 
-          return false;
+          if (thing) {
+            return true;
+          }
         }
 
-        // If matching by a string, can just check for that field's value
-        else if (typeof this.matchBy === "string") {
-          return this.checkedData.includes(row[this.matchBy]);
-        }
+        return false;
+      }
+
+      // If matching by a string, can just check for that field's value
+      else if (typeof this.matchBy === "string") {
+        return this.checkedData.includes(row[this.matchBy]);
+      }
     },
 
     select_value: function(field, value) {
