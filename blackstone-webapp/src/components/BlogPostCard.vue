@@ -10,11 +10,11 @@
             <div class="container" @click="viewBlogPost(PostObj.id)">
                 <b-row style="margin: 1.25rem 0; width: 100%;">
                     <b-col class="blog_post_image" cols="3"></b-col>
-                    <b-col style="margin-left: 1rem; text-align: left" cols="9">
-                        <b-card-title style="padding-right: 1.5rem">
+                    <b-col style="margin-left: 1rem; text-align: left;" cols="9">
+                        <b-card-title class="truncate" style="padding-right: 1.5rem">
                             {{ PostObj.title }}
                         </b-card-title>
-                        <b-card-sub-title style="margin-bottom: 8px">
+                        <b-card-sub-title class="truncate" style="margin-bottom: 8px">
                             <i>By {{ PostObj.posterName }}</i>
                         </b-card-sub-title>
                         <b-card-sub-title
@@ -274,8 +274,14 @@ export default {
 .blog_post_image {
     margin: -1.25rem 0 -1.25rem -1rem;
     padding: 0;
-    background-image: url("https://picsum.photos/400/400/?image=20");
+    background-image: url("../assets/bike_thumbnail2.jpg");
     background-size: cover;
+}
+.truncate {
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 #editButton {
     position: fixed;
