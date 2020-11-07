@@ -178,12 +178,12 @@ Emits:
                         </div>
                         <div style='display:inline;float:right;'>
                             <span style='color:#d00;'>
-                                (${gen_msg(this.loaded_groups[value])})
+                                (${gen_msg(this.loaded_groups[value], this.table)})
                             </span>
                         </div>`;
 
                         // Generate message based on group's load status
-                        function gen_msg(val) {
+                        function gen_msg(val, table) {
 
                             // Fixes rendering error when groupByOptions is null
                             if (!group_opts) val = GROUP.LOADED;
@@ -194,7 +194,17 @@ Emits:
                                 case GROUP.LOADING:
                                     return "Loading...";
                                 case GROUP.LOADED:
-                                    return `${count?count:"No"} item${count==1?"":"s"}.`;
+
+                                    // Check if any filters, including header filters, are currently being applied to the table
+                                    var filtered = table.getFilters(true).length > 0;
+
+                                    // If table is being filtered, flavor the text as "matches" rather than just "items"
+                                    if (filtered) {
+                                        return `${count?count:"No"} match${count==1?"":"es"}.`;
+                                    }
+                                    else {
+                                        return `${count?count:"No"} item${count==1?"":"s"}.`;
+                                    }
                                 case GROUP.FAILED:
                                     return "Load failed. Click to retry.";
                             }
