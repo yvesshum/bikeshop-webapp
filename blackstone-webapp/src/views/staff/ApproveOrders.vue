@@ -145,7 +145,7 @@
                 snapshot.forEach(doc => {
                     let data = doc.data();
                     data["Document ID"] = doc.id; //this is not shown, used for the sake of convenience in setting status later
-                    data["Order Date"] = data["Order Date"].toDate();
+                    data["Order Date"] = data["Order Date"].toDate().toLocaleString();
                     ret.push(data);
                 });
                 return ret;
@@ -265,7 +265,7 @@
                                 res[key] = curData[key];
                             }
                         })
-                        res["Order Date"] = Timestamp.fromDate(res["Order Date"]);
+                        res["Order Date"] = Timestamp.fromDate(new Date(res["Order Date"]));
                         YouthOrderLogRef.doc().set(res).catch(err => {
                             window.alert("Err: "+ err);
                             return null;
