@@ -54,6 +54,7 @@ import {mapObj} from "@/scripts/ParseDB.js";
 import {Youth} from "@/scripts/Youth.js";
 
 let HeaderRef = db.collection("GlobalFieldsCollection").doc("Youth Profile");
+let HourLoggingCategoriesRef = db.collection("GlobalVariables").doc("Hour Logging Categories");
 
 export default {
   name: 'profile_lookup_youth',
