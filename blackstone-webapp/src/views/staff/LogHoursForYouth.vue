@@ -188,7 +188,7 @@ export default {
                 //Create Entry in Global Pending Hours
                 let entry = {
                     "First Name": youth["First Name"],
-                    "Last Name": youth["First Name"],
+                    "Last Name": youth["Last Name"],
                     "Youth ID": youth.ID,
                     "Period": period,
                     "Notes": this.notes,

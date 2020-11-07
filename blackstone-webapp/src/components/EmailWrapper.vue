@@ -22,8 +22,11 @@ export default {
         isValidEmail(value) {
             const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; // eslint-disable-line no-useless-escape
             this.isValid = re.test(String(value).toLowerCase());
-            // console.warn("isValid", re.test(String(value).toLowerCase()))
         },
+    },
+
+    mounted() {
+        this.isValidEmail(this.value)
     }
 }
 </script>
