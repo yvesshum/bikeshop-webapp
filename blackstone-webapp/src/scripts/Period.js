@@ -1,3 +1,15 @@
+var allow_console = false;
+
+function console_warn_safe(str) {
+	// eslint-disable-next-line no-console
+	if (allow_console) console.warn(str);
+}
+
+function console_error_safe(str) {
+	// eslint-disable-next-line no-console
+	if (allow_console) console.error(str, console.trace());
+}
+
 export class Period {
 
 	// Create new Period object from season and year
@@ -33,11 +45,11 @@ export class Period {
 		}
 		else {
 			if (Period.seasons.length != season_list.length) {
-				console.warn("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
+				console_warn_safe("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
 			}
 			for (let i in season_list) {
 				if (season_list[i] != Period.seasons[i]) {
-					console.warn("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
+					console_warn_safe("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
 				}
 			}
 			// season_list.map((val, i) => val == Period.seasons[i]).reduce((a,c) => a && c)
@@ -69,7 +81,7 @@ export class Period {
 	compareTo(operand) {
 		// Error handling: If no list of seasons has been assigned...
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
@@ -128,7 +140,7 @@ export class Period {
 
 	getNext() {
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
@@ -160,7 +172,7 @@ export class Period {
 
 	getPrev() {
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
