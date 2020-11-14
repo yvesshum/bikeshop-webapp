@@ -1,10 +1,13 @@
+// Set this to true to allow console statements for debugging purposes. Otherwise, leave as false.
 var allow_console = false;
 
+// Use console.warn, but only if allow_console is set to true
 function console_warn_safe(str) {
 	// eslint-disable-next-line no-console
 	if (allow_console) console.warn(str);
 }
 
+// Use console.error, but only if allow_console is set to true
 function console_error_safe(str) {
 	// eslint-disable-next-line no-console
 	if (allow_console) console.error(str, console.trace());
