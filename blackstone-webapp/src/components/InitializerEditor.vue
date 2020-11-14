@@ -1,7 +1,7 @@
 //  Usage <InitializerEditor v-if="dataLoaded" initializerRef="Youth Profile Initializers" doc="Youth Profile"/>
 <template>
     <div >
-        <p v-b-tooltip.hover title="Field Name, Initializer Value, Status, Edit, Delete" v-if="data.length !== 0">Hint?</p>
+        <p v-b-tooltip.hover title="Columns are Field Name, Initializer Value, Status, Edit, Delete" v-if="data.length !== 0">Change initial values for youth fields</p>
         <div  v-if="dataLoaded">
             <InitializerCard 
                 v-for="element in data"
