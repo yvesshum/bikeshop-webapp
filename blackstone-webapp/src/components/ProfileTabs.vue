@@ -192,28 +192,7 @@ export default {
     },
   },
 
-  mounted: function() {
-
-    // Load the headers from the prop if it's set
-    if (this.headerDoc != undefined) {
-      this.load_header_doc(this.headerDoc);
-    }
-
-    // Load the profile from the prop if it's set
-    if (this.profile != undefined) {
-      this.load_profile(this.profile);
-    }
-  },
-
   watch: {
-
-    headerDoc: function(new_header) {
-      this.load_header_doc(new_header);
-    },
-
-    profile: function(doc) {
-      this.load_profile(doc);
-    },
 
     current_tab: function(open_tab) {
       switch (open_tab) {
@@ -286,9 +265,6 @@ export default {
     class_is_apron(class_name) {
       return /.*(Apron)$/.test(class_name);
     },
-
-    load_header_doc: function(new_header) {},
-    load_profile: function(doc) {},
 
     get_profile_field: function(field, default_value) {
       return (this.profile == null) ? default_value : this.profile.data()[field];

@@ -244,7 +244,6 @@ export default {
     current_level: function() {
       if (this.apron_colors != undefined) {
         for (var i = 0; i < this.apron_colors.length; i++) {
-          console.log(this.apron_colors[i], " vs ", this.currentColor);
           if (this.apron_colors[i].name == this.currentColor) {
             return i;
           }

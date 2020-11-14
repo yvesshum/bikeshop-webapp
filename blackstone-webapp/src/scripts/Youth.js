@@ -22,6 +22,7 @@ export class Youth {
 
     // Return true if the given object has all the required fields of a Youth object
     static isYouthLike(obj) {
+        var reqs = Youth.requiredVals();
         for (let n in Youth.requiredVals()) {
             if (obj[reqs[n]] === undefined) {
                 return false;
