@@ -12,6 +12,8 @@ const config = {
 };
 
 firebase_app.initializeApp(config);
+firebase_app.auth().setPersistence(firebase_app.auth.Auth.Persistence.SESSION)
+
 export const db = firebase_app.firestore();
 export const firebase = firebase_app;
 export const rb = firebase_app.database();
