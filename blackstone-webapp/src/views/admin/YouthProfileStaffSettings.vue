@@ -14,15 +14,15 @@
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users must enter">Required Fields:</h3>
-        <fieldEditor v-if="dataLoaded" sourceFieldName="required" :elements="fields.required" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="required" :elements="fields.required" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile', 'GlobalPendingRegistrations']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users may enter" right>Optional Fields:</h3>
-        <fieldEditor v-if="dataLoaded" sourceFieldName="optional" :elements="fields.optional" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="optional" :elements="fields.optional" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile', 'GlobalPendingRegistrations']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
 
         <h3 v-b-tooltip.hover title="These are fields that users do not enter but are included for functionality and/or display" right>Hidden Fields:</h3>
-        <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile']" :subcollectionsToEdit="[]"/>
+        <fieldEditor v-if="dataLoaded" sourceFieldName="hidden" :elements="fields.hidden" sourceDocument="Youth Profile" :collectionsToEdit="['GlobalYouthProfile', 'GlobalPendingRegistrations']" :subcollectionsToEdit="[]"/>
         <hr class="divider">
         
         <h2 v-b-tooltip.hover title="This value will be shown as a hint when users fill out the Youth Registration Form">Form Hint editor</h2>  
