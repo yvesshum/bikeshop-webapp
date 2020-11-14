@@ -19,7 +19,6 @@
 
 import CollectionTable from "@/components/CollectionTable.vue"
 
-import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
 import {custom_filter_func} from "@/scripts/Search.js"
@@ -524,23 +523,23 @@ export default {
 
           // If input string contains "PM" (case-insensitive), add 12 hours to the final count
           // Otherwise, start from 0 seconds
-          let afternoon = filter.value.match(/[Pp](?=[Mm])/);
+          let afternoon = value.match(/[Pp](?=[Mm])/);
           let result = (afternoon == null) ? 0 : (12 * 60 * 60);
 
           // Split user input into hours, mins, and seconds
           // Grab all groups of one or two numbers followed by valid separator character
-          let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+          let split_time = value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
 
           // Take advantage of fall-thru to convert as much of split_time as exists to seconds
           // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
           /* eslint-disable no-fallthrough */
           switch (split_time.length) {
             case 3:
-              filter_val += split_time[2];
+              result += split_time[2];
             case 2:
-              filter_val += split_time[1] * 60;
+              result += split_time[1] * 60;
             case 1:
-              filter_val += split_time[0] * 60 * 60;
+              result += split_time[0] * 60 * 60;
           }
           /* eslint-enable no-fallthrough */
 
