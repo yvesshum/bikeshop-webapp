@@ -13,8 +13,8 @@
       @table="handle_table"
     ></CollectionTable>
 
-    <FilterDropdown v-for="(col, i) in dropdown_cols" :key="'dropdown'+i"
-      @dropdown_obj="obj => save_dropdown_body(col, obj)"
+    <FilterModal v-for="(col, i) in filter_modal_cols" :key="'filter-modal-'+i"
+      @created="obj => save_filter_modal_obj(col, obj)"
       @filters="col.run_success_func"
       :options="col.options"
       :operations="col.operations"
@@ -26,7 +26,7 @@
 <script>
 
 import CollectionTable from "@/components/CollectionTable.vue"
-import FilterDropdown  from "@/components/FilterDropdown.vue"
+import FilterModal     from "@/components/FilterModal.vue"
 
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
@@ -60,7 +60,7 @@ export default {
   },
   components: {
     CollectionTable,
-    FilterDropdown,
+    FilterModal,
   },
 
   mounted: async function() {
@@ -78,20 +78,20 @@ export default {
         ],
       },
 
-      // The information used to construct each FilterDropdown (parent to child)
+      // The information used to construct each FilterModal (parent to child)
       // Indices are NOT associated with column index
-      dropdown_cols: [],
+      filter_modal_cols: [],
 
-      // The functionality exposed by each FilterDropdown component (child to parent)
+      // The functionality exposed by each FilterModal component (child to parent)
       // Indices DO match column index
-      dropdown_objs: [],
+      filter_modal_objs: [],
     };
   },
 
   computed: {
     header_columns: function() {
 
-      this.dropdown_cols = [];
+      this.filter_modal_cols = [];
 
       return this.headers.map((header, index) => {
         if (header.__style__ == undefined) {
@@ -116,9 +116,9 @@ export default {
 
 
         // Functionality passed down to Tabulator filtering function (parent to child)
-        var dropdown_body = {
+        var filter_modal_editor = {
           show_filter: () => {
-            this.dropdown_objs[index].show();
+            this.filter_modal_objs[index].show();
           },
           set_success: (f) => {
             success_func = f;
@@ -136,19 +136,19 @@ export default {
           case "date":
             styling = {
               formatter: this.format_date,
-              ...this.get_date_filter_args(dropdown_body, false),
+              ...this.get_date_filter_args(filter_modal_editor, false),
               sorter: this.date_sorter
             };
-            this.dropdown_cols.push({index, run_success_func, ...this.get_date_params(false)});
+            this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(false)});
             break;
 
           case "datetime":
             styling = {
               formatter: this.format_date_time,
-              ...this.get_date_filter_args(dropdown_body, true),
+              ...this.get_date_filter_args(filter_modal_editor, true),
               sorter: this.date_sorter,
             };
-            this.dropdown_cols.push({index, run_success_func, ...this.get_date_params(true)});
+            this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(true)});
             break;
 
           case "time":
@@ -167,8 +167,8 @@ export default {
             };
 
             // Add the dropdown body
-            styling.headerFilterParams.dropdown_body = dropdown_body;
-            this.dropdown_cols.push({index, run_success_func, ...this.work_hour_params});
+            styling.headerFilterParams.filter_modal_editor = filter_modal_editor;
+            this.filter_modal_cols.push({index, run_success_func, ...this.work_hour_params});
             break;
 
           case "hours":
@@ -292,8 +292,8 @@ export default {
       this.$emit("table", table);
     },
 
-    save_dropdown_body: function(col, obj) {
-      this.dropdown_objs[col.index] = obj;
+    save_filter_modal_obj: function(col, obj) {
+      this.filter_modal_objs[col.index] = obj;
     },
 
     // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
@@ -500,7 +500,7 @@ export default {
       };
     },
 
-    get_date_filter_args: function(dropdown_body, include_time) {
+    get_date_filter_args: function(filter_modal_editor, include_time) {
 
       var {options, operations} = this.get_date_params(include_time);
 
@@ -510,7 +510,7 @@ export default {
         headerFilterParams: {
           options,
           operations,
-          dropdown_body,
+          filter_modal_editor,
         },
         headerFilterFuncParams: {
           options, operations,

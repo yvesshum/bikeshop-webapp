@@ -578,18 +578,18 @@ export function custom_filter_button(cell, onRendered, success, cancel, editorPa
     `;
 
     // Pass the function to submit the filters up to the dropdown
-    editorParams.dropdown_body.set_success(success);
+    editorParams.filter_modal_editor.set_success(success);
 
     // Pass up a function to change the button's displayed text based on whether there are
     // currently any filters being applied
-    editorParams.dropdown_body.set_show_status((is_filtered) => {
+    editorParams.filter_modal_editor.set_show_status((is_filtered) => {
         dropbtn.innerHTML = is_filtered
             ? "<b>** Show Filters **</b>"
             : "Filter Data";
     });
 
     // Open the dropdown on click
-    dropbtn.onclick = editorParams.dropdown_body.show_filter;
+    dropbtn.onclick = editorParams.filter_modal_editor.show_filter;
 
     return dropbtn;
 }

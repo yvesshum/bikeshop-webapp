@@ -1,5 +1,5 @@
 <template>
-  <div class="filter_dropdown">
+  <div class="filter_modal">
 
     <b-modal v-model="is_showing" size="lg"
       header-bg-variant="dark" header-text-variant="light"
@@ -113,7 +113,7 @@
 <script>
 
 export default {
-  name: 'filter_dropdown',
+  name: 'filter_modal',
 
   components: {},
 
@@ -137,7 +137,7 @@ export default {
   data: function() {
     return {
 
-      // Whether to dropdown should be displayed
+      // Whether the filter modal should be displayed
       is_showing: false,
 
       // Whether the info modal should be displayed
@@ -159,7 +159,7 @@ export default {
   created: function() {
 
     // Expose a subset of the functions to the outside
-    this.$emit("dropdown_obj", {
+    this.$emit("created", {
       show: this.show,
       hide: this.hide,
       is_showing: () => this.is_showing,
