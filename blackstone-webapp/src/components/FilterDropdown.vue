@@ -131,7 +131,7 @@ export default {
       left: null,
 
       // The list of groups of filters
-      filter_list: [{ filters: [], show: true }],
+      filter_list: [{ filters: [this.make_new_filter()], show: true }],
     };
   },
 
@@ -229,7 +229,7 @@ export default {
         option:   this.options[0],
         op_index: 0,
         value:    undefined,
-      }
+      };
     },
 
     add_filter: function(group_index) {
