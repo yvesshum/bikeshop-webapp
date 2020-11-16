@@ -51,6 +51,13 @@
             <div v-else-if="operations[filter.op_index].num_inputs != 0" style="display:inline;">
               <b-form-input style="display:inline; max-width: 282px;" v-model="filter.value"></b-form-input>
             </div>
+
+            <b-form-checkbox v-if="operations[filter.op_index].inclusive"
+              v-model="filter.inclusive"
+              style="display:inline-block; margin-left: 15px;"
+            >
+              Inclusive?
+            </b-form-checkbox>
           </div>
 
           <!-- New Filter Button -->
