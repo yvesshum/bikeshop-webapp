@@ -207,11 +207,6 @@ export default {
 
         // The filtering operations to support in the dropdown
         operations: [
-          { name: "not zero", num_inputs: 0,
-            filter: (option_val) => {
-              return option_val != 0;
-            },
-          },
           { name: "at least", inclusive: true,
             filter: (option_val, filter_val, inclusive) => {
               return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
@@ -232,6 +227,11 @@ export default {
           { name: "exactly",
             filter: (option_val, filter_val) => {
               return option_val == filter_val;
+            },
+          },
+          { name: "not zero", num_inputs: 0,
+            filter: (option_val) => {
+              return option_val != 0;
             },
           },
         ],
