@@ -29,8 +29,8 @@
             <select style="margin-left: 10px;" v-model="filter.option">
               <option v-for="option in options" :value='option'>{{option}}</option>
             </select>
-            <select style="margin-right: 10px;" v-model="filter.op">
-              <option v-for="op in operations" :value='op.name'>{{op.name}}</option>
+            <select style="margin-right: 10px;" v-model="filter.op_index">
+              <option v-for="(op, op_index) in operations" :value='op_index'>{{op.name}}</option>
             </select>
             <b-form-input style="display:inline; max-width: 200px;" v-model="filter.value"></b-form-input>
           </div>
@@ -218,10 +218,10 @@ export default {
 
     make_new_filter: function() {
       return {
-        checked: true,
-        option: this.options[0],
-        op:     this.operations[0].name,
-        value:  undefined,
+        checked:  true,
+        option:   this.options[0],
+        op_index: 0,
+        value:    undefined,
       }
     },
 

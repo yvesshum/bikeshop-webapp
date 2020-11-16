@@ -815,7 +815,7 @@ export function custom_filter_func(filter_groups, option, row, params) {
             var filter_vals = (second_val == undefined) ? filter_val : [filter_val, second_val];
 
             // Get the operation with the matching name from the filter parameters
-            var operation = params.operations.filter(op => op.name == filter.op)[0];
+            var operation = params.operations[filter.op_index];
 
             // Use the fltering function provided by that operation
             return operation.filter(option_val, filter_vals, filter.inclusive);
