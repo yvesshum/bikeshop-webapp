@@ -69,15 +69,6 @@ export default {
 
   data: function() {
     return {
-      // Other Tabulator arguments for the tables
-      extra_args: {
-
-        // On load, sort all items from most recent to least recent
-        initialSort: [
-          {column: "Date", dir: "desc"},
-        ],
-      },
-
       // The information used to construct each FilterModal (parent to child)
       // Indices are NOT associated with column index
       filter_modal_cols: [],
@@ -196,6 +187,26 @@ export default {
 
         return styling;
       });
+    },
+
+
+    // Other Tabulator arguments for the tables
+    extra_args: function() {
+
+      // Explicily get date column if it exists, otherwise defer to first column
+      var initialSort = [];
+
+      if (this.headers[0] != undefined) {
+        initialSort = [{
+          column: this.headers.map(h => h.title).includes("Date") ? "Date" : this.headers[0].title,
+          dir: "desc"
+        }];
+      }
+
+      return {
+        // On load, sort all items from most recent to least recent, or if no date column then by first column
+        initialSort,
+      };
     },
 
 
