@@ -18,6 +18,7 @@
       @filters="col.run_success_func"
       :options="col.options"
       :operations="col.operations"
+      :title="headers[col.index].title"
     />
   </div>
 </template>
@@ -77,10 +78,12 @@ export default {
         ],
       },
 
-      // The columns using dropdown menus (indices don't mean anything)
+      // The information used to construct each FilterDropdown (parent to child)
+      // Indices are NOT associated with column index
       dropdown_cols: [],
 
-      // Array where element i is the object exposed by the dropdown component for column i
+      // The functionality exposed by each FilterDropdown component (child to parent)
+      // Indices DO match column index
       dropdown_objs: [],
     };
   },
@@ -95,20 +98,37 @@ export default {
           return header;
         }
 
+        // Create variable to store the success function from Tabulator (which will apply the filters)
         let success_func = null;
-        let run_success_func = (arg) => {
-          if (success_func != null) return success_func(arg);
+        let show_status_func = null;
+        let run_success_func = (filters) => {
+
+          // Show whether filters are going to be applied
+          if (show_status_func != null) {
+            show_status_func(filters != null);
+          }
+
+          // Pass those filters on to Tabulator
+          if (success_func != null) {
+            return success_func(filters);
+          }
         };
 
+
+        // Functionality passed down to Tabulator filtering function (parent to child)
         var dropdown_body = {
-          get_body: () => {
-            return this.dropdown_objs[index];
+          show_filter: () => {
+            this.dropdown_objs[index].show();
           },
           set_success: (f) => {
             success_func = f;
           },
+          set_show_status: (f) => {
+            show_status_func = f;
+          },
         };
 
+        // Initialize variable to store styling for each column, based on its __style__ field
         var styling;
 
         switch (header.__style__) {

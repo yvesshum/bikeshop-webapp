@@ -565,8 +565,8 @@ export function custom_filter_button(cell, onRendered, success, cancel, editorPa
 
     var dropbtn = document.createElement("button");
 
-    // Set starting inner text
-    dropbtn.innerText = "Show Filters";
+    // Set text
+    dropbtn.innerHTML = "Filter Column";
 
     // Styling
     dropbtn.style = `
@@ -576,35 +576,21 @@ export function custom_filter_button(cell, onRendered, success, cancel, editorPa
       width: 100%;
     `;
 
+    // Pass the function to submit the filters up to the dropdown
     editorParams.dropdown_body.set_success(success);
 
-    // Function to open/close the filter dropdown
-    dropbtn.onclick = function() {
+    // Pass up a function to change the button's displayed text based on whether there are
+    // currently any filters being applied
+    editorParams.dropdown_body.set_show_status((is_filtered) => {
+        dropbtn.innerHTML = is_filtered
+            ? "<b>** Show Filters **</b>"
+            : "Filter Data";
+    });
 
-      var body = editorParams.dropdown_body.get_body();
-
-      body.align(dropbtn);
-
-      // Toggle whether dropdown is displayed
-      if (!body.is_showing()) {
-        show_dropdown();
-      }
-      else {
-        hide_dropdown();
-      }
-    };
+    // Open the dropdown on click
+    dropbtn.onclick = editorParams.dropdown_body.show_filter;
 
     return dropbtn;
-
-    function show_dropdown() {
-      editorParams.dropdown_body.get_body().show();
-      dropbtn.innerText = "Hide Filters";
-    }
-
-    function hide_dropdown() {
-      editorParams.dropdown_body.get_body().hide();
-      dropbtn.innerText = "Show Filters";
-    }
 }
 
 
