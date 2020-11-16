@@ -571,8 +571,9 @@ export function custom_filter_button(cell, onRendered, success, cancel, editorPa
     // Styling
     dropbtn.style = `
       background-color: white;
+      color: #555555;
       padding: 5px 0px;
-      border: none;
+      border: 2px solid #aaaaaa;
       width: 100%;
     `;
 
