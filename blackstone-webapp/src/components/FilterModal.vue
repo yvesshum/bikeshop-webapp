@@ -13,7 +13,7 @@
       <div style="padding:10px;">
 
         <!-- Create a card for each filter group -->
-        <b-card v-for="(group, i) in filter_list_display" :key="'group-'+i" style="margin-bottom: 10px;" no-body>
+        <b-card v-for="(group, i) in filter_list" :key="'group-'+i" style="margin-bottom: 10px;" no-body>
 
           <!-- The header for the group -->
           <template #header>
@@ -23,7 +23,7 @@
                 {{group.show ? "Hide" : "Show"}}
               </span>
             </div>
-            <div style="float:right;" v-if="filter_list_display.length > 1">
+            <div style="float:right;" v-if="filter_list.length > 1">
               <b-button size="sm" variant="outline-danger" style="font-size: xx-small;" @click="delete_group(i)">×</b-button>
             </div>
             <div style="clear:both;"></div>
@@ -148,14 +148,6 @@ export default {
     };
   },
 
-  computed: {
-
-    // For some reason, deleting filters & groups doesn't seem to work unless I do this
-    filter_list_display: function() {
-      return this.filter_list;
-    },
-  },
-
   created: function() {
 
     // Expose a subset of the functions to the outside
@@ -164,14 +156,6 @@ export default {
       hide: this.hide,
       is_showing: () => this.is_showing,
     });
-  },
-
-  mounted: function() {
-
-  },
-
-  watch: {
-
   },
 
   methods: {
