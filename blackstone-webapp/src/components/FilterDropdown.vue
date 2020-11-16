@@ -32,7 +32,14 @@
             <select style="margin-right: 10px;" v-model="filter.op_index">
               <option v-for="(op, op_index) in operations" :value='op_index'>{{op.name}}</option>
             </select>
-            <b-form-input style="display:inline; max-width: 200px;" v-model="filter.value"></b-form-input>
+
+            <div v-if="operations[filter.op_index].num_inputs == 2" style="display:inline;">
+              <b-form-input style="display:inline; max-width: 110px;" v-model="filter.value"></b-form-input>
+              <b-form-input style="display:inline; max-width: 110px;" v-model="filter.value2"></b-form-input>
+            </div>
+            <div v-else-if="operations[filter.op_index].num_inputs != 0" style="display:inline;">
+              <b-form-input style="display:inline; max-width: 220px;" v-model="filter.value"></b-form-input>
+            </div>
           </div>
 
           <!-- New Filter Button -->
