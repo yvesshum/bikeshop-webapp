@@ -6,73 +6,73 @@
       footer-bg-variant="dark"
     >
 
-    <template slot="modal-title">
-      <h4>{{title == "" ? "Set Filters" : "Filter By " + title}}</h4>
-    </template>
+      <template slot="modal-title">
+        <h4>{{title == "" ? "Set Filters" : "Filter By " + title}}</h4>
+      </template>
 
-    <div style="padding:10px;">
+      <div style="padding:10px;">
 
-      <!-- Create a card for each filter group -->
-      <b-card v-for="(group, i) in filter_list_display" :key="'group-'+i" style="margin-bottom: 10px;" no-body>
+        <!-- Create a card for each filter group -->
+        <b-card v-for="(group, i) in filter_list_display" :key="'group-'+i" style="margin-bottom: 10px;" no-body>
 
-        <!-- The header for the group -->
-        <template #header>
-          <div style="float:left">
-            <h6 class="mb-0" style="display:inline-block; margin-right: 25px;">Group {{i+1}}</h6>
-            <span @click="group.show = !group.show" style="cursor: pointer; font-size: small;">
-              {{group.show ? "Hide" : "Show"}}
-            </span>
-          </div>
-          <div style="float:right;" v-if="filter_list_display.length > 1">
-            <b-button size="sm" variant="outline-danger" style="font-size: xx-small;" @click="delete_group(i)">×</b-button>
-          </div>
-          <div style="clear:both;"></div>
-        </template>
-
-        <!-- The group body: list of filters, followed by new filter button -->
-        <b-collapse v-model="group.show" style="padding: 10px 25px;">
-
-          <!-- Each filter -->
-          <div v-for="(filter, j) in group.filters" :key="'filter-'+i+'-'+j">
-            <b-button size="sm" variant="outline-danger" @click="delete_filter(i,j)" style="display:inline-block; margin-right: 10px;">×</b-button>
-            <b-form-checkbox switch class="mr-n2" v-model="filter.checked" style="display:inline-block;"/>
-            <select style="margin-left: 10px;" v-model="filter.option">
-              <option v-for="option in options" :value='option'>{{option}}</option>
-            </select>
-            <select style="margin-right: 10px;" v-model="filter.op_index">
-              <option v-for="(op, op_index) in operations" :value='op_index'>{{op.name}}</option>
-            </select>
-
-            <div v-if="operations[filter.op_index].num_inputs == 2" style="display:inline;">
-              <b-form-input style="display:inline; max-width: 130px;" v-model="filter.value"></b-form-input>
-              &
-              <b-form-input style="display:inline; max-width: 130px;" v-model="filter.value2"></b-form-input>
+          <!-- The header for the group -->
+          <template #header>
+            <div style="float:left">
+              <h6 class="mb-0" style="display:inline-block; margin-right: 25px;">Group {{i+1}}</h6>
+              <span @click="group.show = !group.show" style="cursor: pointer; font-size: small;">
+                {{group.show ? "Hide" : "Show"}}
+              </span>
             </div>
-            <div v-else-if="operations[filter.op_index].num_inputs != 0" style="display:inline;">
-              <b-form-input style="display:inline; max-width: 282px;" v-model="filter.value"></b-form-input>
+            <div style="float:right;" v-if="filter_list_display.length > 1">
+              <b-button size="sm" variant="outline-danger" style="font-size: xx-small;" @click="delete_group(i)">×</b-button>
+            </div>
+            <div style="clear:both;"></div>
+          </template>
+
+          <!-- The group body: list of filters, followed by new filter button -->
+          <b-collapse v-model="group.show" style="padding: 10px 25px;">
+
+            <!-- Each filter -->
+            <div v-for="(filter, j) in group.filters" :key="'filter-'+i+'-'+j">
+              <b-button size="sm" variant="outline-danger" @click="delete_filter(i,j)" style="display:inline-block; margin-right: 10px;">×</b-button>
+              <b-form-checkbox switch class="mr-n2" v-model="filter.checked" style="display:inline-block;"/>
+              <select style="margin-left: 10px;" v-model="filter.option">
+                <option v-for="option in options" :value='option'>{{option}}</option>
+              </select>
+              <select style="margin-right: 10px;" v-model="filter.op_index">
+                <option v-for="(op, op_index) in operations" :value='op_index'>{{op.name}}</option>
+              </select>
+
+              <div v-if="operations[filter.op_index].num_inputs == 2" style="display:inline;">
+                <b-form-input style="display:inline; max-width: 130px;" v-model="filter.value"></b-form-input>
+                &
+                <b-form-input style="display:inline; max-width: 130px;" v-model="filter.value2"></b-form-input>
+              </div>
+              <div v-else-if="operations[filter.op_index].num_inputs != 0" style="display:inline;">
+                <b-form-input style="display:inline; max-width: 282px;" v-model="filter.value"></b-form-input>
+              </div>
+
+              <b-form-checkbox v-if="operations[filter.op_index].inclusive"
+                v-model="filter.inclusive"
+                style="display:inline-block; margin-left: 15px;"
+              >
+                Inclusive?
+              </b-form-checkbox>
             </div>
 
-            <b-form-checkbox v-if="operations[filter.op_index].inclusive"
-              v-model="filter.inclusive"
-              style="display:inline-block; margin-left: 15px;"
-            >
-              Inclusive?
-            </b-form-checkbox>
-          </div>
+            <!-- New Filter Button -->
+            <b-button block variant="outline-primary" @click="add_filter(i)" style="border-style: dashed; margin-top: 5px;">New Filter</b-button>
+          </b-collapse>
+        </b-card>
 
-          <!-- New Filter Button -->
-          <b-button block variant="outline-primary" @click="add_filter(i)" style="border-style: dashed; margin-top: 5px;">New Filter</b-button>
-        </b-collapse>
-      </b-card>
+        <b-button block variant="outline-primary" @click="add_group" style="border-style: dashed;">New Group</b-button>
+      </div>
 
-      <b-button block variant="outline-primary" @click="add_group" style="border-style: dashed;">New Group</b-button>
-    </div>
-
-    <template slot="modal-footer" style="margin:auto;">
-        <b-button variant="info"  @click="show_info_modal" class="mr-auto">?</b-button>
-        <b-button variant="success" @click="apply_filters" >Apply Filters</b-button>
-        <b-button variant="danger"  @click="stop_filtering">Stop Filtering</b-button>
-    </template>
+      <template slot="modal-footer" style="margin:auto;">
+          <b-button variant="info"  @click="show_info_modal" class="mr-auto">?</b-button>
+          <b-button variant="success" @click="apply_filters" >Apply Filters</b-button>
+          <b-button variant="danger"  @click="stop_filtering">Stop Filtering</b-button>
+      </template>
     </b-modal>
 
     <b-modal v-model="info_modal_visible" hide-footer lazy size="lg">
