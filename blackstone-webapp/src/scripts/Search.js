@@ -561,6 +561,54 @@ export function make_range_editor(type) {
 
 
 
+export function custom_filter_button(cell, onRendered, success, cancel, editorParams) {
+
+    var dropbtn = document.createElement("button");
+
+    // Set starting inner text
+    dropbtn.innerText = "Show Filters";
+
+    // Styling
+    dropbtn.style = `
+      background-color: white;
+      padding: 5px 0px;
+      border: none;
+      width: 100%;
+    `;
+
+    editorParams.dropdown_body.set_success(success);
+
+    // Function to open/close the filter dropdown
+    dropbtn.onclick = function() {
+
+      var body = editorParams.dropdown_body.get_body();
+
+      body.align(dropbtn);
+
+      // Toggle whether dropdown is displayed
+      if (!body.is_showing()) {
+        show_dropdown();
+      }
+      else {
+        hide_dropdown();
+      }
+    };
+
+    return dropbtn;
+
+    function show_dropdown() {
+      editorParams.dropdown_body.get_body().show();
+      dropbtn.innerText = "Hide Filters";
+    }
+
+    function hide_dropdown() {
+      editorParams.dropdown_body.get_body().hide();
+      dropbtn.innerText = "Show Filters";
+    }
+}
+
+
+
 export function custom_filter_editor(cell, onRendered, success, cancel, editorParams) {
 
     // Filtering options passed in through editorParams
@@ -739,35 +787,39 @@ export function custom_filter_editor(cell, onRendered, success, cancel, editorPa
 
 
 
-export function custom_filter_func(filters, option, row, params) {
+export function custom_filter_func(filter_groups, option, row, params) {
 
     // Parse the desired value of the cell, if the filter parameters specify a way to format it
     var cell_val = params.get_cell_val != undefined ? params.get_cell_val(option) : option;
 
-    // Result will be true if every filter passes
-    return filters.every(filter => {
+    // Result will be true if any of the groups passes
+    return filter_groups.some(filters => {
 
-        // Parse desired value(s) from filter and actual value from user input
-        var option_val = params.parse_option_val(filter.option, cell_val, filter.value);
-        var filter_val = params.parse_filter_val(filter.option, filter.value);
-        var second_val = params.parse_filter_val(filter.option, filter.value2);
+        // Group result will be true if every filter passes
+        return filters.every(filter => {
 
-        // If the search term was invalid for some reason, skip over this filter
-        if (filter_val == null) return true;
+            // Parse desired value(s) from filter and actual value from user input
+            var option_val = params.parse_option_val(filter.option, cell_val, filter.value);
+            var filter_val = params.parse_filter_val(filter.option, filter.value);
+            var second_val = params.parse_filter_val(filter.option, filter.value2);
 
-        // By this point, option_val holds the appropriate value of the current cell,
-        // and filter_val holds the desired value from the filter, e.g.
-        //    option_val = 2019
-        //    filter_val = 2015
+            // If the search term was invalid for some reason, skip over this filter
+            if (filter_val == null) return true;
 
-        // If there are two values from the filter, package them into an array
-        var filter_vals = (second_val == undefined) ? filter_val : [filter_val, second_val];
+            // By this point, option_val holds the appropriate value of the current cell,
+            // and filter_val holds the desired value from the filter, e.g.
+            //    option_val = 2019
+            //    filter_val = 2015
 
-        // Get the operation with the matching name from the filter parameters
-        var operation = params.operations.filter(op => op.name == filter.op)[0];
+            // If there are two values from the filter, package them into an array
+            var filter_vals = (second_val == undefined) ? filter_val : [filter_val, second_val];
 
-        // Use the fltering function provided by that operation
-        return operation.filter(option_val, filter_vals, filter.inclusive);
+            // Get the operation with the matching name from the filter parameters
+            var operation = params.operations.filter(op => op.name == filter.op)[0];
+
+            // Use the fltering function provided by that operation
+            return operation.filter(option_val, filter_vals, filter.inclusive);
+        });
     });
 }
 

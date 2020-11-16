@@ -12,15 +12,24 @@
       :visible="visible"
       @table="handle_table"
     ></CollectionTable>
+
+    <FilterDropdown v-for="(col, i) in dropdown_cols" :key="'dropdown'+i"
+      @dropdown_obj="obj => save_dropdown_body(col, obj)"
+      @filters="col.run_success_func"
+      :options="col.options"
+      :operations="col.operations"
+    />
   </div>
 </template>
 
 <script>
 
 import CollectionTable from "@/components/CollectionTable.vue"
+import FilterDropdown  from "@/components/FilterDropdown.vue"
 
 import {make_range_editor} from "@/scripts/Search.js"
 import {custom_filter_editor} from "@/scripts/Search.js"
+import {custom_filter_button} from "@/scripts/Search.js"
 import {custom_filter_func} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
 
@@ -50,6 +59,7 @@ export default {
   },
   components: {
     CollectionTable,
+    FilterDropdown,
   },
 
   mounted: async function() {
@@ -66,15 +76,38 @@ export default {
           {column: "Date", dir: "desc"},
         ],
       },
+
+      // The columns using dropdown menus (indices don't mean anything)
+      dropdown_cols: [],
+
+      // Array where element i is the object exposed by the dropdown component for column i
+      dropdown_objs: [],
     };
   },
 
   computed: {
     header_columns: function() {
-      return this.headers.map(header => {
+
+      this.dropdown_cols = [];
+
+      return this.headers.map((header, index) => {
         if (header.__style__ == undefined) {
           return header;
         }
+
+        let success_func = null;
+        let run_success_func = (arg) => {
+          if (success_func != null) return success_func(arg);
+        };
+
+        var dropdown_body = {
+          get_body: () => {
+            return this.dropdown_objs[index];
+          },
+          set_success: (f) => {
+            success_func = f;
+          },
+        };
 
         var styling;
 
@@ -83,17 +116,19 @@ export default {
           case "date":
             styling = {
               formatter: this.format_date,
-              ...this.get_date_filter_args(false),
+              ...this.get_date_filter_args(dropdown_body, false),
               sorter: this.date_sorter
             };
+            this.dropdown_cols.push({index, run_success_func, ...this.get_date_params(false)});
             break;
 
           case "datetime":
             styling = {
               formatter: this.format_date_time,
-              ...this.get_date_filter_args(true),
+              ...this.get_date_filter_args(dropdown_body, true),
               sorter: this.date_sorter,
             };
+            this.dropdown_cols.push({index, run_success_func, ...this.get_date_params(true)});
             break;
 
           case "time":
@@ -110,6 +145,10 @@ export default {
               ...this.work_hour_filter_args,
               sorter: this.work_hours_sorter
             };
+
+            // Add the dropdown body
+            styling.headerFilterParams.dropdown_body = dropdown_body;
+            this.dropdown_cols.push({index, run_success_func, ...this.work_hour_params});
             break;
 
           case "hours":
@@ -140,53 +179,62 @@ export default {
     },
 
 
+    work_hour_params: function() {
+      return {
+
+        // Allow user to filter by any of the hour categories, or the total amount
+        options: this.hourCategories.concat(["Total"]),
+
+        // The filtering operations to support in the dropdown
+        operations: [
+          { name: "not zero", num_inputs: 0,
+            filter: (option_val) => {
+              return option_val != 0;
+            },
+          },
+          { name: "at least", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+            },
+          },
+          { name: "at most",  inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+            }
+          },
+          { name: "between",  inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return inclusive
+                ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+                : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+            },
+          },
+          { name: "exactly",
+            filter: (option_val, filter_val) => {
+              return option_val == filter_val;
+            },
+          },
+        ],
+      };
+    },
+
+
     work_hour_filter_args: function() {
 
-      // The filtering operations to support in the dropdown
-      var operations = [
-        { name: "not zero", num_inputs: 0,
-          filter: (option_val) => {
-            return option_val != 0;
-          },
-        },
-        { name: "at least", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
-          },
-        },
-        { name: "at most",  inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
-          }
-        },
-        { name: "between",  inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
-              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
-          },
-        },
-        { name: "exactly",
-          filter: (option_val, filter_val) => {
-            return option_val == filter_val;
-          },
-        },
-      ];
+      // Get the options and operations for work hours
+      var {options, operations} = this.work_hour_params;
 
       return {
 
         // Use the custom dropdown filter and its associated filtering functionality
-        headerFilter: custom_filter_editor,
+        headerFilter:     custom_filter_button,
         headerFilterFunc: custom_filter_func,
 
         // Parameters for setting up the filter dropdown menu
         headerFilterParams: {
 
-          // Allow user to filter by any of the hour categories, or the total amount
-          options: this.hourCategories.concat(["Total"]),
-
-          // Use the operations defined above
-          operations,
+          // Use the work hour options and operations
+          options, operations,
 
           // Center the dropdown around the button
           // In this case, since the work hours is one of the later columns, I think this alignment makes it look a bit nicer
@@ -222,6 +270,10 @@ export default {
 
     handle_table: function(table) {
       this.$emit("table", table);
+    },
+
+    save_dropdown_body: function(col, obj) {
+      this.dropdown_objs[col.index] = obj;
     },
 
     // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
@@ -428,53 +480,17 @@ export default {
       };
     },
 
-    get_date_filter_args: function(include_time) {
-      let options = ["Year", "Month", "Date", "Weekday"];
-      if (include_time) options.push("Time");
+    get_date_filter_args: function(dropdown_body, include_time) {
 
-      var operations = [
-        { name: "is",
-          filter: (option_val, filter_val) => {
-            return option_val == filter_val;
-          },
-        },
-        { name: "is not",
-          filter: (option_val, filter_val) => {
-            return option_val != filter_val;
-          },
-        },
-        { name: "before", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
-          }
-        },
-        { name: "after", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
-          },
-        },
-        { name: "between",     inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
-              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
-          },
-        },
-        { name: "not between", inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
-              : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
-          },
-        }
-      ];
+      var {options, operations} = this.get_date_params(include_time);
 
       return {
-        headerFilter: custom_filter_editor,
+        headerFilter:     custom_filter_button,
         headerFilterFunc: custom_filter_func,
         headerFilterParams: {
           options,
           operations,
+          dropdown_body,
         },
         headerFilterFuncParams: {
           options, operations,
@@ -493,6 +509,54 @@ export default {
         headerFilterFunc: this.numeric_range_filter,
         headerFilterParams: {minimum: 0, step: 0.5},
         headerFilterLiveFilter: false,
+      };
+    },
+
+
+    get_date_params: function(include_time) {
+
+      // Make the list of options
+      let options = ["Year", "Month", "Date", "Weekday"];
+      if (include_time) options.push("Time");
+
+      return {
+        options,
+        operations: [
+          { name: "is",
+            filter: (option_val, filter_val) => {
+              return option_val == filter_val;
+            },
+          },
+          { name: "is not",
+            filter: (option_val, filter_val) => {
+              return option_val != filter_val;
+            },
+          },
+          { name: "before", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+            }
+          },
+          { name: "after", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+            },
+          },
+          { name: "between",     inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return inclusive
+                ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+                : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+            },
+          },
+          { name: "not between", inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return inclusive
+                ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
+                : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
+            },
+          }
+        ],
       };
     },
 
