@@ -256,7 +256,7 @@ export default {
 
     // Apply the current list of filters to the data
     apply_filters: function() {
-      this.$emit("filters", this.filter_list.map(group => group.filters));
+      this.$emit("filters", this.filter_list.map(group => group.filters.filter(f => f.checked)));
       this.hide();
     },
 
