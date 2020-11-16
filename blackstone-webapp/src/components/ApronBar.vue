@@ -497,6 +497,11 @@ export default {
         this.redraw();
       });
     },
+
+    // Broadcast whether there are changes to the parent
+    has_changes: function() {
+      this.$emit("has_changes", this.has_changes);
+    },
   },
 
   methods: {

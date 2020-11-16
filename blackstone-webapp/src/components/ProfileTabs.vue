@@ -17,6 +17,10 @@
 
     <br />
 
+    <b-alert v-model="apron_bar_has_changes" variant="warning">
+      This youth has unsaved changes.
+    </b-alert>
+
     <b-tabs ref="body_fields"
       content-class="mt-3" justified
       active-nav-item-class="font-weight-bold"
@@ -97,6 +101,7 @@
           style="max-width: 95%; margin:auto"
           @load_complete="s => apron_bar_content = s"
           @save_changes="save_changes"
+          @has_changes="c => apron_bar_has_changes = c"
         />
       </b-tab>
     </b-tabs>
@@ -161,6 +166,8 @@ export default {
       work_log_content:  null,
       order_log_content: null,
       trans_log_content: null,
+
+      apron_bar_has_changes: false,
     };
   },
 
