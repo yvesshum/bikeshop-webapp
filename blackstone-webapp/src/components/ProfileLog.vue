@@ -539,6 +539,23 @@ export default {
       let options = ["Year", "Month", "Date", "Weekday"];
       if (include_time) options.push("Time");
 
+      // Functions to determine whether a given value is between two others
+
+      // These are defined separately up here because we want the operations to loop around -- i.e. if the second value is before the first, we want our selection range to start from the first value, loop around through the end to the beginning, then end at the second value
+      // E.g. For a search that's between October and February, we want December and January to match.
+
+      var between = (option_val, filter_vals, inclusive) => {
+        return inclusive
+          ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+          : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+      };
+
+      var not_between = (option_val, filter_vals, inclusive) => {
+        return inclusive
+          ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
+          : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
+      };
+
       return {
         options,
         operations: [
@@ -564,16 +581,16 @@ export default {
           },
           { name: "between",     inclusive: true, num_inputs: 2,
             filter: (option_val, filter_vals, inclusive) => {
-              return inclusive
-                ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
-                : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+              return (filter_vals[0] <= filter_vals[1])
+                ? between(option_val, filter_vals, inclusive)
+                : not_between(option_val, [filter_vals[1], filter_vals[0]], inclusive);
             },
           },
           { name: "not between", inclusive: true, num_inputs: 2,
             filter: (option_val, filter_vals, inclusive) => {
-              return inclusive
-                ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
-                : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
+              return (filter_vals[0] <= filter_vals[1])
+                ? not_between(option_val, filter_vals, inclusive)
+                : between(option_val, [filter_vals[1], filter_vals[0]], inclusive);
             },
           }
         ],
