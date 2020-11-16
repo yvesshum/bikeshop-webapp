@@ -37,10 +37,10 @@
               <b-button size="sm" variant="outline-danger" @click="delete_filter(i,j)" style="display:inline-block; margin-right: 10px;">×</b-button>
               <b-form-checkbox switch class="mr-n2" v-model="filter.checked" style="display:inline-block;"/>
               <select style="margin-left: 10px;" v-model="filter.option">
-                <option v-for="option in options" :value='option'>{{option}}</option>
+                <option v-for="option in options" :key="option" :value='option'>{{option}}</option>
               </select>
               <select style="margin-right: 10px;" v-model="filter.op_index">
-                <option v-for="(op, op_index) in operations" :value='op_index'>{{op.name}}</option>
+                <option v-for="(op, op_index) in operations" :key="'op-'+op_index" :value='op_index'>{{op.name}}</option>
               </select>
 
               <div v-if="operations[filter.op_index].num_inputs == 2" style="display:inline;">

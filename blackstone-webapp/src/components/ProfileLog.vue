@@ -29,7 +29,6 @@ import CollectionTable from "@/components/CollectionTable.vue"
 import FilterModal     from "@/components/FilterModal.vue"
 
 import {make_range_editor} from "@/scripts/Search.js"
-import {custom_filter_editor} from "@/scripts/Search.js"
 import {custom_filter_button} from "@/scripts/Search.js"
 import {custom_filter_func} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
@@ -82,6 +81,8 @@ export default {
   computed: {
     header_columns: function() {
 
+      // We set the filter_modal_cols array at the same time - it should reflect the values in header_columns, but it's easiest to just construct them at the same time
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
       this.filter_modal_cols = [];
 
       return this.headers.map((header, index) => {
@@ -130,6 +131,7 @@ export default {
               ...this.get_date_filter_args(filter_modal_editor, false),
               sorter: this.date_sorter
             };
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(false)});
             break;
 
@@ -139,6 +141,7 @@ export default {
               ...this.get_date_filter_args(filter_modal_editor, true),
               sorter: this.date_sorter,
             };
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(true)});
             break;
 
@@ -159,6 +162,7 @@ export default {
 
             // Add the dropdown body
             styling.headerFilterParams.filter_modal_editor = filter_modal_editor;
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.filter_modal_cols.push({index, run_success_func, ...this.work_hour_params});
             break;
 
