@@ -2,7 +2,7 @@
 <template>
     <div class="button-array-header">
         <div style="margin: auto; text-align: center;">
-            <b-button v-for="b in left" :key="b"
+            <b-button v-for="(b,i) in left" :key="'left-'+i" :id="'left-'+i"
                 class="arr-l"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
@@ -17,7 +17,7 @@
 
             <b-dropdown style="display: inline-block;" variant="primary">
                 <template v-slot:button-content><slot></slot></template>
-                <div v-for="item in fullList" :key="item">
+                <div v-for="item in fullList" :key="'option-'+item">
                     <b-dropdown-divider v-if="item == undefined"></b-dropdown-divider>
                     <b-dropdown-item-button v-else
                         @click="switch_to(item)"
@@ -26,7 +26,7 @@
                 </div>
             </b-dropdown>
 
-            <b-button v-for="b in rev_right" :key="b"
+            <b-button v-for="(b,i) in rev_right" :key="'right-'+i" :id="'right-'+i"
                 class="arr-r"
                 @click="switch_to(get_name(b))"
                 v-b-tooltip.hover :title="get_name(b)"
@@ -48,6 +48,13 @@
 export default {
     name: 'button-array-header',
     props: ["left", "right", "min", "max", "compareFunc", "current", "fullList"],
+
+    watch: {
+        current: function() {
+            this.left.forEach( (b,i) => this.hide_out_of_bounds_tooltip("left",  b, i));
+            this.right.forEach((b,i) => this.hide_out_of_bounds_tooltip("right", b, i));
+        },
+    },
 
     methods: {
         switch_to: function(name) {
@@ -87,7 +94,13 @@ export default {
                 default:
                     return true;
             }
-        }
+        },
+
+        hide_out_of_bounds_tooltip: function(side, b, i) {
+            if (!this.in_bounds(b)) {
+                this.$root.$emit('bv::hide::tooltip', `${side}-${i}`);
+            }
+        },
     },
 
     computed: {
