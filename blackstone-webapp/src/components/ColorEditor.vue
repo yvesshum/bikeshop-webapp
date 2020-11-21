@@ -322,15 +322,18 @@ export default {
                     await db.collection("GlobalVariables").doc("Apron Skills").update(apronSkills);
 
                     let youthProfilesSnapshot = await db.collection("GlobalYouthProfile").where("Apron Color", "==", this.modal.edit.original_field_name).get()
+                    var batch = db.batch();
                     await Promise.all(
                         youthProfilesSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
                             youthProfile['Apron Color'] = this.modal.edit.field_name;
-                            await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
+                            batch.update(db.collection("GlobalYouthProfile").doc(doc.id), youthProfile);
                         })
                     )
+                    await batch.commit()
                     // Update youth Apron Skills map with new name
                     let youthApronsSnapshot = await db.collection("GlobalYouthProfile").get()
+                    batch = db.batch();
                     await Promise.all(
                         youthApronsSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
@@ -339,10 +342,11 @@ export default {
                                 let color_data = youthProfile['Apron Skills'][this.modal.edit.original_field_name];
                                 youthProfile['Apron Skills'][this.modal.edit.field_name] = color_data;
                                 delete youthProfile['Apron Skills'][this.modal.edit.original_field_name];
-                                await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
+                                batch.update(db.collection("GlobalYouthProfile").doc(doc.id), youthProfile);
                             }
                         })
                     )
+                    await batch.commit()
 
                     //Local Update
                     let localUpdateObject = {
@@ -398,26 +402,30 @@ export default {
                     await db.collection("GlobalVariables").doc("Apron Skills").update(apronSkills);
 
                     let youthProfilesSnapshot = await db.collection("GlobalYouthProfile").where("Apron Color", "==", this.modal.delete.field_name).get()
+                    var batch = db.batch();
                     await Promise.all(
                         youthProfilesSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
                             youthProfile['Apron Color'] = "";
-                            await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile)
+                            batch.update(db.collection("GlobalYouthProfile").doc(doc.id), youthProfile);
                         })
                     )
+                    await batch.commit()
                     
                     // delete youth Apron Skills with this color
                     let youthApronsSnapshot = await db.collection("GlobalYouthProfile").get()
+                    batch = db.batch();
                     await Promise.all(
                         youthApronsSnapshot.docs.map(async doc => {
                             let youthProfile = doc.data()
                             if(youthProfile['Apron Skills'] != undefined &&
                               youthProfile['Apron Skills'][this.modal.delete.field_name] != undefined){
                                 delete youthProfile['Apron Skills'][this.modal.delete.field_name];
-                                await db.collection("GlobalYouthProfile").doc(doc.id).update(youthProfile);
+                                batch.update(db.collection("GlobalYouthProfile").doc(doc.id), youthProfile);
                             }
                         })
                     )
+                    await batch.commit()
 
                     // Delete locally 
                     this.field_data.splice(i, 1);
