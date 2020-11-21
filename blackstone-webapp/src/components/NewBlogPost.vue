@@ -45,6 +45,20 @@
           ></vue-editor>
         </b-form-group>
 
+        <b-form-group
+          id="input-group-5"
+          label="Choose Thumbnail:"
+          label-for="input-5"
+        >
+
+        <div>
+          <img class="thumbnail" src="../assets/bike_thumbnail1.jpg">
+          <img class="thumbnail" src="../assets/bike_thumbnail2.jpg">
+          <img class="thumbnail" src="../assets/bike_thumbnail3.jpg">
+        </div>
+        
+        </b-form-group>
+
                     <b-button type="submit" variant="success" style="margin-right: 12px">Submit</b-button>
                     <b-button type="reset" variant="danger">{{ resetText }}</b-button>
                 </b-form>
@@ -167,6 +181,13 @@ export default {
 <style scoped>
 .form-group {
   margin-bottom: 1.25rem;
+}
+
+.thumbnail {
+  max-width: 30%;
+  display: inline-block;
+  margin: 1.5%;
+  border-radius: 5px;
 }
 
 ::v-deep label {
