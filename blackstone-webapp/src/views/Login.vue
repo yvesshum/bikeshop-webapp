@@ -13,10 +13,11 @@
         <br /> <br />
         <h3>Sign in to your youth/staff account</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email"><br>
-        <input type = "password" v-model = "password" placeholder = "Password"><br>
-        <button @click="login">Login!</button>
+        <input type = "password" v-model = "password" placeholder = "Password" v-on:keyup.enter="login"><br>
         
-
+        <button @click="login" v-if="!isLoggingIn">Login!</button>
+        <button disabled v-else>Loading..</button>
+        
         <p>If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</p>
         </div>
     </div>
@@ -30,11 +31,13 @@
         data() {
             return {
                 email: '',
-                password: ''
+                password: '',
+                isLoggingIn: false,
             };
         },
         methods: {
             login: function() {
+                this.isLoggingIn = true;
                 firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(
                     () => {
                         // console.log(user);
@@ -44,7 +47,7 @@
                     .catch(err => {
                         alert("Oops, something went wrong. You probably entered the wrong password.");
                         console.log(err); // eslint-disable-line no-console
-                    })
+                    }).finally(() => this.isLoggingIn = false)
             }
         }
     }
