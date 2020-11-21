@@ -314,7 +314,7 @@ export default {
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
                         let fullquery = await db.collection(this.collectionsToEdit[j]).get();
                         // batches can only have up to 500 operations
-                        for (let query of chunk(fullquery, 500)) {
+                        for (let query of chunk(fullquery.docs, 500)) {
                             let batch = db.batch();
                             query.forEach(async doc => {
                                 let id = doc.id;
@@ -328,7 +328,7 @@ export default {
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        for (let query of chunk(fullquery, 500)) {
+                        for (let query of chunk(fullquery.docs, 500)) {
                             let batch = db.batch();
                             query.forEach(async doc => {
                                 let path = doc.ref.path
@@ -382,7 +382,7 @@ export default {
                     // Delete from collections
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
                         let fullquery = await db.collection(this.collectionsToEdit[j]).get();
-                        for (let query of chunk(fullquery, 500)) {
+                        for (let query of chunk(fullquery.docs, 500)) {
                             let batch = db.batch();
                             query.forEach(async doc => {
                                 let id = doc.id;
@@ -395,7 +395,7 @@ export default {
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                         let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        for (let query of chunk(fullquery, 500)) {
+                        for (let query of chunk(fullquery.docs, 500)) {
                             let batch = db.batch();
                             query.forEach(async doc => {
                                 let path = doc.ref.path
@@ -446,9 +446,9 @@ export default {
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
                 let fullquery = await db.collection(this.collectionsToEdit[j]).get();
-                for (let query of chunk(fullquery, 500)) {
+                for (let query of chunk(fullquery.docs, 500)) {
                     let batch = db.batch();
-                    for (let q of query.docs) {
+                    for (let q of query) {
                         let id = q.id;
                         let data = q.data();
     
@@ -463,9 +463,9 @@ export default {
 
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
                 let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                for (let query of chunk(fullquery, 500)) {
+                for (let query of chunk(fullquery.docs, 500)) {
                     let batch = db.batch();
-                    for (let q of query.docs) {
+                    for (let q of query) {
                         // console.log('query', q)
                         let path = q.ref.path
                         let data = q.data();
