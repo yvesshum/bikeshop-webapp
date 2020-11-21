@@ -148,7 +148,7 @@ export default {
         },
 
         youth_id: function() {
-            return this.ID;
+            return (this.current_profile || {}).id; // initial load is null
         },
 
         // Two conditions - loadProfile bool value, profile set or not set

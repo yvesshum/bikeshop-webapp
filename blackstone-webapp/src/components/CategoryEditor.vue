@@ -109,7 +109,7 @@ Pretty much works the same as CategoryEditor, with a few modifications.
 import draggable from 'vuedraggable'
 import CategoryCard from '../components/CategoryCard.vue'
 import {db} from '@/firebase.js'
-
+import chunk from 'lodash/chunk'
 export default {
     name: 'CategoryEditor',
     components: {
@@ -271,25 +271,33 @@ export default {
 
                     // Updating all the collections that needs an update
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            data[newCategoryName] = data[this.modal.edit.original_category_name]
-                            delete data[this.modal.edit.original_category_name];
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
+                        let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let id = doc.id;
+                                let data = doc.data();
+                                data[newCategoryName] = data[this.modal.edit.original_category_name]
+                                delete data[this.modal.edit.original_category_name];
+                                batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                            })
+                            await batch.commit();
+                        }
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            data[newCategoryName] = data[this.modal.edit.original_category_name]
-                            delete data[this.modal.edit.original_category_name];
-                            // console.log(data);
-                            await db.doc(path).set(data);
-                        })
+                        let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let path = doc.ref.path
+                                let data = doc.data();
+                                data[newCategoryName] = data[this.modal.edit.original_category_name]
+                                delete data[this.modal.edit.original_category_name];
+                                // console.log(data);
+                                batch.set(db.doc(path), data);
+                            })
+                            await batch.commit()
+                        }
                     }
 
                     //Local Update
@@ -329,22 +337,30 @@ export default {
 
                     // Delete from collections
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            delete data[this.modal.delete.category_name]
-                            await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                        })
+                        let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let id = doc.id;
+                                let data = doc.data();
+                                delete data[this.modal.delete.category_name]
+                                batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                            })
+                            await batch.commit()
+                        }
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        query.forEach(async doc => {
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            delete data[this.modal.delete.category_name]
-                            await db.doc(path).set(data);
-                        })
+                        let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let path = doc.ref.path
+                                let data = doc.data();
+                                delete data[this.modal.delete.category_name]
+                                batch.set(db.doc(path), data);
+                            })
+                            await batch.commit()
+                        }
                     }
 
                     // Delete locally 
@@ -384,22 +400,30 @@ export default {
 
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                let query = await db.collection(this.collectionsToEdit[j]).get();
-                query.forEach(async doc => {
-                    let id = doc.id;
-                    let data = doc.data();
-                    data[this.modal.add.category_name] = 0;
-                    await db.collection(this.collectionsToEdit[j]).doc(id).set(data);
-                })
+                let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                for (let query of chunk(fullquery.docs, 500)) {
+                    let batch = db.batch();
+                    query.forEach(async doc => {
+                        let id = doc.id;
+                        let data = doc.data();
+                        data[this.modal.add.category_name] = 0;
+                        batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                    })
+                    await batch.commit();
+                }
             }
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                query.forEach(async doc => {
-                    let path = doc.ref.path
-                    let data = doc.data();
-                    data[this.modal.add.category_name] = 0;
-                    await db.doc(path).set(data);
-                })
+                let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                for (let query of chunk(fullquery.docs, 500)) {
+                    let batch = db.batch();
+                    query.forEach(async doc => {
+                        let path = doc.ref.path
+                        let data = doc.data();
+                        data[this.modal.add.category_name] = 0;
+                        batch.set(db.doc(path), data);
+                    })
+                    await batch.commit();
+                }
             }
 
             // Updating Locally 

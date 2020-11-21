@@ -702,6 +702,24 @@ export default {
           }
         }
 
+        if (x["Apron Skills"]) {
+          let ret = ""
+          for (let apronColor in x["Apron Skills"]) {
+            ret += `<p style="font-weight: bold; text-decoration: underline">${apronColor}</p>`
+            let data = x["Apron Skills"][apronColor]
+            let achieved = data["Achieved"]
+            if (achieved.toDate != null) {
+              ret += `<p>Achieved on: ${achieved.toDate().toLocaleString()}</p>`
+            }
+            let skills = data["Skills"]
+            for (let category in skills) {
+              ret += `<p style="font-weight: bold">${category}</p>`
+              skills[category].forEach((s) => ret += `<p>- ${s}</p>`)
+            }
+          }
+          x["Apron Skills"] = ret;
+        }
+
         return x;
       });
       return squashed;
@@ -781,7 +799,7 @@ export default {
           if (multilineFields.includes(x)) {
             ret["formatter"] = "textarea";
           }
-          let htmlFields = ["Active Periods", "Essay", "Old Essay Answers"];
+          let htmlFields = ["Active Periods", "Essay", "Old Essay Answers", "Apron Skills"];
           if (htmlFields.includes(x)) {
             ret["formatter"] = "html";
           }

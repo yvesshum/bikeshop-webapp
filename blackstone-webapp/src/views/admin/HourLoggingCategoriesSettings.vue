@@ -9,7 +9,7 @@
         <h2 v-b-tooltip.hover title="Drag fields around to reorder them">Category editor</h2>
         <hr class="subheading">
         <h3 v-b-tooltip.hover title="These are the current hour logging Categories for youth">Categories:</h3>
-        <CategoryEditor sourceFieldName="Categories" sourceDocument="Hour Logging Categories" :elements="fields.Categories" :collectionsToEdit="[]" :subcollectionsToEdit="['Work Log']"/>
+        <CategoryEditor sourceFieldName="Categories" sourceDocument="Hour Logging Categories" :elements="fields.Categories" :collectionsToEdit="['GlobalPendingHours']" :subcollectionsToEdit="['Work Log']"/>
 
         <hr class="divider">
 
