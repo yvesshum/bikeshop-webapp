@@ -287,6 +287,9 @@ Emits:
                     }
                 ],
                 period_switch_value: undefined,
+
+                // Cached values for the years
+                year_doc_cache: [],
             }
         },
 
@@ -467,6 +470,20 @@ Emits:
         },
 
         methods: {
+
+            // If the year has been retrieved previously, grab it from the cache, otherwise
+            // grab it from the database and save it to the cache
+            retrieve_year: async function(year) {
+                if (this.year_doc_cache[year] == undefined) {
+                    var year_doc = await this.vars_coll.doc(year).get();
+                    this.$set(this.year_doc_cache, year, year_doc);
+                    return year_doc;
+                }
+                else {
+                    return this.year_doc_cache[year];
+                }
+            },
+
             // Retrieve all youth from the specified periods from the database
             async getData() {
 
@@ -522,7 +539,7 @@ Emits:
                     let year = years[i];
 
                     // Load the given year's document from the database
-                    let year_doc = await this.vars_coll.doc(year).get();
+                    let year_doc  = await this.retrieve_year(year);
                     let year_data = year_doc.data();
 
                     // Loop through each season in this year to load youth from
