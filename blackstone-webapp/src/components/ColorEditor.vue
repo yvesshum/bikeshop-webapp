@@ -5,13 +5,24 @@
         <b-button variant="success" @click="saveOrdering">Save Ordering</b-button>
     </b-button-group>
 
+    <ColorEditorCard
+        v-for="item in field_data"
+        v-if="item.isProtected"
+        :key="item.name"
+        :field="item.name"
+        :color="item.color"
+        :isProtected="true"
+        v-on:editClicked="editButtonClicked"
+        v-on:deleteClicked="deleteButtonClicked"
+    />
     <draggable v-model="field_data" @start="drag=true" @end="drag=false">
         <ColorEditorCard
             v-for="item in field_data"
+            v-if="!item.isProtected"
             :key="item.name"
             :field="item.name"
             :color="item.color"
-            :isProtected="item.isProtected"
+            :isProtected="false"
             v-on:editClicked="editButtonClicked"
             v-on:deleteClicked="deleteButtonClicked"
         />
@@ -228,7 +239,7 @@ export default {
             this.showLoadingModal("One second...");
             let fields = [];
             this.field_data.forEach(field => {
-                fields.push({name: field.name, color: field.color}); // get rid of isProtected
+                fields.push({name: field.name, color: field.color, isProtected: field.isProtected}); // get rid of isProtected
             });
 
             let updateVal = {};
@@ -359,7 +370,7 @@ export default {
             this.showLoadingModal();
             let updatedFields = this.field_data.map(element => {
                 let ret = element; 
-                delete element.isProtected;
+                // delete element.isProtected;
                 return ret
             })
 
@@ -434,7 +445,7 @@ export default {
             // Update GlobalFieldsCollection
             let updatedFields = this.field_data.map(element => {
                 let ret = element; 
-                delete element.isProtected;
+                // delete element.isProtected;
                 return ret
             })
             let fieldObject = {}
