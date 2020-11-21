@@ -585,7 +585,7 @@ export function custom_filter_button(cell, onRendered, success, cancel, editorPa
     editorParams.filter_modal_editor.set_show_status((is_filtered) => {
         dropbtn.innerHTML = is_filtered
             ? "<b>** Show Filters **</b>"
-            : "Filter Data";
+            : "Filter Column";
     });
 
     // Open the dropdown on click
