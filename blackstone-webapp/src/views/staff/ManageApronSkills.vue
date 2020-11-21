@@ -158,6 +158,7 @@
     import DraggableTable from "../../components/DraggableTable.vue"
     import { initSpecialInputVal } from '../../scripts/SpecialInit';
     import SpecialInput from '@/components/SpecialInput';
+    import chunk from 'lodash/chunk'
     
     let ApronSkillsRef = db.collection("GlobalVariables").doc("Apron Skills");
     let ApronColorsRef = db.collection("GlobalVariables").doc("Apron Colors");
@@ -365,57 +366,61 @@
                 let check = ApronSkillsRef.set(input);
                 let snapshot = await db.collection("GlobalYouthProfile").get();
                 let changes = this.changes;
-                await snapshot.forEach(async function (doc) {
-                    let data = doc.data();
-                    var changed = false;
-                    for(const change_string in changes){
-                        if(changes[change_string] != null){
-                            let change_key = change_string.split("\n");
-                            let old_category = change_key[0];
-                            let old_color = change_key[1];
-                            let old_skill = change_key[2];
-                            if(changes[change_string] == false){
-                                if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
-                                    let skill_array = data["Apron Skills"][old_color]["Skills"][old_category];
-                                    let orig_length = skill_array.length;
-                                    data["Apron Skills"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
-                                    let new_length = data["Apron Skills"][old_color]["Skills"][old_category].length;
-                                    if(new_length < orig_length){
-                                        changed = true;
-                                    }
-                                }
-                                continue
-                            }
-                            let new_category = changes[change_string][0];
-                            let new_color = changes[change_string][1];
-                            let new_skill = changes[change_string][2];
-                            if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
-                                for(var i = 0; i < data["Apron Skills"][old_color]["Skills"][old_category].length; i++){
-                                    if(data["Apron Skills"][old_color]["Skills"][old_category][i] == old_skill){
-                                        data["Apron Skills"][old_color]["Skills"][old_category].splice(i, 1);
-                                        if(data["Apron Skills"][new_color] != undefined){
-                                            if(data["Apron Skills"][new_color]["Skills"][new_category] != undefined){
-                                                data["Apron Skills"][new_color]["Skills"][new_category].push(new_skill)
-                                            } else {
-                                                data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill]
-                                            }
-                                        } else {
-                                            data["Apron Skills"][new_color] = {};
-                                            data["Apron Skills"][new_color]["Achieved"] = false;
-                                            data["Apron Skills"][new_color]["Skills"] = {}
-                                            data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill];
-                                        }
-                                        changed = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if(changed){
-                        await db.collection("GlobalYouthProfile").doc(doc.id).update(data);
-                    }
-                });
+                for(let query of chunk(snapshot.docs, 500)) {
+                  var batch = db.batch();
+                  query.forEach(async doc => {
+                      let data = doc.data();
+                      var changed = false;
+                      for(const change_string in changes){
+                          if(changes[change_string] != null){
+                              let change_key = change_string.split("\n");
+                              let old_category = change_key[0];
+                              let old_color = change_key[1];
+                              let old_skill = change_key[2];
+                              if(changes[change_string] == false){
+                                  if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
+                                      let skill_array = data["Apron Skills"][old_color]["Skills"][old_category];
+                                      let orig_length = skill_array.length;
+                                      data["Apron Skills"][old_color]["Skills"][old_category] = skill_array.filter(skill_name => skill_name != old_skill);
+                                      let new_length = data["Apron Skills"][old_color]["Skills"][old_category].length;
+                                      if(new_length < orig_length){
+                                          changed = true;
+                                      }
+                                  }
+                                  continue
+                              }
+                              let new_category = changes[change_string][0];
+                              let new_color = changes[change_string][1];
+                              let new_skill = changes[change_string][2];
+                              if(data["Apron Skills"] != undefined && data["Apron Skills"][old_color] != undefined && data["Apron Skills"][old_color]["Skills"][old_category] != undefined){
+                                  for(var i = 0; i < data["Apron Skills"][old_color]["Skills"][old_category].length; i++){
+                                      if(data["Apron Skills"][old_color]["Skills"][old_category][i] == old_skill){
+                                          data["Apron Skills"][old_color]["Skills"][old_category].splice(i, 1);
+                                          if(data["Apron Skills"][new_color] != undefined){
+                                              if(data["Apron Skills"][new_color]["Skills"][new_category] != undefined){
+                                                  data["Apron Skills"][new_color]["Skills"][new_category].push(new_skill)
+                                              } else {
+                                                  data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill]
+                                              }
+                                          } else {
+                                              data["Apron Skills"][new_color] = {};
+                                              data["Apron Skills"][new_color]["Achieved"] = false;
+                                              data["Apron Skills"][new_color]["Skills"] = {}
+                                              data["Apron Skills"][new_color]["Skills"][new_category] = [new_skill];
+                                          }
+                                          changed = true;
+                                          break;
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                      if(changed){
+                          batch.update(db.collection("GlobalYouthProfile").doc(doc.id), data);
+                      }
+                  });
+                  await batch.commit();
+                }
                 if(check){
                   this.colors = [];
                   this.categories = [];
