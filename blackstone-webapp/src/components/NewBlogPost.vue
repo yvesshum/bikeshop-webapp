@@ -52,9 +52,9 @@
         >
 
         <div>
-          <img class="thumbnail" src="../assets/bike_thumbnail1.jpg">
-          <img class="thumbnail" src="../assets/bike_thumbnail2.jpg">
-          <img class="thumbnail" src="../assets/bike_thumbnail3.jpg">
+          <img @click="setThumbnail(1)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 1)}" src="../assets/bike_thumbnail1.jpg">
+          <img @click="setThumbnail(2)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 2)}" src="../assets/bike_thumbnail2.jpg">
+          <img @click="setThumbnail(3)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 3)}" src="../assets/bike_thumbnail3.jpg">
         </div>
         
         </b-form-group>
@@ -93,6 +93,10 @@ export default {
             default: "",
             type: String,
         },
+        thumbnail: {
+            default: 0,
+            type: Number,
+        },
         submitCallback: {
             default: () => {},
             type: Function,
@@ -105,6 +109,7 @@ export default {
             blogSubtitle: this.subtitle,
             blogPosterName: this.name,
             blogContent: this.content,
+            blogThumbnail: this.thumbnail,
             customToolbar: [
                 [{ header: [false, 1, 2, 3, 4, 5, 6] }],
                 ["bold", "italic", "underline"],
@@ -131,6 +136,9 @@ export default {
         VueEditor,
     },
     methods: {
+        setThumbnail(i) {
+          this.blogThumbnail = i
+        },
         closeModal() {
             this.$emit("close");
         },
@@ -184,9 +192,24 @@ export default {
 }
 
 .thumbnail {
+  opacity: 80%;
   max-width: 30%;
   display: inline-block;
   margin: 1.5%;
+  border-radius: 5px;
+}
+
+.thumbnail:hover {
+  opacity: 100%;
+  box-shadow: 0 0 0 2px black;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.chosen {
+  opacity: 100%;
+  box-shadow: 0 0 0 2px black;
+  cursor: pointer;
   border-radius: 5px;
 }
 
