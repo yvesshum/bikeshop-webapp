@@ -45,6 +45,22 @@
           ></vue-editor>
         </b-form-group>
 
+        <b-form-group
+          id="input-group-5"
+          label="Choose Thumbnail:"
+          label-for="input-5"
+        >
+
+        <div>
+          <img @click="setThumbnail(1)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 1)}" src="../assets/bike_thumbnail1.jpg">
+          <img @click="setThumbnail(2)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 2)}" src="../assets/bike_thumbnail2.jpg">
+          <img @click="setThumbnail(3)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 3)}" src="../assets/bike_thumbnail3.jpg">
+          <img @click="setThumbnail(4)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 4)}" src="../assets/bike_thumbnail4.jpg">
+          <img @click="setThumbnail(5)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 5)}" src="../assets/bike_thumbnail5.jpg">
+        </div>
+        
+        </b-form-group>
+
                     <b-button type="submit" variant="success" style="margin-right: 12px">Submit</b-button>
                     <b-button type="reset" variant="danger">{{ resetText }}</b-button>
                 </b-form>
@@ -79,6 +95,10 @@ export default {
             default: "",
             type: String,
         },
+        thumbnail: {
+            default: 0,
+            type: Number,
+        },
         submitCallback: {
             default: () => {},
             type: Function,
@@ -91,6 +111,7 @@ export default {
             blogSubtitle: this.subtitle,
             blogPosterName: this.name,
             blogContent: this.content,
+            blogThumbnail: this.thumbnail,
             customToolbar: [
                 [{ header: [false, 1, 2, 3, 4, 5, 6] }],
                 ["bold", "italic", "underline"],
@@ -117,6 +138,9 @@ export default {
         VueEditor,
     },
     methods: {
+        setThumbnail(i) {
+          this.blogThumbnail = i
+        },
         closeModal() {
             this.$emit("close");
         },
@@ -127,25 +151,24 @@ export default {
                 posterName: this.blogPosterName,
                 subtitle: this.blogSubtitle,
                 title: this.blogTitle,
+                thumbnail: this.blogThumbnail,
             });
             this.onReset(evt)
         },
         onReset(evt) {
             evt.preventDefault();
-            this.blogTitle = "";
-            this.blogSubtitle = "";
-            this.blogPosterName = "";
-            this.blogContent = "";
             if (this.edit) {
               this.blogTitle = this.title;
               this.blogSubtitle = this.subtitle;
               this.blogPosterName = this.name;
               this.blogContent = this.content;
+              this.blogThumbnail = this.thumbnail;
             } else {
               this.blogTitle = "";
               this.blogSubtitle = "";
               this.blogPosterName = "";
               this.blogContent = "";
+              this.blogThumbnail = 0;
             }
         },
         closeMsgModal() {
@@ -167,6 +190,28 @@ export default {
 <style scoped>
 .form-group {
   margin-bottom: 1.25rem;
+}
+
+.thumbnail {
+  opacity: 80%;
+  max-width: 18%;
+  display: inline-block;
+  margin: 1%;
+  border-radius: 5px;
+}
+
+.thumbnail:hover {
+  opacity: 100%;
+  box-shadow: 0 0 0 2px black;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.chosen {
+  opacity: 100%;
+  box-shadow: 0 0 0 2px black;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
 ::v-deep label {
