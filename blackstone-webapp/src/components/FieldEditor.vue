@@ -131,7 +131,7 @@ import {db} from '@/firebase.js'
 import SpecialInput from '../components/SpecialInput.vue'
 import { Timestamp } from '../firebase'
 import { initSpecialInputVal } from '../scripts/SpecialInit';	
-
+import chunk from 'lodash/chunk'
 export default {
     name: 'fieldEditor',
     components: {
@@ -312,29 +312,34 @@ export default {
 
                     // Updating all the collections that needs an update
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        let batch = db.batch();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-                            batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
-                        })
-                        await batch.commit();
+                        let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                        // batches can only have up to 500 operations
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let id = doc.id;
+                                let data = doc.data();
+                                data[newFieldName] = data[this.modal.edit.original_field_name]
+                                delete data[this.modal.edit.original_field_name];
+                                batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                            })
+                            await batch.commit();
+                        }
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        let batch = db.batch();
-                        query.forEach(async doc => {
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            data[newFieldName] = data[this.modal.edit.original_field_name]
-                            delete data[this.modal.edit.original_field_name];
-
-                            batch.set(db.doc(path), data);
-                        })
-                        await batch.commit();
+                        let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let path = doc.ref.path
+                                let data = doc.data();
+                                data[newFieldName] = data[this.modal.edit.original_field_name]
+                                delete data[this.modal.edit.original_field_name];
+    
+                                batch.set(db.doc(path), data);
+                            })
+                            await batch.commit();
+                        }
                     }
 
                     //Local Update
@@ -376,26 +381,30 @@ export default {
 
                     // Delete from collections
                     for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                        let query = await db.collection(this.collectionsToEdit[j]).get();
-                        let batch = db.batch();
-                        query.forEach(async doc => {
-                            let id = doc.id;
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
-                        })
-                        await batch.commit();
+                        let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let id = doc.id;
+                                let data = doc.data();
+                                delete data[this.modal.delete.field_name]
+                                batch.set(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                            })
+                            await batch.commit();
+                        }
                     }
                     for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                        let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                        let batch = db.batch();
-                        query.forEach(async doc => {
-                            let path = doc.ref.path
-                            let data = doc.data();
-                            delete data[this.modal.delete.field_name]
-                            batch.set(db.doc(path), data);
-                        })
-                        await batch.commit();
+                        let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                        for (let query of chunk(fullquery.docs, 500)) {
+                            let batch = db.batch();
+                            query.forEach(async doc => {
+                                let path = doc.ref.path
+                                let data = doc.data();
+                                delete data[this.modal.delete.field_name]
+                                batch.set(db.doc(path), data);
+                            })
+                            await batch.commit();
+                        }
                     }
 
                     // Delete locally 
@@ -436,32 +445,36 @@ export default {
 
             //Update Collections
             for (let j = 0; j < this.collectionsToEdit.length; j++) {
-                let query = await db.collection(this.collectionsToEdit[j]).get();
-                let batch = db.batch();
-                for (let q of query.docs) {
-                    let id = q.id;
-                    let data = q.data();
-
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-
-                    batch.update(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                let fullquery = await db.collection(this.collectionsToEdit[j]).get();
+                for (let query of chunk(fullquery.docs, 500)) {
+                    let batch = db.batch();
+                    for (let q of query) {
+                        let id = q.id;
+                        let data = q.data();
+    
+                        data[this.modal.add.field_name] = this.modal.add.initial_value;
+    
+                        batch.update(db.collection(this.collectionsToEdit[j]).doc(id), data);
+                    }
+                    await batch.commit();
                 }
-                await batch.commit();
             }
 
 
             for (let j = 0; j < this.subcollectionsToEdit.length; j ++) {
-                let query = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
-                let batch = db.batch();
-                for (let q of query.docs) {
-                    // console.log('query', q)
-                    let path = q.ref.path
-                    let data = q.data();
-                    data[this.modal.add.field_name] = this.modal.add.initial_value;
-
-                    batch.update(db.doc(path), data);
+                let fullquery = await db.collectionGroup(this.subcollectionsToEdit[j]).get();
+                for (let query of chunk(fullquery.docs, 500)) {
+                    let batch = db.batch();
+                    for (let q of query) {
+                        // console.log('query', q)
+                        let path = q.ref.path
+                        let data = q.data();
+                        data[this.modal.add.field_name] = this.modal.add.initial_value;
+    
+                        batch.update(db.doc(path), data);
+                    }
+                    await batch.commit();
                 }
-                await batch.commit();
             }
 
 

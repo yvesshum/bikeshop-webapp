@@ -3,7 +3,7 @@
         <!-- <b-container>
             <b-row> -->
             <b-button-group>
-                <b-button squared variant="light" pressed><font-awesome-icon icon="bars" class="icon alt"/></b-button>
+                <b-button :disabled="isProtected" squared variant="light" pressed><font-awesome-icon icon="bars" class="icon alt"/></b-button>
                 <div class="fieldText">
                     <b-button 
                         disabled 

@@ -1,7 +1,7 @@
 //  Usage <PlaceholderEditor v-if="dataLoaded" placeholderRef="Submit Orders Placeholders" doc="Youth Order Form"/>
 <template>
     <div >
-        <p v-b-tooltip.hover title="Field Name, Placeholder Text, Status, Edit, Delete">Hint?</p>
+        <p v-b-tooltip.hover title="Columns are Field Name, Hint Text, Status, Edit, and Delete">Change hints for youth fields</p>
         <div  v-if="dataLoaded">
             <PlaceholderCard 
                 v-for="element in data"
