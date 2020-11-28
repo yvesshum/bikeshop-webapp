@@ -14,6 +14,8 @@
                       'thumbnail_img1': (PostObj.thumbnail == 1),
                       'thumbnail_img2': (PostObj.thumbnail == 2 || !PostObj.thumbnail),
                       'thumbnail_img3': (PostObj.thumbnail == 3),
+                      'thumbnail_img4': (PostObj.thumbnail == 4),
+                      'thumbnail_img5': (PostObj.thumbnail == 5),
                     }" cols="3"></b-col>
                     <b-col style="margin-left: 1rem; text-align: left;" cols="9">
                         <b-card-title class="truncate" style="padding-right: 1.5rem">
@@ -279,22 +281,28 @@ export default {
 
 .blog_thumbnail_style {
     margin: -1.25rem 0 -1.25rem -1rem;
+    background-size: cover;
     padding: 0;
 }
 
 .thumbnail_img1 {
   background-image: url("../assets/bike_thumbnail1.jpg");
-  background-size: cover;
 }
 
 .thumbnail_img2 {
   background-image: url("../assets/bike_thumbnail2.jpg");
-  background-size: cover;
 }
 
 .thumbnail_img3 {
   background-image: url("../assets/bike_thumbnail3.jpg");
-  background-size: cover;
+}
+
+.thumbnail_img4 {
+  background-image: url("../assets/bike_thumbnail4.jpg");
+}
+
+.thumbnail_img5 {
+  background-image: url("../assets/bike_thumbnail5.jpg");
 }
 
 .truncate {

@@ -55,6 +55,8 @@
           <img @click="setThumbnail(1)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 1)}" src="../assets/bike_thumbnail1.jpg">
           <img @click="setThumbnail(2)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 2)}" src="../assets/bike_thumbnail2.jpg">
           <img @click="setThumbnail(3)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 3)}" src="../assets/bike_thumbnail3.jpg">
+          <img @click="setThumbnail(4)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 4)}" src="../assets/bike_thumbnail4.jpg">
+          <img @click="setThumbnail(5)" class="thumbnail" v-bind:class="{'chosen':(blogThumbnail == 5)}" src="../assets/bike_thumbnail5.jpg">
         </div>
         
         </b-form-group>
@@ -192,9 +194,9 @@ export default {
 
 .thumbnail {
   opacity: 80%;
-  max-width: 30%;
+  max-width: 18%;
   display: inline-block;
-  margin: 1.5%;
+  margin: 1%;
   border-radius: 5px;
 }
 
