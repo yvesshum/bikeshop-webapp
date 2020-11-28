@@ -247,7 +247,7 @@ export default {
           title:"Category", field:"category",
           width: 200, sorter: sorter,
           editor: "select", headerFilter: true,
-          headerFilterParams: category_options
+          headerFilterParams: { values: category_options }
         },
       ];
     },
@@ -263,8 +263,8 @@ export default {
           groupBy: 'color',
 
           // Don't allow resizing
-          resizeableRows: false,
-          resizeableColumns: false,
+          resizableRows: false,
+          resizableColumns: false,
 
           // Allow multiple selection with ctrl and shift keys
           selectable: false,

@@ -210,6 +210,10 @@ export default {
       return {
         // On load, sort all items from most recent to least recent, or if no date column then by first column
         initialSort,
+
+        // Don't allow resizing
+        resizableRows: false,
+        resizableColumns: false,
       };
     },
 
