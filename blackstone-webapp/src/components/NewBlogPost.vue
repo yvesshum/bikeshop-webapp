@@ -149,25 +149,24 @@ export default {
                 posterName: this.blogPosterName,
                 subtitle: this.blogSubtitle,
                 title: this.blogTitle,
+                thumbnail: this.blogThumbnail,
             });
             this.onReset(evt)
         },
         onReset(evt) {
             evt.preventDefault();
-            this.blogTitle = "";
-            this.blogSubtitle = "";
-            this.blogPosterName = "";
-            this.blogContent = "";
             if (this.edit) {
               this.blogTitle = this.title;
               this.blogSubtitle = this.subtitle;
               this.blogPosterName = this.name;
               this.blogContent = this.content;
+              this.blogThumbnail = this.thumbnail;
             } else {
               this.blogTitle = "";
               this.blogSubtitle = "";
               this.blogPosterName = "";
               this.blogContent = "";
+              this.blogThumbnail = 0;
             }
         },
         closeMsgModal() {

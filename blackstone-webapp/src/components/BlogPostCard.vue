@@ -9,7 +9,12 @@
             >
             <div class="container" @click="viewBlogPost(PostObj.id)">
                 <b-row style="margin: 1.25rem 0; width: 100%;">
-                    <b-col class="blog_post_image" cols="3"></b-col>
+                    <b-col class="blog_thumbnail_style" 
+                    v-bind:class="{
+                      'thumbnail_img1': (PostObj.thumbnail == 1),
+                      'thumbnail_img2': (PostObj.thumbnail == 2 || !PostObj.thumbnail),
+                      'thumbnail_img3': (PostObj.thumbnail == 3),
+                    }" cols="3"></b-col>
                     <b-col style="margin-left: 1rem; text-align: left;" cols="9">
                         <b-card-title class="truncate" style="padding-right: 1.5rem">
                             {{ PostObj.title }}
@@ -271,12 +276,27 @@ export default {
 .delete_button:hover {
     text-decoration: underline;
 }
-.blog_post_image {
+
+.blog_thumbnail_style {
     margin: -1.25rem 0 -1.25rem -1rem;
     padding: 0;
-    background-image: url("../assets/bike_thumbnail2.jpg");
-    background-size: cover;
 }
+
+.thumbnail_img1 {
+  background-image: url("../assets/bike_thumbnail1.jpg");
+  background-size: cover;
+}
+
+.thumbnail_img2 {
+  background-image: url("../assets/bike_thumbnail2.jpg");
+  background-size: cover;
+}
+
+.thumbnail_img3 {
+  background-image: url("../assets/bike_thumbnail3.jpg");
+  background-size: cover;
+}
+
 .truncate {
     text-align: left;
     white-space: nowrap;
