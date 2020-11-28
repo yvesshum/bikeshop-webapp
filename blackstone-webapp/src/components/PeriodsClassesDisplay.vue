@@ -34,7 +34,7 @@
                     <td>
                         <b-dropdown right id="dropdown-text" class="m-2"
                             :variant="dropdown_variant"
-                            :text="get_class_str(display)"
+                            :text="get_class_str(display)+' '"
                             style="min-width: 100%;"
                             :disabled="display.length == 0"
                         >

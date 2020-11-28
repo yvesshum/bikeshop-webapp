@@ -1,7 +1,6 @@
 <template>
  <div class="content">
-   <b-row style="padding:0; margin:0">
-    <div class="manage_periods">
+  <div class="manage_periods">
     <TopBar/>
     <h1>Manage Periods</h1>
     <PageHeader pageCategory="Staff Headers" pageName="Manage Youth Activity Period"></PageHeader>
@@ -16,7 +15,7 @@
           @clicked="switch_to"
           v-show="display_period != null"
         >
-          <h5 style="display:inline;">{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}}</h5>
+          <h5 style="display:inline;">{{display_period}}{{display_period == cur_period ? " (Current)" : display_period == reg_period ? " (Registration)" : ""}} </h5>
         </ButtonArrayHeader>
         <Table
           ref="current_table"
@@ -249,10 +248,9 @@
 
       </div>
     </div>
-    </div>
-   </b-row>
-   <Footer/>
   </div>
+ <Footer/>
+ </div>
 </template>
 
 
