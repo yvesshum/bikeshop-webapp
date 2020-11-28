@@ -97,7 +97,7 @@ Emits:
                 if (this.table != null) {
                     this.table.replaceData(new_data);
                     this.table.redraw();
-                };
+                }
             },
 
             visible: function(val) { // eslint-disable-line no-unused-vars

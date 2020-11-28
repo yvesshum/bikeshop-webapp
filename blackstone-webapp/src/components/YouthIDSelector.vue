@@ -84,15 +84,15 @@ Emits:
             <template slot="option" slot-scope="props">
                 <div class="option__desc">
                     <span class="option__name">
-                        <span v-for="s in filtered.displays[props.option['ID']]['First Name']">
+                        <span v-for="(s,i) in filtered.displays[props.option['ID']]['First Name']" :key="'fn_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
-                        </span>&nbsp;<span v-for="s in filtered.displays[props.option['ID']]['Last Name']">
+                        </span>&nbsp;<span v-for="(s,i) in filtered.displays[props.option['ID']]['Last Name']" :key="'ln_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </span>
                     <br />
                     <small class="option__id">
-                        ID: <span v-for="s in filtered.displays[props.option['ID']]['ID']">
+                        ID: <span v-for="(s,i) in filtered.displays[props.option['ID']]['ID']" :key="'id_segment_'+i">
                             <span :class="{search_highlight: s.mark}">{{s.seg}}</span>
                         </span>
                     </small>
@@ -102,7 +102,7 @@ Emits:
         </div>
 
         <b-button-group v-if="usePeriodSwitch">
-            <b-button v-for="btn in switch_buttons"
+            <b-button v-for="btn in switch_buttons" :key="btn.name"
                 squared :variant="period_switch_value == btn.value ? 'primary' : 'outline-primary'"
                 @click="switch_to(btn)"
                 v-b-tooltip.hover.html="btn.msg"
@@ -287,6 +287,9 @@ Emits:
                     }
                 ],
                 period_switch_value: undefined,
+
+                // Cached values for the years
+                year_doc_cache: [],
             }
         },
 
@@ -323,6 +326,7 @@ Emits:
             filtered: function() {
 
                 // Start the loading icon
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.is_busy = true;
 
                 // Split search string into individual lowercase terms
@@ -442,6 +446,7 @@ Emits:
                 options = options.sort(this.sort_options(displays));
 
                 // Stop the loading icon
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.is_busy = false;
 
                 // Return the options and displays as one object
@@ -465,6 +470,20 @@ Emits:
         },
 
         methods: {
+
+            // If the year has been retrieved previously, grab it from the cache, otherwise
+            // grab it from the database and save it to the cache
+            retrieve_year: async function(year) {
+                if (this.year_doc_cache[year] == undefined) {
+                    var year_doc = await this.vars_coll.doc(year).get();
+                    this.$set(this.year_doc_cache, year, year_doc);
+                    return year_doc;
+                }
+                else {
+                    return this.year_doc_cache[year];
+                }
+            },
+
             // Retrieve all youth from the specified periods from the database
             async getData() {
 
@@ -520,7 +539,7 @@ Emits:
                     let year = years[i];
 
                     // Load the given year's document from the database
-                    let year_doc = await this.vars_coll.doc(year).get();
+                    let year_doc  = await this.retrieve_year(year);
                     let year_data = year_doc.data();
 
                     // Loop through each season in this year to load youth from

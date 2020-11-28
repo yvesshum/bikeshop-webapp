@@ -22,9 +22,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '../firebase';
-import {firebase} from '../firebase';
 
 export default {
   name: 'ref-tracker',
@@ -95,8 +92,8 @@ export default {
     },
 
     // Handle an error by printing it to the console
-    handle_error: function(err) {
-      console.error("Error retrieving snapshot:", err);
+    handle_error: function(err) { // eslint-disable-line no-unused-vars
+      // console.error("Error retrieving snapshot:", err);
     },
 
     // User wants to load the changed snapshot

@@ -1,3 +1,18 @@
+// Set this to true to allow console statements for debugging purposes. Otherwise, leave as false.
+var allow_console = false;
+
+// Use console.warn, but only if allow_console is set to true
+function console_warn_safe(str) {
+	// eslint-disable-next-line no-console
+	if (allow_console) console.warn(str);
+}
+
+// Use console.error, but only if allow_console is set to true
+function console_error_safe(str) {
+	// eslint-disable-next-line no-console
+	if (allow_console) console.error(str, console.trace());
+}
+
 export class Period {
 
 	// Create new Period object from season and year
@@ -33,11 +48,11 @@ export class Period {
 		}
 		else {
 			if (Period.seasons.length != season_list.length) {
-				console.warn("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
+				console_warn_safe("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
 			}
 			for (let i in season_list) {
 				if (season_list[i] != Period.seasons[i]) {
-					console.warn("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
+					console_warn_safe("Period Object Seasons List has been changed.", "Original: ", Period.seasons, "New: ", season_list);
 				}
 			}
 			// season_list.map((val, i) => val == Period.seasons[i]).reduce((a,c) => a && c)
@@ -69,7 +84,7 @@ export class Period {
 	compareTo(operand) {
 		// Error handling: If no list of seasons has been assigned...
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
@@ -128,7 +143,7 @@ export class Period {
 
 	getNext() {
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
@@ -136,13 +151,13 @@ export class Period {
 		var new_period;
 
 		// If this is the last season of the year, loop around and increment the year
-	     if (index == Period.seasons.length - 1) {
-	        new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
-	     } else {
-	        new_period = new Period(Period.seasons[index+1], this.year);
-	     };
+		if (index == Period.seasons.length - 1) {
+			new_period = new Period(Period.seasons[0], (parseInt(this.year)+1).toString());
+		} else {
+			new_period = new Period(Period.seasons[index+1], this.year);
+		}
 
-	     return new_period;
+		return new_period;
 	}
 
 	static genNext(period) {
@@ -160,7 +175,7 @@ export class Period {
 
 	getPrev() {
 		if (Period.seasons == undefined) {
-			console.error("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.", console.trace());
+			console_error_safe("Period Seasons List has not been initialized. Please use 'Period.setSeasons()' to do so.");
 			return;
 		}
 
@@ -168,13 +183,13 @@ export class Period {
 		var new_period;
 
 		// If this is the last season of the year, loop around and increment the year
-	     if (index == 0) {
-	        new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
-	     } else {
-	        new_period = new Period(Period.seasons[index-1], this.year);
-	     };
+		if (index == 0) {
+			new_period = new Period(Period.seasons[Period.seasons.length - 1], (parseInt(this.year)-1).toString());
+		} else {
+			new_period = new Period(Period.seasons[index-1], this.year);
+		}
 
-	     return new_period;
+		return new_period;
 	}
 
 	static genPrev(period) {
@@ -234,7 +249,7 @@ export class Period {
 		});
 		return result;
 	}
-};
+}
 
 Period.prototype.toString = function() {
 	return `${this.season} ${this.year}`;

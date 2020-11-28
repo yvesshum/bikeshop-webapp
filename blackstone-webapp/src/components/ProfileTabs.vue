@@ -6,15 +6,20 @@
       <div class="id_parens" style="margin-top:0.5em; font-size:0.9em;">
           ID: {{youth_id}}
           <span style="margin: 0 0.75em;">|</span>
-          {{get_profile_field("Apron Color")}} Apron
-          <span style="margin: 0 0.75em;">|</span>
           {{get_profile_field("Hours Earned")}} Hours Earned
           <span style="margin: 0 0.75em;">|</span>
           {{current_class}}
+          {{(class_is_apron(current_class)) ? "(Class)" : ""}}
+          <span style="margin: 0 0.75em;">|</span>
+          {{get_profile_field("Apron Color")}} Apron
         </div>
     </div>
 
     <br />
+
+    <b-alert v-model="apron_bar_has_changes" variant="warning">
+      This youth has unsaved changes.
+    </b-alert>
 
     <b-tabs ref="body_fields"
       content-class="mt-3" justified
@@ -96,6 +101,7 @@
           style="max-width: 95%; margin:auto"
           @load_complete="s => apron_bar_content = s"
           @save_changes="save_changes"
+          @has_changes="c => apron_bar_has_changes = c"
         />
       </b-tab>
     </b-tabs>
@@ -103,11 +109,6 @@
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '@/firebase';
-import {firebase} from '@/firebase';
-import firebase_app from 'firebase/app';
-import firebase_auth from 'firebase/auth';
 
 import ProfileFields from "@/components/ProfileFields.vue"
 import HoursStatsBar from "@/components/HoursStatsBar.vue"
@@ -165,6 +166,8 @@ export default {
       work_log_content:  null,
       order_log_content: null,
       trans_log_content: null,
+
+      apron_bar_has_changes: false,
     };
   },
 
@@ -196,28 +199,7 @@ export default {
     },
   },
 
-  mounted: function() {
-
-    // Load the headers from the prop if it's set
-    if (this.headerDoc != undefined) {
-      this.load_header_doc(this.headerDoc);
-    };
-
-    // Load the profile from the prop if it's set
-    if (this.profile != undefined) {
-      this.load_profile(this.profile);
-    };
-  },
-
   watch: {
-
-    headerDoc: function(new_header) {
-      this.load_header_doc(new_header);
-    },
-
-    profile: function(doc) {
-      this.load_profile(doc);
-    },
 
     current_tab: function(open_tab) {
       switch (open_tab) {
@@ -254,10 +236,10 @@ export default {
             if (this.trans_log_content != null) this.trans_log_content.redraw();
           });
           break;
-      };
+      }
     },
 
-    current_log_tab: function(open_tab) {
+    current_log_tab: function(open_tab) { //eslint-disable-line no-unused-vars
       this.$nextTick(this.redraw_log_table);
     }
 
@@ -285,8 +267,11 @@ export default {
       }
     },
 
-    load_header_doc: function(new_header) {},
-    load_profile: function(doc) {},
+    // Return true if the class name is formatted like "___ Apron", and false otherwise
+    // Used to display a disambiguating "(Class)" string if so
+    class_is_apron(class_name) {
+      return /.*(Apron)$/.test(class_name);
+    },
 
     get_profile_field: function(field, default_value) {
       return (this.profile == null) ? default_value : this.profile.data()[field];

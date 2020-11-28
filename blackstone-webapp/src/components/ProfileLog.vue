@@ -12,23 +12,28 @@
       :visible="visible"
       @table="handle_table"
     ></CollectionTable>
+
+    <FilterModal v-for="(col, i) in filter_modal_cols" :key="'filter-modal-'+i"
+      @created="obj => save_filter_modal_obj(col, obj)"
+      @filters="col.run_success_func"
+      :options="col.options"
+      :operations="col.operations"
+      :title="headers[col.index].title"
+    />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import {db} from '../firebase';
 
 import CollectionTable from "@/components/CollectionTable.vue"
+import FilterModal     from "@/components/FilterModal.vue"
 
-import {filter} from "@/scripts/Search.js";
 import {make_range_editor} from "@/scripts/Search.js"
-import {custom_filter_editor} from "@/scripts/Search.js"
+import {custom_filter_button} from "@/scripts/Search.js"
 import {custom_filter_func} from "@/scripts/Search.js"
 import {get_as_date} from "@/scripts/ParseDB.js"
 
 const moment = require("moment");
-var Tabulator = require("tabulator-tables");
 
 export default {
   name: 'profile_log',
@@ -54,6 +59,7 @@ export default {
   },
   components: {
     CollectionTable,
+    FilterModal,
   },
 
   mounted: async function() {
@@ -62,24 +68,59 @@ export default {
 
   data: function() {
     return {
-      // Other Tabulator arguments for the tables
-      extra_args: {
+      // The information used to construct each FilterModal (parent to child)
+      // Indices are NOT associated with column index
+      filter_modal_cols: [],
 
-        // On load, sort all items from most recent to least recent
-        initialSort: [
-          {column: "Date", dir: "desc"},
-        ],
-      },
+      // The functionality exposed by each FilterModal component (child to parent)
+      // Indices DO match column index
+      filter_modal_objs: [],
     };
   },
 
   computed: {
     header_columns: function() {
-      return this.headers.map(header => {
+
+      // We set the filter_modal_cols array at the same time - it should reflect the values in header_columns, but it's easiest to just construct them at the same time
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.filter_modal_cols = [];
+
+      return this.headers.map((header, index) => {
         if (header.__style__ == undefined) {
           return header;
         }
 
+        // Create variable to store the success function from Tabulator (which will apply the filters)
+        let success_func = null;
+        let show_status_func = null;
+        let run_success_func = (filters) => {
+
+          // Show whether filters are going to be applied
+          if (show_status_func != null) {
+            show_status_func(filters != null);
+          }
+
+          // Pass those filters on to Tabulator
+          if (success_func != null) {
+            return success_func(filters);
+          }
+        };
+
+
+        // Functionality passed down to Tabulator filtering function (parent to child)
+        var filter_modal_editor = {
+          show_filter: () => {
+            this.filter_modal_objs[index].show();
+          },
+          set_success: (f) => {
+            success_func = f;
+          },
+          set_show_status: (f) => {
+            show_status_func = f;
+          },
+        };
+
+        // Initialize variable to store styling for each column, based on its __style__ field
         var styling;
 
         switch (header.__style__) {
@@ -87,17 +128,21 @@ export default {
           case "date":
             styling = {
               formatter: this.format_date,
-              ...this.get_date_filter_args(false),
+              ...this.get_date_filter_args(filter_modal_editor, false),
               sorter: this.date_sorter
             };
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(false)});
             break;
 
           case "datetime":
             styling = {
               formatter: this.format_date_time,
-              ...this.get_date_filter_args(true),
+              ...this.get_date_filter_args(filter_modal_editor, true),
               sorter: this.date_sorter,
             };
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.filter_modal_cols.push({index, run_success_func, ...this.get_date_params(true)});
             break;
 
           case "time":
@@ -114,6 +159,11 @@ export default {
               ...this.work_hour_filter_args,
               sorter: this.work_hours_sorter
             };
+
+            // Add the dropdown body
+            styling.headerFilterParams.filter_modal_editor = filter_modal_editor;
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+            this.filter_modal_cols.push({index, run_success_func, ...this.work_hour_params});
             break;
 
           case "hours":
@@ -144,53 +194,86 @@ export default {
     },
 
 
+    // Other Tabulator arguments for the tables
+    extra_args: function() {
+
+      // Explicily get date column if it exists, otherwise defer to first column
+      var initialSort = [];
+
+      if (this.headers[0] != undefined) {
+        initialSort = [{
+          column: this.headers.map(h => h.title).includes("Date") ? "Date" : this.headers[0].title,
+          dir: "desc"
+        }];
+      }
+
+      return {
+        // On load, sort all items from most recent to least recent, or if no date column then by first column
+        initialSort,
+
+        // Don't allow resizing
+        resizableRows: false,
+        resizableColumns: false,
+      };
+    },
+
+
+    work_hour_params: function() {
+      return {
+
+        // Allow user to filter by any of the hour categories, or the total amount
+        options: this.hourCategories.concat(["Total"]),
+
+        // The filtering operations to support in the dropdown
+        operations: [
+          { name: "at least", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+            },
+          },
+          { name: "at most",  inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+            }
+          },
+          { name: "between",  inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return inclusive
+                ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+                : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+            },
+          },
+          { name: "exactly",
+            filter: (option_val, filter_val) => {
+              return option_val == filter_val;
+            },
+          },
+          { name: "not zero", num_inputs: 0,
+            filter: (option_val) => {
+              return option_val != 0;
+            },
+          },
+        ],
+      };
+    },
+
+
     work_hour_filter_args: function() {
 
-      // The filtering operations to support in the dropdown
-      var operations = [
-        { name: "not zero", num_inputs: 0,
-          filter: (option_val) => {
-            return option_val != 0;
-          },
-        },
-        { name: "at least", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
-          },
-        },
-        { name: "at most",  inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
-          }
-        },
-        { name: "between",  inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
-              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
-          },
-        },
-        { name: "exactly",
-          filter: (option_val, filter_val) => {
-            return option_val == filter_val;
-          },
-        },
-      ];
+      // Get the options and operations for work hours
+      var {options, operations} = this.work_hour_params;
 
       return {
 
         // Use the custom dropdown filter and its associated filtering functionality
-        headerFilter: custom_filter_editor,
+        headerFilter:     custom_filter_button,
         headerFilterFunc: custom_filter_func,
 
         // Parameters for setting up the filter dropdown menu
         headerFilterParams: {
 
-          // Allow user to filter by any of the hour categories, or the total amount
-          options: this.hourCategories.concat(["Total"]),
-
-          // Use the operations defined above
-          operations,
+          // Use the work hour options and operations
+          options, operations,
 
           // Center the dropdown around the button
           // In this case, since the work hours is one of the later columns, I think this alignment makes it look a bit nicer
@@ -207,7 +290,7 @@ export default {
           parse_filter_val: (option, value) => value,
 
           // For the cells, grab the number of hours for the category that's specified by the filter
-          parse_option_val: (option, cell, value) => {
+          parse_option_val: (option, cell, value) => { // eslint-disable-line no-unused-vars
             return (option == "Total")
               ? this.hourCategories.reduce((acc, curr) => acc + cell[curr], 0)
               : cell[option];
@@ -226,6 +309,10 @@ export default {
 
     handle_table: function(table) {
       this.$emit("table", table);
+    },
+
+    save_filter_modal_obj: function(col, obj) {
+      this.filter_modal_objs[col.index] = obj;
     },
 
     // Source: https://stackoverflow.com/questions/6134039/format-number-to-always-show-2-decimal-places
@@ -432,53 +519,17 @@ export default {
       };
     },
 
-    get_date_filter_args: function(include_time) {
-      let options = ["Year", "Month", "Date", "Weekday"];
-      if (include_time) options.push("Time");
+    get_date_filter_args: function(filter_modal_editor, include_time) {
 
-      var operations = [
-        { name: "is",
-          filter: (option_val, filter_val) => {
-            return option_val == filter_val;
-          },
-        },
-        { name: "is not",
-          filter: (option_val, filter_val) => {
-            return option_val != filter_val;
-          },
-        },
-        { name: "before", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
-          }
-        },
-        { name: "after", inclusive: true,
-          filter: (option_val, filter_val, inclusive) => {
-            return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
-          },
-        },
-        { name: "between",     inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
-              : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
-          },
-        },
-        { name: "not between", inclusive: true, num_inputs: 2,
-          filter: (option_val, filter_vals, inclusive) => {
-            return inclusive
-              ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
-              : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
-          },
-        }
-      ];
+      var {options, operations} = this.get_date_params(include_time);
 
       return {
-        headerFilter: custom_filter_editor,
+        headerFilter:     custom_filter_button,
         headerFilterFunc: custom_filter_func,
         headerFilterParams: {
           options,
           operations,
+          filter_modal_editor,
         },
         headerFilterFuncParams: {
           options, operations,
@@ -497,6 +548,71 @@ export default {
         headerFilterFunc: this.numeric_range_filter,
         headerFilterParams: {minimum: 0, step: 0.5},
         headerFilterLiveFilter: false,
+      };
+    },
+
+
+    get_date_params: function(include_time) {
+
+      // Make the list of options
+      let options = ["Year", "Month", "Date", "Weekday"];
+      if (include_time) options.push("Time");
+
+      // Functions to determine whether a given value is between two others
+
+      // These are defined separately up here because we want the operations to loop around -- i.e. if the second value is before the first, we want our selection range to start from the first value, loop around through the end to the beginning, then end at the second value
+      // E.g. For a search that's between October and February, we want December and January to match.
+
+      var between = (option_val, filter_vals, inclusive) => {
+        return inclusive
+          ? (option_val >= filter_vals[0] && option_val <= filter_vals[1])
+          : (option_val >  filter_vals[0] && option_val <  filter_vals[1]);
+      };
+
+      var not_between = (option_val, filter_vals, inclusive) => {
+        return inclusive
+          ? (option_val <= filter_vals[0] || option_val >= filter_vals[1])
+          : (option_val <  filter_vals[0] || option_val >  filter_vals[1]);
+      };
+
+      return {
+        options,
+        operations: [
+          { name: "is",
+            filter: (option_val, filter_val) => {
+              return option_val == filter_val;
+            },
+          },
+          { name: "is not",
+            filter: (option_val, filter_val) => {
+              return option_val != filter_val;
+            },
+          },
+          { name: "before", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val <= filter_val) : (option_val < filter_val);
+            }
+          },
+          { name: "after", inclusive: true,
+            filter: (option_val, filter_val, inclusive) => {
+              return inclusive ? (option_val >= filter_val) : (option_val > filter_val);
+            },
+          },
+          { name: "between",     inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return (filter_vals[0] <= filter_vals[1])
+                ? between(option_val, filter_vals, inclusive)
+                : not_between(option_val, [filter_vals[1], filter_vals[0]], inclusive);
+            },
+          },
+          { name: "not between", inclusive: true, num_inputs: 2,
+            filter: (option_val, filter_vals, inclusive) => {
+              return (filter_vals[0] <= filter_vals[1])
+                ? not_between(option_val, filter_vals, inclusive)
+                : between(option_val, [filter_vals[1], filter_vals[0]], inclusive);
+            },
+          }
+        ],
       };
     },
 
@@ -527,23 +643,23 @@ export default {
 
           // If input string contains "PM" (case-insensitive), add 12 hours to the final count
           // Otherwise, start from 0 seconds
-          let afternoon = filter.value.match(/[Pp](?=[Mm])/);
+          let afternoon = value.match(/[Pp](?=[Mm])/);
           let result = (afternoon == null) ? 0 : (12 * 60 * 60);
 
           // Split user input into hours, mins, and seconds
           // Grab all groups of one or two numbers followed by valid separator character
-          let split_time = filter.value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
+          let split_time = value.match(/[0-9][0-9]?(?=[: \n$Pp])/g).map(n=>parseInt(n));
 
           // Take advantage of fall-thru to convert as much of split_time as exists to seconds
           // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"
           /* eslint-disable no-fallthrough */
           switch (split_time.length) {
             case 3:
-              filter_val += split_time[2];
+              result += split_time[2];
             case 2:
-              filter_val += split_time[1] * 60;
+              result += split_time[1] * 60;
             case 1:
-              filter_val += split_time[0] * 60 * 60;
+              result += split_time[0] * 60 * 60;
           }
           /* eslint-enable no-fallthrough */
 
@@ -572,10 +688,10 @@ export default {
         case "Time":
 
           // Initialize result to 0 seconds
-          let result = 0; // eslint-disable-lint no-case-declarations
+          let result = 0; // eslint-disable-line no-case-declarations
 
           // Split user input into hours, mins, and seconds
-          let split_time = this.parse_time_str(value); // eslint-disable-lint no-case-declarations
+          let split_time = this.parse_time_str(value); // eslint-disable-line no-case-declarations
 
           // Take advantage of fall-thru to convert as much of split_time as exists to seconds
           // This means that a time like "1:22PM" will match the query "1PM", but not the query "1:00PM"

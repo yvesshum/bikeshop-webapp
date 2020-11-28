@@ -402,9 +402,19 @@ export default {
       return ret;
     },
 
+    // Get the full list of periods, for the dropdown selector
     full_period_list: function() {
+
+      // Catch undefined values
       if (this.cur_period == undefined || this.fst_period == undefined) return [];
-      return [ this.reg_period, this.cur_period, undefined ].concat(
+
+      // Add the registration period and the current period, unless they're the same, in which case just add them once
+      let temp = (this.reg_period == this.cur_period)
+        ? [                  this.cur_period, undefined ]
+        : [ this.reg_period, this.cur_period, undefined ];
+
+      // Add all the periods going back to the first period
+      return temp.concat(
         Period.enumerateStr(Period.genPrevStr(this.cur_period), this.fst_period)
       );
     },

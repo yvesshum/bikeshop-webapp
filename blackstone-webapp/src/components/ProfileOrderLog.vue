@@ -16,7 +16,7 @@
 <script>
 // @ is an alias to /src
 import {db} from '../firebase';
-import {firebase} from '../firebase';
+
 import ProfileLog from "@/components/ProfileLog.vue"
 import {forKeyVal} from "@/scripts/ParseDB";
 
@@ -77,6 +77,7 @@ export default {
           }
 
           // Use different formatter/filter/sorter depending on the field's type
+          /* eslint-disable no-fallthrough */
           switch (field_type) {
 
             case "Datetime":
@@ -108,6 +109,7 @@ export default {
               });
               break;
           }
+          /* eslint-enable no-fallthrough */
         })
       }
 
@@ -123,8 +125,8 @@ export default {
   },
 
   watch: {
-    snapshot: function(snapshot) {
-      this.load_from_snapshot(this.snapshot);
+    snapshot: function(new_snapshot) {
+      this.load_from_snapshot(new_snapshot);
     },
   },
 
