@@ -59,6 +59,7 @@
             :subtitle="PostObj.subtitle"
             :name="PostObj.posterName"
             :content="PostObj.content"
+            :thumbnail="PostObj.thumbnail"
             :show="showEditModal"
             @close="showEditModal = false"
             :submitCallback="handleBlogEdit"
