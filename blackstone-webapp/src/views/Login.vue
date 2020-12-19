@@ -1,22 +1,12 @@
 <template>
     <div class = "login">
-      <div class="jumbotron loginJumbo">
+      <div class="floating_div loginJumbo">
         <img
           id="logo"
           src="../assets/experimental_station_logo.png"
         />
 
         <h3 style="margin-top: 1rem">Welcome to Blackstone Bicycle Works!</h3>
-
-        <!-- Parents actions -->
-        <div style="margin-top: 2rem">
-          <h4>
-              Parents, if you are looking to register a new child,
-              <a href="/register-new-youth">
-              Register a new youth
-              </a>
-          </h4>
-        </div>
         
         <!-- Login input fields -->
         <div style="margin-top:2rem">
@@ -31,6 +21,15 @@
           <div style="margin-top: 1rem">If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</div>
         </div>
 
+        <!-- Parents actions -->
+        <div style="margin-top: 2rem">
+          <h4>
+              Parents, if you are looking to register a new child,
+              <a href="/register-new-youth">
+              Register a new youth
+              </a>
+          </h4>
+        </div>
         
         </div>
     </div>
@@ -73,6 +72,7 @@
     .login {
         height:100%;
         background-image: url('../assets/bike.jpg');
+        background-size: cover;
     }
     input {
         margin: 10px 0;
@@ -103,6 +103,11 @@
     .action-button:hover {
       background: #66d7d7;
       color: #fff;
+    }
+
+    .floating_div {
+      background-color: #F7F7F7;
+      box-shadow: 0 1px 10px 0px rgba(0, 0, 0, 0.5);
     }
 
     .input_field {
