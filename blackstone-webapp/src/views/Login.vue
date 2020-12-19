@@ -2,16 +2,16 @@
     <div class = "login">
       <div class="jumbotron loginJumbo">
         <h2>
-          Welcome to Blackstone Bicycle Works
+          Welcome to Blackstone Bicycle Works!
         </h2>
         <h2>
-              Parents, if you are looking to register a new child,
+              Parents, if you are looking to register a new child: 
               <a href="/register-new-youth">
               Register a new youth
               </a>
         </h2>
-        <br /> <br />
-        <h3>Sign in to your youth/staff account</h3>
+        <br /> <h2>Otherwise,</h2><br />
+        <h3>Sign in to your youth/staff account!</h3>
         <input type = "text" v-model = "email" placeholder = "Staff or Youth Email" v-on:keyup.enter="focusPW"><br>
         <input ref="password" type = "password" v-model = "password" placeholder = "Password" v-on:keyup.enter="login"><br>
         
