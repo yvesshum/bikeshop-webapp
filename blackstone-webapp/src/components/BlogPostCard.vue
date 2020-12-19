@@ -11,8 +11,8 @@
                 <b-row style="margin: 1.25rem 0; width: 100%;">
                     <b-col class="blog_thumbnail_style" 
                     v-bind:class="{
-                      'thumbnail_img1': (PostObj.thumbnail == 1),
-                      'thumbnail_img2': (PostObj.thumbnail == 2 || !PostObj.thumbnail),
+                      'thumbnail_img1': (PostObj.thumbnail == 1 || !PostObj.thumbnail),
+                      'thumbnail_img2': (PostObj.thumbnail == 2),
                       'thumbnail_img3': (PostObj.thumbnail == 3),
                       'thumbnail_img4': (PostObj.thumbnail == 4),
                       'thumbnail_img5': (PostObj.thumbnail == 5),
