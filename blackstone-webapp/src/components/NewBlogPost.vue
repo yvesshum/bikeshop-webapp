@@ -193,8 +193,9 @@ export default {
 }
 
 .thumbnail {
-  opacity: 80%;
+  opacity: 75%;
   max-width: 18%;
+  box-shadow: 0 2px 3px 0px rgba(0, 0, 0, 0.5);
   display: inline-block;
   margin: 1%;
   border-radius: 5px;
@@ -202,14 +203,13 @@ export default {
 
 .thumbnail:hover {
   opacity: 100%;
-  box-shadow: 0 0 0 2px black;
   cursor: pointer;
   border-radius: 5px;
 }
 
 .chosen {
   opacity: 100%;
-  box-shadow: 0 0 0 2px black;
+  box-shadow: 0 0 0 2px rgb(48, 93, 104);
   cursor: pointer;
   border-radius: 5px;
 }
