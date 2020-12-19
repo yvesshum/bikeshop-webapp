@@ -1,24 +1,37 @@
 <template>
     <div class = "login">
       <div class="jumbotron loginJumbo">
-        <h2>
-          Welcome to Blackstone Bicycle Works
-        </h2>
-        <h2>
+        <img
+          id="logo"
+          src="../assets/experimental_station_logo.png"
+        />
+
+        <h3 style="margin-top: 1rem">Welcome to Blackstone Bicycle Works!</h3>
+
+        <!-- Parents actions -->
+        <div style="margin-top: 2rem">
+          <h4>
               Parents, if you are looking to register a new child,
               <a href="/register-new-youth">
               Register a new youth
               </a>
-        </h2>
-        <br /> <br />
-        <h3>Sign in to your youth/staff account</h3>
-        <input type = "text" v-model = "email" placeholder = "Staff or Youth Email" v-on:keyup.enter="focusPW"><br>
-        <input ref="password" type = "password" v-model = "password" placeholder = "Password" v-on:keyup.enter="login"><br>
+          </h4>
+        </div>
         
-        <button @click="login" v-if="!isLoggingIn">Login!</button>
-        <button disabled v-else>Loading..</button>
+        <!-- Login input fields -->
+        <div style="margin-top:2rem">
+          <h4>Sign in to your youth/staff account</h4>
+          <input class="input_field" type = "text" v-model = "email" placeholder = "Staff or Youth Email" v-on:keyup.enter="focusPW"><br>
+          <input class="input_field" ref="password" type = "password" v-model = "password" placeholder = "Password" v-on:keyup.enter="login"><br>
+          
+          <button @click="login" v-if="!isLoggingIn" class="btn btn-light action-button">
+            Login!</button>
+          <button disabled v-else>Loading..</button>
+          
+          <div style="margin-top: 1rem">If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</div>
+        </div>
+
         
-        <p>If you don't remember the account password, please talk to one of Blackstone Bicycle Work's staff members!</p>
         </div>
     </div>
 </template>
@@ -75,11 +88,41 @@
         text-decoration: underline;
         cursor: pointer;
     }
+
+    .action-button {
+      margin: 0.75rem;
+      background: #56c6c6;
+      border-radius: 20px;
+      font-size: inherit;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+
+    .action-button:hover {
+      background: #66d7d7;
+      color: #fff;
+    }
+
+    .input_field {
+      padding: 0.75rem;
+    }
+
     .loginJumbo {
+      padding: 2rem 2.5rem;
       max-width: 60%;
       top:20px;
       position: relative;
       margin:auto;
       border-radius: 10px;
     }
+
+    #logo {
+      width: 70%;
+      padding: 1rem;
+      max-width: 300px;
+      min-width: 225px;
+    }
+
 </style>
