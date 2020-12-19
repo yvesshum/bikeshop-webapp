@@ -260,7 +260,7 @@ export default {
       }
     },
     onEndDelete(evt) {
-      console.log("Deleted!")
+      // console.log("Deleted!")
       let old_category = evt.from.accessKey.split("\n")[0];
       let old_color = evt.from.accessKey.split("\n")[1];
       let old_skill = evt.item.accessKey;
@@ -277,7 +277,7 @@ export default {
       return true;
     },
     onEnd(evt) {
-      console.log("Moved!")
+      // console.log("Moved!")
       let old_category = evt.from.accessKey.split("\n")[0];
       let old_color = evt.from.accessKey.split("\n")[1];
       let old_skill = evt.item.accessKey;
@@ -290,8 +290,8 @@ export default {
       } else {
         let new_category = evt.to.accessKey.split("\n")[0];
         let new_color = evt.to.accessKey.split("\n")[1];
-        console.log(new_category)
-        console.log(new_color)
+        // console.log(new_category)
+        // console.log(new_color)
         this.change_existing(
           old_category + "\n" + old_color + "\n" + old_skill,
           new_category + "\n" + new_color,

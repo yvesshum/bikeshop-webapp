@@ -69,14 +69,12 @@
         <br>
         <p>Original Apron Color Name: {{this.modal.edit.original_field_name}}</p>
         <p>New Apron Color name:</p>
-        <b-form-textarea
+        <b-form-input
                 id="textarea"
                 v-model="modal.edit.field_name"
                 placeholder="Edit here.."
-                rows="1"
-                max-rows="1"
                 :state="isValidEditFieldName"
-        ></b-form-textarea>
+        ></b-form-input>
         <br>
         <br>
         <strong style="color: black">Note: Apron color must be unique!</strong>
@@ -102,15 +100,13 @@
             Adding an Apron Color
         </template>
         <p style="margin-bottom: 0">Color Name</p>
-        <b-form-textarea
+        <b-form-input
             id="textarea"
             v-model="modal.add.field_name"
             placeholder="This cannot be empty and must not already exist, no symbols too!"
             :state="isValidNewFieldName"
             size="sm"
-            rows="1"
-            max-rows="3"
-        ></b-form-textarea>
+        ></b-form-input>
         <br>
         <SpecialInput inputType="Color" ref="addInput" v-model="modal.add.initial_value"/>
         <br>
