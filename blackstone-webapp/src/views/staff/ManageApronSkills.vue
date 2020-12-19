@@ -217,27 +217,27 @@
             handler: function (v){
                 var changed = false;
                 if(v.length != this.saved_groups.length){
-                    console.log("Different lengths!")
+                    // console.log("Different lengths!")
                     changed = true;
                 } else {
                     for(var i = 0; i < v.length; i++){
                       if(v[i]["category"] != this.saved_groups[i]["category"]){
-                          console.log("Different categories!")
+                          // console.log("Different categories!")
                           changed = true;
                       }
                       if(v[i]["color"] != this.saved_groups[i]["color"]){
-                          console.log("Different colors!")
+                          // console.log("Different colors!")
                           changed = true;
                       }
                       if(v[i]["skills"].length != this.saved_groups[i]["skills"].length){
-                          console.log("Different skill lengths!")
+                          // console.log("Different skill lengths!")
                           changed = true;
                       } else {
                           for(var j = 0; j < v[i]["skills"].length; j++){
                             if(v[i]["skills"][j]["skill"] != this.saved_groups[i]["skills"][j]["skill"]){
-                                console.log("Different skills!")
-                                console.log(v[i]["skills"][j]["skill"])
-                                console.log(this.saved_groups[i]["skills"][j]["skill"])
+                                // console.log("Different skills!")
+                                // console.log(v[i]["skills"][j]["skill"])
+                                // console.log(this.saved_groups[i]["skills"][j]["skill"])
                                 changed = true;
                                 break
                             }
@@ -253,9 +253,9 @@
                 } else {
                   this.unsaved = false;
                 }
-                console.log("That give you any ideas?")
-                console.log(v)
-                console.log(this.saved_groups)
+                // console.log("That give you any ideas?")
+                // console.log(v)
+                // console.log(this.saved_groups)
             },
             deep: true
           }
@@ -366,6 +366,7 @@
                 let check = ApronSkillsRef.set(input);
                 let snapshot = await db.collection("GlobalYouthProfile").get();
                 let changes = this.changes;
+                console.log(changes)
                 for(let query of chunk(snapshot.docs, 500)) {
                   var batch = db.batch();
                   query.forEach(async doc => {

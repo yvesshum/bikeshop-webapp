@@ -26,28 +26,24 @@
             <b>{{ category }}</b>
           </div>
           <div
-            v-for="color in colors"
-            v-if="color.name != 'Gray'"
+            v-for="group in getGroupsByCategory(category)"
+            v-if="group.color != 'Gray'"
             class="table-col col-sm"
-            :key="JSON.stringify(color)"
+            :key="group.color"
           >
-            <div
-              v-for="group in getGroupsByColorCategory(color, category)"
-              :key="JSON.stringify(group)"
-              class="dragArea"
-            >
+            <div class="dragArea">
               <draggable
                 element="div"
                 class="dragArea"
                 v-model="group.skills"
-                :options="getOptions(group)"
+                v-bind="getOptions(group)"
                 :move="onMove"
                 @start="isDragging = true"
                 @end="onEnd"
               >
                 <transition-group
                   type="transition"
-                  :accessKey="category + '\n' + color.name"
+                  :accessKey="category + '\n' + group.color"
                   :name="'flip-list'"
                   tag="ul"
                   class="dragAreaFinal"
@@ -57,14 +53,14 @@
                     v-for="(element, index) in group.skills"
                     :accessKey="element.skill"
                     :key="element.skill"
-                    :style="getColorStyle(color)"
+                    :style="getColorStyle(group.color)"
                   >
                     <!-- <textarea>{{ element.skill }}</textarea>  contenteditable? -->
                     <div
                       @keypress="restrictChars($event)"
                       onclick="this.contentEditable=true;"
                       v-on:blur="
-                        reskill($event, category, color, index);
+                        reskill($event, category, group.color, index);
                         $event.target.contentEditable = false;
                       "
                       contenteditable="false"
@@ -83,7 +79,7 @@
         Drag a skill here to delete it
         <draggable
           element="span"
-          :options="getOptions(placeholder)"
+          v-bind="getOptions(placeholder)"
           :move="onMove"
           @start="isDragging = true"
           @end="onEndDelete"
@@ -191,7 +187,8 @@ export default {
         return true;
       }
     },
-    reskill($event, category, color, index) {
+    reskill($event, category, name, index) {
+      let color = this.getColorByName(name);
       var group = this.getGroupsByColorCategory(color, category);
       var new_skill = $event.target.innerText.substring(0, 300);
       if($event.target.innerText == ""){
@@ -222,12 +219,29 @@ export default {
       placeholder["color"] = color.name;
       return placeholder;
     },
-    getColorStyle(color) {
+    getGroupsByCategory(category){
+      var groups = []
+      for(var i = 0; i<this.colors.length; i++){
+        let color = this.colors[i];
+        groups.push(this.getGroupsByColorCategory(color, category)[0]);
+      }
+      return groups
+    },
+    getColorStyle(name) {
+      let color = this.getColorByName(name);
       return {
         border: "2px solid " + color.color,
         "border-radius": "5px;",
         "box-shadow": "2px 4px #888888"
       };
+    },
+    getColorByName(name){
+      for(var i = 0; i<this.colors.length; i++){
+        if(this.colors[i].name == name){
+          return this.colors[i];
+        };
+      }
+      return null;
     },
     getTableWidth() {
       return { width: (this.colors.length * 225).toString() + "px" };
@@ -246,6 +260,7 @@ export default {
       }
     },
     onEndDelete(evt) {
+      console.log("Deleted!")
       let old_category = evt.from.accessKey.split("\n")[0];
       let old_color = evt.from.accessKey.split("\n")[1];
       let old_skill = evt.item.accessKey;
@@ -262,6 +277,7 @@ export default {
       return true;
     },
     onEnd(evt) {
+      console.log("Moved!")
       let old_category = evt.from.accessKey.split("\n")[0];
       let old_color = evt.from.accessKey.split("\n")[1];
       let old_skill = evt.item.accessKey;
@@ -274,6 +290,8 @@ export default {
       } else {
         let new_category = evt.to.accessKey.split("\n")[0];
         let new_color = evt.to.accessKey.split("\n")[1];
+        console.log(new_category)
+        console.log(new_color)
         this.change_existing(
           old_category + "\n" + old_color + "\n" + old_skill,
           new_category + "\n" + new_color,
