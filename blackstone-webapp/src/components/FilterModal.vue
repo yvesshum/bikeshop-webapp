@@ -75,37 +75,52 @@
       </template>
     </b-modal>
 
-    <b-modal v-model="info_modal_visible" hide-footer lazy size="lg">
+    <b-modal v-model="info_modal_visible" hide-footer lazy header-bg-variant="info" header-text-variant="light">
       <template slot="modal-title">
-        <span style="color: black;">Searching With Filters</span>
+        <h4>Searching With Filters</h4>
       </template>
 
-      <p>Use the "New Group" button to create a new filter group, and use the "New Filter" button to create a new filter within the respective group.</p>
+      <h5>Adding and Removing Filters</h5>
 
-      <p>Use the "Apply Filters" button to start filtering the data, and use the "Stop Filtering" button to stop filtering the data.</p>
+      <p>Use the <code>New Group</code> button to create a new filter group, and use the <code>New Filter</code> button to create a new filter within a given group.</p>
 
-      <p>Use a filter's switch button to disable it, or the x button to remove it entirely.</p>
+      <p>Use a filter's switch button to disable it, or the <code>x</code> button to remove it entirely.</p>
 
-      <p>Entries in the table will match the search if they pass all filters within any group.  For example, the following search...</p>
+      <h5>Filtering Data</h5>
+
+      <p>Use the <code>Apply Filters</code> button to start filtering the data, and use the <code>Stop Filtering</code> button to stop filtering the data.</p>
+
+      <p>Entries in the table will match the search if they pass <i>all of the filters</i> within <i>any individual group</i>.</p>
+
+      <p>The following interactive test search demonstrates the way entries will match search groups:</p>
 
       <b-card>
+        <template #header><h6>Test Search</h6></template>
         <b-card style="margin-bottom: 10px;">
           <template #header>
             <h6 class="mb-0" style="display:inline-block; margin-right: 25px;">Group 1</h6>
           </template>
-          Filter A
+          <b-form-checkbox switch class="mr-n2" v-model="info_modal_filters.A" style="display:inline-block;"/> Filter A
           <br />
-          Filter B
+          <b-form-checkbox switch class="mr-n2" v-model="info_modal_filters.B" style="display:inline-block;"/> Filter B
         </b-card>
         <b-card style="margin-bottom: 10px;">
           <template #header>
             <h6 class="mb-0" style="display:inline-block; margin-right: 25px;">Group 2</h6>
           </template>
-          Filter C
+          <b-form-checkbox switch class="mr-n2" v-model="info_modal_filters.C" style="display:inline-block;"/> Filter C
+          <br />
+          <b-form-checkbox switch class="mr-n2" v-model="info_modal_filters.D" style="display:inline-block;"/> Filter D
         </b-card>
-      </b-card>
 
-      <p>...will match all entries that pass both Filter A and Filter B, <em>and</em> all entries that pass Filter C.</p>
+        <template #footer>This search will match
+          <span v-if="info_modal_filter_pass.length == 0"><b>all entries</b>.</span>
+          <span v-else>
+            {{(info_modal_filter_pass.length == 1 && info_modal_filter_pass[0].length < 9) ? "just the" : "all"}} entries that pass <b>{{info_modal_filter_pass[0]}}</b><span v-if="info_modal_filter_pass.length > 1">, as well as all entries that pass <b>{{info_modal_filter_pass[1]}}</b></span>.
+          </span>
+        </template>
+      </b-card>
+      
     </b-modal>
   </div>
 </template>
@@ -145,6 +160,13 @@ export default {
 
       // The list of groups of filters
       filter_list: [{ filters: [this.make_new_filter()], show: true }],
+
+      info_modal_filters: {
+        A: true,
+        B: true,
+        C: false,
+        D: true,
+      },
     };
   },
 
@@ -211,6 +233,32 @@ export default {
       this.hide();
     },
 
+  },
+
+  computed: {
+    info_modal_filter_pass: function() {
+      var group_1 = [], group_2 = [], groups = [];
+
+      // Get a list of applied filters in the first group
+      for (var filter of ["A", "B"]) {
+        if (this.info_modal_filters[filter]) {
+          group_1.push("Filter " + filter);
+        }
+      }
+
+      // Get a list of applied filters in the second group
+      for (var filter of ["C", "D"]) {
+        if (this.info_modal_filters[filter]) {
+          group_2.push("Filter " + filter);
+        }
+      }
+
+      // Only push non-empty groups
+      if (group_1.length > 0) groups.push(group_1.join(" and "));
+      if (group_2.length > 0) groups.push(group_2.join(" and "));
+
+      return groups;
+    },
   },
 
 }
