@@ -53,7 +53,9 @@
         </b-modal>
 
         <!-- Edit modal -->
+        <!-- A key is necessary such that it re-renders when the PostObj changes -->
         <NewBlogPost
+            :key="JSON.stringify(PostObj)"
             :edit="true"
             :title="PostObj.title"
             :subtitle="PostObj.subtitle"
@@ -214,7 +216,6 @@ export default {
                 window.alert(`An error has occured. Error: ${error}`);
                 return;
             }
-            // console.log("old post obj", this.PostObj);
             this.PostObj = {
                 ...this.PostObj,
                 ...blogObj,
