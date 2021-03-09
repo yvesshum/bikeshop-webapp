@@ -14,7 +14,7 @@
     "@fortawesome/vue-fontawesome": "^0.1.6",
     "bootstrap-vue": "^2.0.2",
     "core-js": "^2.6.5",
-    "elliptic": "^6.5.3",
+    "elliptic": "^6.5.4",
     "exact-math": "^2.2.0",
     "firebase": "^6.2.4",
     "jquery": "^3.5.1",
