@@ -21,7 +21,7 @@
     "jshint": "^2.10.2",
     "lodash": "^4.17.19",
     "luxon": "^1.21.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "sanitize-html": "^1.27.0",
     "tabulator-tables": "^4.3.0",
     "vue": "^2.6.10",
